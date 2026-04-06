@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>RLC串联电路频率特性仿真 | 幅频曲线 + 谐振标记跳转</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- KaTeX for math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        /* 自定义滑块样式 */
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #2563eb;
+            transform: scale(1.15);
+        }
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15);
+        }
+        .jump-btn {
+            transition: all 0.15s ease;
+            background-color: #3b82f6;  /* 与滑块圆形同色 */
+        }
+        .jump-btn:hover {
+            background-color: #2563eb;
+            transform: scale(1.02);
+        }
+        .jump-btn:active {
+            transform: scale(0.96);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- 标题区 -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            RLC 串联电路 · 频率特性仿真
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            调节 \(R, L, C\) 观察电阻、电感、电容电压幅值随频率的变化曲线 | 输入电压 \(V_{in}=1\ \text{V}\) (峰值)
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- 左侧控制面板 -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- 参数卡片 -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    电路参数调节
+                </h3>
+                
+                <!-- 电阻 R -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>电阻 \(R\)</label>
+                        <span class="text-blue-600 font-mono" id="r_val_display">100 Ω</span>
+                    </div>
+                    <input type="range" id="r_slider" min="1" max="500" step="1" value="100" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>1 Ω</span><span>500 Ω</span>
+                    </div>
+                </div>
+
+                <!-- 电感 L -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>电感 \(L\)</label>
+                        <span class="text-blue-600 font-mono" id="l_val_display">10 mH</span>
+                    </div>
+                    <input type="range" id="l_slider" min="0.5" max="100" step="0.5" value="10" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>0.5 mH</span><span>100 mH</span>
+                    </div>
+                </div>
+
+                <!-- 电容 C -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>电容 \(C\)</label>
+                        <span class="text-blue-600 font-mono" id="c_val_display">10 μF</span>
+                    </div>
+                    <input type="range" id="c_slider" min="1" max="200" step="1" value="10" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>1 μF</span><span>200 μF</span>
+                    </div>
+                </div>
+
+                <!-- 输入频率 f (当前标记点)  step改为1以便更精确跳转谐振频率 -->
+                <div class="mb-3 pt-2 border-t border-slate-100">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>当前标记频率 \(f\)</label>
+                        <span class="text-blue-600 font-mono" id="f_point_display">100 Hz</span>
+                    </div>
+                    <input type="range" id="f_point_slider" min="10" max="20000" step="1" value="100" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Hz</span><span>20 kHz</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2 flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        标记点显示对应频率下的电压值
+                    </p>
+                </div>
+            </div>
+
+            <!-- 特性参数卡片 (按钮移至BW下方) -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-purple-500 rounded-full"></span>
+                    电路特征参数
+                </h3>
+                <div class="space-y-3 text-sm">
+                    <!-- 谐振频率行 (不再包含跳转按钮) -->
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">谐振频率 \(f_0\)</span>
+                        <span class="font-mono font-bold text-indigo-700" id="f0_display">— Hz</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">品质因数 \(Q\)</span>
+                        <span class="font-mono font-bold text-indigo-700" id="q_display">—</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">带宽 \(BW\)</span>
+                        <span class="font-mono font-bold text-indigo-700" id="bw_display">— Hz</span>
+                    </div>
+                    
+                    <!-- 蓝色圆边按钮：放在带宽下方，居中 -->
+                    <div class="pt-2 flex justify-center">
+                        <button id="jumpToF0Btn" class="jump-btn text-white text-sm font-medium px-5 py-2 rounded-full shadow-md flex items-center gap-2 transition focus:outline-none focus:ring-2 focus:ring-blue-300">
+                           <!--  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>-->
+                            标记谐振频率
+                        </button>
+                    </div>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-3 text-center">
+                    ※ 点击蓝色按钮将紫色标记线移动到谐振频率点
+                </p>
+            </div>
+
+            <!-- 当前频率下电压数值卡片 -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-amber-500 rounded-full"></span>
+                    当前频率 \(f\) 下的电压幅值
+                </h3>
+                <div class="grid grid-cols-3 gap-2 text-center">
+                    <div class="bg-blue-50 p-2 rounded-xl">
+                        <div class="text-xs text-blue-700 font-semibold">\(U_R\)</div>
+                        <div class="text-lg font-bold text-blue-600" id="ur_point">0.00 V</div>
+                    </div>
+                    <div class="bg-green-50 p-2 rounded-xl">
+                        <div class="text-xs text-green-700 font-semibold">\(U_L\)</div>
+                        <div class="text-lg font-bold text-green-600" id="ul_point">0.00 V</div>
+                    </div>
+                    <div class="bg-orange-50 p-2 rounded-xl">
+                        <div class="text-xs text-orange-700 font-semibold">\(U_C\)</div>
+                        <div class="text-lg font-bold text-orange-600" id="uc_point">0.00 V</div>
+                    </div>
+                </div>
+                <p class="text-[11px] text-slate-500 text-center mt-3">
+                    输入电压峰值 \(V_{in}=1\ \text{V}\)
+                </p>
+            </div>
+        </div>
+
+        <!-- 右侧图形区 -->
+        <div class="lg:col-span-8 space-y-5">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 transition-all">
+                <div class="flex flex-wrap justify-between items-center mb-3 px-2">
+                    <div class="flex items-center gap-4 text-sm">
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-blue-500 rounded-full"></div><span class="font-medium">\(U_R\) (电阻)</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-green-500 rounded-full"></div><span class="font-medium">\(U_L\) (电感)</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-orange-500 rounded-full"></div><span class="font-medium">\(U_C\) (电容)</span></div>
+                    </div>
+                    <div class="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded-full">
+                        横轴: 频率 (对数坐标, Hz)
+                    </div>
+                </div>
+                <div class="relative">
+                    <canvas id="freqChart" width="800" height="450" style="width:100%; height:auto; max-height:500px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-2">
+                    幅值特性曲线 | 鼠标悬停可查看近似数值 (Chart.js 交互)
+                </div>
+            </div>
+
+            <!-- 补充说明卡片 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">📐 理论依据</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        RLC串联电路，输入 \(V_{in}=1\angle0^\circ\)，<br>
+                        阻抗 \(Z = R + j(\omega L - \frac{1}{\omega C})\)，<br>
+                        \(|U_R| = \frac{R}{|Z|},\ |U_L| = \frac{\omega L}{|Z|},\ |U_C| = \frac{1}{\omega C |Z|}\)。<br>
+                        谐振时 \(U_L\) 与 \(U_C\) 幅值相等且可能高于输入电压。
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">⚡ 特性解读</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        • 谐振频率 \(f_0 = \frac{1}{2\pi\sqrt{LC}}\)，此时 \(U_R\) 最大，\(U_L=U_C\)。<br>
+                        • 品质因数 \(Q = \frac{1}{R}\sqrt{\frac{L}{C}}\)，\(Q\) 越高，曲线越尖锐。<br>
+                        • 改变 \(R, L, C\) 曲线实时更新，体验频率选择性。<br>
+                        • ✨ 点击下方蓝色按钮，一键将紫色标记线定位到谐振频率。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 获取 DOM 元素
+    const rSlider = document.getElementById('r_slider');
+    const lSlider = document.getElementById('l_slider');
+    const cSlider = document.getElementById('c_slider');
+    const fPointSlider = document.getElementById('f_point_slider');
+    
+    const rDisplay = document.getElementById('r_val_display');
+    const lDisplay = document.getElementById('l_val_display');
+    const cDisplay = document.getElementById('c_val_display');
+    const fPointDisplay = document.getElementById('f_point_display');
+    
+    const f0Display = document.getElementById('f0_display');
+    const qDisplay = document.getElementById('q_display');
+    const bwDisplay = document.getElementById('bw_display');
+    
+    const urPointSpan = document.getElementById('ur_point');
+    const ulPointSpan = document.getElementById('ul_point');
+    const ucPointSpan = document.getElementById('uc_point');
+    
+    const canvas = document.getElementById('freqChart');
+    let chartInstance = null;
+    
+    // 常量：输入电压峰值 1V
+    const Vin = 1.0;
+    
+    // 频率扫描范围: 从 1 Hz 到 200 kHz (对数坐标需要足够宽)
+    const F_MIN = 1;          // 1 Hz
+    const F_MAX = 200000;     // 200 kHz
+    const NUM_POINTS = 500;    // 点数保证曲线平滑
+    
+    // 生成对数频率数组
+    function generateLogFrequencies(minFreq, maxFreq, points) {
+        const freqs = [];
+        const minLog = Math.log10(minFreq);
+        const maxLog = Math.log10(maxFreq);
+        for (let i = 0; i < points; i++) {
+            const logVal = minLog + (i / (points - 1)) * (maxLog - minLog);
+            freqs.push(Math.pow(10, logVal));
+        }
+        return freqs;
+    }
+    
+    // 计算给定频率下的阻抗模和三个电压幅值
+    function computeVoltages(freq, R, L, C) {
+        const omega = 2 * Math.PI * freq;
+        const XL = omega * L;
+        const XC = 1 / (omega * C);
+        const Z = Math.sqrt(R * R + (XL - XC) ** 2);
+        if (Z < 1e-12) return { UR: 0, UL: 0, UC: 0, Z: 1e-12 };
+        const I = Vin / Z;
+        const UR = I * R;
+        const UL = I * XL;
+        const UC = I * XC;
+        return { UR, UL, UC, Z };
+    }
+    
+    // 计算谐振频率 f0, 品质因数 Q, 带宽 BW
+    function computeCharacteristics(R, L, C) {
+        if (L <= 0 || C <= 0) return { f0: 0, Q: 0, BW: 0 };
+        const f0 = 1 / (2 * Math.PI * Math.sqrt(L * C));
+        const Q = (1 / R) * Math.sqrt(L / C);
+        const BW = f0 / Q;
+        return { f0, Q, BW };
+    }
+    
+    // 更新显示参数 (R, L, C 数值格式)
+    function updateParameterDisplays(R, L, C) {
+        rDisplay.innerText = `${R.toFixed(1)} Ω`;
+        // L 单位 mH
+        if (L >= 0.001) lDisplay.innerText = `${(L * 1000).toFixed(1)} mH`;
+        else lDisplay.innerText = `${(L * 1e6).toFixed(1)} μH`;
+        // C 单位 μF
+        if (C >= 1e-6) cDisplay.innerText = `${(C * 1e6).toFixed(1)} μF`;
+        else cDisplay.innerText = `${(C * 1e9).toFixed(1)} nF`;
+    }
+    
+    // 更新特征参数显示
+    function updateCharDisplays(R, L, C) {
+        const { f0, Q, BW } = computeCharacteristics(R, L, C);
+        if (isFinite(f0) && f0 > 0) {
+            f0Display.innerText = f0 > 1000 ? `${(f0/1000).toFixed(2)} kHz` : `${f0.toFixed(1)} Hz`;
+            qDisplay.innerText = Q.toFixed(2);
+            if (BW > 0) bwDisplay.innerText = BW > 1000 ? `${(BW/1000).toFixed(2)} kHz` : `${BW.toFixed(1)} Hz`;
+            else bwDisplay.innerText = '∞';
+        } else {
+            f0Display.innerText = '—';
+            qDisplay.innerText = '—';
+            bwDisplay.innerText = '—';
+        }
+    }
+    
+    // 获取当前所有参数值 (SI单位)
+    function getCurrentParams() {
+        const R = parseFloat(rSlider.value);                // Ω
+        const L = parseFloat(lSlider.value) * 1e-3;         // H (mH -> H)
+        const C = parseFloat(cSlider.value) * 1e-6;         // F (μF -> F)
+        const f_marker = parseFloat(fPointSlider.value);    // Hz 标记频率
+        return { R, L, C, f_marker };
+    }
+    
+    // 更新当前标记点电压数值并显示
+    function updateMarkerVoltages(R, L, C, f_marker) {
+        const { UR, UL, UC } = computeVoltages(f_marker, R, L, C);
+        urPointSpan.innerText = `${UR.toFixed(3)} V`;
+        ulPointSpan.innerText = `${UL.toFixed(3)} V`;
+        ucPointSpan.innerText = `${UC.toFixed(3)} V`;
+        // 显示频率值
+        if (f_marker >= 1000) fPointDisplay.innerText = `${(f_marker/1000).toFixed(1)} kHz`;
+        else fPointDisplay.innerText = `${f_marker.toFixed(0)} Hz`;
+    }
+    
+    // 核心: 构建数据集 (幅频特性数据)
+    function buildDatasets(R, L, C) {
+        const freqs = generateLogFrequencies(F_MIN, F_MAX, NUM_POINTS);
+        const urData = [];
+        const ulData = [];
+        const ucData = [];
+        
+        for (let i = 0; i < freqs.length; i++) {
+            const f = freqs[i];
+            const { UR, UL, UC } = computeVoltages(f, R, L, C);
+            urData.push({ x: f, y: UR });
+            ulData.push({ x: f, y: UL });
+            ucData.push({ x: f, y: UC });
+        }
+        return { freqs, urData, ulData, ucData };
+    }
+    
+    // 跳转到谐振频率的核心函数 (供按钮调用)
+    function jumpToResonantFrequency() {
+        const { R, L, C } = getCurrentParams();
+        if (L <= 0 || C <= 0) return;
+        let { f0 } = computeCharacteristics(R, L, C);
+        if (!isFinite(f0) || f0 <= 0) return;
+        
+        // 滑块范围限制: min=10, max=20000
+        const MIN_F_MARKER = 10;
+        const MAX_F_MARKER = 20000;
+        let targetFreq = f0;
+        let outOfRange = false;
+        if (targetFreq < MIN_F_MARKER) {
+            targetFreq = MIN_F_MARKER;
+            outOfRange = true;
+        } else if (targetFreq > MAX_F_MARKER) {
+            targetFreq = MAX_F_MARKER;
+            outOfRange = true;
+        }
+        // 由于滑块step=1，四舍五入取整保证滑块精确度
+        targetFreq = Math.round(targetFreq);
+        // 二次边界保护
+        targetFreq = Math.min(MAX_F_MARKER, Math.max(MIN_F_MARKER, targetFreq));
+        
+        // 更新滑块数值
+        fPointSlider.value = targetFreq;
+        
+        // 如果谐振频率超出可标记范围，在控制台提示（不干扰用户体验）
+        if (outOfRange) {
+            console.log(`谐振频率 ${f0.toFixed(1)} Hz 超出标记范围 (10~20000 Hz)，已设置为边界值 ${targetFreq} Hz`);
+            // 可选短暂提示效果: 改变按钮样式或增加小浮动提醒 (简单用 title 属性)
+            const jumpBtn = document.getElementById('jumpToF0Btn');
+            const originalTitle = jumpBtn.getAttribute('title') || '';
+            jumpBtn.setAttribute('title', `谐振频率${f0.toFixed(1)}Hz超出范围，已标记至边界`);
+            setTimeout(() => {
+                jumpBtn.setAttribute('title', originalTitle);
+            }, 1500);
+        } else {
+            console.log(`跳转到谐振频率: ${targetFreq} Hz`);
+        }
+        
+        // 刷新整个图表和所有显示 (会重新读取滑块值并更新竖线及电压)
+        refreshAll();
+    }
+    
+    // 绘制或更新图表 (Chart.js)
+    function updateChart() {
+        const { R, L, C, f_marker } = getCurrentParams();
+        
+        // 更新 UI 上的参数显示
+        updateParameterDisplays(R, L, C);
+        updateCharDisplays(R, L, C);
+        updateMarkerVoltages(R, L, C, f_marker);
+        
+        // 构建数据
+        const { urData, ulData, ucData } = buildDatasets(R, L, C);
+        
+        // 配置图表选项 (对数 x 轴)
+        const options = {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) label += ': ';
+                            label += context.raw.y.toFixed(3) + ' V';
+                            label += `  @ ${context.raw.x.toFixed(1)} Hz`;
+                            return label;
+                        }
+                    },
+                    backgroundColor: 'rgba(0,0,0,0.7)',
+                    titleColor: '#f1f5f9',
+                    bodyColor: '#e2e8f0'
+                },
+                legend: {
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        boxWidth: 8,
+                        font: { size: 12 }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    type: 'logarithmic',
+                    title: {
+                        display: true,
+                        text: '频率 f (Hz)',
+                        font: { weight: 'bold', size: 13 }
+                    },
+                    ticks: {
+                        callback: function(val, index, ticks) {
+                            if (val < 1) return '';
+                            if (val >= 1000) return (val/1000).toFixed(0) + 'k';
+                            return val;
+                        },
+                        autoSkip: true,
+                        maxTicksLimit: 10
+                    },
+                    min: F_MIN,
+                    max: F_MAX,
+                    grid: { color: '#eef2ff', tickLength: 6 }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: '电压幅值 (V)',
+                        font: { weight: 'bold', size: 13 }
+                    },
+                    min: 0,
+                    ticks: { stepSize: 0.5, callback: (val) => val.toFixed(1) + ' V' },
+                    grid: { color: '#eef2ff' }
+                }
+            },
+            elements: {
+                point: { radius: 0, hitRadius: 8, hoverRadius: 3 },
+                line: { tension: 0.2, borderWidth: 2.5 }
+            }
+        };
+        
+        // 动态调整 y 轴上限：根据实际数据最大电压值 (避免Q极大时削峰)
+        let maxVoltage = 0;
+        [...urData, ...ulData, ...ucData].forEach(p => { if (p.y > maxVoltage) maxVoltage = p.y; });
+        let yMax = Math.min(5, Math.max(1.2, maxVoltage * 1.05));
+        if (yMax < 0.8) yMax = 0.8;
+        options.scales.y.max = yMax;
+        
+        const datasets = [
+            {
+                label: 'U_R (电阻)',
+                data: urData,
+                borderColor: '#3b82f6',
+                backgroundColor: 'transparent',
+                borderWidth: 2.5,
+                pointRadius: 0,
+                tension: 0.2,
+                fill: false,
+                order: 2
+            },
+            {
+                label: 'U_L (电感)',
+                data: ulData,
+                borderColor: '#22c55e',
+                backgroundColor: 'transparent',
+                borderWidth: 2.5,
+                pointRadius: 0,
+                tension: 0.2,
+                fill: false,
+                order: 1
+            },
+            {
+                label: 'U_C (电容)',
+                data: ucData,
+                borderColor: '#f97316',
+                backgroundColor: 'transparent',
+                borderWidth: 2.5,
+                pointRadius: 0,
+                tension: 0.2,
+                fill: false,
+                order: 1
+            }
+        ];
+        
+        // 自定义插件：绘制当前标记频率的垂直线 (增强体验)
+        const markerLinePlugin = {
+            id: 'markerLine',
+            afterDraw(chart) {
+                const { ctx, chartArea: { left, right, top, bottom }, scales } = chart;
+                const currentParams = getCurrentParams();
+                const f_marker_local = currentParams.f_marker;
+                if (!scales.x || !scales.y) return;
+                const xPos = scales.x.getPixelForValue(f_marker_local);
+                if (xPos >= left && xPos <= right) {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#a855f7';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([6, 8]);
+                    ctx.moveTo(xPos, top);
+                    ctx.lineTo(xPos, bottom);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    // 添加一个小圆圈标记
+                    ctx.beginPath();
+                    ctx.arc(xPos, top + 12, 4, 0, 2 * Math.PI);
+                    ctx.fillStyle = '#a855f7';
+                    ctx.fill();
+                    ctx.fillStyle = 'white';
+                    ctx.font = 'bold 10px "Segoe UI"';
+                    ctx.fillText('●', xPos-2, top+14);
+                    ctx.fillStyle = '#581c87';
+                    ctx.font = '10px monospace';
+                    let freqText = f_marker_local >= 1000 ? (f_marker_local/1000).toFixed(1)+'k' : f_marker_local+' Hz';
+                    ctx.fillText(`${freqText}`, xPos+5, top+16);
+                    ctx.restore();
+                }
+            }
+        };
+        
+        // 销毁旧图表实例
+        if (chartInstance) {
+            chartInstance.destroy();
+        }
+        
+        // 创建新图表，注册插件
+        chartInstance = new Chart(canvas, {
+            type: 'line',
+            data: { datasets },
+            options: options,
+            plugins: [markerLinePlugin]
+        });
+    }
+    
+    // 全局刷新 (滑块变动后调用)
+    function refreshAll() {
+        updateChart();
+    }
+    
+    // 事件监听 (所有滑块变化时更新)
+    rSlider.addEventListener('input', refreshAll);
+    lSlider.addEventListener('input', refreshAll);
+    cSlider.addEventListener('input', refreshAll);
+    fPointSlider.addEventListener('input', () => {
+        // 标记点滑动时更新电压数值显示和竖线位置
+        refreshAll();
+    });
+    
+    // 跳转谐振频率按钮监听 (蓝色圆边按钮)
+    const jumpBtn = document.getElementById('jumpToF0Btn');
+    if (jumpBtn) {
+        jumpBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            jumpToResonantFrequency();
+        });
+    }
+    
+    // 窗口大小改变时，重绘图表以适配尺寸
+    window.addEventListener('resize', () => {
+        if (chartInstance) {
+            chartInstance.resize();
+            chartInstance.update();
+        }
+    });
+    
+    // 初始化参数显示并绘制曲线
+    refreshAll();
+    
+    // 自动重新渲染数学公式 (KaTeX)
+    document.addEventListener("DOMContentLoaded", function() {
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '\\(', right: '\\)', display: false},
+                ],
+                throwOnError: false
+            });
+        }
+    });
+    
+    console.log('RLC仿真已启动 | 幅频特性曲线实时更新 | 蓝色圆边按钮可一键标记谐振频率');
+</script>
+</body>
+</html>

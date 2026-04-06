@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>傅里叶级数 · 方波分解与谐波叠加 | 1,3,5,7,11,33,55次谐波合成</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- KaTeX 数学渲染 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #2563eb;
+            transform: scale(1.15);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15);
+        }
+        .phase-badge {
+            background: #eff6ff;
+            border-radius: 20px;
+            padding: 0.2rem 0.7rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #1e40af;
+        }
+        .wave-card {
+            transition: all 0.2s;
+        }
+        canvas {
+            max-height: 280px;
+            width: 100%;
+        }
+        /* 两列布局 */
+        .two-columns {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+        @media (max-width: 768px) {
+            .two-columns {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- 标题区 -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            傅里叶级数 · 方波分解与谐波叠加
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            方波可以分解为奇次正弦谐波的叠加：\(f(t) = \frac{4}{\pi}\left(\sin\omega t + \frac{1}{3}\sin 3\omega t + \frac{1}{5}\sin 5\omega t + \cdots\right)\)<br>
+            下图展示基波、以及逐次添加3、5、7、11、33、55次谐波后合成波形逼近方波的过程。
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- 左侧辅助信息卡片：傅里叶理论 -->
+        <div class="lg:col-span-3 space-y-6">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    傅里叶级数（方波）
+                </h3>
+                <div class="text-xs text-slate-600 space-y-2">
+                    <p>周期方波（幅值 \(\pm1\)，角频率 \(\omega=2\pi f\)）的傅里叶级数：</p>
+                    <div class="bg-slate-50 p-2 rounded-md font-mono text-center">
+                        \[
+                        f(t) = \frac{4}{\pi} \sum_{n=1,3,5,\ldots}^{\infty} \frac{\sin(n\omega t)}{n}
+                        \]
+                    </div>
+                    <p class="mt-2">• 基波分量：\(\frac{4}{\pi}\sin(\omega t)\)<br>
+                    • 3次谐波：\(\frac{4}{3\pi}\sin(3\omega t)\)<br>
+                    • 5次谐波：\(\frac{4}{5\pi}\sin(5\omega t)\)<br>
+                    • 7次谐波：\(\frac{4}{7\pi}\sin(7\omega t)\)<br>
+                    • 11次、33次、55次谐波同理，系数 \( \frac{4}{n\pi} \)。<br>
+                    随着谐波次数增加，合成波形越来越接近理想方波，但边缘会出现吉布斯现象（过冲）。</p>
+                </div>
+                <div class="mt-3 text-xs text-blue-600 bg-indigo-50 p-2 rounded-lg">
+                    📌 图中横轴为时间 \(t\) (秒)，基频 \(f = 1\,\text{Hz}\)，显示两个完整周期。
+                </div>
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-2 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-blue-500 rounded-full"></span>
+                    观察要点
+                </h3>
+                <ul class="text-xs text-slate-600 space-y-1 list-disc pl-4">
+                    <li>基波为正弦波，幅度约为1.27，频率与原方波相同。</li>
+                    <li>添加3次谐波后，波形开始呈现“方波”轮廓，顶部出现起伏。</li>
+                    <li>继续添加5次、7次谐波，上升沿变陡，顶部波纹更细，逼近理想方波。</li>
+                    <li>添加11次、33次、55次谐波后，波形边缘更陡峭，顶部波动更密，吉布斯过冲依然存在（约9%）。</li>
+                    <li>谐波次数越高，合成波形越精确，但过冲无法完全消除（吉布斯现象）。</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 右侧8个波形卡片，每行两个 -->
+        <div class="lg:col-span-9">
+            <div class="two-columns">
+                <!-- 1. 原始方波 (理想) -->
+                <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 wave-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-indigo-700 text-base">① 理想方波 (参考)</h4>
+                        <span class="phase-badge text-xs">幅值 ±1 V</span>
+                    </div>
+                    <div class="relative" style="height: 260px;">
+                        <canvas id="squareWaveChart" width="500" height="260" style="width:100%; height:100%;"></canvas>
+                    </div>
+                    <p class="text-center text-xs text-slate-500 mt-2">理想方波，占空比50%，跃变瞬间无过渡</p>
+                </div>
+
+                <!-- 2. 基波 (1次谐波) -->
+                <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 wave-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-emerald-700 text-base">② 基波分量 (1次谐波)</h4>
+                        <span class="phase-badge text-xs">幅度 4/π ≈ 1.273</span>
+                    </div>
+                    <div class="relative" style="height: 260px;">
+                        <canvas id="fundamentalChart" width="500" height="260" style="width:100%; height:100%;"></canvas>
+                    </div>
+                    <p class="text-center text-xs text-slate-500 mt-2">\(f_1(t)=\frac{4}{\pi}\sin(\omega t)\)，单一正弦波</p>
+                </div>
+
+                <!-- 3. 基波 + 3次谐波 -->
+                <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 wave-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-amber-700 text-base">③ 基波 + 3次谐波</h4>
+                        <span class="phase-badge text-xs">1次 + 3次</span>
+                    </div>
+                    <div class="relative" style="height: 260px;">
+                        <canvas id="fund3Chart" width="500" height="260" style="width:100%; height:100%;"></canvas>
+                    </div>
+                    <p class="text-center text-xs text-slate-500 mt-2">顶部开始变平，出现小波纹</p>
+                </div>
+
+                <!-- 4. 基波 + 3次 + 5次谐波 -->
+                <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 wave-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-orange-700 text-base">④ 基波 + 3次 + 5次谐波</h4>
+                        <span class="phase-badge text-xs">1+3+5次</span>
+                    </div>
+                    <div class="relative" style="height: 260px;">
+                        <canvas id="fund35Chart" width="500" height="260" style="width:100%; height:100%;"></canvas>
+                    </div>
+                    <p class="text-center text-xs text-slate-500 mt-2">波形更接近方波，上升沿变陡</p>
+                </div>
+
+                <!-- 5. 基波 + 3次 + 5次 + 7次谐波 -->
+                <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 wave-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-red-700 text-base">⑤ 基波 + 3次 + 5次 + 7次谐波</h4>
+                        <span class="phase-badge text-xs">1+3+5+7次</span>
+                    </div>
+                    <div class="relative" style="height: 260px;">
+                        <canvas id="fund357Chart" width="500" height="260" style="width:100%; height:100%;"></canvas>
+                    </div>
+                    <p class="text-center text-xs text-slate-500 mt-2">进一步逼近方波，吉布斯过冲明显</p>
+                </div>
+
+                <!-- 6. 基波 + 3次 + 5次 + 7次 + 9次 + 11次谐波 (1~11奇次) -->
+                <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 wave-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-purple-700 text-base">⑥ 基波 + 3+5+7+9+11次谐波</h4>
+                        <span class="phase-badge text-xs">1+3+5+7+9+11次</span>
+                    </div>
+                    <div class="relative" style="height: 260px;">
+                        <canvas id="fund11Chart" width="500" height="260" style="width:100%; height:100%;"></canvas>
+                    </div>
+                    <p class="text-center text-xs text-slate-500 mt-2">上升沿更陡，顶部波纹更密，逼近程度提高</p>
+                </div>
+
+                <!-- 7. 基波 + 3次 + ... + 33次谐波 (奇次谐波至33次) -->
+                <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 wave-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-pink-700 text-base">⑦ 基波 ~ 33次谐波 (奇次)</h4>
+                        <span class="phase-badge text-xs">1+3+5+...+33次</span>
+                    </div>
+                    <div class="relative" style="height: 260px;">
+                        <canvas id="fund33Chart" width="500" height="260" style="width:100%; height:100%;"></canvas>
+                    </div>
+                    <p class="text-center text-xs text-slate-500 mt-2">波形边缘陡峭，顶部波动细化，吉布斯过冲稳定在9%</p>
+                </div>
+
+                <!-- 8. 基波 + 3次 + ... + 55次谐波 (奇次谐波至55次) -->
+                <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 wave-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-rose-700 text-base">⑧ 基波 ~ 55次谐波 (奇次)</h4>
+                        <span class="phase-badge text-xs">1+3+5+...+55次</span>
+                    </div>
+                    <div class="relative" style="height: 260px;">
+                        <canvas id="fund55Chart" width="500" height="260" style="width:100%; height:100%;"></canvas>
+                    </div>
+                    <p class="text-center text-xs text-slate-500 mt-2">高阶谐波使波形几乎完美，仅剩极细波纹和过冲</p>
+                </div>
+            </div>
+            <div class="mt-4 text-center text-xs text-slate-400 bg-white/60 rounded-lg p-2">
+                ⚡ 吉布斯现象：在间断点处，有限项傅里叶级数存在约9%的过冲，且不随项数增加而消失。
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 傅里叶级数参数：基频 1 Hz，显示两个完整周期 (0 ~ 2 秒)
+    const f0 = 1;               // 基频 1 Hz
+    const omega = 2 * Math.PI * f0;   // 角频率 2π rad/s
+    const T = 1 / f0;          // 周期 1 秒
+    const duration = 2 * T;     // 显示2个周期，共2秒
+    const points = 1200;        // 采样点数，保证平滑和方波边缘
+    
+    // 生成时间轴
+    const times = [];
+    const dt = duration / (points - 1);
+    for (let i = 0; i < points; i++) {
+        times.push(i * dt);
+    }
+    
+    // 理想方波 (幅值 ±1)
+    function idealSquare(t) {
+        const phase = (t % T) / T;
+        return phase < 0.5 ? 1 : -1;
+    }
+    
+    // 通用：计算奇次谐波叠加，最高次数 maxN (只包含奇数，且最大不超过maxN)
+    function sumOddHarmonics(t, maxN) {
+        let sum = 0;
+        for (let n = 1; n <= maxN; n += 2) {
+            sum += (4 / (n * Math.PI)) * Math.sin(n * omega * t);
+        }
+        return sum;
+    }
+    
+    // 预计算各个波形数组
+    const squareData = times.map(t => idealSquare(t));
+    const fundData = times.map(t => sumOddHarmonics(t, 1));          // 仅基波
+    const fund3Data = times.map(t => sumOddHarmonics(t, 3));         // 1+3
+    const fund35Data = times.map(t => sumOddHarmonics(t, 5));        // 1+3+5
+    const fund357Data = times.map(t => sumOddHarmonics(t, 7));       // 1+3+5+7
+    const fund11Data = times.map(t => sumOddHarmonics(t, 11));       // 1+3+5+7+9+11
+    const fund33Data = times.map(t => sumOddHarmonics(t, 33));       // 1+3+5+...+33
+    const fund55Data = times.map(t => sumOddHarmonics(t, 55));       // 1+3+5+...+55
+    
+    // 构建 {x, y} 点集
+    const squarePoints = times.map((t, idx) => ({ x: t, y: squareData[idx] }));
+    const fundPoints = times.map((t, idx) => ({ x: t, y: fundData[idx] }));
+    const fund3Points = times.map((t, idx) => ({ x: t, y: fund3Data[idx] }));
+    const fund35Points = times.map((t, idx) => ({ x: t, y: fund35Data[idx] }));
+    const fund357Points = times.map((t, idx) => ({ x: t, y: fund357Data[idx] }));
+    const fund11Points = times.map((t, idx) => ({ x: t, y: fund11Data[idx] }));
+    const fund33Points = times.map((t, idx) => ({ x: t, y: fund33Data[idx] }));
+    const fund55Points = times.map((t, idx) => ({ x: t, y: fund55Data[idx] }));
+    
+    // 通用图表配置，y轴范围固定 -1.8 ~ 1.8 容纳所有波形（叠加峰值不超过1.8）
+    const yMin = -1.8;
+    const yMax = 1.8;
+    
+    const commonOptions = (yMinVal, yMaxVal, yLabel = '电压 (V)') => ({
+        responsive: true,
+        maintainAspectRatio: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return `${context.dataset.label || '波形'}: ${context.raw.y.toFixed(3)} V @ t = ${context.raw.x.toFixed(3)} s`;
+                    }
+                },
+                backgroundColor: 'rgba(0,0,0,0.7)',
+            },
+            legend: { 
+                position: 'top', 
+                labels: { font: { size: 10 }, boxWidth: 8, usePointStyle: true }
+            }
+        },
+        scales: {
+            x: {
+                type: 'linear',
+                title: { display: true, text: '时间 t (s)', font: { size: 10, weight: 'bold' } },
+                ticks: { callback: (val) => val.toFixed(1) + 's', maxTicksLimit: 5 },
+                min: 0,
+                max: duration,
+                grid: { color: '#eef2ff' }
+            },
+            y: {
+                title: { display: true, text: yLabel, font: { size: 10, weight: 'bold' } },
+                min: yMinVal,
+                max: yMaxVal,
+                ticks: { callback: (val) => val.toFixed(1) },
+                grid: { color: '#eef2ff' }
+            }
+        },
+        elements: {
+            point: { radius: 0, hitRadius: 5, hoverRadius: 2 },
+            line: { tension: 0.2, borderWidth: 2 }
+        }
+    });
+    
+    // 初始化所有图表
+    let squareChart, fundChart, fund3Chart, fund35Chart, fund357Chart, fund11Chart, fund33Chart, fund55Chart;
+    
+    const ctxSquare = document.getElementById('squareWaveChart').getContext('2d');
+    squareChart = new Chart(ctxSquare, {
+        type: 'line',
+        data: { datasets: [{ label: '理想方波 (参考)', data: squarePoints, borderColor: '#3b82f6', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, stepped: 'before', tension: 0 }] },
+        options: commonOptions(yMin, yMax, '幅值 (V)')
+    });
+    
+    const ctxFund = document.getElementById('fundamentalChart').getContext('2d');
+    fundChart = new Chart(ctxFund, {
+        type: 'line',
+        data: { datasets: [{ label: '基波 (1次谐波)', data: fundPoints, borderColor: '#10b981', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.2 }] },
+        options: commonOptions(yMin, yMax, '幅值 (V)')
+    });
+    
+    const ctxFund3 = document.getElementById('fund3Chart').getContext('2d');
+    fund3Chart = new Chart(ctxFund3, {
+        type: 'line',
+        data: { datasets: [{ label: '基波 + 3次谐波', data: fund3Points, borderColor: '#f59e0b', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.2 }] },
+        options: commonOptions(yMin, yMax, '幅值 (V)')
+    });
+    
+    const ctxFund35 = document.getElementById('fund35Chart').getContext('2d');
+    fund35Chart = new Chart(ctxFund35, {
+        type: 'line',
+        data: { datasets: [{ label: '基波 + 3次 + 5次谐波', data: fund35Points, borderColor: '#ea580c', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.2 }] },
+        options: commonOptions(yMin, yMax, '幅值 (V)')
+    });
+    
+    const ctxFund357 = document.getElementById('fund357Chart').getContext('2d');
+    fund357Chart = new Chart(ctxFund357, {
+        type: 'line',
+        data: { datasets: [{ label: '基波 + 3+5+7次谐波', data: fund357Points, borderColor: '#dc2626', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.2 }] },
+        options: commonOptions(yMin, yMax, '幅值 (V)')
+    });
+    
+    const ctxFund11 = document.getElementById('fund11Chart').getContext('2d');
+    fund11Chart = new Chart(ctxFund11, {
+        type: 'line',
+        data: { datasets: [{ label: '基波 + 3+5+7+9+11次谐波', data: fund11Points, borderColor: '#8b5cf6', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.2 }] },
+        options: commonOptions(yMin, yMax, '幅值 (V)')
+    });
+    
+    const ctxFund33 = document.getElementById('fund33Chart').getContext('2d');
+    fund33Chart = new Chart(ctxFund33, {
+        type: 'line',
+        data: { datasets: [{ label: '基波 ~ 33次奇次谐波', data: fund33Points, borderColor: '#ec489a', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.2 }] },
+        options: commonOptions(yMin, yMax, '幅值 (V)')
+    });
+    
+    const ctxFund55 = document.getElementById('fund55Chart').getContext('2d');
+    fund55Chart = new Chart(ctxFund55, {
+        type: 'line',
+        data: { datasets: [{ label: '基波 ~ 55次奇次谐波', data: fund55Points, borderColor: '#f43f5e', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.2 }] },
+        options: commonOptions(yMin, yMax, '幅值 (V)')
+    });
+    
+    // 窗口resize适配
+    window.addEventListener('resize', () => {
+        [squareChart, fundChart, fund3Chart, fund35Chart, fund357Chart, fund11Chart, fund33Chart, fund55Chart].forEach(chart => {
+            if (chart) chart.resize();
+        });
+    });
+    
+    // KaTeX 渲染
+    window.addEventListener('load', function() {
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '\\(', right: '\\)', display: false}
+                ],
+                throwOnError: false
+            });
+        } else {
+            console.warn('KaTeX 自动渲染未加载，公式将以文本显示');
+        }
+    });
+</script>
+</body>
+</html>

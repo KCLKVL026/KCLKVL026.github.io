@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>电容元件交流特性 | 电压电流波形与相位差</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- KaTeX 数学渲染（使用可靠 CDN + 自动渲染） -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;  /* 统一蓝色滑块 */
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #2563eb;
+            transform: scale(1.15);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15);
+        }
+        .wave-card {
+            transition: all 0.2s;
+        }
+        .phase-badge {
+            background: #eff6ff;   /* 蓝色浅底 */
+            border-radius: 20px;
+            padding: 0.2rem 0.7rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #1e40af;       /* 深蓝色文字 */
+        }
+        .reset-btn {
+            transition: all 0.2s;
+        }
+        .reset-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- 标题区：统一蓝色渐变 -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            电容元件交流特性 · 电压与电流相位差
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            正弦交流信号 \(v(t) = V_m \sin(2\pi f t)\) 作用于电容元件 | 观察电压 \(u(t)\) 与电流 \(i(t)\) 的相位关系<br>
+            <span class="text-xs text-indigo-500">电容电流单位：安培 (A)</span>
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- 左侧控制面板 -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- 参数调节卡片 -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>   <!-- 蓝色竖条 -->
+                    信号源 & 电容参数
+                </h3>
+
+                <!-- 电压幅值 Vm -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>电压幅值 \(V_m\)</label>
+                        <span class="text-blue-600 font-mono" id="vm_display">1.00 V</span>
+                    </div>
+                    <input type="range" id="vm_slider" min="0.2" max="5" step="0.02" value="1.0" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>0.2 V</span><span>5 V</span>
+                    </div>
+                </div>
+
+                <!-- 频率 f -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>频率 \(f\)</label>
+                        <span class="text-blue-600 font-mono" id="f_display">50.0 Hz</span>
+                    </div>
+                    <input type="range" id="f_slider" min="10" max="500" step="1" value="50" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Hz</span><span>500 Hz</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">频率影响容抗，改变电流幅值，相位差保持 +90°</p>
+                </div>
+
+                <div class="border-t border-slate-100 my-3"></div>
+
+                <!-- 电容 C (μF) 范围 1000~5000 μF，默认 2000 μF -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>电容 \(C\)</label>
+                        <span class="text-blue-600 font-mono" id="c_val_display">2000 μF</span>
+                    </div>
+                    <input type="range" id="c_slider" min="1000" max="5000" step="50" value="2000" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>1000 μF</span><span>5000 μF</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1">电流超前电压 \(90^\circ\)，幅值 \(I_m = V_m \cdot \omega C\) (A)</p>
+                </div>
+
+                <!-- 重置按钮：蓝色主题 -->
+                <div class="mt-6 flex justify-center">
+                    <button id="resetBtn" class="reset-btn bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-full shadow-md transition flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        重置参数
+                    </button>
+                </div>
+            </div>
+
+            <!-- 辅助信息卡片：理论相位差总结 -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-blue-500 rounded-full"></span>
+                    电容相位差理论
+                </h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
+                        <span class="font-medium">🟠 电容 \(C\)</span>
+                        <span class="font-mono text-emerald-600">\(\varphi = +90^\circ\)</span>
+                        <span class="text-xs text-slate-500">电流超前电压 \(90^\circ\)</span>
+                    </div>
+                </div>
+                <!-- 背景统一为 indigo-50 (柔和蓝色调) -->
+                <div class="mt-3 text-xs text-slate-600 bg-indigo-50 p-2 rounded-lg">
+                    📐 表达式：\(i_C = C\frac{dv}{dt}\)<br>
+                    正弦稳态下，电流超前电压 \(90^\circ\)。<strong>电容电流单位 A</strong><br>
+                    电流幅值：\(I_{Cm} = V_m \cdot 2\pi f C\ \text{(A)}\)，容抗 \(X_C = \frac{1}{\omega C} = \frac{1}{2\pi f C}\)。
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧波形区域：电容元件卡片 -->
+        <div class="lg:col-span-8 space-y-6">
+            <!-- 电容元件卡片 (电流 A) -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 wave-card">
+                <div class="flex justify-between items-center flex-wrap mb-2">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-blue-500 rounded-full"></div>   <!-- 圆点改为蓝色 -->
+                        <h3 class="font-bold text-slate-800 text-lg">电容元件 · 电压 \(u_C(t)\) 与电流 \(i_C(t)\) (A)</h3>
+                    </div>
+                    <!-- 相位差徽章统一蓝色风格 -->
+                    <div class="phase-badge">相位差 \(\Delta\varphi = +90^\circ\) (电流超前)</div>
+                </div>
+                <div class="relative">
+                    <canvas id="chartC" width="700" height="400" style="width:100%; height:auto; max-height:420px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-1">容性元件：电流超前电压90°，\(i_C(t)\) 峰值出现在电压峰值之前 \(\frac{T}{4}\)（电流单位 A）</div>
+            </div>
+
+            <!-- 补充说明卡片：标题颜色改为 indigo-800 蓝色系 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">🔍 波形观察要点</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        • <strong>电容</strong>：电流 \(i_C\) 过零点比电压 \(u_C\) 超前 \(90^\circ\)。<br>
+                        • 电压峰值时电流为零，电流峰值时电压为零。<br>
+                        • 调节频率 \(f\)、电容 \(C\) 会改变电流幅值，但相位差始终保持 \(+90^\circ\)。<br>
+                        • <strong>电容电流单位 A</strong>，与电感电流单位一致。
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">⚙️ 参数对幅值的影响</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        \(I_{Cm} = V_m \cdot 2\pi f C\ \text{(A)}\)<br>
+                        增大电压 \(V_m\) → 电流线性增大；<br>
+                        增大频率 \(f\) → 电流增大；<br>
+                        增大电容 \(C\) → 电流增大；<br>
+                        容抗 \(X_C = \frac{1}{\omega C}\) 随频率增加而减小。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // DOM 元素绑定
+    const vmSlider = document.getElementById('vm_slider');
+    const fSlider = document.getElementById('f_slider');
+    const cSlider = document.getElementById('c_slider');
+    const resetBtn = document.getElementById('resetBtn');
+
+    const vmDisplay = document.getElementById('vm_display');
+    const fDisplay = document.getElementById('f_display');
+    const cDisplay = document.getElementById('c_val_display');
+
+    // canvas 元素
+    const canvasC = document.getElementById('chartC');
+
+    let chartC;
+
+    // 波形显示参数
+    const PERIODS = 2.0;
+    const SAMPLE_POINTS = 500;
+
+    // 默认值
+    const DEFAULTS = {
+        Vm: 1.0,
+        f: 50,
+        C_uF: 2000
+    };
+
+    // 获取当前参数 (SI单位)
+    function getParams() {
+        const Vm = parseFloat(vmSlider.value);
+        const f = parseFloat(fSlider.value);
+        const C_uF = parseFloat(cSlider.value);
+        const C = C_uF * 1e-6;   // μF -> F
+        return { Vm, f, C, C_uF };
+    }
+
+    // 重置所有参数到默认值
+    function resetParams() {
+        vmSlider.value = DEFAULTS.Vm;
+        fSlider.value = DEFAULTS.f;
+        cSlider.value = DEFAULTS.C_uF;
+        updateAllCharts();
+    }
+
+    // 更新左侧数值显示
+    function updateParamDisplays() {
+        const { Vm, f, C_uF } = getParams();
+        vmDisplay.innerText = Vm.toFixed(2) + " V";
+        fDisplay.innerText = f.toFixed(1) + " Hz";
+        cDisplay.innerText = C_uF.toFixed(0) + " μF";
+    }
+
+    // 生成时间轴 (秒)
+    function generateTimeAxis(f) {
+        const T = 1 / f;
+        const tMax = PERIODS * T;
+        const dt = tMax / (SAMPLE_POINTS - 1);
+        const times = [];
+        for (let i = 0; i < SAMPLE_POINTS; i++) {
+            times.push(i * dt);
+        }
+        return times;
+    }
+
+    // 电容: 电压 Vm*sin(ωt), 电流幅值 (Vm*ω*C) 安培 (A)
+    function computeCapacitorData(times, Vm, f, C) {
+        const omega = 2 * Math.PI * f;
+        const Im_A = Vm * omega * C;            // 电流幅值 (A)
+        const voltage = [];
+        const current_A = [];
+        for (let t of times) {
+            const v = Vm * Math.sin(omega * t);
+            const i_A = Im_A * Math.sin(omega * t + Math.PI / 2);
+            voltage.push(v);
+            current_A.push(i_A);
+        }
+        return { voltage, current_A };
+    }
+
+    // 辅助函数：根据数据获取y轴最大最小值 (留白)
+    function getYAxisMax(dataArrays) {
+        let maxVal = -Infinity;
+        let minVal = Infinity;
+        for (let arr of dataArrays) {
+            for (let val of arr) {
+                if (val > maxVal) maxVal = val;
+                if (val < minVal) minVal = val;
+            }
+        }
+        if (maxVal === minVal) {
+            maxVal = maxVal + 0.1;
+            minVal = minVal - 0.1;
+        }
+        const margin = (maxVal - minVal) * 0.1;
+        let upper = maxVal + margin;
+        let lower = minVal - margin;
+        if (lower > 0) lower = 0;
+        if (upper < 0) upper = 0;
+        const range = Math.max(Math.abs(upper), Math.abs(lower));
+        if (range > 0) {
+            upper = Math.max(upper, range * 1.1);
+            lower = Math.min(lower, -range * 1.1);
+        }
+        return { max: upper, min: lower };
+    }
+
+    // 更新所有图表
+    function updateAllCharts() {
+        const { Vm, f, C, C_uF } = getParams();
+        updateParamDisplays();
+
+        const times = generateTimeAxis(f);
+
+        // 电容数据 (电流 A)
+        const cData = computeCapacitorData(times, Vm, f, C);
+        const cVoltage = cData.voltage;
+        const cCurrent_A = cData.current_A;
+
+        // 构建散点集
+        const timePoints = times.map(t => t);
+        const cVoltagePoints = timePoints.map((t, idx) => ({ x: t, y: cVoltage[idx] }));
+        const cCurrentPoints = timePoints.map((t, idx) => ({ x: t, y: cCurrent_A[idx] }));
+
+        // y 轴范围
+        const cYrange = getYAxisMax([cVoltage, cCurrent_A]);
+
+        // 通用配置函数 (y轴标题区分)
+        const commonOptions = (yMin, yMax, yLabel) => ({
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            let val = context.raw.y;
+                            if (label.includes('电流')) {
+                                return `${label}: ${val.toFixed(3)} A @ t = ${context.raw.x.toFixed(4)} s`;
+                            } else {
+                                return `${label}: ${val.toFixed(3)} V @ t = ${context.raw.x.toFixed(4)} s`;
+                            }
+                        }
+                    },
+                    backgroundColor: 'rgba(0,0,0,0.7)',
+                },
+                legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } } }
+            },
+            scales: {
+                x: {
+                    type: 'linear',
+                    title: { display: true, text: '时间 t (s)', font: { weight: 'bold', size: 11 } },
+                    ticks: { callback: (val) => val.toFixed(3) + 's', maxTicksLimit: 6 },
+                    min: 0,
+                    max: times[times.length-1],
+                    grid: { color: '#eef2ff' }
+                },
+                y: {
+                    title: { display: true, text: yLabel, font: { weight: 'bold', size: 11 } },
+                    min: yMin,
+                    max: yMax,
+                    ticks: { callback: (val) => val.toFixed(2) },
+                    grid: { color: '#eef2ff' }
+                }
+            },
+            elements: { point: { radius: 0, hitRadius: 6, hoverRadius: 3 }, line: { tension: 0.2, borderWidth: 2.2 } }
+        });
+
+        // 电容图表 (电流 A) —— 电流曲线保留原本的橙色 (#f97316)
+        if (chartC) {
+            chartC.data.datasets[0].data = cVoltagePoints;
+            chartC.data.datasets[1].data = cCurrentPoints;
+            chartC.options.scales.y.min = cYrange.min;
+            chartC.options.scales.y.max = cYrange.max;
+            chartC.options.scales.x.max = times[times.length-1];
+            chartC.update();
+        } else {
+            chartC = new Chart(canvasC, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        { label: '电压 u_C(t) (V)', data: cVoltagePoints, borderColor: '#3b82f6', backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: 0, tension: 0.2 },
+                        { label: '电流 i_C(t) (A)', data: cCurrentPoints, borderColor: '#f97316', backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: 0, tension: 0.2, borderDash: [5, 3] }
+                    ]
+                },
+                options: commonOptions(cYrange.min, cYrange.max, '幅值 (V / A)')
+            });
+        }
+    }
+
+    // 事件绑定
+    function bindEvents() {
+        vmSlider.addEventListener('input', () => updateAllCharts());
+        fSlider.addEventListener('input', () => updateAllCharts());
+        cSlider.addEventListener('input', () => updateAllCharts());
+        resetBtn.addEventListener('click', () => resetParams());
+        window.addEventListener('resize', () => {
+            if (chartC) chartC.resize();
+        });
+    }
+
+    // 初始化：渲染图表、修复 KaTeX
+    function init() {
+        bindEvents();
+        updateAllCharts();
+        window.addEventListener('load', function() {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            } else {
+                console.warn('KaTeX 自动渲染未加载，公式将以文本显示');
+            }
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>

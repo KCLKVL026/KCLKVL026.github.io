@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>RC电路 · 电容充放电特性 | 方波响应与时间常数</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- KaTeX 数学渲染 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #2563eb;
+            transform: scale(1.15);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15);
+        }
+        .phase-badge {
+            background: #eff6ff;
+            border-radius: 20px;
+            padding: 0.2rem 0.7rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #1e40af;
+        }
+        .reset-btn {
+            transition: all 0.2s;
+        }
+        .reset-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- 标题区 -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            RC电路 · 电容充放电特性 (方波激励)
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            方波电压 \(v_{\text{in}}(t)\) 作用于RC串联电路 | 观察电容两端电压 \(v_C(t)\) 的充放电瞬态响应
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- 左侧控制面板 -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- 参数调节卡片 -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    信号源 & RC参数
+                </h3>
+
+                <!-- 电压幅值 Vm -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>方波幅值 \(V_m\)</label>
+                        <span class="text-blue-600 font-mono" id="vm_display">1.00 V</span>
+                    </div>
+                    <input type="range" id="vm_slider" min="0.2" max="5" step="0.02" value="1.0" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>0.2 V</span><span>5 V</span>
+                    </div>
+                </div>
+
+                <!-- 频率 f -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>方波频率 \(f\)</label>
+                        <span class="text-blue-600 font-mono" id="f_display">50.0 Hz</span>
+                    </div>
+                    <input type="range" id="f_slider" min="10" max="500" step="1" value="50" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Hz</span><span>500 Hz</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">占空比50%方波，频率影响充放电时间占比</p>
+                </div>
+
+                <div class="border-t border-slate-100 my-3"></div>
+
+                <!-- 电阻 R (kΩ) 范围 0.01~1 kΩ -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>电阻 \(R\)</label>
+                        <span class="text-blue-600 font-mono" id="r_display">1.00 kΩ</span>
+                    </div>
+                    <input type="range" id="r_slider" min="0.01" max="1" step="0.01" value="1.0" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>0.01 kΩ (10Ω)</span><span>1 kΩ (1000Ω)</span>
+                    </div>
+                </div>
+
+                <!-- 电容 C (μF) 范围 0.2~20 μF -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>电容 \(C\)</label>
+                        <span class="text-blue-600 font-mono" id="c_display">10.0 μF</span>
+                    </div>
+                    <input type="range" id="c_slider" min="0.2" max="20" step="0.2" value="10.0" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>0.2 μF</span><span>20 μF</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1">时间常数 \(\tau = R \cdot C\)，决定充放电快慢</p>
+                </div>
+
+                <!-- 重置按钮 -->
+                <div class="mt-6 flex justify-center">
+                    <button id="resetBtn" class="reset-btn bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-full shadow-md transition flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        重置参数
+                    </button>
+                </div>
+            </div>
+
+            <!-- 辅助信息卡片：RC充放电理论 -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-blue-500 rounded-full"></span>
+                    时间常数 & 充放电规律
+                </h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
+                        <span class="font-medium">⏱️ 时间常数 \(\tau\)</span>
+                        <span class="font-mono text-emerald-600">\(\tau = R \cdot C\)</span>
+                        <span class="text-xs text-slate-500">单位: 秒 (s)</span>
+                    </div>
+                </div>
+                <div class="mt-3 text-xs text-slate-600 bg-indigo-50 p-2 rounded-lg leading-relaxed">
+                    📐 <strong>RC电路充放电公式</strong><br>
+                    充电阶段 ( \(v_{\text{in}} = V_m\) ):  
+                    \(v_C(t) = V_m + (V_0 - V_m)e^{-t/\tau}\) <br>
+                    放电阶段 ( \(v_{\text{in}} = 0\) ):  
+                    \(v_C(t) = 0 + (V_0 - 0)e^{-t/\tau}\) <br>
+                    <strong>\(\tau = RC\)</strong> 决定瞬态快慢：经过 \(1\tau\) 上升/下降约63.2%，\(5\tau\) 基本进入稳态。<br>
+                    方波频率与 \(\tau\) 的相对大小影响电容电压波形形状（线性充电/指数充放）。
+                </div>
+                <div class="mt-2 text-xs text-slate-500 bg-white p-2 rounded border border-slate-100">
+                    💡 观察要点：当周期 \(T \ll \tau\) 时，电容充放电不完全，呈近似三角波；当 \(T \gg \tau\) 时，电容电压能充满或放净，波形趋近方波。<br>
+                    <span class="text-blue-600">当前默认参数：R=1kΩ, C=10μF → τ=0.01s，周期T=0.02s，半周期0.01s，充放电一个时间常数，波形指数特征明显。</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧波形区域 -->
+        <div class="lg:col-span-8 space-y-6">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 wave-card">
+                <div class="flex justify-between items-center flex-wrap mb-2">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                        <h3 class="font-bold text-slate-800 text-lg">RC电路响应 · 输入方波 \(v_{\text{in}}(t)\) 与 电容电压 \(v_C(t)\)</h3>
+                    </div>
+                    <div class="phase-badge">时间常数 \(\tau = R \cdot C\) | 指数充放电</div>
+                </div>
+                <div class="relative">
+                    <canvas id="rcChart" width="700" height="400" style="width:100%; height:auto; max-height:420px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-1">
+                    蓝色阶梯波形：输入方波电压 \(v_{\text{in}}\)；橙色曲线：电容两端电压 \(v_C(t)\)，反映RC充放电瞬态过程。
+                </div>
+            </div>
+
+            <!-- 补充说明卡片 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">🔍 波形观察要点</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        • 方波上升沿：电容开始充电，电压指数上升趋近 \(V_m\)。<br>
+                        • 方波下降沿：电容通过电阻放电，电压指数衰减趋近0。<br>
+                        • 时间常数 \(\tau = RC\) 越大，充放电越缓慢，波形越“迟钝”。<br>
+                        • 调节频率：低频时电容可充满/放净；高频时波形呈线性三角趋势。
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">⚙️ 参数影响规律</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        \(v_C(t)\) 充电速率由 \(\tau = R \cdot C\) 决定。<br>
+                        增大 \(R\) 或 \(C\) → \(\tau\) 增大 → 充放电变慢，波形畸变更明显；<br>
+                        增大方波频率 \(f\) → 周期减小 → 充放电时间变短，电容电压幅度减小。<br>
+                        幅值 \(V_m\) 仅改变电压幅度，不改变时间常数。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // DOM 元素绑定
+    const vmSlider = document.getElementById('vm_slider');
+    const fSlider = document.getElementById('f_slider');
+    const rSlider = document.getElementById('r_slider');
+    const cSlider = document.getElementById('c_slider');
+    const resetBtn = document.getElementById('resetBtn');
+
+    const vmDisplay = document.getElementById('vm_display');
+    const fDisplay = document.getElementById('f_display');
+    const rDisplay = document.getElementById('r_display');
+    const cDisplay = document.getElementById('c_display');
+
+    const canvas = document.getElementById('rcChart');
+    let chart;
+
+    // 波形参数
+    const PERIODS = 2.0;          // 显示两个完整周期
+    const SAMPLE_POINTS = 800;    // 采样点数，保证阶梯及指数平滑
+
+    // 默认值 (满足 RC < 周期*10: 周期T=0.02s, 周期*10=0.2s, RC=0.01s)
+    const DEFAULTS = {
+        Vm: 1.0,
+        f: 50,
+        R_kOhm: 1.0,      // 1 kΩ
+        C_uF: 10.0        // 10 μF -> τ = 0.01s
+    };
+
+    // 获取当前参数 (SI单位)
+    function getParams() {
+        const Vm = parseFloat(vmSlider.value);
+        const f = parseFloat(fSlider.value);
+        const R_kOhm = parseFloat(rSlider.value);
+        const C_uF = parseFloat(cSlider.value);
+        const R = R_kOhm * 1000;      // kΩ -> Ω
+        const C = C_uF * 1e-6;        // μF -> F
+        const tau = R * C;            // 时间常数 (秒)
+        return { Vm, f, R, C, tau, R_kOhm, C_uF };
+    }
+
+    // 更新左侧数值显示
+    function updateParamDisplays() {
+        const { Vm, f, R_kOhm, C_uF, tau } = getParams();
+        vmDisplay.innerText = Vm.toFixed(2) + " V";
+        fDisplay.innerText = f.toFixed(1) + " Hz";
+        rDisplay.innerText = R_kOhm.toFixed(2) + " kΩ";
+        cDisplay.innerText = C_uF.toFixed(1) + " μF";
+        // 可选：在卡片中更新时间常数提示（不强制）
+    }
+
+    // 生成时间轴 (秒) 显示 PERIODS 个周期
+    function generateTimeAxis(f) {
+        const T = 1 / f;
+        const tMax = PERIODS * T;
+        const dt = tMax / (SAMPLE_POINTS - 1);
+        const times = [];
+        for (let i = 0; i < SAMPLE_POINTS; i++) {
+            times.push(i * dt);
+        }
+        return times;
+    }
+
+    /**
+     * 精确计算 RC 电路对 50% 占空比方波的响应 (电容电压)
+     * 使用分段解析公式: 根据每个充/放电区间的起始电压，计算该区间内任意时刻的指数解。
+     * @param {number[]} times 时间数组 (秒)
+     * @param {number} Vm 方波高电平幅值 (V)
+     * @param {number} f 频率 (Hz)
+     * @param {number} R 电阻 (Ω)
+     * @param {number} C 电容 (F)
+     * @returns { v_in: number[], v_c: number[] } 输入方波电压序列和电容电压序列
+     */
+    function computeRCResponse(times, Vm, f, R, C) {
+        const T = 1 / f;                // 周期
+        const halfT = T / 2;            // 高电平持续时间
+        const tau = R * C;              // 时间常数
+        
+        if (tau === 0) return { v_in: new Array(times.length).fill(0), v_c: new Array(times.length).fill(0) };
+        
+        const cycles = PERIODS;
+        const events = [];
+        let currentTime = 0;
+        let currentVoltage = 0;     // v_c(0) = 0
+        events.push({ time: currentTime, v_start: currentVoltage, target: Vm, isCharging: true });
+        
+        for (let i = 0; i < cycles; i++) {
+            const t_start_charge = i * T;
+            const t_end_charge = t_start_charge + halfT;
+            const t_start_discharge = t_end_charge;
+            const t_end_discharge = (i+1) * T;
+            
+            // 充电阶段结束时的电压
+            const v_after_charge = Vm + (currentVoltage - Vm) * Math.exp(-halfT / tau);
+            events.push({ time: t_end_charge, v_start: v_after_charge, target: 0, isCharging: false });
+            
+            // 放电阶段结束时的电压
+            const v_after_discharge = 0 + (v_after_charge - 0) * Math.exp(-halfT / tau);
+            currentVoltage = v_after_discharge;
+            if (i < cycles - 1) {
+                events.push({ time: t_end_discharge, v_start: currentVoltage, target: Vm, isCharging: true });
+            } else {
+                events.push({ time: t_end_discharge, v_start: currentVoltage, target: Vm, isCharging: true });
+            }
+        }
+        
+        const v_in = new Array(times.length);
+        const v_c = new Array(times.length);
+        
+        function getSquareVoltage(t) {
+            const t_mod = t % T;
+            return (t_mod < halfT) ? Vm : 0;
+        }
+        
+        let eventIdx = 0;
+        for (let i = 0; i < times.length; i++) {
+            const t = times[i];
+            v_in[i] = getSquareVoltage(t);
+            
+            while (eventIdx + 1 < events.length && events[eventIdx + 1].time <= t) {
+                eventIdx++;
+            }
+            const ev = events[eventIdx];
+            const dt = t - ev.time;
+            const target = ev.target;
+            const startV = ev.v_start;
+            let vc = target + (startV - target) * Math.exp(-dt / tau);
+            if (Math.abs(vc) < 1e-9) vc = 0;
+            if (vc > Vm + 1e-9) vc = Vm;
+            v_c[i] = vc;
+        }
+        
+        return { v_in, v_c };
+    }
+
+    // 辅助函数：根据数据获取y轴最大最小值 (留白)
+    function getYAxisMax(dataArrays) {
+        let maxVal = -Infinity;
+        let minVal = Infinity;
+        for (let arr of dataArrays) {
+            for (let val of arr) {
+                if (val > maxVal) maxVal = val;
+                if (val < minVal) minVal = val;
+            }
+        }
+        if (maxVal === minVal) {
+            maxVal = maxVal + 0.1;
+            minVal = minVal - 0.1;
+        }
+        const margin = (maxVal - minVal) * 0.1;
+        let upper = maxVal + margin;
+        let lower = minVal - margin;
+        if (lower > 0) lower = 0;
+        if (upper < 0) upper = 0;
+        const range = Math.max(Math.abs(upper), Math.abs(lower));
+        if (range > 0) {
+            upper = Math.max(upper, range * 1.1);
+            lower = Math.min(lower, -range * 1.1);
+        }
+        return { max: upper, min: lower };
+    }
+
+    // 更新图表
+    function updateCharts() {
+        const { Vm, f, R, C, tau, R_kOhm, C_uF } = getParams();
+        updateParamDisplays();
+        
+        const times = generateTimeAxis(f);
+        const { v_in, v_c } = computeRCResponse(times, Vm, f, R, C);
+        
+        const vinPoints = times.map((t, idx) => ({ x: t, y: v_in[idx] }));
+        const vcPoints = times.map((t, idx) => ({ x: t, y: v_c[idx] }));
+        
+        const yRange = getYAxisMax([v_in, v_c]);
+        
+        const commonOptions = (yMin, yMax) => ({
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            let val = context.raw.y;
+                            return `${label}: ${val.toFixed(3)} V @ t = ${context.raw.x.toFixed(4)} s`;
+                        }
+                    },
+                    backgroundColor: 'rgba(0,0,0,0.7)',
+                },
+                legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } } }
+            },
+            scales: {
+                x: {
+                    type: 'linear',
+                    title: { display: true, text: '时间 t (s)', font: { weight: 'bold', size: 11 } },
+                    ticks: { callback: (val) => val.toFixed(3) + 's', maxTicksLimit: 6 },
+                    min: 0,
+                    max: times[times.length-1],
+                    grid: { color: '#eef2ff' }
+                },
+                y: {
+                    title: { display: true, text: '电压 (V)', font: { weight: 'bold', size: 11 } },
+                    min: yMin,
+                    max: yMax,
+                    ticks: { callback: (val) => val.toFixed(2) },
+                    grid: { color: '#eef2ff' }
+                }
+            },
+            elements: { point: { radius: 0, hitRadius: 6, hoverRadius: 3 }, line: { tension: 0.2, borderWidth: 2.2 } }
+        });
+        
+        if (chart) {
+            chart.data.datasets[0].data = vinPoints;
+            chart.data.datasets[1].data = vcPoints;
+            chart.options.scales.y.min = yRange.min;
+            chart.options.scales.y.max = yRange.max;
+            chart.options.scales.x.max = times[times.length-1];
+            chart.update();
+        } else {
+            chart = new Chart(canvas, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        { 
+                            label: '输入方波 v_in(t) (V)', 
+                            data: vinPoints, 
+                            borderColor: '#3b82f6', 
+                            backgroundColor: 'transparent', 
+                            borderWidth: 2.2, 
+                            pointRadius: 0, 
+                            tension: 0,
+                            stepped: 'before',
+                            borderDash: undefined
+                        },
+                        { 
+                            label: '电容电压 v_C(t) (V)', 
+                            data: vcPoints, 
+                            borderColor: '#f97316', 
+                            backgroundColor: 'transparent', 
+                            borderWidth: 2.5, 
+                            pointRadius: 0, 
+                            tension: 0.2,
+                            borderDash: [5, 3]
+                        }
+                    ]
+                },
+                options: commonOptions(yRange.min, yRange.max)
+            });
+        }
+    }
+    
+    // 重置参数
+    function resetParams() {
+        vmSlider.value = DEFAULTS.Vm;
+        fSlider.value = DEFAULTS.f;
+        rSlider.value = DEFAULTS.R_kOhm;
+        cSlider.value = DEFAULTS.C_uF;
+        updateCharts();
+    }
+    
+    // 事件绑定
+    function bindEvents() {
+        vmSlider.addEventListener('input', () => updateCharts());
+        fSlider.addEventListener('input', () => updateCharts());
+        rSlider.addEventListener('input', () => updateCharts());
+        cSlider.addEventListener('input', () => updateCharts());
+        resetBtn.addEventListener('click', () => resetParams());
+        window.addEventListener('resize', () => {
+            if (chart) chart.resize();
+        });
+    }
+    
+    // 初始化: 渲染图表 + KaTeX
+    function init() {
+        bindEvents();
+        updateCharts();
+        window.addEventListener('load', function() {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            } else {
+                console.warn('KaTeX 自动渲染未加载');
+            }
+        });
+    }
+    
+    init();
+</script>
+</body>
+</html>
