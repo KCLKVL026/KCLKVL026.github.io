@@ -73,7 +73,7 @@
 <div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
     <!-- 返回主页按钮（左上角） -->
     <div class="flex justify-start mb-4">
-        <a href="https://kclkvl026.github.io/Circuit_Analysis/" 
+        <a href="./index.html" 
         class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
@@ -146,7 +146,7 @@
                         <label>电容 \(C\)</label>
                         <span class="text-blue-600 font-mono" id="c_display">10.0 μF</span>
                     </div>
-                    <input type="range" id="c_slider" min="0.2" max="20" step="0.2" value="10.0" class="w-full">
+                    <input type="range" id="c_slider" min="0.2" max="20" step="0.2" value="2.0" class="w-full">
                     <div class="flex justify-between text-xs text-slate-400 mt-1">
                         <span>0.2 μF</span><span>20 μF</span>
                     </div>
@@ -186,7 +186,7 @@
                 </div>
                 <div class="mt-2 text-xs text-slate-500 bg-white p-2 rounded border border-slate-100">
                     💡 观察要点：当周期 \(T \ll \tau\) 时，电容充放电不完全，呈近似三角波；当 \(T \gg \tau\) 时，电容电压能充满或放净，波形趋近方波。<br>
-                    <span class="text-blue-600">当前默认参数：R=1kΩ, C=10μF → τ=0.01s，周期T=0.02s，半周期0.01s，充放电一个时间常数，波形指数特征明显。</span>
+                    <span class="text-blue-600">当前默认参数：R=1kΩ, C=2μF → τ=0.002s，周期T=0.02s，半周期0.01s，充放电一个时间常数，波形指数特征明显。</span>
                 </div>
             </div>
         </div>
@@ -259,7 +259,7 @@
         Vm: 1.0,
         f: 50,
         R_kOhm: 1.0,      // 1 kΩ
-        C_uF: 10.0        // 10 μF -> τ = 0.01s
+        C_uF: 2.0        // 2 μF -> τ = 0.002s
     };
 
     // 获取当前参数 (SI单位)
