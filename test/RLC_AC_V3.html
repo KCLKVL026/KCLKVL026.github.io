@@ -193,12 +193,12 @@
                     </div>
                     <div class="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
                         <span class="font-medium">🟢 电感 \(L\)</span>
-                        <span class="font-mono text-emerald-600">\(\varphi = -90^\circ\)</span>
+                        <span class="font-mono text-emerald-600">\(\varphi = +90^\circ\)</span>
                         <span class="text-xs text-slate-500">电流滞后电压 \(90^\circ\)</span>
                     </div>
                     <div class="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
                         <span class="font-medium">🟠 电容 \(C\)</span>
-                        <span class="font-mono text-emerald-600">\(\varphi = +90^\circ\)</span>
+                        <span class="font-mono text-emerald-600">\(\varphi = -90^\circ\)</span>
                         <span class="text-xs text-slate-500">电流超前电压 \(90^\circ\)</span>
                     </div>
                 </div>
@@ -233,7 +233,7 @@
                         <div class="w-3 h-3 bg-green-500 rounded-full"></div>
                         <h3 class="font-bold text-slate-800 text-lg">电感元件 · 电压 \(u_L(t)\) 与电流 \(i_L(t)\) (A)</h3>
                     </div>
-                    <div class="phase-badge text-green-700 bg-green-50">相位差 \(\Delta\varphi = -90^\circ\) (电流滞后)</div>
+                    <div class="phase-badge text-green-700 bg-green-50">相位差 \(\Delta\varphi = +90^\circ\) (电流滞后)</div>
                 </div>
                 <div class="relative">
                     <canvas id="chartL" width="700" height="220" style="width:100%; height:auto; max-height:240px;"></canvas>
@@ -248,7 +248,7 @@
                         <div class="w-3 h-3 bg-orange-500 rounded-full"></div>
                         <h3 class="font-bold text-slate-800 text-lg">电容元件 · 电压 \(u_C(t)\) 与电流 \(i_C(t)\) (A)</h3>
                     </div>
-                    <div class="phase-badge text-orange-700 bg-orange-50">相位差 \(\Delta\varphi = +90^\circ\) (电流超前)</div>
+                    <div class="phase-badge text-orange-700 bg-orange-50">相位差 \(\Delta\varphi = -90^\circ\) (电流超前)</div>
                 </div>
                 <div class="relative">
                     <canvas id="chartC" width="700" height="220" style="width:100%; height:auto; max-height:240px;"></canvas>
@@ -263,7 +263,7 @@
                     <p class="text-xs text-slate-600 leading-relaxed">
                         • <strong>电阻</strong>：\(u_R\) 与 \(i_R\) 同步过零点，峰值同时出现。<br>
                         • <strong>电感</strong>：电流 \(i_L\) 过零点比电压 \(u_L\) 滞后 \(90^\circ\)（电压峰值时电流为零）。<br>
-                        • <strong>电容</strong>：电流 \(i_C\) 过零点比电压 \(u_C\) 超前 \(90^\circ\)（电流峰值对应电压变化率最大）。<br>
+                        • <strong>电容</strong>：电流 \(i_C\) 过零点比电压 \(u_C\) 超前 \(90^\circ\)（电流峰值时电压为零）。<br>
                         • 调节频率 \(f\)、电感 \(L\)、电容 \(C\) 会改变电流幅值，但相位差始终保持理论值。<br>
                         • <strong>电阻电流单位 mA，电感/电容电流单位 A</strong>，便于在同一坐标系下对比幅值。
                     </p>

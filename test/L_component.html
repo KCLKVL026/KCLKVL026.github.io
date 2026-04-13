@@ -127,7 +127,7 @@
                     <div class="flex justify-between text-xs text-slate-400 mt-1">
                         <span>10 Hz</span><span>500 Hz</span>
                     </div>
-                    <p class="text-xs text-slate-500 mt-1">频率影响感抗，改变电流幅值，相位差保持 -90°</p>
+                    <p class="text-xs text-slate-500 mt-1">频率影响感抗，改变电流幅值，相位差保持 +90°</p>
                 </div>
 
                 <div class="border-t border-slate-100 my-3"></div>
@@ -163,7 +163,7 @@
                 <div class="space-y-2 text-sm">
                     <div class="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
                         <span class="font-medium">🟢 电感 \(L\)</span>
-                        <span class="font-mono text-emerald-600">\(\varphi = -90^\circ\)</span>
+                        <span class="font-mono text-emerald-600">\(\varphi = +90^\circ\)</span>
                         <span class="text-xs text-slate-500">电流滞后电压 \(90^\circ\)</span>
                     </div>
                 </div>
@@ -186,7 +186,7 @@
                         <h3 class="font-bold text-slate-800 text-lg">电感元件 · 电压 \(u_L(t)\) 与电流 \(i_L(t)\) (A)</h3>
                     </div>
                     <!-- 相位差徽章统一蓝色风格 -->
-                    <div class="phase-badge">相位差 \(\Delta\varphi = -90^\circ\) (电流滞后)</div>
+                    <div class="phase-badge">相位差 \(\Delta\varphi = +90^\circ\) (电流滞后)</div>
                 </div>
                 <div class="relative">
                     <canvas id="chartL" width="700" height="400" style="width:100%; height:auto; max-height:420px;"></canvas>
@@ -201,7 +201,7 @@
                     <p class="text-xs text-slate-600 leading-relaxed">
                         • <strong>电感</strong>：电流 \(i_L\) 过零点比电压 \(u_L\) 滞后 \(90^\circ\)。<br>
                         • 电压峰值时电流为零，电流峰值时电压为零。<br>
-                        • 调节频率 \(f\)、电感 \(L\) 会改变电流幅值，但相位差始终保持 \(-90^\circ\)。<br>
+                        • 调节频率 \(f\)、电感 \(L\) 会改变电流幅值，但相位差始终保持 \(+90^\circ\)。<br>
                         • <strong>电感电流单位 A</strong>，与电容电流单位一致。
                     </p>
                 </div>
