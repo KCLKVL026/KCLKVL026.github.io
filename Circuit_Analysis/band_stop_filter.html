@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>RLC带阻滤波器（陷波器）| 幅频特性 + 相频特性仿真</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- KaTeX 数学公式渲染 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #2563eb;
+            transform: scale(1.15);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15);
+        }
+        .jump-btn {
+            transition: all 0.15s ease;
+            background-color: #3b82f6;
+        }
+        .jump-btn:hover {
+            background-color: #2563eb;
+            transform: scale(1.02);
+        }
+        .jump-btn:active {
+            transform: scale(0.96);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- 返回主页按钮 -->
+    <div class="flex justify-start mb-4">
+        <a href="./index.html" 
+           class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            返回主页
+        </a>
+    </div>
+
+    <!-- 标题区 -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            RLC 串联带阻滤波器 · 陷波特性仿真
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            调节电阻 \(R\)、电感 \(L\)、电容 \(C\)，观察输出电压幅值与相位响应 | 输入电压 \(V_{in}=1\ \text{V}\) (峰值)
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- 左侧控制面板 -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- 参数卡片：R, L, C -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    电路参数调节
+                </h3>
+                
+                <!-- 电阻 R: 20Ω ~ 20kΩ -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>电阻 \(R\)</label>
+                        <span class="text-blue-600 font-mono" id="r_val_display">1.0 kΩ</span>
+                    </div>
+                    <input type="range" id="r_slider" min="20" max="20000" step="1" value="1000" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>20 Ω</span><span>20 kΩ</span>
+                    </div>
+                </div>
+
+                <!-- 电感 L: 0.1 mH ~ 100 mH -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>电感 \(L\)</label>
+                        <span class="text-blue-600 font-mono" id="l_val_display">10.0 mH</span>
+                    </div>
+                    <input type="range" id="l_slider" min="0.1" max="100" step="0.1" value="10" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>0.1 mH</span><span>100 mH</span>
+                    </div>
+                </div>
+
+                <!-- 电容 C: 0.001μF ~ 1μF -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>电容 \(C\)</label>
+                        <span class="text-blue-600 font-mono" id="c_val_display">0.100 μF</span>
+                    </div>
+                    <input type="range" id="c_slider" min="0.001" max="1" step="0.001" value="0.1" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>0.001 μF</span><span>1 μF</span>
+                    </div>
+                </div>
+
+                <!-- 标记频率 f: 1Hz ~ 1MHz -->
+                <div class="mb-3 pt-2 border-t border-slate-100">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>标记频率 \(f\)</label>
+                        <span class="text-blue-600 font-mono" id="f_point_display">1.00 kHz</span>
+                    </div>
+                    <input type="range" id="f_point_slider" min="1" max="1000000" step="1" value="1000" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>1 Hz</span><span>1 MHz</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2 flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        紫色竖线标记当前频率，两侧图表同步显示该点数值
+                    </p>
+                </div>
+            </div>
+
+            <!-- 特征参数卡片 + 标记陷波频率按钮 -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-purple-500 rounded-full"></span>
+                    滤波器特征参数
+                </h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">陷波频率 \(f_0\)</span>
+                        <span class="font-mono font-bold text-indigo-700" id="f0_display">— Hz</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">品质因数 \(Q\)</span>
+                        <span class="font-mono font-bold text-indigo-700" id="q_display">—</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">陷波深度 (理论)</span>
+                        <span class="font-mono font-bold text-indigo-700">理想 0 V</span>
+                    </div>
+                    
+                    <div class="pt-2 flex justify-center">
+                        <button id="jumpToF0Btn" class="jump-btn text-white text-sm font-medium px-5 py-2 rounded-full shadow-md flex items-center gap-2 transition focus:outline-none focus:ring-2 focus:ring-blue-300">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                            标记陷波频率
+                        </button>
+                    </div>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-3 text-center">
+                    ※ 点击按钮将紫色标记线移动到陷波频率 \(f_0\) 处
+                </p>
+            </div>
+
+            <!-- 当前频率下的输出特性卡片 -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-amber-500 rounded-full"></span>
+                    当前频率 \(f\) 下的输出特性
+                </h3>
+                <div class="grid grid-cols-2 gap-3 text-center">
+                    <div class="bg-blue-50 p-3 rounded-xl">
+                        <div class="text-xs text-blue-700 font-semibold">输出电压 \(V_{out}\)</div>
+                        <div class="text-xl font-bold text-blue-600" id="vout_point">0.00 V</div>
+                        <div class="text-[10px] text-blue-500 mt-1">幅值 (Vin=1V)</div>
+                    </div>
+                    <div class="bg-emerald-50 p-3 rounded-xl">
+                        <div class="text-xs text-emerald-700 font-semibold">相位差 \(\varphi\)</div>
+                        <div class="text-xl font-bold text-emerald-600" id="phase_point">0.0°</div>
+                        <div class="text-[10px] text-emerald-500 mt-1">输出相对于输入</div>
+                    </div>
+                </div>
+                <div class="mt-3 text-center text-xs text-slate-500 bg-slate-50 rounded-lg p-2">
+                    传递函数: \(H(s) = \dfrac{s^2 LC + 1}{s^2 LC + sRC + 1}\)
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧图形区 -->
+        <div class="lg:col-span-8 space-y-5">
+            <!-- 幅频特性曲线图 -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 transition-all">
+                <div class="flex flex-wrap justify-between items-center mb-2 px-2">
+                    <div class="flex items-center gap-3 text-sm">
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-red-500 rounded-full"></div><span class="font-medium">幅频特性 \(|H(f)|\)</span></div>
+                        <div class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">输出电压 / 输入电压</div>
+                    </div>
+                    <div class="text-xs text-slate-400">横轴: 对数频率 (Hz)</div>
+                </div>
+                <div class="relative">
+                    <canvas id="magChart" width="800" height="320" style="width:100%; height:auto; max-height: 320px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-1">
+                    带阻幅频响应 | 陷波频率处电压趋于零，两侧通带
+                </div>
+            </div>
+
+            <!-- 相频特性曲线图 -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 transition-all">
+                <div class="flex flex-wrap justify-between items-center mb-2 px-2">
+                    <div class="flex items-center gap-3 text-sm">
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-indigo-500 rounded-full"></div><span class="font-medium">相频特性 \(\angle H(f)\)</span></div>
+                        <div class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">相位响应</div>
+                    </div>
+                    <div class="text-xs text-slate-400">横轴: 对数频率 (Hz)</div>
+                </div>
+                <div class="relative">
+                    <canvas id="phaseChart" width="800" height="320" style="width:100%; height:auto; max-height: 320px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-1">
+                    带阻相频响应 | 从 0° 下降至 -180° (实际范围 -90° ~ +90° 视参数而定)
+                </div>
+            </div>
+
+            <!-- 说明卡片 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">📐 理论依据</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        串联RLC电路，输出取电感与电容两端电压之和（即总电压减去电阻电压）：<br>
+                        \(H(s) = \dfrac{sL + 1/(sC)}{R + sL + 1/(sC)} = \dfrac{s^2 LC + 1}{s^2 LC + sRC + 1}\)。<br>
+                        陷波频率 \(f_0 = \dfrac{1}{2\pi\sqrt{LC}}\)，此处增益最小。<br>
+                        品质因数 \(Q = \dfrac{1}{R}\sqrt{\dfrac{L}{C}}\)，\(Q\) 越高陷波越尖锐。
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">⚡ 特性解读</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        • 带阻特性：在陷波频率附近信号被强烈衰减，两侧通带信号通过。<br>
+                        • 相位在陷波频率处发生快速跳变，变化范围与 \(Q\) 值有关。<br>
+                        • 调节 \(R, L, C\) 可改变陷波中心频率和陷波宽度。<br>
+                        • ✨ 点击“标记陷波频率”按钮，紫色竖线自动定位至 \(f_0\)。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // DOM 元素
+    const rSlider = document.getElementById('r_slider');
+    const lSlider = document.getElementById('l_slider');
+    const cSlider = document.getElementById('c_slider');
+    const fPointSlider = document.getElementById('f_point_slider');
+    
+    const rDisplay = document.getElementById('r_val_display');
+    const lDisplay = document.getElementById('l_val_display');
+    const cDisplay = document.getElementById('c_val_display');
+    const fPointDisplay = document.getElementById('f_point_display');
+    
+    const f0Display = document.getElementById('f0_display');
+    const qDisplay = document.getElementById('q_display');
+    const voutPointSpan = document.getElementById('vout_point');
+    const phasePointSpan = document.getElementById('phase_point');
+    
+    const magCanvas = document.getElementById('magChart');
+    const phaseCanvas = document.getElementById('phaseChart');
+    
+    let magChartInstance = null;
+    let phaseChartInstance = null;
+    
+    const Vin = 1.0;
+    const F_MIN = 1;
+    const F_MAX = 1000000;
+    const NUM_POINTS = 550;
+    
+    // 生成对数频率数组
+    function generateLogFrequencies(minFreq, maxFreq, points) {
+        const freqs = [];
+        const minLog = Math.log10(minFreq);
+        const maxLog = Math.log10(maxFreq);
+        for (let i = 0; i < points; i++) {
+            const logVal = minLog + (i / (points - 1)) * (maxLog - minLog);
+            freqs.push(Math.pow(10, logVal));
+        }
+        return freqs;
+    }
+    
+    // 带阻传递函数: H = (s^2 LC + 1) / (s^2 LC + sRC + 1), s = jω
+    function computeNotchResponse(freq, R, L, C) {
+        const omega = 2 * Math.PI * freq;
+        const omega2 = omega * omega;
+        const LC = L * C;
+        const RC = R * C;
+        // 分子: 1 - ω^2 LC  (实部), 虚部 0
+        const numReal = 1 - omega2 * LC;
+        const numImag = 0;
+        // 分母: (1 - ω^2 LC) + j ω RC
+        const denReal = 1 - omega2 * LC;
+        const denImag = omega * RC;
+        // 复数除法: (numReal + j numImag) / (denReal + j denImag)
+        const denominatorSq = denReal * denReal + denImag * denImag;
+        if (denominatorSq < 1e-12) return { mag: 0, phase: 0 };
+        const H_real = (numReal * denReal + numImag * denImag) / denominatorSq;
+        const H_imag = (numImag * denReal - numReal * denImag) / denominatorSq;
+        const mag = Math.sqrt(H_real * H_real + H_imag * H_imag);
+        let phase = Math.atan2(H_imag, H_real) * 180 / Math.PI;
+        return { mag: mag * Vin, phase: phase };
+    }
+    
+    // 计算陷波频率 f0 和 品质因数 Q
+    function computeNotchParams(R, L, C) {
+        if (L <= 0 || C <= 0) return { f0: 0, Q: 0 };
+        const f0 = 1 / (2 * Math.PI * Math.sqrt(L * C));
+        const Q = (1 / R) * Math.sqrt(L / C);
+        return { f0, Q };
+    }
+    
+    function getCurrentParams() {
+        let R = parseFloat(rSlider.value);
+        let L = parseFloat(lSlider.value) * 1e-3; // mH -> H
+        let C = parseFloat(cSlider.value) * 1e-6; // μF -> F
+        const f_marker = parseFloat(fPointSlider.value);
+        if (isNaN(R)) R = 1000;
+        if (isNaN(L)) L = 0.01;
+        if (isNaN(C)) C = 0.1e-6;
+        return { R, L, C, f_marker };
+    }
+    
+    function updateParameterDisplays(R, L, C) {
+        if (R >= 1000) rDisplay.innerText = `${(R/1000).toFixed(1)} kΩ`;
+        else rDisplay.innerText = `${R.toFixed(0)} Ω`;
+        lDisplay.innerText = `${(L*1000).toFixed(1)} mH`;
+        const c_uF = C * 1e6;
+        if (c_uF >= 1) cDisplay.innerText = `${c_uF.toFixed(3)} μF`;
+        else cDisplay.innerText = `${(c_uF * 1000).toFixed(2)} nF`;
+    }
+    
+    function updateCharDisplays(R, L, C) {
+        const { f0, Q } = computeNotchParams(R, L, C);
+        if (isFinite(f0) && f0 > 0) {
+            if (f0 >= 1000) f0Display.innerText = `${(f0/1000).toFixed(2)} kHz`;
+            else f0Display.innerText = `${f0.toFixed(1)} Hz`;
+            qDisplay.innerText = Q.toFixed(2);
+        } else {
+            f0Display.innerText = '—';
+            qDisplay.innerText = '—';
+        }
+    }
+    
+    function updateMarkerValues(R, L, C, f_marker) {
+        const { mag, phase } = computeNotchResponse(f_marker, R, L, C);
+        voutPointSpan.innerText = `${mag.toFixed(3)} V`;
+        phasePointSpan.innerText = `${phase.toFixed(1)}°`;
+        if (f_marker >= 1000000) fPointDisplay.innerText = `${(f_marker/1000000).toFixed(2)} MHz`;
+        else if (f_marker >= 1000) fPointDisplay.innerText = `${(f_marker/1000).toFixed(2)} kHz`;
+        else fPointDisplay.innerText = `${f_marker.toFixed(0)} Hz`;
+    }
+    
+    function buildMagPhaseData(R, L, C) {
+        const freqs = generateLogFrequencies(F_MIN, F_MAX, NUM_POINTS);
+        const magData = [];
+        const phaseData = [];
+        for (let i = 0; i < freqs.length; i++) {
+            const f = freqs[i];
+            const { mag, phase } = computeNotchResponse(f, R, L, C);
+            magData.push({ x: f, y: mag });
+            phaseData.push({ x: f, y: phase });
+        }
+        return { freqs, magData, phaseData };
+    }
+    
+    function createMarkerLinePlugin(getMarkerFreq) {
+        return {
+            id: 'markerLine',
+            afterDraw(chart) {
+                const { ctx, chartArea: { left, right, top, bottom }, scales } = chart;
+                const markerFreq = getMarkerFreq();
+                if (!scales.x || !markerFreq) return;
+                const xPos = scales.x.getPixelForValue(markerFreq);
+                if (xPos >= left && xPos <= right) {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#a855f7';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([6, 8]);
+                    ctx.moveTo(xPos, top);
+                    ctx.lineTo(xPos, bottom);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.beginPath();
+                    ctx.arc(xPos, top + 12, 4, 0, 2 * Math.PI);
+                    ctx.fillStyle = '#a855f7';
+                    ctx.fill();
+                    ctx.fillStyle = 'white';
+                    ctx.font = 'bold 10px "Segoe UI"';
+                    ctx.fillText('●', xPos-2, top+14);
+                    ctx.fillStyle = '#581c87';
+                    ctx.font = '10px monospace';
+                    let freqText = '';
+                    if (markerFreq >= 1000000) freqText = (markerFreq/1000000).toFixed(1)+'M';
+                    else if (markerFreq >= 1000) freqText = (markerFreq/1000).toFixed(1)+'k';
+                    else freqText = markerFreq+' Hz';
+                    ctx.fillText(`${freqText}`, xPos+5, top+16);
+                    ctx.restore();
+                }
+            }
+        };
+    }
+    
+    function getCurrentMarkerFreq() {
+        return parseFloat(fPointSlider.value);
+    }
+    
+    function updateMagChart(R, L, C) {
+        const { magData } = buildMagPhaseData(R, L, C);
+        let maxMag = 0;
+        magData.forEach(p => { if (p.y > maxMag) maxMag = p.y; });
+        const yMax = Math.min(1.2, Math.max(1.05, maxMag * 1.05));
+        
+        const options = {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `输出电压: ${context.raw.y.toFixed(3)} V  @ ${context.raw.x.toFixed(1)} Hz`;
+                        }
+                    },
+                    backgroundColor: 'rgba(0,0,0,0.7)'
+                },
+                legend: { display: false }
+            },
+            scales: {
+                x: {
+                    type: 'logarithmic',
+                    title: { display: true, text: '频率 f (Hz)', font: { weight: 'bold', size: 12 } },
+                    ticks: {
+                        callback: (val) => {
+                            if (val >= 1000000) return (val/1000000).toFixed(0) + 'M';
+                            if (val >= 1000) return (val/1000).toFixed(0) + 'k';
+                            return val;
+                        },
+                        autoSkip: true,
+                        maxTicksLimit: 8
+                    },
+                    min: F_MIN,
+                    max: F_MAX,
+                    grid: { color: '#eef2ff' }
+                },
+                y: {
+                    title: { display: true, text: '输出电压幅值 (V)', font: { weight: 'bold', size: 12 } },
+                    min: 0,
+                    max: yMax,
+                    ticks: { stepSize: 0.2, callback: (val) => val.toFixed(1) + ' V' },
+                    grid: { color: '#eef2ff' }
+                }
+            },
+            elements: { point: { radius: 0, hitRadius: 6 }, line: { borderWidth: 2.5, tension: 0.2 } }
+        };
+        
+        const datasets = [{
+            label: '|H(f)| · Vin',
+            data: magData,
+            borderColor: '#ef4444',
+            backgroundColor: 'transparent',
+            borderWidth: 2.5,
+            pointRadius: 0,
+            fill: false
+        }];
+        
+        if (magChartInstance) magChartInstance.destroy();
+        magChartInstance = new Chart(magCanvas, {
+            type: 'line',
+            data: { datasets },
+            options: options,
+            plugins: [createMarkerLinePlugin(getCurrentMarkerFreq)]
+        });
+    }
+    
+    function updatePhaseChart(R, L, C) {
+        const { phaseData } = buildMagPhaseData(R, L, C);
+        // 计算相位范围用于更好的Y轴显示
+        let minPhase = 0, maxPhase = 0;
+        phaseData.forEach(p => {
+            if (p.y < minPhase) minPhase = p.y;
+            if (p.y > maxPhase) maxPhase = p.y;
+        });
+        const yMin = Math.min(-100, minPhase - 10);
+        const yMax = Math.max(100, maxPhase + 10);
+        
+        const options = {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `相位角: ${context.raw.y.toFixed(1)}°  @ ${context.raw.x.toFixed(1)} Hz`;
+                        }
+                    },
+                    backgroundColor: 'rgba(0,0,0,0.7)'
+                },
+                legend: { display: false }
+            },
+            scales: {
+                x: {
+                    type: 'logarithmic',
+                    title: { display: true, text: '频率 f (Hz)', font: { weight: 'bold', size: 12 } },
+                    ticks: {
+                        callback: (val) => {
+                            if (val >= 1000000) return (val/1000000).toFixed(0) + 'M';
+                            if (val >= 1000) return (val/1000).toFixed(0) + 'k';
+                            return val;
+                        },
+                        autoSkip: true,
+                        maxTicksLimit: 8
+                    },
+                    min: F_MIN,
+                    max: F_MAX,
+                    grid: { color: '#eef2ff' }
+                },
+                y: {
+                    title: { display: true, text: '相位角 (度)', font: { weight: 'bold', size: 12 } },
+                    min: yMin,
+                    max: yMax,
+                    ticks: { stepSize: 30, callback: (val) => val + '°' },
+                    grid: { color: '#eef2ff' }
+                }
+            },
+            elements: { point: { radius: 0, hitRadius: 6 }, line: { borderWidth: 2.5, borderColor: '#6366f1', tension: 0.2 } }
+        };
+        
+        const datasets = [{
+            label: 'Phase ∠H(f)',
+            data: phaseData,
+            borderColor: '#6366f1',
+            backgroundColor: 'transparent',
+            borderWidth: 2.5,
+            pointRadius: 0,
+            fill: false
+        }];
+        
+        if (phaseChartInstance) phaseChartInstance.destroy();
+        phaseChartInstance = new Chart(phaseCanvas, {
+            type: 'line',
+            data: { datasets },
+            options: options,
+            plugins: [createMarkerLinePlugin(getCurrentMarkerFreq)]
+        });
+    }
+    
+    function refreshAll() {
+        const { R, L, C, f_marker } = getCurrentParams();
+        updateParameterDisplays(R, L, C);
+        updateCharDisplays(R, L, C);
+        updateMarkerValues(R, L, C, f_marker);
+        updateMagChart(R, L, C);
+        updatePhaseChart(R, L, C);
+    }
+    
+    function jumpToNotchFrequency() {
+        const { R, L, C } = getCurrentParams();
+        if (L <= 0 || C <= 0) return;
+        const { f0 } = computeNotchParams(R, L, C);
+        if (!isFinite(f0) || f0 <= 0) return;
+        
+        const MIN_F_MARKER = 1;
+        const MAX_F_MARKER = 1000000;
+        let targetFreq = f0;
+        let outOfRange = false;
+        if (targetFreq < MIN_F_MARKER) {
+            targetFreq = MIN_F_MARKER;
+            outOfRange = true;
+        } else if (targetFreq > MAX_F_MARKER) {
+            targetFreq = MAX_F_MARKER;
+            outOfRange = true;
+        }
+        targetFreq = Math.round(targetFreq);
+        targetFreq = Math.min(MAX_F_MARKER, Math.max(MIN_F_MARKER, targetFreq));
+        
+        fPointSlider.value = targetFreq;
+        
+        if (outOfRange) {
+            console.log(`陷波频率 ${f0.toFixed(1)} Hz 超出标记范围 (1~1e6 Hz)，已设为边界值`);
+            const btn = document.getElementById('jumpToF0Btn');
+            const originalTitle = btn.getAttribute('title') || '';
+            btn.setAttribute('title', `陷波频率${f0.toFixed(1)}Hz超出范围，已标记边界`);
+            setTimeout(() => btn.setAttribute('title', originalTitle), 1500);
+        }
+        refreshAll();
+    }
+    
+    // 事件绑定
+    rSlider.addEventListener('input', refreshAll);
+    lSlider.addEventListener('input', refreshAll);
+    cSlider.addEventListener('input', refreshAll);
+    fPointSlider.addEventListener('input', refreshAll);
+    
+    const jumpBtn = document.getElementById('jumpToF0Btn');
+    if (jumpBtn) {
+        jumpBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            jumpToNotchFrequency();
+        });
+    }
+    
+    window.addEventListener('resize', () => {
+        if (magChartInstance) magChartInstance.resize();
+        if (phaseChartInstance) phaseChartInstance.resize();
+        refreshAll();
+    });
+    
+    refreshAll();
+    
+    document.addEventListener("DOMContentLoaded", function() {
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '\\(', right: '\\)', display: false},
+                ],
+                throwOnError: false
+            });
+        }
+    });
+    
+    console.log('RLC带阻滤波器仿真已启动 | 幅频 + 相频实时更新 | 紫色标记线范围1Hz~1MHz');
+</script>
+</body>
+</html>
