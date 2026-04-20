@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>RLC带通滤波器 | 幅频特性 + 相频特性仿真</title>
+    <title>RLC带通滤波器 | 幅频特性 + 相频特性仿真 | 通频带标记</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <!-- KaTeX 数学公式渲染 -->
@@ -60,6 +60,17 @@
             transform: scale(1.02);
         }
         .jump-btn:active {
+            transform: scale(0.96);
+        }
+        .band-btn {
+            transition: all 0.15s ease;
+            background-color: #10b981;
+        }
+        .band-btn:hover {
+            background-color: #059669;
+            transform: scale(1.02);
+        }
+        .band-btn:active {
             transform: scale(0.96);
         }
     </style>
@@ -151,7 +162,7 @@
                 </div>
             </div>
 
-            <!-- 特征参数卡片 + 标记中心频率按钮 -->
+            <!-- 特征参数卡片 + 标记中心频率 + 标记通频带 双按钮 -->
             <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
                 <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
                     <span class="w-1 h-5 bg-purple-500 rounded-full"></span>
@@ -171,15 +182,29 @@
                         <span class="font-mono font-bold text-indigo-700" id="bw_display">— Hz</span>
                     </div>
                     
-                    <div class="pt-2 flex justify-center">
+                    <!-- 新增：通频带上下限频率 (始终基于当前参数计算并显示) -->
+                    <div class="flex justify-between items-center p-2 bg-emerald-50 rounded-lg border-l-4 border-emerald-400">
+                        <span class="text-slate-700 text-sm font-medium">下限频率 \(f_L\) (-3dB)</span>
+                        <span class="font-mono font-bold text-emerald-700" id="fl_display">— Hz</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-emerald-50 rounded-lg border-l-4 border-emerald-400">
+                        <span class="text-slate-700 text-sm font-medium">上限频率 \(f_H\) (-3dB)</span>
+                        <span class="font-mono font-bold text-emerald-700" id="fh_display">— Hz</span>
+                    </div>
+
+                    <div class="pt-2 flex flex-wrap gap-3 justify-center">
                         <button id="jumpToF0Btn" class="jump-btn text-white text-sm font-medium px-5 py-2 rounded-full shadow-md flex items-center gap-2 transition focus:outline-none focus:ring-2 focus:ring-blue-300">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
                             标记中心频率
+                        </button>
+                        <button id="markBandBtn" class="band-btn text-white text-sm font-medium px-5 py-2 rounded-full shadow-md flex items-center gap-2 transition focus:outline-none focus:ring-2 focus:ring-green-300">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            标记通频带
                         </button>
                     </div>
                 </div>
                 <p class="text-[11px] text-slate-400 mt-3 text-center">
-                    ※ 点击按钮将紫色标记线移动到中心频率 \(f_0\) 处
+                    ※ 点击按钮将紫色标记线移动到中心频率 \(f_0\) 处；<br>
+                    ※ 点击「标记通频带」显示绿色虚线边界 (\(f_L\) / \(f_H\))，随参数动态更新。
                 </p>
             </div>
 
@@ -252,7 +277,8 @@
                         \(H(s) = \dfrac{sRC}{s^2 LC + sRC + 1}\)。<br>
                         中心频率 \(f_0 = \dfrac{1}{2\pi\sqrt{LC}}\)，此处增益最大 (1V)。<br>
                         品质因数 \(Q = \dfrac{1}{R}\sqrt{\dfrac{L}{C}}\)，带宽 \(BW = f_0 / Q\)。<br>
-                        相位：\(\varphi(f) = 90° - \arctan\left(\dfrac{2\pi f RC}{1 - (2\pi f)^2 LC}\right)\)。
+                        相位：\(\varphi(f) = 90° - \arctan\left(\dfrac{2\pi f RC}{1 - (2\pi f)^2 LC}\right)\)。<br>
+                        通频带边界（-3dB点）：\(f_L = f_0\left(\sqrt{1+\frac{1}{4Q^2}}-\frac{1}{2Q}\right),\ f_H = f_0\left(\sqrt{1+\frac{1}{4Q^2}}+\frac{1}{2Q}\right)\)。
                     </p>
                 </div>
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
@@ -261,7 +287,8 @@
                         • 带通特性：仅在中心频率附近信号通过，高低频均衰减。<br>
                         • 相位从 +90° (低频) 平滑过渡到 -90° (高频)，中心频率处为 0°。<br>
                         • 调节 \(R, L, C\) 可改变中心频率和带宽，\(Q\) 值越高选择性越强。<br>
-                        • ✨ 点击“标记中心频率”按钮，紫色竖线自动定位至 \(f_0\)。
+                        • ✨ 点击“标记中心频率”按钮，紫色竖线自动定位至 \(f_0\)。<br>
+                        • 🌿 点击“标记通频带”按钮，绿色虚线标出 \(-3dB\) 上下限频率 \(f_L, f_H\)，并实时跟随参数变化。
                     </p>
                 </div>
             </div>
@@ -284,6 +311,8 @@
     const f0Display = document.getElementById('f0_display');
     const qDisplay = document.getElementById('q_display');
     const bwDisplay = document.getElementById('bw_display');
+    const flDisplay = document.getElementById('fl_display');
+    const fhDisplay = document.getElementById('fh_display');
     const voutPointSpan = document.getElementById('vout_point');
     const phasePointSpan = document.getElementById('phase_point');
     
@@ -297,6 +326,9 @@
     const F_MIN = 1;
     const F_MAX = 1000000;
     const NUM_POINTS = 550;
+    
+    // 全局标志：是否显示通频带标记线（绿色虚线）
+    let showBandpassMarkers = false;
     
     // 生成对数频率数组
     function generateLogFrequencies(minFreq, maxFreq, points) {
@@ -316,10 +348,8 @@
         const omega2 = omega * omega;
         const RC = R * C;
         const LC = L * C;
-        // 分子: jωRC
         const numReal = 0;
         const numImag = omega * RC;
-        // 分母: (1 - ω^2 LC) + jωRC
         const denReal = 1 - omega2 * LC;
         const denImag = omega * RC;
         const denominatorSq = denReal * denReal + denImag * denImag;
@@ -338,6 +368,16 @@
         const Q = (1 / R) * Math.sqrt(L / C);
         const BW = f0 / Q;
         return { f0, Q, BW };
+    }
+    
+    // 精确计算通频带上下限频率 (-3dB点)
+    function computeBandEdges(f0, Q) {
+        if (f0 <= 0 || Q <= 0) return { fLow: 0, fHigh: 0 };
+        const sqrtTerm = Math.sqrt(1 + 1 / (4 * Q * Q));
+        const fLow = f0 * (sqrtTerm - 1 / (2 * Q));
+        const fHigh = f0 * (sqrtTerm + 1 / (2 * Q));
+        // 边界保护 (范围1Hz ~ 1MHz 内，超出不影响标记，但数值仍然有效)
+        return { fLow: Math.max(1e-6, fLow), fHigh: fHigh };
     }
     
     function getCurrentParams() {
@@ -360,7 +400,7 @@
         else cDisplay.innerText = `${(c_uF * 1000).toFixed(2)} nF`;
     }
     
-    function updateCharDisplays(R, L, C) {
+    function updateCharDisplaysAndEdges(R, L, C) {
         const { f0, Q, BW } = computeBandpassParams(R, L, C);
         if (isFinite(f0) && f0 > 0) {
             if (f0 >= 1000) f0Display.innerText = `${(f0/1000).toFixed(2)} kHz`;
@@ -368,10 +408,23 @@
             qDisplay.innerText = Q.toFixed(2);
             if (BW >= 1000) bwDisplay.innerText = `${(BW/1000).toFixed(2)} kHz`;
             else bwDisplay.innerText = `${BW.toFixed(1)} Hz`;
+            
+            // 计算并显示通频带上下限（始终显示）
+            const { fLow, fHigh } = computeBandEdges(f0, Q);
+            if (isFinite(fLow) && fLow > 0) {
+                if (fLow >= 1000) flDisplay.innerText = `${(fLow/1000).toFixed(2)} kHz`;
+                else flDisplay.innerText = `${fLow.toFixed(1)} Hz`;
+            } else flDisplay.innerText = '—';
+            if (isFinite(fHigh) && fHigh > 0) {
+                if (fHigh >= 1000) fhDisplay.innerText = `${(fHigh/1000).toFixed(2)} kHz`;
+                else fhDisplay.innerText = `${fHigh.toFixed(1)} Hz`;
+            } else fhDisplay.innerText = '—';
         } else {
             f0Display.innerText = '—';
             qDisplay.innerText = '—';
             bwDisplay.innerText = '—';
+            flDisplay.innerText = '—';
+            fhDisplay.innerText = '—';
         }
     }
     
@@ -397,49 +450,116 @@
         return { freqs, magData, phaseData };
     }
     
-    function createMarkerLinePlugin(getMarkerFreq) {
-        return {
-            id: 'markerLine',
-            afterDraw(chart) {
-                const { ctx, chartArea: { left, right, top, bottom }, scales } = chart;
-                const markerFreq = getMarkerFreq();
-                if (!scales.x || !markerFreq) return;
-                const xPos = scales.x.getPixelForValue(markerFreq);
-                if (xPos >= left && xPos <= right) {
-                    ctx.save();
-                    ctx.beginPath();
-                    ctx.strokeStyle = '#a855f7';
-                    ctx.lineWidth = 2;
-                    ctx.setLineDash([6, 8]);
-                    ctx.moveTo(xPos, top);
-                    ctx.lineTo(xPos, bottom);
-                    ctx.stroke();
-                    ctx.setLineDash([]);
-                    ctx.beginPath();
-                    ctx.arc(xPos, top + 12, 4, 0, 2 * Math.PI);
-                    ctx.fillStyle = '#a855f7';
-                    ctx.fill();
-                    ctx.fillStyle = 'white';
-                    ctx.font = 'bold 10px "Segoe UI"';
-                    ctx.fillText('●', xPos-2, top+14);
-                    ctx.fillStyle = '#581c87';
-                    ctx.font = '10px monospace';
-                    let freqText = '';
-                    if (markerFreq >= 1000000) freqText = (markerFreq/1000000).toFixed(1)+'M';
-                    else if (markerFreq >= 1000) freqText = (markerFreq/1000).toFixed(1)+'k';
-                    else freqText = markerFreq+' Hz';
-                    ctx.fillText(`${freqText}`, xPos+5, top+16);
-                    ctx.restore();
+    // 获取当前活跃的所有标记线 (紫色中心频率标记 + 绿色通频带上下限)
+    function getActiveMarkers(R, L, C) {
+        const markers = [];
+        // 1. 紫色标记：当前标记频率（来自滑块）
+        const markerFreq = parseFloat(fPointSlider.value);
+        if (isFinite(markerFreq) && markerFreq >= F_MIN && markerFreq <= F_MAX) {
+            markers.push({
+                freq: markerFreq,
+                color: '#a855f7',
+                lineWidth: 2,
+                dash: [6, 8],
+                label: 'f_marker',
+                showDot: true
+            });
+        }
+        // 2. 通频带绿色虚线（如果激活）
+        if (showBandpassMarkers) {
+            const { f0, Q } = computeBandpassParams(R, L, C);
+            if (f0 > 0 && Q > 0) {
+                const { fLow, fHigh } = computeBandEdges(f0, Q);
+                // 添加下限频率标记 (有效范围内)
+                if (isFinite(fLow) && fLow >= F_MIN && fLow <= F_MAX) {
+                    markers.push({
+                        freq: fLow,
+                        color: '#10b981',
+                        lineWidth: 2,
+                        dash: [8, 6],
+                        label: 'f_L',
+                        showDot: true
+                    });
                 }
+                // 添加上限频率标记
+                if (isFinite(fHigh) && fHigh >= F_MIN && fHigh <= F_MAX) {
+                    markers.push({
+                        freq: fHigh,
+                        color: '#10b981',
+                        lineWidth: 2,
+                        dash: [8, 6],
+                        label: 'f_H',
+                        showDot: true
+                    });
+                }
+            }
+        }
+        return markers;
+    }
+    
+    // 自定义插件：绘制多条标记线 (支持圆点与文字)
+    function createMarkersPlugin(markersGetter) {
+        return {
+            id: 'dynamicMarkers',
+            afterDraw(chart) {
+                const markers = markersGetter();
+                if (!markers || markers.length === 0) return;
+                const { ctx, chartArea: { left, right, top, bottom }, scales } = chart;
+                if (!scales.x) return;
+                
+                ctx.save();
+                markers.forEach(marker => {
+                    const xPos = scales.x.getPixelForValue(marker.freq);
+                    if (xPos >= left && xPos <= right) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = marker.color;
+                        ctx.lineWidth = marker.lineWidth || 2;
+                        ctx.setLineDash(marker.dash || [6, 8]);
+                        ctx.moveTo(xPos, top);
+                        ctx.lineTo(xPos, bottom);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                        
+                        // 顶部画一个小圆点 + 简要标签
+                        if (marker.showDot) {
+                            ctx.beginPath();
+                            ctx.arc(xPos, top + 10, 4, 0, 2 * Math.PI);
+                            ctx.fillStyle = marker.color;
+                            ctx.fill();
+                            ctx.fillStyle = 'white';
+                            ctx.font = 'bold 9px "Segoe UI"';
+                            ctx.fillText('●', xPos-2, top+12);
+                            ctx.fillStyle = marker.color;
+                            ctx.font = 'bold 10px monospace';
+                            let shortLabel = '';
+                            if (marker.label === 'f_marker') {
+                                let freqVal = marker.freq;
+                                if (freqVal >= 1e6) shortLabel = (freqVal/1e6).toFixed(1)+'M';
+                                else if (freqVal >= 1e3) shortLabel = (freqVal/1e3).toFixed(1)+'k';
+                                else shortLabel = freqVal.toFixed(1)+'Hz';
+                                ctx.fillText(`${shortLabel}`, xPos+5, top+14);
+                            } else if (marker.label === 'f_L') {
+                                let freqVal = marker.freq;
+                                if (freqVal >= 1e6) shortLabel = (freqVal/1e6).toFixed(1)+'M';
+                                else if (freqVal >= 1e3) shortLabel = (freqVal/1e3).toFixed(1)+'k';
+                                else shortLabel = freqVal.toFixed(1)+'Hz';
+                                ctx.fillText(`fL ${shortLabel}`, xPos+5, top+14);
+                            } else if (marker.label === 'f_H') {
+                                let freqVal = marker.freq;
+                                if (freqVal >= 1e6) shortLabel = (freqVal/1e6).toFixed(1)+'M';
+                                else if (freqVal >= 1e3) shortLabel = (freqVal/1e3).toFixed(1)+'k';
+                                else shortLabel = freqVal.toFixed(1)+'Hz';
+                                ctx.fillText(`fH ${shortLabel}`, xPos+5, top+14);
+                            }
+                        }
+                    }
+                });
+                ctx.restore();
             }
         };
     }
     
-    function getCurrentMarkerFreq() {
-        return parseFloat(fPointSlider.value);
-    }
-    
-    function updateMagChart(R, L, C) {
+    function updateMagChart(R, L, C, markers) {
         const { magData } = buildMagPhaseData(R, L, C);
         let maxMag = 0;
         magData.forEach(p => { if (p.y > maxMag) maxMag = p.y; });
@@ -503,13 +623,12 @@
             type: 'line',
             data: { datasets },
             options: options,
-            plugins: [createMarkerLinePlugin(getCurrentMarkerFreq)]
+            plugins: [createMarkersPlugin(() => markers)]
         });
     }
     
-    function updatePhaseChart(R, L, C) {
+    function updatePhaseChart(R, L, C, markers) {
         const { phaseData } = buildMagPhaseData(R, L, C);
-        // 相位范围通常 -90 到 +90，适当扩展
         let minPhase = 0, maxPhase = 0;
         phaseData.forEach(p => {
             if (p.y < minPhase) minPhase = p.y;
@@ -576,17 +695,20 @@
             type: 'line',
             data: { datasets },
             options: options,
-            plugins: [createMarkerLinePlugin(getCurrentMarkerFreq)]
+            plugins: [createMarkersPlugin(() => markers)]
         });
     }
     
     function refreshAll() {
         const { R, L, C, f_marker } = getCurrentParams();
         updateParameterDisplays(R, L, C);
-        updateCharDisplays(R, L, C);
+        updateCharDisplaysAndEdges(R, L, C);
         updateMarkerValues(R, L, C, f_marker);
-        updateMagChart(R, L, C);
-        updatePhaseChart(R, L, C);
+        
+        // 获取当前活跃标记线（基于当前参数和全局标志）
+        const activeMarkers = getActiveMarkers(R, L, C);
+        updateMagChart(R, L, C, activeMarkers);
+        updatePhaseChart(R, L, C, activeMarkers);
     }
     
     function jumpToCenterFrequency() {
@@ -594,30 +716,14 @@
         if (L <= 0 || C <= 0) return;
         const { f0 } = computeBandpassParams(R, L, C);
         if (!isFinite(f0) || f0 <= 0) return;
-        
-        const MIN_F_MARKER = 1;
-        const MAX_F_MARKER = 1000000;
-        let targetFreq = f0;
-        let outOfRange = false;
-        if (targetFreq < MIN_F_MARKER) {
-            targetFreq = MIN_F_MARKER;
-            outOfRange = true;
-        } else if (targetFreq > MAX_F_MARKER) {
-            targetFreq = MAX_F_MARKER;
-            outOfRange = true;
-        }
+        let targetFreq = Math.min(F_MAX, Math.max(F_MIN, f0));
         targetFreq = Math.round(targetFreq);
-        targetFreq = Math.min(MAX_F_MARKER, Math.max(MIN_F_MARKER, targetFreq));
-        
         fPointSlider.value = targetFreq;
-        
-        if (outOfRange) {
-            console.log(`中心频率 ${f0.toFixed(1)} Hz 超出标记范围 (1~1e6 Hz)，已设为边界值`);
-            const btn = document.getElementById('jumpToF0Btn');
-            const originalTitle = btn.getAttribute('title') || '';
-            btn.setAttribute('title', `中心频率${f0.toFixed(1)}Hz超出范围，已标记边界`);
-            setTimeout(() => btn.setAttribute('title', originalTitle), 1500);
-        }
+        refreshAll();
+    }
+    
+    function enableBandpassMarkers() {
+        showBandpassMarkers = true;
         refreshAll();
     }
     
@@ -628,12 +734,10 @@
     fPointSlider.addEventListener('input', refreshAll);
     
     const jumpBtn = document.getElementById('jumpToF0Btn');
-    if (jumpBtn) {
-        jumpBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            jumpToCenterFrequency();
-        });
-    }
+    if (jumpBtn) jumpBtn.addEventListener('click', (e) => { e.preventDefault(); jumpToCenterFrequency(); });
+    
+    const markBandBtn = document.getElementById('markBandBtn');
+    if (markBandBtn) markBandBtn.addEventListener('click', (e) => { e.preventDefault(); enableBandpassMarkers(); });
     
     window.addEventListener('resize', () => {
         if (magChartInstance) magChartInstance.resize();
@@ -655,7 +759,7 @@
         }
     });
     
-    console.log('RLC带通滤波器仿真已启动 | 幅频 + 相频实时更新 | 紫色标记线范围1Hz~1MHz');
+    console.log('RLC带通滤波器仿真已启动 | 幅频+相频实时更新 | 支持通频带标记(绿色虚线)');
 </script>
 </body>
 </html>

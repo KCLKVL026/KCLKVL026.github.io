@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>RLC带阻滤波器（陷波器）| 幅频特性 + 相频特性仿真</title>
+    <title>RLC带阻滤波器（陷波器）| 幅频+相频仿真 | 通频带正确标记</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <!-- KaTeX 数学公式渲染 -->
@@ -61,6 +61,12 @@
         }
         .jump-btn:active {
             transform: scale(0.96);
+        }
+        .band-btn {
+            background-color: #10b981;
+        }
+        .band-btn:hover {
+            background-color: #059669;
         }
     </style>
 </head>
@@ -151,7 +157,7 @@
                 </div>
             </div>
 
-            <!-- 特征参数卡片 + 标记陷波频率按钮 -->
+            <!-- 特征参数卡片 + 双按钮组 -->
             <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
                 <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
                     <span class="w-1 h-5 bg-purple-500 rounded-full"></span>
@@ -171,15 +177,33 @@
                         <span class="font-mono font-bold text-indigo-700">理想 0 V</span>
                     </div>
                     
-                    <div class="pt-2 flex justify-center">
-                        <button id="jumpToF0Btn" class="jump-btn text-white text-sm font-medium px-5 py-2 rounded-full shadow-md flex items-center gap-2 transition focus:outline-none focus:ring-2 focus:ring-blue-300">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    <!-- 阻带带宽 & 通频带上下限 -->
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">阻带带宽 (-3dB)</span>
+                        <span class="font-mono font-bold text-emerald-700" id="bandwidth_display">— Hz</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg border-l-2 border-emerald-300">
+                        <span class="text-slate-600">通带下限 \(f_{L}\)</span>
+                        <span class="font-mono font-bold text-emerald-700" id="f_lower_display">— Hz</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg border-l-2 border-emerald-300">
+                        <span class="text-slate-600">通带上限 \(f_{H}\)</span>
+                        <span class="font-mono font-bold text-emerald-700" id="f_upper_display">— Hz</span>
+                    </div>
+
+                    <div class="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
+                        <!-- 标记陷波频率按钮 (箭头已去除) -->
+                        <button id="jumpToF0Btn" class="jump-btn text-white text-sm font-medium px-5 py-2 rounded-full shadow-md flex items-center justify-center gap-1 transition focus:outline-none focus:ring-2 focus:ring-blue-300">
                             标记陷波频率
+                        </button>
+                        <!-- 标记通频带按钮 (绿色风格) -->
+                        <button id="markBandBtn" class="band-btn text-white text-sm font-medium px-5 py-2 rounded-full shadow-md flex items-center justify-center gap-2 transition focus:outline-none focus:ring-2 focus:ring-emerald-300">
+                            标记通频带
                         </button>
                     </div>
                 </div>
                 <p class="text-[11px] text-slate-400 mt-3 text-center">
-                    ※ 点击按钮将紫色标记线移动到陷波频率 \(f_0\) 处
+                    ※ 绿色虚线为通频带上下限 (-3dB衰减点) | 紫色虚线为当前标记频率
                 </p>
             </div>
 
@@ -222,7 +246,7 @@
                     <canvas id="magChart" width="800" height="320" style="width:100%; height:auto; max-height: 320px;"></canvas>
                 </div>
                 <div class="text-center text-xs text-slate-400 mt-1">
-                    带阻幅频响应 | 陷波频率处电压趋于零，两侧通带
+                    带阻幅频响应 | 陷波频率处电压趋于零，两侧通带 | 绿色虚线: 通带边界(-3dB)
                 </div>
             </div>
 
@@ -239,7 +263,7 @@
                     <canvas id="phaseChart" width="800" height="320" style="width:100%; height:auto; max-height: 320px;"></canvas>
                 </div>
                 <div class="text-center text-xs text-slate-400 mt-1">
-                    带阻相频响应 | 从 0° 下降至 -180° (实际范围 -90° ~ +90° 视参数而定)
+                    带阻相频响应 | 从 0° 下降至 -180° | 绿色虚线对应通带边界频率
                 </div>
             </div>
 
@@ -251,7 +275,8 @@
                         串联RLC电路，输出取电感与电容两端电压之和（即总电压减去电阻电压）：<br>
                         \(H(s) = \dfrac{sL + 1/(sC)}{R + sL + 1/(sC)} = \dfrac{s^2 LC + 1}{s^2 LC + sRC + 1}\)。<br>
                         陷波频率 \(f_0 = \dfrac{1}{2\pi\sqrt{LC}}\)，此处增益最小。<br>
-                        品质因数 \(Q = \dfrac{1}{R}\sqrt{\dfrac{L}{C}}\)，\(Q\) 越高陷波越尖锐。
+                        品质因数 \(Q = \dfrac{1}{R}\sqrt{\dfrac{L}{C}}\)，\(Q\) 越高陷波越尖锐。<br>
+                        通带边界 (截止频率) 为增益下降至最大增益的 \(1/\sqrt{2}\) 倍 (\(-3dB\)) 的频率点。
                     </p>
                 </div>
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
@@ -260,7 +285,7 @@
                         • 带阻特性：在陷波频率附近信号被强烈衰减，两侧通带信号通过。<br>
                         • 相位在陷波频率处发生快速跳变，变化范围与 \(Q\) 值有关。<br>
                         • 调节 \(R, L, C\) 可改变陷波中心频率和陷波宽度。<br>
-                        • ✨ 点击“标记陷波频率”按钮，紫色竖线自动定位至 \(f_0\)。
+                        • ✨ 点击“标记通频带”按钮，绿色虚线自动定位至-3dB上下边界频率。
                     </p>
                 </div>
             </div>
@@ -284,6 +309,10 @@
     const qDisplay = document.getElementById('q_display');
     const voutPointSpan = document.getElementById('vout_point');
     const phasePointSpan = document.getElementById('phase_point');
+    // 带宽及通带上下限显示
+    const bandwidthDisplay = document.getElementById('bandwidth_display');
+    const fLowerDisplay = document.getElementById('f_lower_display');
+    const fUpperDisplay = document.getElementById('f_upper_display');
     
     const magCanvas = document.getElementById('magChart');
     const phaseCanvas = document.getElementById('phaseChart');
@@ -294,7 +323,10 @@
     const Vin = 1.0;
     const F_MIN = 1;
     const F_MAX = 1000000;
-    const NUM_POINTS = 550;
+    const NUM_POINTS = 700;     // 足够点数保证边界精度
+    
+    // 存储当前计算出的通带上下限频率
+    let currentBandLimits = { fLower: null, fUpper: null };
     
     // 生成对数频率数组
     function generateLogFrequencies(minFreq, maxFreq, points) {
@@ -314,13 +346,10 @@
         const omega2 = omega * omega;
         const LC = L * C;
         const RC = R * C;
-        // 分子: 1 - ω^2 LC  (实部), 虚部 0
         const numReal = 1 - omega2 * LC;
         const numImag = 0;
-        // 分母: (1 - ω^2 LC) + j ω RC
         const denReal = 1 - omega2 * LC;
         const denImag = omega * RC;
-        // 复数除法: (numReal + j numImag) / (denReal + j denImag)
         const denominatorSq = denReal * denReal + denImag * denImag;
         if (denominatorSq < 1e-12) return { mag: 0, phase: 0 };
         const H_real = (numReal * denReal + numImag * denImag) / denominatorSq;
@@ -336,6 +365,99 @@
         const f0 = 1 / (2 * Math.PI * Math.sqrt(L * C));
         const Q = (1 / R) * Math.sqrt(L / C);
         return { f0, Q };
+    }
+    
+    // 修正通带上下限频率算法: 基于最大增益(两侧通带)下降3dB (0.707倍)
+    // 带阻滤波器通带增益最大值接近1，寻找从低频向高频第一个幅值 <= 0.707 的点(左侧截止点)，
+    // 以及从高频向低频第一个幅值 <= 0.707 的点(右侧截止点)，并确保两点在陷波频率两侧。
+    function computeBandLimitsCorrected(R, L, C) {
+        if (L <= 0 || C <= 0) return { fLower: null, fUpper: null, bandwidth: null };
+        const freqs = generateLogFrequencies(F_MIN, F_MAX, NUM_POINTS);
+        const targetMag = 0.70710678;  // -3dB 对应 1/sqrt(2)
+        // 计算所有频率点的幅值 (注意返回的是实际输出电压，但Vin=1，所以幅值=增益)
+        const mags = freqs.map(f => computeNotchResponse(f, R, L, C).mag);
+        
+        // 找到陷波频率大致位置 (最小增益点) 用于辅助判断左右
+        let minMagIdx = 0;
+        for (let i = 1; i < mags.length; i++) {
+            if (mags[i] < mags[minMagIdx]) minMagIdx = i;
+        }
+        const notchFreq = freqs[minMagIdx];
+        
+        // 左侧截止频率: 从最低频向高频扫描，找到第一个 mag <= targetMag 的点
+        let fLower = null;
+        for (let i = 0; i < freqs.length; i++) {
+            if (mags[i] <= targetMag) {
+                // 为了更精确，进行线性插值
+                if (i > 0 && mags[i-1] > targetMag && mags[i] <= targetMag) {
+                    const ratio = (targetMag - mags[i-1]) / (mags[i] - mags[i-1]);
+                    if (ratio >= 0 && ratio <= 1) {
+                        fLower = freqs[i-1] + ratio * (freqs[i] - freqs[i-1]);
+                    } else {
+                        fLower = freqs[i];
+                    }
+                } else {
+                    fLower = freqs[i];
+                }
+                break;
+            }
+        }
+        
+        // 右侧截止频率: 从最高频向低频扫描，找到第一个 mag <= targetMag 的点
+        let fUpper = null;
+        for (let i = freqs.length - 1; i >= 0; i--) {
+            if (mags[i] <= targetMag) {
+                if (i < freqs.length - 1 && mags[i+1] > targetMag && mags[i] <= targetMag) {
+                    const ratio = (targetMag - mags[i+1]) / (mags[i] - mags[i+1]);
+                    if (ratio >= 0 && ratio <= 1) {
+                        fUpper = freqs[i+1] + ratio * (freqs[i] - freqs[i+1]);
+                    } else {
+                        fUpper = freqs[i];
+                    }
+                } else {
+                    fUpper = freqs[i];
+                }
+                break;
+            }
+        }
+        
+        // 确保 fLower < notchFreq < fUpper，如果不符合则尝试微调 (防止数值奇异)
+        if (fLower && fUpper && fLower > fUpper) {
+            const temp = fLower; fLower = fUpper; fUpper = temp;
+        }
+        // 边界有效性: 如果因为高Q值导致左右边界重合或无效，则基于陷波频率和Q值理论近似
+        if (!fLower || !fUpper || fLower >= fUpper) {
+            const { f0, Q } = computeNotchParams(R, L, C);
+            if (f0 > 0 && Q > 0) {
+                // 对于带阻滤波器，-3dB带宽近似为 f0 / Q，左右边界为 f0 ± BW/2
+                const bw = f0 / Q;
+                const approxLower = Math.max(F_MIN, f0 - bw/2);
+                const approxUpper = Math.min(F_MAX, f0 + bw/2);
+                if (!fLower) fLower = approxLower;
+                if (!fUpper) fUpper = approxUpper;
+                if (fLower >= fUpper) {
+                    fLower = f0 / Math.sqrt(2);
+                    fUpper = f0 * Math.sqrt(2);
+                }
+            } else {
+                fLower = null; fUpper = null;
+            }
+        }
+        
+        // 确保边界不超出仿真范围
+        if (fLower) fLower = Math.min(Math.max(F_MIN, fLower), fUpper || F_MAX);
+        if (fUpper) fUpper = Math.min(Math.max(fLower || F_MIN, fUpper), F_MAX);
+        
+        let bandwidth = (fLower && fUpper) ? (fUpper - fLower) : null;
+        return { fLower, fUpper, bandwidth };
+    }
+    
+    // 格式化频率显示 (小于1000Hz保留一位小数)
+    function formatFreqValue(freq) {
+        if (freq === null || !isFinite(freq)) return '—';
+        if (freq < 1000) return `${freq.toFixed(1)} Hz`;
+        if (freq < 1000000) return `${(freq/1000).toFixed(2)} kHz`;
+        return `${(freq/1000000).toFixed(2)} MHz`;
     }
     
     function getCurrentParams() {
@@ -370,6 +492,26 @@
         }
     }
     
+    // 更新通带上下限显示及带宽 (使用修正算法)
+    function updateBandDisplay(R, L, C) {
+        const { fLower, fUpper, bandwidth } = computeBandLimitsCorrected(R, L, C);
+        currentBandLimits = { fLower, fUpper };
+        if (fLower && fUpper && isFinite(fLower) && isFinite(fUpper)) {
+            fLowerDisplay.innerText = formatFreqValue(fLower);
+            fUpperDisplay.innerText = formatFreqValue(fUpper);
+            if (bandwidth !== null && isFinite(bandwidth)) {
+                if (bandwidth < 1000) bandwidthDisplay.innerText = `${bandwidth.toFixed(1)} Hz`;
+                else if (bandwidth < 1000000) bandwidthDisplay.innerText = `${(bandwidth/1000).toFixed(2)} kHz`;
+                else bandwidthDisplay.innerText = `${(bandwidth/1000000).toFixed(2)} MHz`;
+            } else bandwidthDisplay.innerText = '—';
+        } else {
+            fLowerDisplay.innerText = '—';
+            fUpperDisplay.innerText = '—';
+            bandwidthDisplay.innerText = '—';
+            currentBandLimits = { fLower: null, fUpper: null };
+        }
+    }
+    
     function updateMarkerValues(R, L, C, f_marker) {
         const { mag, phase } = computeNotchResponse(f_marker, R, L, C);
         voutPointSpan.innerText = `${mag.toFixed(3)} V`;
@@ -392,38 +534,74 @@
         return { freqs, magData, phaseData };
     }
     
-    function createMarkerLinePlugin(getMarkerFreq) {
+    // 组合插件：绘制紫色标记线（当前频率） + 绿色虚线（上下限通带边界）
+    function createCombinedMarkersPlugin(getMarkerFreq, getBandLimitsFunc) {
         return {
-            id: 'markerLine',
+            id: 'combinedMarkers',
             afterDraw(chart) {
                 const { ctx, chartArea: { left, right, top, bottom }, scales } = chart;
+                if (!scales.x) return;
+                
+                // 1. 绘制紫色标记线 (当前频率)
                 const markerFreq = getMarkerFreq();
-                if (!scales.x || !markerFreq) return;
-                const xPos = scales.x.getPixelForValue(markerFreq);
-                if (xPos >= left && xPos <= right) {
+                if (markerFreq && scales.x) {
+                    const xPos = scales.x.getPixelForValue(markerFreq);
+                    if (xPos >= left && xPos <= right) {
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.strokeStyle = '#a855f7';
+                        ctx.lineWidth = 2;
+                        ctx.setLineDash([6, 8]);
+                        ctx.moveTo(xPos, top);
+                        ctx.lineTo(xPos, bottom);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                        ctx.beginPath();
+                        ctx.arc(xPos, top + 12, 4, 0, 2 * Math.PI);
+                        ctx.fillStyle = '#a855f7';
+                        ctx.fill();
+                        ctx.fillStyle = 'white';
+                        ctx.font = 'bold 10px "Segoe UI"';
+                        ctx.fillText('●', xPos-2, top+14);
+                        ctx.fillStyle = '#581c87';
+                        ctx.font = '10px monospace';
+                        let freqText = '';
+                        if (markerFreq >= 1000000) freqText = (markerFreq/1000000).toFixed(1)+'M';
+                        else if (markerFreq >= 1000) freqText = (markerFreq/1000).toFixed(1)+'k';
+                        else freqText = markerFreq+' Hz';
+                        ctx.fillText(`${freqText}`, xPos+5, top+16);
+                        ctx.restore();
+                    }
+                }
+                
+                // 2. 绘制绿色虚线：通带上下限
+                const limits = getBandLimitsFunc();
+                if (limits && limits.fLower && limits.fUpper && scales.x) {
                     ctx.save();
-                    ctx.beginPath();
-                    ctx.strokeStyle = '#a855f7';
+                    ctx.setLineDash([8, 6]);
                     ctx.lineWidth = 2;
-                    ctx.setLineDash([6, 8]);
-                    ctx.moveTo(xPos, top);
-                    ctx.lineTo(xPos, bottom);
-                    ctx.stroke();
-                    ctx.setLineDash([]);
-                    ctx.beginPath();
-                    ctx.arc(xPos, top + 12, 4, 0, 2 * Math.PI);
-                    ctx.fillStyle = '#a855f7';
-                    ctx.fill();
-                    ctx.fillStyle = 'white';
-                    ctx.font = 'bold 10px "Segoe UI"';
-                    ctx.fillText('●', xPos-2, top+14);
-                    ctx.fillStyle = '#581c87';
-                    ctx.font = '10px monospace';
-                    let freqText = '';
-                    if (markerFreq >= 1000000) freqText = (markerFreq/1000000).toFixed(1)+'M';
-                    else if (markerFreq >= 1000) freqText = (markerFreq/1000).toFixed(1)+'k';
-                    else freqText = markerFreq+' Hz';
-                    ctx.fillText(`${freqText}`, xPos+5, top+16);
+                    ctx.strokeStyle = '#10b981';
+                    // 下限竖线
+                    const xLower = scales.x.getPixelForValue(limits.fLower);
+                    if (xLower >= left && xLower <= right) {
+                        ctx.beginPath();
+                        ctx.moveTo(xLower, top);
+                        ctx.lineTo(xLower, bottom);
+                        ctx.stroke();
+                        ctx.fillStyle = '#047857';
+                        ctx.font = 'bold 9px monospace';
+                        ctx.fillText(`↓${formatFreqValue(limits.fLower)}`, xLower+3, bottom-6);
+                    }
+                    // 上限竖线
+                    const xUpper = scales.x.getPixelForValue(limits.fUpper);
+                    if (xUpper >= left && xUpper <= right) {
+                        ctx.beginPath();
+                        ctx.moveTo(xUpper, top);
+                        ctx.lineTo(xUpper, bottom);
+                        ctx.stroke();
+                        ctx.fillStyle = '#047857';
+                        ctx.fillText(`↑${formatFreqValue(limits.fUpper)}`, xUpper+3, bottom-6);
+                    }
                     ctx.restore();
                 }
             }
@@ -432,6 +610,10 @@
     
     function getCurrentMarkerFreq() {
         return parseFloat(fPointSlider.value);
+    }
+    
+    function getCurrentBandLimits() {
+        return currentBandLimits;
     }
     
     function updateMagChart(R, L, C) {
@@ -498,13 +680,12 @@
             type: 'line',
             data: { datasets },
             options: options,
-            plugins: [createMarkerLinePlugin(getCurrentMarkerFreq)]
+            plugins: [createCombinedMarkersPlugin(getCurrentMarkerFreq, getCurrentBandLimits)]
         });
     }
     
     function updatePhaseChart(R, L, C) {
         const { phaseData } = buildMagPhaseData(R, L, C);
-        // 计算相位范围用于更好的Y轴显示
         let minPhase = 0, maxPhase = 0;
         phaseData.forEach(p => {
             if (p.y < minPhase) minPhase = p.y;
@@ -571,7 +752,7 @@
             type: 'line',
             data: { datasets },
             options: options,
-            plugins: [createMarkerLinePlugin(getCurrentMarkerFreq)]
+            plugins: [createCombinedMarkersPlugin(getCurrentMarkerFreq, getCurrentBandLimits)]
         });
     }
     
@@ -579,6 +760,7 @@
         const { R, L, C, f_marker } = getCurrentParams();
         updateParameterDisplays(R, L, C);
         updateCharDisplays(R, L, C);
+        updateBandDisplay(R, L, C);
         updateMarkerValues(R, L, C, f_marker);
         updateMagChart(R, L, C);
         updatePhaseChart(R, L, C);
@@ -589,31 +771,14 @@
         if (L <= 0 || C <= 0) return;
         const { f0 } = computeNotchParams(R, L, C);
         if (!isFinite(f0) || f0 <= 0) return;
-        
-        const MIN_F_MARKER = 1;
-        const MAX_F_MARKER = 1000000;
-        let targetFreq = f0;
-        let outOfRange = false;
-        if (targetFreq < MIN_F_MARKER) {
-            targetFreq = MIN_F_MARKER;
-            outOfRange = true;
-        } else if (targetFreq > MAX_F_MARKER) {
-            targetFreq = MAX_F_MARKER;
-            outOfRange = true;
-        }
+        let targetFreq = Math.min(F_MAX, Math.max(F_MIN, f0));
         targetFreq = Math.round(targetFreq);
-        targetFreq = Math.min(MAX_F_MARKER, Math.max(MIN_F_MARKER, targetFreq));
-        
         fPointSlider.value = targetFreq;
-        
-        if (outOfRange) {
-            console.log(`陷波频率 ${f0.toFixed(1)} Hz 超出标记范围 (1~1e6 Hz)，已设为边界值`);
-            const btn = document.getElementById('jumpToF0Btn');
-            const originalTitle = btn.getAttribute('title') || '';
-            btn.setAttribute('title', `陷波频率${f0.toFixed(1)}Hz超出范围，已标记边界`);
-            setTimeout(() => btn.setAttribute('title', originalTitle), 1500);
-        }
         refreshAll();
+    }
+    
+    function markBandCallback() {
+        refreshAll();  // 重新计算并绘制绿色虚线
     }
     
     // 事件绑定
@@ -621,14 +786,14 @@
     lSlider.addEventListener('input', refreshAll);
     cSlider.addEventListener('input', refreshAll);
     fPointSlider.addEventListener('input', refreshAll);
-    
-    const jumpBtn = document.getElementById('jumpToF0Btn');
-    if (jumpBtn) {
-        jumpBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            jumpToNotchFrequency();
-        });
-    }
+    document.getElementById('jumpToF0Btn').addEventListener('click', (e) => {
+        e.preventDefault();
+        jumpToNotchFrequency();
+    });
+    document.getElementById('markBandBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        markBandCallback();
+    });
     
     window.addEventListener('resize', () => {
         if (magChartInstance) magChartInstance.resize();
@@ -650,7 +815,7 @@
         }
     });
     
-    console.log('RLC带阻滤波器仿真已启动 | 幅频 + 相频实时更新 | 紫色标记线范围1Hz~1MHz');
+    console.log('RLC带阻滤波器仿真 | 通频带边界基于-3dB增益正确计算 | 紫色标记频率 | 绿色通带边界');
 </script>
 </body>
 </html>
