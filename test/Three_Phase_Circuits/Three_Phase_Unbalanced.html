@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>三相不平衡负载 · 中性点位移与中性线电流</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #2563eb;
+            transform: scale(1.15);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- 返回主页 -->
+    <div class="flex justify-start mb-4">
+        <a href="../index.html"
+           class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            返回主页
+        </a>
+    </div>
+
+    <!-- 标题区 -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            三相不平衡负载 · 中性点位移与中性线电流
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            三相四线制中一相负载变化，展示中性点位移、中性线电流变化。<br>
+            电压/电流相量图实时更新，直观呈现不平衡效应。
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- 左侧控制面板 -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- 负载参数卡片 -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    三相负载参数
+                </h3>
+
+                <!-- A相负载 -->
+                <div class="mb-4 p-3 bg-red-50 rounded-xl border border-red-100">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label class="text-red-700">A相负载 \(Z_A\)</label>
+                        <span class="text-red-600 font-mono" id="za_display">50 Ω</span>
+                    </div>
+                    <input type="range" id="za_slider" min="10" max="200" step="1" value="50" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Ω</span><span>200 Ω</span>
+                    </div>
+                </div>
+
+                <!-- B相负载 -->
+                <div class="mb-4 p-3 bg-green-50 rounded-xl border border-green-100">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label class="text-green-700">B相负载 \(Z_B\)</label>
+                        <span class="text-green-600 font-mono" id="zb_display">50 Ω</span>
+                    </div>
+                    <input type="range" id="zb_slider" min="10" max="200" step="1" value="50" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Ω</span><span>200 Ω</span>
+                    </div>
+                </div>
+
+                <!-- C相负载 -->
+                <div class="mb-4 p-3 bg-blue-50 rounded-xl border border-blue-100">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label class="text-blue-700">C相负载 \(Z_C\)</label>
+                        <span class="text-blue-600 font-mono" id="zc_display">50 Ω</span>
+                    </div>
+                    <input type="range" id="zc_slider" min="10" max="200" step="1" value="50" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Ω</span><span>200 Ω</span>
+                    </div>
+                </div>
+
+                <!-- A相功率因数角 -->
+                <div class="mb-3 pt-2 border-t border-slate-100">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>A相功率因数角 \(\varphi_A\)</label>
+                        <span class="text-blue-600 font-mono" id="phia_display">0°</span>
+                    </div>
+                    <input type="range" id="phia_slider" min="-90" max="90" step="5" value="0" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>-90° (容性)</span><span>90° (感性)</span>
+                    </div>
+                </div>
+
+                <!-- 固定参数 -->
+                <div class="mt-4 p-3 bg-slate-50 rounded-xl">
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-slate-500">相电压 \(V_{\text{phase}}\)</span>
+                        <span class="font-mono font-bold text-slate-700">220 V (RMS)</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-500">频率 \(f\)</span>
+                        <span class="font-mono font-bold text-slate-700">50 Hz</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 电流显示卡片 -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-amber-500 rounded-full"></span>
+                    三相电流
+                </h3>
+                <div class="grid grid-cols-3 gap-2 text-center text-sm">
+                    <div class="bg-red-50 p-2 rounded-xl">
+                        <div class="text-xs text-red-600 font-semibold">\(I_A\)</div>
+                        <div class="font-bold text-red-600 font-mono" id="ia_display">4.40 A</div>
+                        <div class="text-xs text-red-400" id="ia_angle">0°</div>
+                    </div>
+                    <div class="bg-green-50 p-2 rounded-xl">
+                        <div class="text-xs text-green-600 font-semibold">\(I_B\)</div>
+                        <div class="font-bold text-green-600 font-mono" id="ib_display">4.40 A</div>
+                        <div class="text-xs text-green-400" id="ib_angle">-120°</div>
+                    </div>
+                    <div class="bg-blue-50 p-2 rounded-xl">
+                        <div class="text-xs text-blue-600 font-semibold">\(I_C\)</div>
+                        <div class="font-bold text-blue-600 font-mono" id="ic_display">4.40 A</div>
+                        <div class="text-xs text-blue-400" id="ic_angle">120°</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 中性点与中性线卡片 -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-purple-500 rounded-full"></span>
+                    中性点分析
+                </h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between p-2 bg-purple-50 rounded-lg">
+                        <span class="text-slate-600">中性点位移电压 \(V_{NN'}\)</span>
+                        <span class="font-mono font-bold text-purple-700" id="vnn_display">0.00 V</span>
+                    </div>
+                    <div class="flex justify-between p-2 bg-purple-50 rounded-lg">
+                        <span class="text-slate-600">\(V_{NN'}\) 角度</span>
+                        <span class="font-mono font-bold text-purple-700" id="vnn_angle">0°</span>
+                    </div>
+                    <div class="flex justify-between p-2 bg-purple-50 rounded-lg">
+                        <span class="text-slate-600">中性线电流 \(I_N\)</span>
+                        <span class="font-mono font-bold text-purple-700" id="in_mag">0.00 A</span>
+                    </div>
+                    <div class="flex justify-between p-2 bg-purple-50 rounded-lg">
+                        <span class="text-slate-600">\(I_N\) 角度</span>
+                        <span class="font-mono font-bold text-purple-700" id="in_angle">--</span>
+                    </div>
+                    <p class="text-xs text-slate-400 text-center mt-2">
+                        \(V_{NN'}\) 为无中性线时的中性点位移电压(计算值)
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧图形区 -->
+        <div class="lg:col-span-8 space-y-5">
+            <!-- 相量图 -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="flex flex-wrap justify-between items-center mb-2">
+                    <h3 class="font-bold text-slate-800">电压/电流相量图</h3>
+                    <div class="flex flex-wrap gap-3 text-xs">
+                        <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-red-500 inline-block rounded" style="height:3px;"></span>V_A</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-green-500 inline-block rounded" style="height:3px;"></span>V_B</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-blue-500 inline-block rounded" style="height:3px;"></span>V_C</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-orange-500 inline-block rounded"></span>I_A</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-lime-500 inline-block rounded"></span>I_B</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-cyan-500 inline-block rounded"></span>I_C</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-purple-500 inline-block rounded" style="height:3px;"></span>I_N</span>
+                    </div>
+                </div>
+                <div class="relative" style="height: 440px;">
+                    <canvas id="phasorChart" width="700" height="440" style="width:100%; height:100%;"></canvas>
+                </div>
+                <p class="text-xs text-slate-400 text-center mt-2">
+                    箭头长度表示有效值大小，方向表示相位角。V_NN' 为紫色点线。
+                </p>
+            </div>
+
+            <!-- 波形图 -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="w-3 h-3 bg-blue-400 rounded-full"></span>
+                    <h3 class="font-bold text-slate-800 text-sm">电压与中性线电流波形</h3>
+                </div>
+                <div class="relative" style="height: 280px;">
+                    <canvas id="waveformChart" width="700" height="280" style="width:100%; height:100%;"></canvas>
+                </div>
+                <div class="flex flex-wrap justify-center gap-3 mt-2 text-xs">
+                    <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-red-400 inline-block rounded"></span>V_A</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-green-400 inline-block rounded"></span>V_B</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-blue-400 inline-block rounded"></span>V_C</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-orange-400 inline-block rounded"></span>I_A</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-purple-400 inline-block rounded" style="height:2.5px;"></span>I_N</span>
+                </div>
+            </div>
+
+            <!-- 底部说明卡片 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 card-hover">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">理论依据</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        三相四线制中，中性线电流 \(I_N = I_A + I_B + I_C\) (相量和)。<br>
+                        负载平衡时 \(I_N = 0\)；不平衡时 \(I_N \neq 0\)。<br>
+                        若无中性线(三相三线制)，中性点位移电压为：<br>
+                        \(V_{NN'} = \frac{V_A Y_A + V_B Y_B + V_C Y_C}{Y_A + Y_B + Y_C}\)
+                        其中 \(Y = 1/Z\) 为导纳。
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 card-hover">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">特性解读</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        中性线的作用是强制负载中性点电位等于电源中性点，使各相负载电压保持对称。<br>
+                        若中性线断开，不平衡将导致各相负载电压严重偏移(部分相过电压、部分相欠电压)。<br>
+                        调整A相负载观察：相量图中I_A变化、I_N出现、V_NN' 偏离原点。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // === 常量 ===
+    const Vp_rms = 220;
+    const f = 50;
+    const SQRT2 = Math.sqrt(2);
+    const SQRT3 = Math.sqrt(3);
+    const DEG120 = (120 * Math.PI) / 180;
+    const DEG90 = (90 * Math.PI) / 180;
+
+    // 电源电压相量 (RMS)
+    const VA_phasor_mag = Vp_rms;
+    const VA_phasor_ang = 0;
+    const VB_phasor_mag = Vp_rms;
+    const VB_phasor_ang = -120 * Math.PI / 180;
+    const VC_phasor_mag = Vp_rms;
+    const VC_phasor_ang = 120 * Math.PI / 180;
+
+    // === DOM 元素 ===
+    const zaSlider = document.getElementById('za_slider');
+    const zbSlider = document.getElementById('zb_slider');
+    const zcSlider = document.getElementById('zc_slider');
+    const phiaSlider = document.getElementById('phia_slider');
+
+    const zaDisplay = document.getElementById('za_display');
+    const zbDisplay = document.getElementById('zb_display');
+    const zcDisplay = document.getElementById('zc_display');
+    const phiaDisplay = document.getElementById('phia_display');
+
+    const iaDisplay = document.getElementById('ia_display');
+    const ibDisplay = document.getElementById('ib_display');
+    const icDisplay = document.getElementById('ic_display');
+    const iaAngle = document.getElementById('ia_angle');
+    const ibAngle = document.getElementById('ib_angle');
+    const icAngle = document.getElementById('ic_angle');
+
+    const vnnDisplay = document.getElementById('vnn_display');
+    const vnnAngle = document.getElementById('vnn_angle');
+    const inMag = document.getElementById('in_mag');
+    const inAngle = document.getElementById('in_angle');
+
+    let phasorChart = null;
+    let waveformChart = null;
+
+    function getParams() {
+        const Za = parseFloat(zaSlider.value);
+        const Zb = parseFloat(zbSlider.value);
+        const Zc = parseFloat(zcSlider.value);
+        const phia_deg = parseFloat(phiaSlider.value);
+        return { Za, Zb, Zc, phia_deg };
+    }
+
+    // 复数运算辅助
+    function complexAdd(a_re, a_im, b_re, b_im) {
+        return { re: a_re + b_re, im: a_im + b_im };
+    }
+    function complexDiv(a_re, a_im, b_re, b_im) {
+        const den = b_re * b_re + b_im * b_im;
+        return { re: (a_re * b_re + a_im * b_im) / den, im: (a_im * b_re - a_re * b_im) / den };
+    }
+    function complexMul(a_re, a_im, b_re, b_im) {
+        return { re: a_re * b_re - a_im * b_im, im: a_re * b_im + a_im * b_re };
+    }
+    function polarToRect(mag, ang_rad) {
+        return { re: mag * Math.cos(ang_rad), im: mag * Math.sin(ang_rad) };
+    }
+    function rectToPolar(re, im) {
+        const mag = Math.sqrt(re * re + im * im);
+        const ang = Math.atan2(im, re);
+        return { mag, ang };
+    }
+
+    function computeAll() {
+        const { Za, Zb, Zc, phia_deg } = getParams();
+        const phia_rad = (phia_deg * Math.PI) / 180;
+
+        // A相阻抗 (复数): Z_A = Z_a * (cosφ_a + j sinφ_a) 或直接用极坐标
+        // Source voltages (complex)
+        const vA = polarToRect(VA_phasor_mag, VA_phasor_ang);
+        const vB = polarToRect(VB_phasor_mag, VB_phasor_ang);
+        const vC = polarToRect(VC_phasor_mag, VC_phasor_ang);
+
+        // Load admittances
+        const Ya_mag = 1 / Za;
+        const Ya_re = Ya_mag * Math.cos(-phia_rad);  // Y = 1/Z = (1/|Z|)∠(-φ)
+        const Ya_im = Ya_mag * Math.sin(-phia_rad);
+        const Yb_mag = 1 / Zb;
+        const Yb_re = Yb_mag;
+        const Yb_im = 0;
+        const Yc_mag = 1 / Zc;
+        const Yc_re = Yc_mag;
+        const Yc_im = 0;
+
+        // Neutral displacement voltage (Millman, 3-wire case without neutral)
+        // V_NN' = (V_A*Y_A + V_B*Y_B + V_C*Y_C) / (Y_A + Y_B + Y_C)
+        const num_re = vA.re * Ya_re - vA.im * Ya_im + vB.re * Yb_re + vC.re * Yc_re;
+        const num_im = vA.re * Ya_im + vA.im * Ya_re + vB.im * Yb_re + vC.im * Yc_re;
+        const den_re = Ya_re + Yb_re + Yc_re;
+        const den_im = Ya_im + Yb_im + Yc_im;
+        const vnn = complexDiv(num_re, num_im, den_re, den_im);
+        const vnn_polar = rectToPolar(vnn.re, vnn.im);
+
+        // Phase currents (4-wire: I = V_source / Z_load)
+        // I_A = V_A / Z_A = V_A * Y_A
+        const iA = complexMul(vA.re, vA.im, Ya_re, Ya_im);
+        const iB = complexMul(vB.re, vB.im, Yb_re, Yb_im);
+        const iC = complexMul(vC.re, vC.im, Yc_re, Yc_im);
+        const iA_polar = rectToPolar(iA.re, iA.im);
+        const iB_polar = rectToPolar(iB.re, iB.im);
+        const iC_polar = rectToPolar(iC.re, iC.im);
+
+        // Neutral current I_N = I_A + I_B + I_C
+        const iN_re = iA.re + iB.re + iC.re;
+        const iN_im = iA.im + iB.im + iC.im;
+        const iN_polar = rectToPolar(iN_re, iN_im);
+
+        return {
+            Za, Zb, Zc, phia_deg, phia_rad,
+            vnn: vnn_polar,
+            iA: iA_polar, iB: iB_polar, iC: iC_polar,
+            iN: iN_polar
+        };
+    }
+
+    function updateDisplays() {
+        const { Za, Zb, Zc, phia_deg, vnn, iA, iB, iC, iN } = computeAll();
+
+        zaDisplay.innerText = Za + ' \u03A9';
+        zbDisplay.innerText = Zb + ' \u03A9';
+        zcDisplay.innerText = Zc + ' \u03A9';
+        phiaDisplay.innerText = phia_deg + '\u00B0';
+
+        const toDeg = r => ((r * 180 / Math.PI) % 360 + 360) % 360;
+
+        iaDisplay.innerText = iA.mag.toFixed(2) + ' A';
+        iaAngle.innerText = toDeg(iA.ang).toFixed(1) + '\u00B0';
+        ibDisplay.innerText = iB.mag.toFixed(2) + ' A';
+        ibAngle.innerText = toDeg(iB.ang).toFixed(1) + '\u00B0';
+        icDisplay.innerText = iC.mag.toFixed(2) + ' A';
+        icAngle.innerText = toDeg(iC.ang).toFixed(1) + '\u00B0';
+
+        vnnDisplay.innerText = vnn.mag.toFixed(2) + ' V';
+        vnnAngle.innerText = toDeg(vnn.ang).toFixed(1) + '\u00B0';
+        inMag.innerText = iN.mag.toFixed(2) + ' A';
+        if (iN.mag > 0.001) {
+            inAngle.innerText = toDeg(iN.ang).toFixed(1) + '\u00B0';
+        } else {
+            inAngle.innerText = '--';
+        }
+    }
+
+    // === 相量图 ===
+    function updatePhasorChart() {
+        const { vnn, iA, iB, iC, iN } = computeAll();
+
+        const vA_tip = polarToRect(VA_phasor_mag, VA_phasor_ang);
+        const vB_tip = polarToRect(VB_phasor_mag, VB_phasor_ang);
+        const vC_tip = polarToRect(VC_phasor_mag, VC_phasor_ang);
+        const iA_tip = polarToRect(iA.mag, iA.ang);
+        const iB_tip = polarToRect(iB.mag, iB.ang);
+        const iC_tip = polarToRect(iC.mag, iC.ang);
+        const iN_tip = polarToRect(iN.mag, iN.ang);
+        const vnn_tip = { re: vnn.re, im: vnn.im };
+
+        // Dataset definitions: each is a single scatter point (the tip)
+        const datasets = [
+            { label: 'V_A', data: [{ x: vA_tip.re, y: vA_tip.im }], backgroundColor: '#ef4444', borderColor: '#ef4444', pointRadius: 0, showLine: false, order: 2 },
+            { label: 'V_B', data: [{ x: vB_tip.re, y: vB_tip.im }], backgroundColor: '#22c55e', borderColor: '#22c55e', pointRadius: 0, showLine: false, order: 2 },
+            { label: 'V_C', data: [{ x: vC_tip.re, y: vC_tip.im }], backgroundColor: '#3b82f6', borderColor: '#3b82f6', pointRadius: 0, showLine: false, order: 2 },
+            { label: 'I_A', data: [{ x: iA_tip.re, y: iA_tip.im }], backgroundColor: '#f97316', borderColor: '#f97316', pointRadius: 0, showLine: false, order: 1 },
+            { label: 'I_B', data: [{ x: iB_tip.re, y: iB_tip.im }], backgroundColor: '#84cc16', borderColor: '#84cc16', pointRadius: 0, showLine: false, order: 1 },
+            { label: 'I_C', data: [{ x: iC_tip.re, y: iC_tip.im }], backgroundColor: '#06b6d4', borderColor: '#06b6d4', pointRadius: 0, showLine: false, order: 1 },
+            { label: 'I_N', data: [{ x: iN_tip.re, y: iN_tip.im }], backgroundColor: '#a855f7', borderColor: '#a855f7', pointRadius: 0, showLine: false, order: 0 },
+            { label: 'V_NN\'', data: [{ x: vnn_tip.re, y: vnn_tip.im }], backgroundColor: '#a855f7', borderColor: '#a855f7', pointRadius: 0, showLine: false, order: 0 }
+        ];
+
+        const maxVal = Math.max(VA_phasor_mag * 1.3, iA.mag * 1.3, iB.mag * 1.3, iC.mag * 1.3, iN.mag * 1.3, vnn.mag * 1.3, 50);
+
+        // Arrow drawing plugin
+        const arrowPlugin = {
+            id: 'phasorArrows',
+            beforeDatasetsDraw(chart) {
+                const { ctx, chartArea: { left, right, top, bottom }, scales: { x: xScale, y: yScale } } = chart;
+                if (!xScale || !yScale) return;
+                const cx = xScale.getPixelForValue(0);
+                const cy = yScale.getPixelForValue(0);
+
+                function drawArrow(tipRe, tipIm, color, lineWidth, dashed) {
+                    const tx = xScale.getPixelForValue(tipRe);
+                    const ty = yScale.getPixelForValue(tipIm);
+                    if (isNaN(tx) || isNaN(ty)) return;
+
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = lineWidth;
+                    ctx.setLineDash(dashed || []);
+                    ctx.moveTo(cx, cy);
+                    ctx.lineTo(tx, ty);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    // Arrowhead
+                    const angle = Math.atan2(cy - ty, tx - cx);  // from center to tip
+                    const headLen = 10;
+                    ctx.beginPath();
+                    ctx.fillStyle = color;
+                    ctx.moveTo(tx, ty);
+                    ctx.lineTo(tx - headLen * Math.cos(angle - Math.PI / 6), ty + headLen * Math.sin(angle - Math.PI / 6));
+                    ctx.lineTo(tx - headLen * Math.cos(angle + Math.PI / 6), ty + headLen * Math.sin(angle + Math.PI / 6));
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                // Voltage phasors (thick)
+                drawArrow(vA_tip.re, vA_tip.im, '#ef4444', 3, []);
+                drawArrow(vB_tip.re, vB_tip.im, '#22c55e', 3, []);
+                drawArrow(vC_tip.re, vC_tip.im, '#3b82f6', 3, []);
+
+                // Current phasors (medium)
+                drawArrow(iA_tip.re, iA_tip.im, '#f97316', 2, []);
+                drawArrow(iB_tip.re, iB_tip.im, '#84cc16', 2, []);
+                drawArrow(iC_tip.re, iC_tip.im, '#06b6d4', 2, []);
+
+                // Neutral current (thick purple)
+                if (iN.mag > 0.01) {
+                    drawArrow(iN_tip.re, iN_tip.im, '#a855f7', 3.5, []);
+                }
+
+                // V_NN' (dashed purple)
+                if (vnn.mag > 0.01) {
+                    drawArrow(vnn_tip.re, vnn_tip.im, '#a855f7', 2, [6, 4]);
+                }
+            },
+            afterDatasetsDraw(chart) {
+                const { ctx, chartArea, scales: { x: xScale, y: yScale } } = chart;
+                if (!xScale || !yScale) return;
+
+                function drawLabel(tipRe, tipIm, text, color, offsetX, offsetY) {
+                    const tx = xScale.getPixelForValue(tipRe);
+                    const ty = yScale.getPixelForValue(tipIm);
+                    if (isNaN(tx) || isNaN(ty)) return;
+                    ctx.save();
+                    ctx.font = 'bold 11px "Segoe UI", sans-serif';
+                    ctx.fillStyle = color;
+                    ctx.fillText(text, tx + (offsetX || 6), ty + (offsetY || -6));
+                    ctx.restore();
+                }
+
+                const toDeg = r => ((r * 180 / Math.PI) % 360 + 360) % 360;
+
+                drawLabel(vA_tip.re, vA_tip.im, 'V_A', '#ef4444', 6, -6);
+                drawLabel(vB_tip.re, vB_tip.im, 'V_B', '#22c55e', 6, -6);
+                drawLabel(vC_tip.re, vC_tip.im, 'V_C', '#3b82f6', -20, 12);
+
+                drawLabel(iA_tip.re, iA_tip.im, 'I_A ' + iA.mag.toFixed(1) + 'A', '#f97316', 6, 6);
+                drawLabel(iB_tip.re, iB_tip.im, 'I_B ' + iB.mag.toFixed(1) + 'A', '#84cc16', 6, 6);
+                drawLabel(iC_tip.re, iC_tip.im, 'I_C ' + iC.mag.toFixed(1) + 'A', '#06b6d4', -25, -6);
+
+                if (iN.mag > 0.01) {
+                    drawLabel(iN_tip.re, iN_tip.im, 'I_N ' + iN.mag.toFixed(1) + 'A', '#a855f7', 6, 6);
+                }
+                if (vnn.mag > 0.01) {
+                    const tx = xScale.getPixelForValue(vnn_tip.re);
+                    const ty = yScale.getPixelForValue(vnn_tip.im);
+                    if (!isNaN(tx) && !isNaN(ty)) {
+                        ctx.save();
+                        ctx.font = 'bold 11px "Segoe UI", sans-serif';
+                        ctx.fillStyle = '#a855f7';
+                        ctx.fillText('N\'', tx + 8, ty + 4);
+                        ctx.restore();
+                    }
+                }
+            }
+        };
+
+        const options = {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                tooltip: { enabled: false },
+                legend: { display: false }
+            },
+            scales: {
+                x: {
+                    type: 'linear',
+                    min: -maxVal,
+                    max: maxVal,
+                    title: { display: true, text: '实部 (V / A)', font: { weight: 'bold', size: 12 } },
+                    ticks: { stepSize: Math.ceil(maxVal / 100) * 20, font: { size: 10 } },
+                    grid: { color: '#eef2ff' },
+                    position: 'center'
+                },
+                y: {
+                    type: 'linear',
+                    min: -maxVal,
+                    max: maxVal,
+                    title: { display: true, text: '虚部 (V / A)', font: { weight: 'bold', size: 12 } },
+                    ticks: { stepSize: Math.ceil(maxVal / 100) * 20, font: { size: 10 } },
+                    grid: { color: '#eef2ff' },
+                    position: 'center'
+                }
+            }
+        };
+
+        if (phasorChart) phasorChart.destroy();
+        phasorChart = new Chart(document.getElementById('phasorChart'), {
+            type: 'scatter',
+            data: { datasets },
+            options: options,
+            plugins: [arrowPlugin]
+        });
+    }
+
+    // === 波形图 ===
+    function updateWaveformChart() {
+        const { Za, Zb, Zc, phia_deg, phia_rad, iA, iB, iC, iN } = computeAll();
+
+        const T = 1 / f;
+        const duration = 1.5 * T;
+        const points = 600;
+        const omega = 2 * Math.PI * f;
+        const Vm = Vp_rms * SQRT2;
+
+        const times = [];
+        const dt = duration / (points - 1);
+        for (let i = 0; i < points; i++) times.push(i * dt);
+
+        // Source voltage waveforms (balanced)
+        const vA_wave = times.map(t => Vm * Math.sin(omega * t));
+        const vB_wave = times.map(t => Vm * Math.sin(omega * t - DEG120));
+        const vC_wave = times.map(t => Vm * Math.sin(omega * t + DEG120));
+
+        // Current waveforms
+        const Ia_m = iA.mag * SQRT2;
+        const Ib_m = iB.mag * SQRT2;
+        const Ic_m = iC.mag * SQRT2;
+        const In_m = iN.mag * SQRT2;
+
+        const iA_wave = times.map(t => Ia_m * Math.sin(omega * t + iA.ang));
+        const iN_wave = times.map(t => In_m * Math.sin(omega * t + iN.ang));
+
+        const pts_VA = times.map((t, i) => ({ x: t, y: vA_wave[i] }));
+        const pts_VB = times.map((t, i) => ({ x: t, y: vB_wave[i] }));
+        const pts_VC = times.map((t, i) => ({ x: t, y: vC_wave[i] }));
+        const pts_IA = times.map((t, i) => ({ x: t, y: iA_wave[i] }));
+        const pts_IN = times.map((t, i) => ({ x: t, y: iN_wave[i] }));
+
+        const yMax = Math.max(Vm, Ia_m, In_m) * 1.2;
+
+        const data = {
+            datasets: [
+                { label: 'V_A', data: pts_VA, borderColor: '#ef4444', borderWidth: 2, pointRadius: 0, tension: 0.2, yAxisID: 'y' },
+                { label: 'V_B', data: pts_VB, borderColor: '#22c55e', borderWidth: 2, pointRadius: 0, tension: 0.2, yAxisID: 'y' },
+                { label: 'V_C', data: pts_VC, borderColor: '#3b82f6', borderWidth: 2, pointRadius: 0, tension: 0.2, yAxisID: 'y' },
+                { label: 'I_A', data: pts_IA, borderColor: '#f97316', borderWidth: 2, pointRadius: 0, tension: 0.2, yAxisID: 'y' },
+                { label: 'I_N', data: pts_IN, borderColor: '#a855f7', borderWidth: 2.5, borderDash: [6, 3], pointRadius: 0, tension: 0.2, yAxisID: 'y' }
+            ]
+        };
+
+        const options = {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            const label = ctx.dataset.label || '';
+                            const unit = label.startsWith('V') ? ' V' : ' A';
+                            return label + ': ' + ctx.raw.y.toFixed(1) + unit + '  (@ t=' + ctx.raw.x.toFixed(4) + ' s)';
+                        }
+                    },
+                    backgroundColor: 'rgba(0,0,0,0.75)',
+                    titleColor: '#f1f5f9',
+                    bodyColor: '#e2e8f0'
+                },
+                legend: { display: false }
+            },
+            scales: {
+                x: {
+                    type: 'linear',
+                    title: { display: true, text: '时间 t (s)', font: { size: 11, weight: 'bold' } },
+                    min: 0, max: duration,
+                    ticks: { callback: v => v.toFixed(3) + 's', maxTicksLimit: 6, font: { size: 10 } },
+                    grid: { color: '#eef2ff' }
+                },
+                y: {
+                    title: { display: true, text: '电压 (V) / 电流 (A)', font: { size: 11, weight: 'bold' } },
+                    min: -yMax, max: yMax,
+                    ticks: { callback: v => v.toFixed(0), maxTicksLimit: 6, font: { size: 10 } },
+                    grid: { color: '#eef2ff' }
+                }
+            },
+            elements: { point: { radius: 0, hitRadius: 6, hoverRadius: 2 }, line: { tension: 0.2 } }
+        };
+
+        if (waveformChart) waveformChart.destroy();
+        waveformChart = new Chart(document.getElementById('waveformChart'), {
+            type: 'line',
+            data: data,
+            options: options
+        });
+    }
+
+    function refreshAll() {
+        updateDisplays();
+        updatePhasorChart();
+        updateWaveformChart();
+    }
+
+    zaSlider.addEventListener('input', refreshAll);
+    zbSlider.addEventListener('input', refreshAll);
+    zcSlider.addEventListener('input', refreshAll);
+    phiaSlider.addEventListener('input', refreshAll);
+
+    window.addEventListener('resize', () => {
+        if (phasorChart) phasorChart.resize();
+        if (waveformChart) waveformChart.resize();
+    });
+
+    // 初始化
+    refreshAll();
+
+    // KaTeX 渲染
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    { left: '\\[', right: '\\]', display: true },
+                    { left: '\\(', right: '\\)', display: false }
+                ],
+                throwOnError: false
+            });
+        }
+    });
+</script>
+</body>
+</html>
