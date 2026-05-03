@@ -432,7 +432,134 @@
         refreshAll();
     }
     
-    // 绘制或更新图表 (Chart.js)
+    // 创建图表配置 (仅在首次初始化时使用)
+    function createChartConfig() {
+        return {
+            type: 'line',
+            data: { datasets: [] },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) label += ': ';
+                                label += context.raw.y.toFixed(3) + ' V';
+                                label += `  @ ${context.raw.x.toFixed(1)} Hz`;
+                                return label;
+                            }
+                        },
+                        backgroundColor: 'rgba(0,0,0,0.7)',
+                        titleColor: '#f1f5f9',
+                        bodyColor: '#e2e8f0'
+                    },
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            boxWidth: 8,
+                            font: { size: 12 }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'logarithmic',
+                        title: {
+                            display: true,
+                            text: '频率 f (Hz)',
+                            font: { weight: 'bold', size: 13 }
+                        },
+                        ticks: {
+                            callback: function(val, index, ticks) {
+                                if (val < 1) return '';
+                                if (val >= 1000) return (val/1000).toFixed(0) + 'k';
+                                return val;
+                            },
+                            autoSkip: true,
+                            maxTicksLimit: 10
+                        },
+                        min: F_MIN,
+                        max: F_MAX,
+                        grid: { color: '#eef2ff', tickLength: 6 }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: '电压幅值 (V)',
+                            font: { weight: 'bold', size: 13 }
+                        },
+                        min: 0,
+                        ticks: { stepSize: 0.5, callback: (val) => val.toFixed(1) + ' V' },
+                        grid: { color: '#eef2ff' }
+                    }
+                },
+                elements: {
+                    point: { radius: 0, hitRadius: 8, hoverRadius: 3 },
+                    line: { tension: 0.2, borderWidth: 2.5 }
+                },
+                // 动画禁用，避免滑块拖动时卡顿
+                animation: false,
+                transitions: {
+                    active: { animation: { duration: 0 } }
+                }
+            }
+        };
+    }
+    
+    // 自定义插件：绘制当前标记频率的垂直线 (增强体验)
+    const markerLinePlugin = {
+        id: 'markerLine',
+        afterDraw(chart) {
+            const { ctx, chartArea: { left, right, top, bottom }, scales } = chart;
+            const currentParams = getCurrentParams();
+            const f_marker_local = currentParams.f_marker;
+            if (!scales.x || !scales.y) return;
+            const xPos = scales.x.getPixelForValue(f_marker_local);
+            if (xPos >= left && xPos <= right) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.strokeStyle = '#a855f7';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([6, 8]);
+                ctx.moveTo(xPos, top);
+                ctx.lineTo(xPos, bottom);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                // 添加一个小圆圈标记
+                ctx.beginPath();
+                ctx.arc(xPos, top + 12, 4, 0, 2 * Math.PI);
+                ctx.fillStyle = '#a855f7';
+                ctx.fill();
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 10px "Segoe UI"';
+                ctx.fillText('●', xPos-2, top+14);
+                ctx.fillStyle = '#581c87';
+                ctx.font = '10px monospace';
+                let freqText = f_marker_local >= 1000 ? (f_marker_local/1000).toFixed(1)+'k' : f_marker_local+' Hz';
+                ctx.fillText(`${freqText}`, xPos+5, top+16);
+                ctx.restore();
+            }
+        }
+    };
+    
+    // 初始化图表 (仅执行一次)
+    function initChart() {
+        if (chartInstance) return; // 防止重复初始化
+        const config = createChartConfig();
+        chartInstance = new Chart(canvas, {
+            ...config,
+            plugins: [markerLinePlugin]
+        });
+    }
+    
+    // 更新图表数据 (刷新机制，不销毁重建)
     function updateChart() {
         const { R, L, C, f_marker } = getCurrentParams();
         
@@ -444,84 +571,19 @@
         // 构建数据
         const { urData, ulData, ucData } = buildDatasets(R, L, C);
         
-        // 配置图表选项 (对数 x 轴)
-        const options = {
-            responsive: true,
-            maintainAspectRatio: true,
-            interaction: {
-                mode: 'index',
-                intersect: false,
-            },
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) label += ': ';
-                            label += context.raw.y.toFixed(3) + ' V';
-                            label += `  @ ${context.raw.x.toFixed(1)} Hz`;
-                            return label;
-                        }
-                    },
-                    backgroundColor: 'rgba(0,0,0,0.7)',
-                    titleColor: '#f1f5f9',
-                    bodyColor: '#e2e8f0'
-                },
-                legend: {
-                    position: 'top',
-                    labels: {
-                        usePointStyle: true,
-                        boxWidth: 8,
-                        font: { size: 12 }
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    type: 'logarithmic',
-                    title: {
-                        display: true,
-                        text: '频率 f (Hz)',
-                        font: { weight: 'bold', size: 13 }
-                    },
-                    ticks: {
-                        callback: function(val, index, ticks) {
-                            if (val < 1) return '';
-                            if (val >= 1000) return (val/1000).toFixed(0) + 'k';
-                            return val;
-                        },
-                        autoSkip: true,
-                        maxTicksLimit: 10
-                    },
-                    min: F_MIN,
-                    max: F_MAX,
-                    grid: { color: '#eef2ff', tickLength: 6 }
-                },
-                y: {
-                    title: {
-                        display: true,
-                        text: '电压幅值 (V)',
-                        font: { weight: 'bold', size: 13 }
-                    },
-                    min: 0,
-                    ticks: { stepSize: 0.5, callback: (val) => val.toFixed(1) + ' V' },
-                    grid: { color: '#eef2ff' }
-                }
-            },
-            elements: {
-                point: { radius: 0, hitRadius: 8, hoverRadius: 3 },
-                line: { tension: 0.2, borderWidth: 2.5 }
-            }
-        };
-        
         // 动态调整 y 轴上限：根据实际数据最大电压值 (避免Q极大时削峰)
         let maxVoltage = 0;
         [...urData, ...ulData, ...ucData].forEach(p => { if (p.y > maxVoltage) maxVoltage = p.y; });
         let yMax = Math.min(5, Math.max(1.2, maxVoltage * 1.05));
         if (yMax < 0.8) yMax = 0.8;
-        options.scales.y.max = yMax;
         
-        const datasets = [
+        // 确保图表已初始化
+        if (!chartInstance) {
+            initChart();
+        }
+        
+        // 更新数据集 (不销毁重建)
+        chartInstance.data.datasets = [
             {
                 label: 'U_R (电阻)',
                 data: urData,
@@ -557,54 +619,11 @@
             }
         ];
         
-        // 自定义插件：绘制当前标记频率的垂直线 (增强体验)
-        const markerLinePlugin = {
-            id: 'markerLine',
-            afterDraw(chart) {
-                const { ctx, chartArea: { left, right, top, bottom }, scales } = chart;
-                const currentParams = getCurrentParams();
-                const f_marker_local = currentParams.f_marker;
-                if (!scales.x || !scales.y) return;
-                const xPos = scales.x.getPixelForValue(f_marker_local);
-                if (xPos >= left && xPos <= right) {
-                    ctx.save();
-                    ctx.beginPath();
-                    ctx.strokeStyle = '#a855f7';
-                    ctx.lineWidth = 2;
-                    ctx.setLineDash([6, 8]);
-                    ctx.moveTo(xPos, top);
-                    ctx.lineTo(xPos, bottom);
-                    ctx.stroke();
-                    ctx.setLineDash([]);
-                    // 添加一个小圆圈标记
-                    ctx.beginPath();
-                    ctx.arc(xPos, top + 12, 4, 0, 2 * Math.PI);
-                    ctx.fillStyle = '#a855f7';
-                    ctx.fill();
-                    ctx.fillStyle = 'white';
-                    ctx.font = 'bold 10px "Segoe UI"';
-                    ctx.fillText('●', xPos-2, top+14);
-                    ctx.fillStyle = '#581c87';
-                    ctx.font = '10px monospace';
-                    let freqText = f_marker_local >= 1000 ? (f_marker_local/1000).toFixed(1)+'k' : f_marker_local+' Hz';
-                    ctx.fillText(`${freqText}`, xPos+5, top+16);
-                    ctx.restore();
-                }
-            }
-        };
+        // 更新 y 轴上限
+        chartInstance.options.scales.y.max = yMax;
         
-        // 销毁旧图表实例
-        if (chartInstance) {
-            chartInstance.destroy();
-        }
-        
-        // 创建新图表，注册插件
-        chartInstance = new Chart(canvas, {
-            type: 'line',
-            data: { datasets },
-            options: options,
-            plugins: [markerLinePlugin]
-        });
+        // 调用 update() 刷新图表 (不带动画，更流畅)
+        chartInstance.update('none');
     }
     
     // 全局刷新 (滑块变动后调用)

@@ -622,66 +622,73 @@
         magData.forEach(p => { if (p.y > maxMag) maxMag = p.y; });
         const yMax = Math.min(1.2, Math.max(1.05, maxMag * 1.05));
         
-        const options = {
-            responsive: true,
-            maintainAspectRatio: true,
-            interaction: { mode: 'index', intersect: false },
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `输出电压: ${context.raw.y.toFixed(3)} V  @ ${context.raw.x.toFixed(1)} Hz`;
-                        }
-                    },
-                    backgroundColor: 'rgba(0,0,0,0.7)'
-                },
-                legend: { display: false }
-            },
-            scales: {
-                x: {
-                    type: 'logarithmic',
-                    title: { display: true, text: '频率 f (Hz)', font: { weight: 'bold', size: 12 } },
-                    ticks: {
-                        callback: (val) => {
-                            if (val >= 1000000) return (val/1000000).toFixed(0) + 'M';
-                            if (val >= 1000) return (val/1000).toFixed(0) + 'k';
-                            return val;
+        if (magChartInstance) {
+            // 刷新数据
+            magChartInstance.data.datasets[0].data = magData;
+            // 更新 Y 轴范围
+            magChartInstance.options.scales.y.max = yMax;
+            magChartInstance.update('none');
+        } else {
+            const options = {
+                responsive: true,
+                maintainAspectRatio: true,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `输出电压: ${context.raw.y.toFixed(3)} V  @ ${context.raw.x.toFixed(1)} Hz`;
+                            }
                         },
-                        autoSkip: true,
-                        maxTicksLimit: 8
+                        backgroundColor: 'rgba(0,0,0,0.7)'
                     },
-                    min: F_MIN,
-                    max: F_MAX,
-                    grid: { color: '#eef2ff' }
+                    legend: { display: false }
                 },
-                y: {
-                    title: { display: true, text: '输出电压幅值 (V)', font: { weight: 'bold', size: 12 } },
-                    min: 0,
-                    max: yMax,
-                    ticks: { stepSize: 0.2, callback: (val) => val.toFixed(1) + ' V' },
-                    grid: { color: '#eef2ff' }
-                }
-            },
-            elements: { point: { radius: 0, hitRadius: 6 }, line: { borderWidth: 2.5, tension: 0.2 } }
-        };
-        
-        const datasets = [{
-            label: '|H(f)| · Vin',
-            data: magData,
-            borderColor: '#ef4444',
-            backgroundColor: 'transparent',
-            borderWidth: 2.5,
-            pointRadius: 0,
-            fill: false
-        }];
-        
-        if (magChartInstance) magChartInstance.destroy();
-        magChartInstance = new Chart(magCanvas, {
-            type: 'line',
-            data: { datasets },
-            options: options,
-            plugins: [createCombinedMarkersPlugin(getCurrentMarkerFreq, getCurrentBandLimits)]
-        });
+                scales: {
+                    x: {
+                        type: 'logarithmic',
+                        title: { display: true, text: '频率 f (Hz)', font: { weight: 'bold', size: 12 } },
+                        ticks: {
+                            callback: (val) => {
+                                if (val >= 1000000) return (val/1000000).toFixed(0) + 'M';
+                                if (val >= 1000) return (val/1000).toFixed(0) + 'k';
+                                return val;
+                            },
+                            autoSkip: true,
+                            maxTicksLimit: 8
+                        },
+                        min: F_MIN,
+                        max: F_MAX,
+                        grid: { color: '#eef2ff' }
+                    },
+                    y: {
+                        title: { display: true, text: '输出电压幅值 (V)', font: { weight: 'bold', size: 12 } },
+                        min: 0,
+                        max: yMax,
+                        ticks: { stepSize: 0.2, callback: (val) => val.toFixed(1) + ' V' },
+                        grid: { color: '#eef2ff' }
+                    }
+                },
+                elements: { point: { radius: 0, hitRadius: 6 }, line: { borderWidth: 2.5, tension: 0.2 } }
+            };
+            
+            const datasets = [{
+                label: '|H(f)| · Vin',
+                data: magData,
+                borderColor: '#ef4444',
+                backgroundColor: 'transparent',
+                borderWidth: 2.5,
+                pointRadius: 0,
+                fill: false
+            }];
+            
+            magChartInstance = new Chart(magCanvas, {
+                type: 'line',
+                data: { datasets },
+                options: options,
+                plugins: [createCombinedMarkersPlugin(getCurrentMarkerFreq, getCurrentBandLimits)]
+            });
+        }
     }
     
     function updatePhaseChart(R, L, C) {
@@ -694,66 +701,74 @@
         const yMin = Math.min(-100, minPhase - 10);
         const yMax = Math.max(100, maxPhase + 10);
         
-        const options = {
-            responsive: true,
-            maintainAspectRatio: true,
-            interaction: { mode: 'index', intersect: false },
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `相位角: ${context.raw.y.toFixed(1)}°  @ ${context.raw.x.toFixed(1)} Hz`;
-                        }
-                    },
-                    backgroundColor: 'rgba(0,0,0,0.7)'
-                },
-                legend: { display: false }
-            },
-            scales: {
-                x: {
-                    type: 'logarithmic',
-                    title: { display: true, text: '频率 f (Hz)', font: { weight: 'bold', size: 12 } },
-                    ticks: {
-                        callback: (val) => {
-                            if (val >= 1000000) return (val/1000000).toFixed(0) + 'M';
-                            if (val >= 1000) return (val/1000).toFixed(0) + 'k';
-                            return val;
+        if (phaseChartInstance) {
+            // 刷新数据
+            phaseChartInstance.data.datasets[0].data = phaseData;
+            // 更新 Y 轴范围
+            phaseChartInstance.options.scales.y.min = yMin;
+            phaseChartInstance.options.scales.y.max = yMax;
+            phaseChartInstance.update('none');
+        } else {
+            const options = {
+                responsive: true,
+                maintainAspectRatio: true,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `相位角: ${context.raw.y.toFixed(1)}°  @ ${context.raw.x.toFixed(1)} Hz`;
+                            }
                         },
-                        autoSkip: true,
-                        maxTicksLimit: 8
+                        backgroundColor: 'rgba(0,0,0,0.7)'
                     },
-                    min: F_MIN,
-                    max: F_MAX,
-                    grid: { color: '#eef2ff' }
+                    legend: { display: false }
                 },
-                y: {
-                    title: { display: true, text: '相位角 (度)', font: { weight: 'bold', size: 12 } },
-                    min: yMin,
-                    max: yMax,
-                    ticks: { stepSize: 30, callback: (val) => val + '°' },
-                    grid: { color: '#eef2ff' }
-                }
-            },
-            elements: { point: { radius: 0, hitRadius: 6 }, line: { borderWidth: 2.5, borderColor: '#6366f1', tension: 0.2 } }
-        };
-        
-        const datasets = [{
-            label: 'Phase ∠H(f)',
-            data: phaseData,
-            borderColor: '#6366f1',
-            backgroundColor: 'transparent',
-            borderWidth: 2.5,
-            pointRadius: 0,
-            fill: false
-        }];
-        
-        if (phaseChartInstance) phaseChartInstance.destroy();
-        phaseChartInstance = new Chart(phaseCanvas, {
-            type: 'line',
-            data: { datasets },
-            options: options,
-            plugins: [createCombinedMarkersPlugin(getCurrentMarkerFreq, getCurrentBandLimits)]
-        });
+                scales: {
+                    x: {
+                        type: 'logarithmic',
+                        title: { display: true, text: '频率 f (Hz)', font: { weight: 'bold', size: 12 } },
+                        ticks: {
+                            callback: (val) => {
+                                if (val >= 1000000) return (val/1000000).toFixed(0) + 'M';
+                                if (val >= 1000) return (val/1000).toFixed(0) + 'k';
+                                return val;
+                            },
+                            autoSkip: true,
+                            maxTicksLimit: 8
+                        },
+                        min: F_MIN,
+                        max: F_MAX,
+                        grid: { color: '#eef2ff' }
+                    },
+                    y: {
+                        title: { display: true, text: '相位角 (度)', font: { weight: 'bold', size: 12 } },
+                        min: yMin,
+                        max: yMax,
+                        ticks: { stepSize: 30, callback: (val) => val + '°' },
+                        grid: { color: '#eef2ff' }
+                    }
+                },
+                elements: { point: { radius: 0, hitRadius: 6 }, line: { borderWidth: 2.5, borderColor: '#6366f1', tension: 0.2 } }
+            };
+            
+            const datasets = [{
+                label: 'Phase ∠H(f)',
+                data: phaseData,
+                borderColor: '#6366f1',
+                backgroundColor: 'transparent',
+                borderWidth: 2.5,
+                pointRadius: 0,
+                fill: false
+            }];
+            
+            phaseChartInstance = new Chart(phaseCanvas, {
+                type: 'line',
+                data: { datasets },
+                options: options,
+                plugins: [createCombinedMarkersPlugin(getCurrentMarkerFreq, getCurrentBandLimits)]
+            });
+        }
     }
     
     function refreshAll() {
@@ -774,6 +789,10 @@
         let targetFreq = Math.min(F_MAX, Math.max(F_MIN, f0));
         targetFreq = Math.round(targetFreq);
         fPointSlider.value = targetFreq;
+        // 同步更新标记频率显示（确保滑块标签与陷波频率一致）
+        if (targetFreq >= 1000000) fPointDisplay.innerText = `${(targetFreq/1000000).toFixed(2)} MHz`;
+        else if (targetFreq >= 1000) fPointDisplay.innerText = `${(targetFreq/1000).toFixed(2)} kHz`;
+        else fPointDisplay.innerText = `${targetFreq.toFixed(0)} Hz`;
         refreshAll();
     }
     

@@ -433,6 +433,13 @@
         magData.forEach(p => { if (p.y > maxMag) maxMag = p.y; });
         const yMax = Math.min(1.2, Math.max(1.05, maxMag * 1.05));
         
+        if (magChartInstance) {
+            magChartInstance.data.datasets[0].data = magData;
+            magChartInstance.options.scales.y.max = yMax;
+            magChartInstance.update();
+            return;
+        }
+        
         const options = {
             responsive: true,
             maintainAspectRatio: true,
@@ -486,7 +493,6 @@
             fill: false
         }];
         
-        if (magChartInstance) magChartInstance.destroy();
         magChartInstance = new Chart(magCanvas, {
             type: 'line',
             data: { datasets },
@@ -498,6 +504,13 @@
     // 创建或更新相频图表
     function updatePhaseChart(R, C) {
         const { phaseData } = buildMagPhaseData(R, C);
+        
+        if (phaseChartInstance) {
+            phaseChartInstance.data.datasets[0].data = phaseData;
+            phaseChartInstance.update();
+            return;
+        }
+        
         const options = {
             responsive: true,
             maintainAspectRatio: true,
@@ -551,7 +564,6 @@
             fill: false
         }];
         
-        if (phaseChartInstance) phaseChartInstance.destroy();
         phaseChartInstance = new Chart(phaseCanvas, {
             type: 'line',
             data: { datasets },
