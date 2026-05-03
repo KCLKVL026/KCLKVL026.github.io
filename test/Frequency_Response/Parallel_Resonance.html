@@ -429,6 +429,42 @@
         refreshAll();
     }
     
+    // 自定义插件: 绘制当前标记频率的垂直虚线 (紫色)
+    const markerLinePlugin = {
+        id: 'markerLine',
+        afterDraw(chart) {
+            const { ctx, chartArea: { left, right, top, bottom }, scales } = chart;
+            const currentParams = getCurrentParams();
+            const f_marker_local = currentParams.f_marker;
+            if (!scales.x || !scales.y) return;
+            const xPos = scales.x.getPixelForValue(f_marker_local);
+            if (xPos >= left && xPos <= right) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.strokeStyle = '#a855f7';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([6, 8]);
+                ctx.moveTo(xPos, top);
+                ctx.lineTo(xPos, bottom);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                // 顶部圆圈标记
+                ctx.beginPath();
+                ctx.arc(xPos, top + 12, 4, 0, 2 * Math.PI);
+                ctx.fillStyle = '#a855f7';
+                ctx.fill();
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 10px "Segoe UI"';
+                ctx.fillText('●', xPos-2, top+14);
+                ctx.fillStyle = '#581c87';
+                ctx.font = '10px monospace';
+                let freqText = f_marker_local >= 1000 ? (f_marker_local/1000).toFixed(1)+'k' : f_marker_local+' Hz';
+                ctx.fillText(`${freqText}`, xPos+5, top+16);
+                ctx.restore();
+            }
+        }
+    };
+    
     // 核心绘图函数 (Chart.js)
     function updateChart() {
         const { R, L, C, f_marker } = getCurrentParams();
@@ -449,6 +485,17 @@
         if (yMax < 0.05) yMax = 0.2;
         // 保证至少能看到曲线细节
         if (maxCurrent > 1.8) yMax = maxCurrent * 1.05;
+        
+        // 图表已存在时，仅更新数据和选项
+        if (chartInstance) {
+            chartInstance.data.datasets[0].data = irData;
+            chartInstance.data.datasets[1].data = ilData;
+            chartInstance.data.datasets[2].data = icData;
+            chartInstance.options.scales.y.max = yMax;
+            chartInstance.options.scales.y.ticks.stepSize = yMax > 1 ? 0.5 : (yMax > 0.2 ? 0.1 : 0.05);
+            chartInstance.update();
+            return;
+        }
         
         const options = {
             responsive: true,
@@ -558,47 +605,6 @@
                 order: 1
             }
         ];
-        
-        // 自定义插件: 绘制当前标记频率的垂直虚线 (紫色)
-        const markerLinePlugin = {
-            id: 'markerLine',
-            afterDraw(chart) {
-                const { ctx, chartArea: { left, right, top, bottom }, scales } = chart;
-                const currentParams = getCurrentParams();
-                const f_marker_local = currentParams.f_marker;
-                if (!scales.x || !scales.y) return;
-                const xPos = scales.x.getPixelForValue(f_marker_local);
-                if (xPos >= left && xPos <= right) {
-                    ctx.save();
-                    ctx.beginPath();
-                    ctx.strokeStyle = '#a855f7';
-                    ctx.lineWidth = 2;
-                    ctx.setLineDash([6, 8]);
-                    ctx.moveTo(xPos, top);
-                    ctx.lineTo(xPos, bottom);
-                    ctx.stroke();
-                    ctx.setLineDash([]);
-                    // 顶部圆圈标记
-                    ctx.beginPath();
-                    ctx.arc(xPos, top + 12, 4, 0, 2 * Math.PI);
-                    ctx.fillStyle = '#a855f7';
-                    ctx.fill();
-                    ctx.fillStyle = 'white';
-                    ctx.font = 'bold 10px "Segoe UI"';
-                    ctx.fillText('●', xPos-2, top+14);
-                    ctx.fillStyle = '#581c87';
-                    ctx.font = '10px monospace';
-                    let freqText = f_marker_local >= 1000 ? (f_marker_local/1000).toFixed(1)+'k' : f_marker_local+' Hz';
-                    ctx.fillText(`${freqText}`, xPos+5, top+16);
-                    ctx.restore();
-                }
-            }
-        };
-        
-        // 销毁旧图表实例
-        if (chartInstance) {
-            chartInstance.destroy();
-        }
         
         // 创建新图表
         chartInstance = new Chart(canvas, {
