@@ -6,7 +6,9 @@
 
 我借助 Deepseek V3.2 开发了一套面向电气、电子、自动化等相关专业的**交互式仿真教学工具**，旨在通过动态可视化帮助理解电路核心概念。所有模块均支持参数实时调节、波形/曲线即时更新，适合课堂演示与学生自主探索。
 
-👉 **立即体验**：[电路分析基础辅助教学主页](https://kclkvl026.github.io/Circuit_Analysis/)
+👉 **立即体验**：[电路分析基础辅助教学主页](https://kclkvl026.github.io/Circuit_Analysis/) 
+
+👉 **立即体验**：[电路分析基础辅助教学主页本地css版](https://kclkvl026.github.io/Circuit_Analysis_localcss/)
 
 该主页现包含 **18 个交互仿真模块**，按知识体系分为以下五组：
 
