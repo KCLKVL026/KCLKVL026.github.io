@@ -406,7 +406,13 @@
         const vinPoints = times.map((t, idx) => ({ x: t, y: v_in[idx] }));
         const vcPoints = times.map((t, idx) => ({ x: t, y: v_c[idx] }));
         
-        const yRange = getYAxisMax([v_in, v_c]);
+//        const yRange = getYAxisMax([v_in, v_c]);
+        // 获取当前幅值（已在前面通过 getParams 得到 Vm）
+        const maxVoltage = Math.max(...v_in, ...v_c);
+        // 设置 Y 轴下限为 -0.2 V 或幅值的 -10%（取较小负值，避免空白过大）
+        const yMin = -0.2;          // 固定微小负值，使 0 以下仅占一格
+        const yMax = maxVoltage + 0.1;  // 上方留少量余量
+        const yRange = { min: yMin, max: yMax };
         
         const commonOptions = (yMin, yMax) => ({
             responsive: true,

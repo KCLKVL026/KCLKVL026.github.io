@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>傅里叶级数 · 锯齿波分解与谐波叠加 | 1~50次谐波合成</title>
-    <script src="https://cdn.tailwindcss.com">
-    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
     </script>
     <!-- KaTeX 数学渲染 -->
@@ -26,14 +25,14 @@
             -webkit-appearance: none;
             width: 18px;
             height: 18px;
-            background: #f59e0b;
+            background: #3b82f6;
             border-radius: 50%;
             cursor: pointer;
             transition: 0.1s;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
         }
         input[type=range]::-webkit-slider-thumb:hover {
-            background: #d97706;
+            background: #2563eb;
             transform: scale(1.15);
         }
         ::-webkit-scrollbar {
@@ -56,12 +55,12 @@
             box-shadow: 0 12px 20px -12px rgba(0, 0, 0, 0.15);
         }
         .phase-badge {
-            background: #fffbeb;
+            background: #eff6ff;
             border-radius: 20px;
             padding: 0.2rem 0.7rem;
             font-size: 0.7rem;
             font-weight: 500;
-            color: #92400e;
+            color: #1e40af;
         }
         .wave-card {
             transition: all 0.2s;
@@ -83,12 +82,12 @@
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-amber-50/30 to-orange-50/40 text-slate-800 font-sans">
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
 
     <div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
         <!-- 返回主页按钮（左上角） -->
         <div class="flex justify-start mb-4">
-            <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 hover:text-amber-900 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
@@ -98,7 +97,7 @@
 
         <!-- 标题区 -->
         <div class="text-center mb-8">
-            <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent mb-2">
+            <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
                 傅里叶级数 · 锯齿波分解与谐波叠加
             </h1>
             <p class="text-slate-600 max-w-2xl mx-auto">
@@ -112,7 +111,7 @@
             <div class="lg:col-span-3 space-y-6">
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
                     <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
-                        <span class="w-1 h-6 bg-amber-500 rounded-full"></span>
+                        <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
                         傅里叶级数（锯齿波）
                     </h3>
                     <div class="text-xs text-slate-600 space-y-2">
@@ -131,13 +130,13 @@
                             与方波不同，锯齿波包含<strong>所有谐波</strong>（奇次+偶次），且系数符号交替变化。随着谐波次数增加，合成波形越来越接近理想锯齿波，但在间断点处会出现吉布斯现象（约9%过冲）。
                         </p>
                     </div>
-                    <div class="mt-3 text-xs text-amber-700 bg-amber-50 p-2 rounded-lg">
+                    <div class="mt-3 text-xs text-blue-600 bg-indigo-50 p-2 rounded-lg">
                         📌 图中横轴为时间 \(t\) (秒)，基频 \(f = 1\,\text{Hz}\)，显示两个完整周期。
                     </div>
                 </div>
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                     <h3 class="text-md font-bold text-slate-700 mb-2 flex items-center gap-2">
-                        <span class="w-1 h-5 bg-amber-500 rounded-full"></span>
+                        <span class="w-1 h-5 bg-blue-500 rounded-full"></span>
                         观察要点
                     </h3>
                     <ul class="text-xs text-slate-600 space-y-1 list-disc pl-4">
@@ -338,14 +337,14 @@
                     ticks: { callback: (val) => val.toFixed(1) + 's', maxTicksLimit: 5 },
                     min: 0,
                     max: duration,
-                    grid: { color: '#fef3c7' }
+                    grid: { color: '#eef2ff' }
                 },
                 y: {
                     title: { display: true, text: yLabel, font: { size: 10, weight: 'bold' } },
                     min: yMinVal,
                     max: yMaxVal,
                     ticks: { callback: (val) => val.toFixed(1) },
-                    grid: { color: '#fef3c7' }
+                    grid: { color: '#eef2ff' }
                 }
             },
             elements: {
