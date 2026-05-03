@@ -110,7 +110,7 @@
                         <label>方波频率 \(f\)</label>
                         <span class="text-blue-600 font-mono" id="f_display">50.0 Hz</span>
                     </div>
-                    <input type="range" id="f_slider" min="10" max="500" step="1" value="50" class="w-full">
+                    <input type="range" id="f_slider" min="10" max="500" step="1" value="150" class="w-full">
                     <div class="flex justify-between text-xs text-slate-400 mt-1">
                         <span>10 Hz</span><span>500 Hz</span>
                     </div>
@@ -125,9 +125,9 @@
                         <label>电阻 \(R\)</label>
                         <span class="text-blue-600 font-mono" id="r_display">500 Ω</span>
                     </div>
-                    <input type="range" id="r_slider" min="10" max="1000" step="5" value="500" class="w-full">
+                    <input type="range" id="r_slider" min="20" max="2000" step="5" value="1000" class="w-full">
                     <div class="flex justify-between text-xs text-slate-400 mt-1">
-                        <span>10 Ω</span><span>1000 Ω</span>
+                        <span>20 Ω</span><span>2000 Ω</span>
                     </div>
                 </div>
 
@@ -137,9 +137,9 @@
                         <label>电感 \(L\)</label>
                         <span class="text-blue-600 font-mono" id="l_display">500 mH</span>
                     </div>
-                    <input type="range" id="l_slider" min="1" max="1000" step="5" value="500" class="w-full">
+                    <input type="range" id="l_slider" min="10" max="1000" step="5" value="500" class="w-full">
                     <div class="flex justify-between text-xs text-slate-400 mt-1">
-                        <span>1 mH</span><span>1000 mH</span>
+                        <span>10 mH</span><span>1000 mH</span>
                     </div>
                     <p class="text-xs text-slate-400 mt-1">时间常数 \(\tau = L/R\)，决定充放电快慢</p>
                 </div>
@@ -249,8 +249,8 @@
     // 默认值 (R=500Ω, L=500mH → τ=0.001s，半周期0.01s → 10τ，几乎完全充放电)
     const DEFAULTS = {
         Vm: 1.0,
-        f: 50,
-        R_ohm: 500,       // 500 Ω
+        f: 150,
+        R_ohm: 1000,       // 1000 Ω
         L_mH: 500         // 500 mH -> τ = 0.5/500 = 0.001s
     };
 

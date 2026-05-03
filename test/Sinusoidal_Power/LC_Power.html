@@ -271,6 +271,9 @@
     const capacitorCanvas = document.getElementById('capacitorChart');
     let inductorChart = null, capacitorChart = null;
 
+    // 图表是否已初始化标志
+    let chartsInitialized = false;
+
     const PERIODS = 2.0;
     const POINTS = 500;
 
@@ -378,7 +381,38 @@
         };
     }
 
-    // 核心刷新函数：重新计算数据并更新两个图表
+    // 初始化两个图表（仅创建一次）
+    function initCharts() {
+        // 电感图表初始配置
+        const indOptions = createChartOptions(-0.1, 0.1, 0.04, '幅值 (A / W)');
+        inductorChart = new Chart(inductorCanvas, {
+            type: 'line',
+            data: {
+                datasets: [
+                    { label: '电流 i_L(t) (A)', data: [], borderColor: '#ef4444', borderWidth: 2.2, borderDash: [6, 4], pointRadius: 0, tension: 0.2, fill: false },
+                    { label: '功率 p_L(t) (W)', data: [], borderColor: '#22c55e', borderWidth: 2.5, borderDash: [], pointRadius: 0, tension: 0.2, fill: false }
+                ]
+            },
+            options: indOptions
+        });
+
+        // 电容图表初始配置
+        const capOptions = createChartOptions(-0.1, 0.1, 0.04, '幅值 (A / W)');
+        capacitorChart = new Chart(capacitorCanvas, {
+            type: 'line',
+            data: {
+                datasets: [
+                    { label: '电流 i_C(t) (A)', data: [], borderColor: '#ef4444', borderWidth: 2.2, borderDash: [6, 4], pointRadius: 0, tension: 0.2, fill: false },
+                    { label: '功率 p_C(t) (W)', data: [], borderColor: '#8b5cf6', borderWidth: 2.5, borderDash: [], pointRadius: 0, tension: 0.2, fill: false }
+                ]
+            },
+            options: capOptions
+        });
+
+        chartsInitialized = true;
+    }
+
+    // 核心刷新函数：重新计算数据并就地更新图表（不销毁重建）
     function updateCharts() {
         const Vm = parseFloat(vmSlider.value);
         const f = parseFloat(fSlider.value);
@@ -413,37 +447,21 @@
         const capYMax = capAbsMax === 0 ? 0.1 : capAbsMax;
         const capYMin = -capYMax;
 
-        // ---------- 电感图表 (绿色实线功率 + 红色虚线电流) ----------
-        const indOptions = createChartOptions(indYMin, indYMax, xMax, '幅值 (A / W)');
-        const indDatasets = [
-            { label: '电流 i_L(t) (A)', data: inductorCurrentPoints, borderColor: '#ef4444', borderWidth: 2.2, borderDash: [6, 4], pointRadius: 0, tension: 0.2, fill: false },
-            { label: '功率 p_L(t) (W)', data: inductorPowerPoints, borderColor: '#22c55e', borderWidth: 2.5, borderDash: [], pointRadius: 0, tension: 0.2, fill: false }
-        ];
-        if (inductorChart) {
-            inductorChart.data.datasets = indDatasets;
-            inductorChart.options.scales.y.min = indYMin;
-            inductorChart.options.scales.y.max = indYMax;
-            inductorChart.options.scales.x.max = xMax;
-            inductorChart.update();
-        } else {
-            inductorChart = new Chart(inductorCanvas, { type: 'line', data: { datasets: indDatasets }, options: indOptions });
-        }
+        // ---------- 就地刷新电感图表数据 ----------
+        inductorChart.data.datasets[0].data = inductorCurrentPoints;
+        inductorChart.data.datasets[1].data = inductorPowerPoints;
+        inductorChart.options.scales.y.min = indYMin;
+        inductorChart.options.scales.y.max = indYMax;
+        inductorChart.options.scales.x.max = xMax;
+        inductorChart.update('none');
 
-        // ---------- 电容图表 (紫色实线功率 + 红色虚线电流) ----------
-        const capOptions = createChartOptions(capYMin, capYMax, xMax, '幅值 (A / W)');
-        const capDatasets = [
-            { label: '电流 i_C(t) (A)', data: capacitorCurrentPoints, borderColor: '#ef4444', borderWidth: 2.2, borderDash: [6, 4], pointRadius: 0, tension: 0.2, fill: false },
-            { label: '功率 p_C(t) (W)', data: capacitorPowerPoints, borderColor: '#8b5cf6', borderWidth: 2.5, borderDash: [], pointRadius: 0, tension: 0.2, fill: false }
-        ];
-        if (capacitorChart) {
-            capacitorChart.data.datasets = capDatasets;
-            capacitorChart.options.scales.y.min = capYMin;
-            capacitorChart.options.scales.y.max = capYMax;
-            capacitorChart.options.scales.x.max = xMax;
-            capacitorChart.update();
-        } else {
-            capacitorChart = new Chart(capacitorCanvas, { type: 'line', data: { datasets: capDatasets }, options: capOptions });
-        }
+        // ---------- 就地刷新电容图表数据 ----------
+        capacitorChart.data.datasets[0].data = capacitorCurrentPoints;
+        capacitorChart.data.datasets[1].data = capacitorPowerPoints;
+        capacitorChart.options.scales.y.min = capYMin;
+        capacitorChart.options.scales.y.max = capYMax;
+        capacitorChart.options.scales.x.max = xMax;
+        capacitorChart.update('none');
     }
 
     // 重置所有参数至默认值
@@ -471,6 +489,7 @@
     // 初始化页面并渲染 KaTeX 公式
     function init() {
         bindEvents();
+        initCharts();
         updateCharts();
         // 渲染数学公式
         window.addEventListener('load', () => {
