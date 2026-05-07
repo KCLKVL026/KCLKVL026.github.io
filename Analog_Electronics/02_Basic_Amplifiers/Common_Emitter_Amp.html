@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>共射极放大电路 · 带失真模拟</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #10b981;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #059669;
+            transform: scale(1.15);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 预设按钮样式 - emerald 主题 */
+        .preset-btn {
+            padding: 7px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border: 1.5px solid #e2e8f0;
+            background: #f8fafc;
+            color: #475569;
+            white-space: nowrap;
+            letter-spacing: 0.01em;
+        }
+        .preset-btn:hover {
+            border-color: rgba(16, 185, 129, 0.5);
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.04);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.08);
+        }
+        .preset-btn.active {
+            border-color: #10b981;
+            color: #059669;
+            background: rgba(16, 185, 129, 0.1);
+            box-shadow: 0 0 14px rgba(16, 185, 129, 0.12);
+            font-weight: 700;
+        }
+        .preset-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-right: 4px;
+            vertical-align: middle;
+            position: relative;
+            top: -1px;
+        }
+        .preset-dot.green {
+            background: #10b981;
+        }
+        .preset-dot.purple {
+            background: #8b5cf6;
+        }
+        .preset-dot.red {
+            background: #ef4444;
+        }
+        .preset-dot.amber {
+            background: #f59e0b;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+    <!-- 无障碍提示：禁用 JavaScript 时显示 -->
+    <noscript>
+        <div style="text-align:center;padding:2rem;color:#ef4444;font-size:1.1rem;background:#fef2f2;border-bottom:2px solid #fecaca;">
+            此页面需要 JavaScript 才能运行电路仿真，请启用 JavaScript 后刷新。
+        </div>
+    </noscript>
+
+    <div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+        <div class="flex justify-start mb-4">
+            <a href="../index.html"
+                class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                返回主页
+            </a>
+        </div>
+        <div class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">
+                共射极放大电路</h1>
+            <p class="text-slate-600 max-w-2xl mx-auto">DC偏置分析 · 交流小信号放大 · 失真模拟（截止/饱和）</p>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- 左侧：控制面板 -->
+            <div class="lg:col-span-4 space-y-5">
+                <!-- 快速预设 -->
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <span class="w-1 h-6 bg-amber-500 rounded-full"></span>
+                        快速预设
+                    </h2>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button class="preset-btn active" data-preset="normal" aria-label="应用正常放大预设">
+                            <span class="preset-dot green"></span>正常放大
+                        </button>
+                        <button class="preset-btn" data-preset="cutoff" aria-label="应用截止失真预设">
+                            <span class="preset-dot purple"></span>截止失真
+                        </button>
+                        <button class="preset-btn" data-preset="saturation" aria-label="应用饱和失真预设">
+                            <span class="preset-dot red"></span>饱和失真
+                        </button>
+                        <button class="preset-btn" data-preset="both" aria-label="应用双向失真预设">
+                            <span class="preset-dot amber"></span>双向失真
+                        </button>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-3 text-center leading-relaxed">
+                        点击按钮快速切换典型失真场景，观察波形变化
+                    </p>
+                </div>
+
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <span class="w-1 h-6 bg-emerald-500 rounded-full"></span>
+                        电路参数
+                    </h2>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between text-sm text-slate-600 mb-1"><span>电源电压 \(V_{CC}\)</span><span id="vccValue"
+                                    class="font-mono font-bold text-emerald-600">15 V</span></div>
+                            <input type="range" id="vccSlider" min="5" max="30" value="15" step="1" class="w-full"
+                                aria-label="电源电压 V_CC，单位伏特">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm text-slate-600 mb-1"><span>上偏电阻 \(R_{B1}\)</span><span id="rb1Value"
+                                    class="font-mono font-bold text-emerald-600">100 kΩ</span></div>
+                            <input type="range" id="rb1Slider" min="10" max="500" value="100" step="1" class="w-full"
+                                aria-label="上偏电阻 R_B1，单位千欧">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm text-slate-600 mb-1"><span>下偏电阻 \(R_{B2}\)</span><span id="rb2Value"
+                                    class="font-mono font-bold text-emerald-600">22 kΩ</span></div>
+                            <input type="range" id="rb2Slider" min="1" max="50" value="22" step="1" class="w-full"
+                                aria-label="下偏电阻 R_B2，单位千欧">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm text-slate-600 mb-1"><span>集电极电阻 \(R_C\)</span><span id="rcValue"
+                                    class="font-mono font-bold text-emerald-600">4.7 kΩ</span></div>
+                            <input type="range" id="rcSlider" min="1" max="50" value="47" step="1" class="w-full"
+                                aria-label="集电极电阻 R_C，每格代表100欧">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm text-slate-600 mb-1"><span>射极电阻 \(R_E\)</span><span id="reValue"
+                                    class="font-mono font-bold text-emerald-600">1.0 kΩ</span></div>
+                            <input type="range" id="reSlider" min="1" max="50" value="10" step="1" class="w-full"
+                                aria-label="射极电阻 R_E，每格代表100欧">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm text-slate-600 mb-1"><span>信号幅度 \(V_{sig}\)</span><span id="vsigValue"
+                                    class="font-mono font-bold text-emerald-600">50 mV</span></div>
+                            <input type="range" id="vsigSlider" min="1" max="500" value="50" step="1" class="w-full"
+                                aria-label="信号幅度 V_sig，单位毫伏">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm text-slate-600 mb-1"><span>信号频率 \(f_{sig}\)</span><span id="fsigValue"
+                                    class="font-mono font-bold text-emerald-600">1.0 kHz</span></div>
+                            <input type="range" id="fsigSlider" min="1" max="100" value="10" step="1" class="w-full"
+                                aria-label="信号频率 f_sig，每格代表100赫兹">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm text-slate-600 mb-1"><span>电流增益 \(\beta\)</span><span id="betaValue"
+                                    class="font-mono font-bold text-emerald-600">150</span></div>
+                            <input type="range" id="betaSlider" min="50" max="300" value="150" step="1" class="w-full"
+                                aria-label="电流增益 beta">
+                        </div>
+                        <div class="flex items-center gap-3 pt-1">
+                            <span class="text-sm text-slate-600">射极旁路电容</span>
+                            <input type="checkbox" id="bypassToggle" checked class="w-4 h-4 text-emerald-600"
+                                aria-label="射极旁路电容开关，勾选表示已旁路">
+                            <span id="bypassLabel" class="text-sm font-bold text-emerald-600">已旁路</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <span class="w-1 h-6 bg-emerald-500 rounded-full"></span>
+                        静态工作点 & 线性范围
+                    </h2>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-slate-50 rounded-xl p-3 text-center">
+                            <div class="text-xs text-slate-500 mb-1">\(I_{CQ}\)</div>
+                            <div id="icqDisplay" class="text-lg font-bold text-emerald-600 font-mono">1.45 mA</div>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center">
+                            <div class="text-xs text-slate-500 mb-1">\(V_{CEQ}\)</div>
+                            <div id="vceqDisplay" class="text-lg font-bold text-emerald-600 font-mono">6.7 V</div>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center">
+                            <div class="text-xs text-slate-500 mb-1">\(A_v\)</div>
+                            <div id="avDisplay" class="text-lg font-bold text-emerald-600 font-mono">-98</div>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center">
+                            <div class="text-xs text-slate-500 mb-1">\(Z_{in}\)</div>
+                            <div id="zinDisplay" class="text-lg font-bold text-emerald-600 font-mono">2.5 kΩ</div>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center">
+                            <div class="text-xs text-slate-500 mb-1">\(Z_{out}\)</div>
+                            <div id="zoutDisplay" class="text-lg font-bold text-emerald-600 font-mono">4.7 kΩ</div>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center">
+                            <div class="text-xs text-slate-500 mb-1">工作区域</div>
+                            <div id="regionDisplay" class="text-lg font-bold text-emerald-600">放大区</div>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center">
+                            <div class="text-xs text-slate-500 mb-1">\(V_C\) 上限</div>
+                            <div id="vcMaxDisplay" class="text-lg font-bold text-slate-700 font-mono">14.0 V</div>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center">
+                            <div class="text-xs text-slate-500 mb-1">\(V_C\) 下限</div>
+                            <div id="vcMinDisplay" class="text-lg font-bold text-slate-700 font-mono">1.2 V</div>
+                        </div>
+                    </div>
+                    <div id="distortionDisplay"
+                        class="text-sm font-semibold text-center mt-3 px-3 py-1.5 rounded-full bg-slate-100 text-slate-600">
+                        无失真
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧：图表 + 公式 -->
+            <div class="lg:col-span-8 space-y-5">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <h2 class="text-base font-bold text-slate-800 mb-2">交流波形（\(V_{in}\) vs \(V_C\)，2个周期）</h2>
+                    <div class="relative" style="height: 280px;"><canvas id="waveChart"></canvas></div>
+                    <p class="text-xs text-slate-400 mt-1 text-center">输入信号（蓝）与集电极电压（红），共射放大输出反相180°，超出线性范围即出现削波失真</p>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <h2 class="text-base font-bold text-slate-800 mb-2">直流负载线与Q点（\(I_C\) vs \(V_{CE}\)）</h2>
+                    <div class="relative" style="height: 280px;"><canvas id="loadLineChart"></canvas></div>
+                    <p class="text-xs text-slate-400 mt-1 text-center">DC负载线（红虚线）+ Q工作点（红点），\(I_{C,max}=V_{CC}/(R_C+R_E)\)</p>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
+                        <span class="w-1 h-6 bg-amber-500 rounded-full"></span>
+                        关键公式
+                    </h2>
+                    <div class="space-y-2 text-sm bg-slate-50 rounded-xl p-4 text-center">
+                        \[V_B = V_{CC}\frac{R_{B2}}{R_{B1}+R_{B2}} \qquad V_E = V_B - V_{BE} \qquad I_C \approx I_E = \frac{V_E}{R_E}\]
+                        \[r_e' = \frac{V_T}{I_C} \approx \frac{26\text{mV}}{I_C} \qquad A_v = -\frac{R_C}{r_e'+R_E}\;\text{(未旁路)} \qquad A_v = -\frac{R_C}{r_e'}\;\text{(旁路)}\]
+                        \[V_{C,\max} \approx V_{CC}-V_E \quad (\text{旁路})\qquad V_{C,\min} \approx V_{CE(sat)}+V_E\]
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ===================== 常数与阈值 =====================
+            var DEFAULTS = {
+                V_CC: 15,
+                R_B1: 100e3,
+                R_B2: 22e3,
+                R_C: 4700,
+                R_E: 1000,
+                V_sig: 0.05,
+                f_sig: 1000,
+                beta: 150,
+                V_BE: 0.7,
+                V_CE_SAT: 0.2,
+                bypassed: true
+            };
+            var V_T = 0.02585; // 热电压 ≈ 26mV @ 室温
+
+            // 工作区判断阈值（提取自 computeDC 中的魔法数字）
+            var V_CE_SAT_THRESHOLD = 0.3;      // V_CE 低于此值 → 饱和区
+            var I_C_CUTOFF_THRESHOLD = 1e-9;    // I_C 低于此值 → 截止区
+            var V_CE_CUTOFF_MARGIN = 0.5;       // V_CE 接近 V_CC 的裕量
+            var IC_CUTOFF_RATIO = 0.05;         // I_C 低于最大值的 5% → 截止区
+            var DISTORTION_TOLERANCE = 1e-6;    // 失真检测的数值容差
+
+            // ===================== 滑块映射配置 =====================
+            // 每个滑块的原始值通过 scale 因子转换为物理量（SI 单位）
+            // 例如：rcSlider 值 47 × 100 = 4700 Ω = 4.7 kΩ
+            var SLIDER_SCALE = {
+                vcc:   1,       // 滑块值直接为 V
+                rb1:   1e3,     // 滑块值单位 kΩ → Ω
+                rb2:   1e3,     // 滑块值单位 kΩ → Ω
+                rc:    100,     // 滑块值 × 100 → Ω
+                re:    100,     // 滑块值 × 100 → Ω
+                vsig:  1e-3,    // 滑块值单位 mV → V
+                fsig:  100,     // 滑块值 × 100 → Hz
+                beta:  1        // 滑块值直接为无量纲增益
+            };
+
+            // ===================== DOM 查询辅助 =====================
+            var $ = function(id) { return document.getElementById(id); };
+
+            // 滑块元素
+            var vccSlider  = $('vccSlider');
+            var rb1Slider  = $('rb1Slider');
+            var rb2Slider  = $('rb2Slider');
+            var rcSlider   = $('rcSlider');
+            var reSlider   = $('reSlider');
+            var vsigSlider = $('vsigSlider');
+            var fsigSlider = $('fsigSlider');
+            var betaSlider = $('betaSlider');
+            var bypassToggle = $('bypassToggle');
+
+            // 数值显示元素
+            var vccValue   = $('vccValue');
+            var rb1Value   = $('rb1Value');
+            var rb2Value   = $('rb2Value');
+            var rcValue    = $('rcValue');
+            var reValue    = $('reValue');
+            var vsigValue  = $('vsigValue');
+            var fsigValue  = $('fsigValue');
+            var betaValue  = $('betaValue');
+            var bypassLabel = $('bypassLabel');
+
+            // 工作点显示元素
+            var icqDisplay     = $('icqDisplay');
+            var vceqDisplay    = $('vceqDisplay');
+            var avDisplay      = $('avDisplay');
+            var zinDisplay     = $('zinDisplay');
+            var zoutDisplay    = $('zoutDisplay');
+            var regionDisplay  = $('regionDisplay');
+            var vcMaxDisplay   = $('vcMaxDisplay');
+            var vcMinDisplay   = $('vcMinDisplay');
+            var distortionDisplay = $('distortionDisplay');
+
+            // 图表实例（初始为 null，首次更新时创建）
+            var waveChartInst = null;
+            var loadLineChartInst = null;
+
+            // ===================== 工具函数 =====================
+            // 防抖函数：用于 resize 等高频事件
+            function debounce(fn, delay) {
+                var timer = null;
+                return function() {
+                    var ctx = this, args = arguments;
+                    clearTimeout(timer);
+                    timer = setTimeout(function() { fn.apply(ctx, args); }, delay);
+                };
+            }
+
+            // ===================== 预设数据 =====================
+            // 预设中的值为滑块原始值（未经过 SLIDER_SCALE 转换）
+            var PRESETS = {
+                normal: {
+                    vcc: 15, rb1: 80, rb2: 18, rc: 35, re: 10,
+                    vsig: 8, fsig: 10, beta: 150, bypass: true
+                },
+                cutoff: {
+                    vcc: 15, rb1: 150, rb2: 9, rc: 40, re: 10,
+                    vsig: 60, fsig: 10, beta: 150, bypass: true
+                },
+                saturation: {
+                    vcc: 15, rb1: 50, rb2: 22, rc: 15, re: 5,
+                    vsig: 15, fsig: 10, beta: 150, bypass: true
+                },
+                both: {
+                    vcc: 15, rb1: 80, rb2: 18, rc: 35, re: 10,
+                    vsig: 80, fsig: 10, beta: 150, bypass: true
+                }
+            };
+
+            function applyPreset(name) {
+                var pr = PRESETS[name];
+                if (!pr) return;
+                vccSlider.value  = pr.vcc;
+                rb1Slider.value  = pr.rb1;
+                rb2Slider.value  = pr.rb2;
+                rcSlider.value   = pr.rc;
+                reSlider.value   = pr.re;
+                vsigSlider.value = pr.vsig;
+                fsigSlider.value = pr.fsig;
+                betaSlider.value = pr.beta;
+                bypassToggle.checked = pr.bypass;
+
+                // 更新预设按钮 active 状态
+                document.querySelectorAll('.preset-btn').forEach(function(btn) {
+                    btn.classList.toggle('active', btn.dataset.preset === name);
+                });
+
+                updateAll();
+            }
+
+            // ===================== 参数获取 =====================
+            function getParams() {
+                return {
+                    V_CC:    parseFloat(vccSlider.value)   * SLIDER_SCALE.vcc,
+                    R_B1:    parseFloat(rb1Slider.value)   * SLIDER_SCALE.rb1,
+                    R_B2:    parseFloat(rb2Slider.value)   * SLIDER_SCALE.rb2,
+                    R_C:     parseFloat(rcSlider.value)    * SLIDER_SCALE.rc,
+                    R_E:     parseFloat(reSlider.value)    * SLIDER_SCALE.re,
+                    V_sig:   parseFloat(vsigSlider.value)  * SLIDER_SCALE.vsig,
+                    f_sig:   parseFloat(fsigSlider.value)  * SLIDER_SCALE.fsig,
+                    beta:    parseFloat(betaSlider.value)   * SLIDER_SCALE.beta,
+                    bypassed: bypassToggle.checked
+                };
+            }
+
+            // ===================== 直流工作点与线性范围计算 =====================
+            function computeDC(p) {
+                // 基极电压：分压公式
+                var V_B = p.V_CC * p.R_B2 / (p.R_B1 + p.R_B2);
+                // 射极电压：V_B 减去 BE 结压降
+                var V_E = Math.max(0, V_B - DEFAULTS.V_BE);
+                // 射极电流
+                var I_E = V_E / p.R_E;
+                // 集电极电流：α = β/(β+1)
+                var I_C = I_E * p.beta / (p.beta + 1);
+                // V_CE = V_CC - I_C·R_C - I_E·R_E
+                var V_CE = p.V_CC - I_C * p.R_C - I_E * p.R_E;
+                // 动态射极电阻 r_e' = V_T / I_C
+                var r_e = (I_C > 1e-12) ? V_T / I_C : 1e6;
+
+                // 交流小信号参数
+                var A_v, Z_in, Z_out;
+                if (p.bypassed) {
+                    // 旁路时：A_v = -R_C / r_e'
+                    A_v = -p.R_C / r_e;
+                    Z_in = 1 / (1 / p.R_B1 + 1 / p.R_B2 + 1 / (p.beta * r_e));
+                } else {
+                    // 未旁路时：A_v = -R_C / (r_e' + R_E)，射极电阻引入负反馈
+                    A_v = -p.R_C / (r_e + p.R_E);
+                    Z_in = 1 / (1 / p.R_B1 + 1 / p.R_B2 + 1 / (p.beta * (r_e + p.R_E)));
+                }
+                Z_out = p.R_C;
+
+                // 判断工作区域
+                var region = '放大区';
+                var icMax = p.V_CC / (p.R_C + p.R_E);
+                if (V_CE < V_CE_SAT_THRESHOLD) {
+                    region = '饱和区';
+                } else if (I_C < I_C_CUTOFF_THRESHOLD) {
+                    region = '截止区';
+                } else if (V_CE >= p.V_CC - V_CE_CUTOFF_MARGIN && I_C < icMax * IC_CUTOFF_RATIO) {
+                    region = '截止区';
+                }
+
+                // 集电极直流电压 V_CQ = V_CC - I_C · R_C
+                var V_CQ = p.V_CC - I_C * p.R_C;
+
+                // 计算集电极电压 V_C 的线性摆动范围
+                var v_c_max, v_c_min;
+                if (p.bypassed) {
+                    // 旁路时：V_C 上限受射极直流压降限制，下限受 V_CE(sat) 限制
+                    var V_E_dc = I_E * p.R_E;
+                    v_c_max = p.V_CC - V_E_dc;
+                    v_c_min = DEFAULTS.V_CE_SAT + V_E_dc;
+                } else {
+                    // 未旁路时：V_C 可以摆到 V_CC（截止时），下限由饱和电流决定
+                    var i_c_max_sat = (p.V_CC - DEFAULTS.V_CE_SAT) / (p.R_C + p.R_E);
+                    v_c_max = p.V_CC;
+                    v_c_min = p.V_CC - i_c_max_sat * p.R_C;
+                }
+                if (v_c_min > v_c_max) {
+                    v_c_min = v_c_max;
+                }
+
+                // ---- 失真类型判断 ----
+                // A_v 为负值（反相放大），所以：
+                //   v_c_peak_min = V_CQ + A_v·V_sig → 输出波形的最低点（A_v 为负，加负值 = 减小）
+                //   v_c_peak_max = V_CQ - A_v·V_sig → 输出波形的最高点（减负值 = 增大）
+                // 如果最低点低于 v_c_min → 饱和削波（底部削平）
+                // 如果最高点高于 v_c_max → 截止削波（顶部削平）
+                var v_c_peak_min = V_CQ + A_v * p.V_sig;
+                var v_c_peak_max = V_CQ - A_v * p.V_sig;
+                var sat   = v_c_peak_min < v_c_min - DISTORTION_TOLERANCE;
+                var cutoff = v_c_peak_max > v_c_max + DISTORTION_TOLERANCE;
+                var distortion = '无失真';
+                if (sat && cutoff) distortion = '饱和与截止失真';
+                else if (sat) distortion = '饱和失真';
+                else if (cutoff) distortion = '截止失真';
+
+                return {
+                    V_B: V_B, V_E: V_E, I_C: I_C, I_E: I_E,
+                    V_CE: V_CE, V_CQ: V_CQ, r_e: r_e,
+                    A_v: A_v, Z_in: Z_in, Z_out: Z_out,
+                    region: region, icMax: icMax,
+                    v_c_max: v_c_max, v_c_min: v_c_min,
+                    distortion: distortion
+                };
+            }
+
+            // ===================== 波形数据构建 =====================
+            function buildWaveData(p, dc) {
+                var T = 1 / p.f_sig;
+                var duration = 2 * T;
+                var samples = 400;
+                var vin = [];
+                var vout = [];
+                for (var i = 0; i <= samples; i++) {
+                    var t = duration * i / samples;
+                    var vsig = p.V_sig * Math.sin(2 * Math.PI * p.f_sig * t);
+                    vin.push({ x: t * 1000, y: vsig * 1000 }); // 时间 ms，电压 mV
+
+                    // 理想输出 = Q点 + 增益×输入，再钳位到线性范围
+                    var v_c_ideal = dc.V_CQ + vsig * dc.A_v;
+                    var v_c = Math.min(dc.v_c_max, Math.max(dc.v_c_min, v_c_ideal));
+                    vout.push({ x: t * 1000, y: v_c }); // 时间 ms，电压 V
+                }
+                return { vin: vin, vout: vout };
+            }
+
+            // 负载线数据构建
+            function buildLoadLineData(p, dc) {
+                var ll = [
+                    { x: 0, y: dc.icMax * 1e3 },  // I_C 单位 mA
+                    { x: p.V_CC, y: 0 }
+                ];
+                var qp = [{ x: dc.V_CE, y: dc.I_C * 1e3 }];
+                return { ll: ll, qp: qp };
+            }
+
+            // ===================== 图表管理 =====================
+            // Chart.js 图表配置常量
+            var CHART_ANIMATION_DURATION = 150;
+            var CHART_LEGEND_CONFIG = { position: 'bottom', labels: { boxWidth: 14, font: { size: 10 } } };
+            var CHART_GRID_COLOR = 'rgba(0,0,0,0.05)';
+
+            // 创建波形图（仅首次调用）
+            function createWaveChart(p, dc) {
+                var data = buildWaveData(p, dc);
+                waveChartInst = new Chart($('waveChart').getContext('2d'), {
+                    type: 'scatter',
+                    data: {
+                        datasets: [{
+                            label: 'V_in (mV)',
+                            data: data.vin,
+                            borderColor: '#3b82f6',
+                            backgroundColor: '#3b82f6',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            showLine: true,
+                            tension: 0.3,
+                            order: 1
+                        }, {
+                            label: 'V_C (V)',
+                            data: data.vout,
+                            borderColor: '#ef4444',
+                            backgroundColor: '#ef4444',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            showLine: true,
+                            tension: 0.3,
+                            order: 1,
+                            yAxisID: 'y1'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: { duration: CHART_ANIMATION_DURATION },
+                        plugins: {
+                            legend: CHART_LEGEND_CONFIG,
+                            tooltip: {
+                                callbacks: {
+                                    label: function(ctx) {
+                                        return ctx.dataset.label.includes('in')
+                                            ? 'V_in = ' + ctx.parsed.y.toFixed(2) + ' mV'
+                                            : 'V_C = ' + ctx.parsed.y.toFixed(3) + ' V';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: { display: true, text: '时间 (ms)', font: { size: 12 } },
+                                grid: { color: CHART_GRID_COLOR }
+                            },
+                            y: {
+                                title: { display: true, text: 'V_in (mV)', font: { size: 12 } },
+                                grid: { color: CHART_GRID_COLOR }
+                            },
+                            y1: {
+                                position: 'right',
+                                title: { display: true, text: 'V_C (V)', font: { size: 12 } },
+                                grid: { drawOnChartArea: false }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 更新波形图数据（复用已有图表实例，避免销毁重建）
+            function updateWaveChartData(p, dc) {
+                var data = buildWaveData(p, dc);
+                waveChartInst.data.datasets[0].data = data.vin;
+                waveChartInst.data.datasets[1].data = data.vout;
+                waveChartInst.update();
+            }
+
+            // 创建负载线图（仅首次调用）
+            function createLoadLineChart(p, dc) {
+                var data = buildLoadLineData(p, dc);
+                loadLineChartInst = new Chart($('loadLineChart').getContext('2d'), {
+                    type: 'scatter',
+                    data: {
+                        datasets: [{
+                            label: 'DC 负载线',
+                            data: data.ll,
+                            borderColor: '#f43f5e',
+                            borderWidth: 2,
+                            borderDash: [6, 3],
+                            pointRadius: 0,
+                            showLine: true,
+                            order: 2
+                        }, {
+                            label: 'Q 点',
+                            data: data.qp,
+                            borderColor: '#ef4444',
+                            backgroundColor: '#ef4444',
+                            pointRadius: 8,
+                            showLine: false,
+                            order: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: { duration: CHART_ANIMATION_DURATION },
+                        plugins: {
+                            legend: CHART_LEGEND_CONFIG,
+                            tooltip: {
+                                callbacks: {
+                                    label: function(ctx) {
+                                        if (ctx.dataset.label === 'Q 点') {
+                                            return 'Q点: V_CE=' + ctx.parsed.x.toFixed(2) + 'V, I_C=' + ctx.parsed.y.toFixed(3) + 'mA';
+                                        }
+                                        return '负载线: V_CE=' + ctx.parsed.x.toFixed(2) + 'V, I_C=' + ctx.parsed.y.toFixed(3) + 'mA';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: { display: true, text: 'V_CE (V)', font: { size: 12 } },
+                                max: p.V_CC + 2,
+                                grid: { color: CHART_GRID_COLOR }
+                            },
+                            y: {
+                                title: { display: true, text: 'I_C (mA)', font: { size: 12 } },
+                                grid: { color: CHART_GRID_COLOR }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 更新负载线图数据（复用已有图表实例）
+            function updateLoadLineChartData(p, dc) {
+                var data = buildLoadLineData(p, dc);
+                loadLineChartInst.data.datasets[0].data = data.ll;
+                loadLineChartInst.data.datasets[1].data = data.qp;
+                // x 轴最大值随 V_CC 变化，需要同步更新
+                loadLineChartInst.options.scales.x.max = p.V_CC + 2;
+                loadLineChartInst.update();
+            }
+
+            // ===================== 总刷新 =====================
+            function updateAll() {
+                var p = getParams();
+                var dc = computeDC(p);
+
+                // ---- 更新滑块旁的数值显示 ----
+                // 这些是 SLIDER_SCALE 的逆转换，将物理值转回用户友好的显示格式
+                vccValue.textContent  = p.V_CC + ' V';
+                rb1Value.textContent  = (p.R_B1 / 1000).toFixed(0) + ' kΩ';
+                rb2Value.textContent  = (p.R_B2 / 1000).toFixed(1) + ' kΩ';
+                rcValue.textContent   = (p.R_C / 1000).toFixed(1) + ' kΩ';
+                reValue.textContent   = (p.R_E / 1000).toFixed(1) + ' kΩ';
+                vsigValue.textContent = (p.V_sig * 1000).toFixed(0) + ' mV';
+                fsigValue.textContent = (p.f_sig / 1000).toFixed(1) + ' kHz';
+                betaValue.textContent = p.beta;
+                bypassLabel.textContent = p.bypassed ? '已旁路' : '未旁路';
+
+                // ---- 更新工作点显示 ----
+                icqDisplay.textContent  = (dc.I_C * 1e3).toFixed(2) + ' mA';
+                vceqDisplay.textContent = dc.V_CE.toFixed(2) + ' V';
+                avDisplay.textContent   = dc.A_v.toFixed(1);
+                zinDisplay.textContent  = (dc.Z_in / 1000).toFixed(2) + ' kΩ';
+                zoutDisplay.textContent = (dc.Z_out / 1000).toFixed(2) + ' kΩ';
+
+                // 工作区域及颜色
+                regionDisplay.textContent = dc.region;
+                regionDisplay.className = 'text-lg font-bold ' + (
+                    dc.region === '放大区' ? 'text-emerald-600' :
+                    dc.region === '饱和区' ? 'text-amber-600' : 'text-slate-500'
+                );
+
+                vcMaxDisplay.textContent = dc.v_c_max.toFixed(2) + ' V';
+                vcMinDisplay.textContent = dc.v_c_min.toFixed(2) + ' V';
+
+                // 失真提示样式
+                distortionDisplay.textContent = dc.distortion;
+                if (dc.distortion === '无失真') {
+                    distortionDisplay.className =
+                        'text-sm font-semibold text-center mt-3 px-3 py-1.5 rounded-full bg-slate-100 text-slate-600';
+                } else if (dc.distortion.includes('截止') && dc.distortion.includes('饱和')) {
+                    distortionDisplay.className =
+                        'text-sm font-semibold text-center mt-3 px-3 py-1.5 rounded-full bg-red-100 text-red-700';
+                } else if (dc.distortion.includes('截止')) {
+                    distortionDisplay.className =
+                        'text-sm font-semibold text-center mt-3 px-3 py-1.5 rounded-full bg-amber-100 text-amber-700';
+                } else if (dc.distortion.includes('饱和')) {
+                    distortionDisplay.className =
+                        'text-sm font-semibold text-center mt-3 px-3 py-1.5 rounded-full bg-orange-100 text-orange-700';
+                }
+
+                // ---- 绘图：首次创建，后续更新数据 ----
+                if (!waveChartInst) {
+                    createWaveChart(p, dc);
+                    createLoadLineChart(p, dc);
+                } else {
+                    updateWaveChartData(p, dc);
+                    updateLoadLineChartData(p, dc);
+                }
+            }
+
+            // ===================== 事件绑定 =====================
+            // 所有滑块的 input 事件绑定到 updateAll
+            var sliderIds = [
+                'vccSlider', 'rb1Slider', 'rb2Slider', 'rcSlider', 'reSlider',
+                'vsigSlider', 'fsigSlider', 'betaSlider'
+            ];
+            sliderIds.forEach(function(id) {
+                $(id).addEventListener('input', updateAll);
+            });
+            bypassToggle.addEventListener('change', updateAll);
+
+            // 预设按钮事件
+            document.querySelectorAll('.preset-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() { applyPreset(btn.dataset.preset); });
+            });
+
+            // 窗口大小变化时重绘图表（添加防抖，避免高频触发）
+            var handleResize = debounce(function() {
+                if (waveChartInst) {
+                    waveChartInst.resize();
+                    waveChartInst.update('none');
+                }
+                if (loadLineChartInst) {
+                    loadLineChartInst.resize();
+                    loadLineChartInst.update('none');
+                }
+            }, 200);
+            window.addEventListener('resize', handleResize);
+
+            // ===================== 初始化 =====================
+            // 应用正常放大预设，确保初始显示无失真波形
+            applyPreset('normal');
+
+            // KaTeX 公式渲染（带重试机制，应对 defer 脚本加载延迟）
+            var katexRetryCount = 0;
+            var KATEX_MAX_RETRY = 10;
+            function renderKaTeX() {
+                if (typeof renderMathInElement !== 'undefined') {
+                    renderMathInElement(document.body, {
+                        delimiters: [
+                            { left: '\\[', right: '\\]', display: true },
+                            { left: '\\(', right: '\\)', display: false }
+                        ],
+                        throwOnError: false
+                    });
+                } else if (katexRetryCount < KATEX_MAX_RETRY) {
+                    katexRetryCount++;
+                    setTimeout(renderKaTeX, 200);
+                }
+            }
+            window.addEventListener('load', renderKaTeX);
+        })();
+    </script>
+</body>
+</html>

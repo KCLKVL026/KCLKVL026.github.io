@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>SR锁存器 | NOR·NAND交叉耦合</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+        .card-hover{transition:all 0.2s ease}.card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 20px -12px rgba(0,0,0,0.15)}
+        .bit-btn{display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:8px;font-weight:bold;font-size:1.2rem;cursor:pointer;transition:all 0.12s ease;border:2px solid #e2e8f0}
+        .bit-btn.on{background:#3b82f6;color:white;border-color:#3b82f6}.bit-btn.off{background:white;color:#64748b;border-color:#e2e8f0}.bit-btn:active{transform:scale(0.92)}
+        .mode-btn{transition:all 0.15s ease;border:2px solid transparent;cursor:pointer}
+        .mode-btn.active{border-color:#3b82f6;background:#eff6ff;color:#1d4ed8;font-weight:600}
+        .mode-btn:hover:not(.active){background:#f8fafc;border-color:#cbd5e1}
+        .state-indicator{width:24px;height:24px;border-radius:50%;display:inline-block;margin:0 4px}
+        .state-high{background:#10b981;box-shadow:0 0 8px rgba(16,185,129,0.4)}.state-low{background:#d1d5db}.state-undef{background:#f59e0b;box-shadow:0 0 8px rgba(245,158,11,0.4)}
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <div class="flex justify-start mb-4">
+        <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页</a>
+    </div>
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">SR锁存器</h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">NOR/NAND交叉耦合 | S·R输入切换 | Q·Q'状态 | 禁用态检测</p>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-4 space-y-6">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4"><span class="w-1 h-6 bg-blue-500 rounded-full"></span>实现方式</h3>
+                <div class="flex gap-2">
+                    <button class="mode-btn active flex-1 rounded-lg px-3 py-2 text-sm text-center" data-mode="NOR">NOR门</button>
+                    <button class="mode-btn flex-1 rounded-lg px-3 py-2 text-sm text-center" data-mode="NAND">NAND门</button>
+                </div>
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>输入</h3>
+                <div class="flex gap-4 justify-center mb-4">
+                    <div class="text-center"><label class="text-sm font-medium text-slate-600 mb-2 block">S</label><div id="sBtn" class="bit-btn off">0</div></div>
+                    <div class="text-center"><label class="text-sm font-medium text-slate-600 mb-2 block">R</label><div id="rBtn" class="bit-btn off">0</div></div>
+                </div>
+                <div id="warningBox" class="hidden bg-red-50 border border-red-200 rounded-lg p-3 text-center text-sm text-red-600 font-medium">禁用态! S=R=1 (NOR)</div>
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-amber-500 rounded-full"></span>状态</h3>
+                <div class="flex justify-center items-center gap-6">
+                    <div class="text-center"><span class="text-sm text-slate-500">Q</span><div id="qDisplay" class="text-3xl font-bold text-blue-600 mt-1">0</div></div>
+                    <div class="text-center"><span class="text-sm text-slate-500">Q'</span><div id="qnDisplay" class="text-3xl font-bold text-slate-400 mt-1">1</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="lg:col-span-8 space-y-5">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="text-sm font-medium text-slate-700 mb-3 px-2">时序波形</div>
+                <div class="relative"><canvas id="timingChart" width="800" height="350" style="width:100%;height:auto;max-height:380px;"></canvas></div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-purple-500 rounded-full"></span>特征方程</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div id="eqNor" class="bg-slate-50 p-3 rounded-lg text-center text-sm"></div>
+                    <div id="eqNand" class="bg-slate-50 p-3 rounded-lg text-center text-sm"></div>
+                </div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3">状态转换表</h3>
+                <div class="overflow-x-auto"><table class="w-full text-center text-sm">
+                    <thead><tr class="text-slate-500"><th>S</th><th>R</th><th>Q(t+1)</th><th>说明</th></tr></thead>
+                    <tbody id="stateTable"></tbody>
+                </table></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    let mode='NOR',s=0,r=0,q=0,timingChart=null;
+    function computeNext(s,r,q){
+        if(mode==='NOR'){
+            if(s===0&&r===0)return q; // hold
+            if(s===1&&r===0)return 1; // set
+            if(s===0&&r===1)return 0; // reset
+            return null; // invalid
+        }else{
+            if(s===1&&r===1)return q; // hold (NAND: active low)
+            if(s===0&&r===1)return 1; // set
+            if(s===1&&r===0)return 0; // reset
+            return null; // invalid
+        }
+    }
+    function refreshAll(){
+        const next=computeNext(s,r,q);
+        const isInvalid=next===null;
+        document.getElementById('sBtn').className='bit-btn '+(s?'on':'off');document.getElementById('sBtn').textContent=s;
+        document.getElementById('rBtn').className='bit-btn '+(r?'on':'off');document.getElementById('rBtn').textContent=r;
+        document.getElementById('warningBox').className=isInvalid?'bg-red-50 border border-red-200 rounded-lg p-3 text-center text-sm text-red-600 font-medium':'hidden';
+        if(!isInvalid)q=next;
+        document.getElementById('qDisplay').textContent=q;
+        document.getElementById('qDisplay').className='text-3xl font-bold mt-1 '+(q?'text-emerald-600':'text-red-500');
+        document.getElementById('qnDisplay').textContent=q?0:1;
+        document.getElementById('qnDisplay').className='text-3xl font-bold mt-1 '+(q?'text-slate-400':'text-blue-600');
+        updateTiming();
+        renderStateTable();
+        renderEquations();
+    }
+    const T=8,PPS=40;
+    const seq=[[0,0],[1,0],[0,0],[0,1],[0,0],[1,1],[0,0],[1,0]];
+    function generateTiming(){
+        const t=[],dS=[],dR=[],dQ=[],dQn=[];
+        let cq=0;
+        for(let seg=0;seg<8;seg++){
+            const[sv,rv]=seq[seg];
+            const nq=computeNext(sv,rv,cq);
+            if(nq!==null)cq=nq;
+            for(let i=0;i<PPS;i++){
+                t.push(seg+i/PPS);dS.push(sv);dR.push(rv);dQ.push(cq);dQn.push(cq?0:1);
+            }
+        }
+        t.push(T);dS.push(dS.at(-1));dR.push(dR.at(-1));dQ.push(dQ.at(-1));dQn.push(dQn.at(-1));
+        return{t,dS,dR,dQ,dQn};
+    }
+    function initTiming(){
+        if(timingChart)return;
+        timingChart=new Chart(document.getElementById('timingChart').getContext('2d'),{
+            type:'line',data:{datasets:[]},options:{responsive:true,maintainAspectRatio:true,animation:false,interaction:{mode:'index',intersect:false},
+                plugins:{legend:{display:false}},scales:{x:{type:'linear',min:0,max:T,grid:{color:'#eef2ff'}},y:{min:-1,max:8,ticks:{callback(v){const m={0:"Q'",2:'Q',4:'R',6:'S'};return m[v]||'';},stepSize:1},grid:{color:'#eef2ff'}}},elements:{point:{radius:0}}}
+        });
+    }
+    function updateTiming(){
+        initTiming();
+        const{t,dS,dR,dQ,dQn}=generateTiming();
+        timingChart.data.datasets=[
+            {label:'S',data:t.map((x,i)=>({x,y:dS[i]+6})),borderColor:'#3b82f6',borderWidth:2,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'},
+            {label:'R',data:t.map((x,i)=>({x,y:dR[i]+4})),borderColor:'#ef4444',borderWidth:2,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'},
+            {label:'Q',data:t.map((x,i)=>({x,y:dQ[i]+2})),borderColor:'#10b981',borderWidth:2.5,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'},
+            {label:"Q'",data:t.map((x,i)=>({x,y:dQn[i]})),borderColor:'#f59e0b',borderWidth:2.5,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'}
+        ];
+        timingChart.update('none');
+    }
+    function renderStateTable(){
+        const tb=document.getElementById('stateTable');tb.innerHTML='';
+        const rows=mode==='NOR'?[[0,0,'Q (保持)','保持'],[1,0,'1 (置位)','置位'],[0,1,'0 (复位)','复位'],[1,1,'无效','禁用态!']]:[[1,1,'Q (保持)','保持'],[0,1,'1 (置位)','置位'],[1,0,'0 (复位)','复位'],[0,0,'无效','禁用态!']];
+        rows.forEach(([sv,rv,qv,desc])=>{
+            const tr=document.createElement('tr');
+            tr.className=(sv===s&&rv===r)?'bg-blue-50':'hover:bg-slate-50';
+            tr.innerHTML=`<td class="py-1.5 px-3 font-mono ${sv?'text-blue-600 font-bold':'text-slate-400'}">${sv}</td><td class="py-1.5 px-3 font-mono ${rv?'text-red-600 font-bold':'text-slate-400'}">${rv}</td><td class="py-1.5 px-3 font-mono font-bold">${qv}</td><td class="py-1.5 px-3 text-xs">${desc}</td>`;
+            tb.appendChild(tr);
+        });
+    }
+    function renderEquations(){
+        const ne=document.getElementById('eqNor');ne.innerHTML='';
+        try{katex.render('\\text{NOR: } Q^+ = S + \\overline{R}Q,\\; SR=0',ne,{throwOnError:false});}catch(e){ne.textContent='Q+=S+RQ, SR=0';}
+        const na=document.getElementById('eqNand');na.innerHTML='';
+        try{katex.render('\\text{NAND: } Q^+ = \\overline{S} + RQ,\\; \\overline{S}+\\overline{R}=1',na,{throwOnError:false});}catch(e){na.textContent='Q+=S+RQ';}
+    }
+    document.getElementById('sBtn').addEventListener('click',()=>{s=s?0:1;refreshAll();});
+    document.getElementById('rBtn').addEventListener('click',()=>{r=r?0:1;refreshAll();});
+    document.querySelectorAll('.mode-btn').forEach(btn=>btn.addEventListener('click',()=>{
+        document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');mode=btn.dataset.mode;s=0;r=0;q=0;refreshAll();
+    }));
+    initTiming();refreshAll();
+    document.addEventListener('DOMContentLoaded',()=>{if(typeof renderMathInElement!=='undefined')renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false});});
+    window.addEventListener('resize',()=>{if(timingChart){timingChart.resize();timingChart.update();}});
+    console.log('SR锁存器已启动 | NOR/NAND实现 | 禁用态检测');
+</script>
+</body>
+</html>

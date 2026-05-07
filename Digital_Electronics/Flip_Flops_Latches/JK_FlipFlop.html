@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>JK触发器 | 通用触发器·翻转模式</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+        .card-hover{transition:all 0.2s ease}.card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 20px -12px rgba(0,0,0,0.15)}
+        .bit-btn{display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:8px;font-weight:bold;font-size:1.2rem;cursor:pointer;transition:all 0.12s ease;border:2px solid #e2e8f0}
+        .bit-btn.on{background:#3b82f6;color:white;border-color:#3b82f6}.bit-btn.off{background:white;color:#64748b;border-color:#e2e8f0}.bit-btn:active{transform:scale(0.92)}
+        .state-node{display:flex;align-items:center;justify-content:center;width:60px;height:60px;border-radius:50%;border:3px solid;font-weight:bold;font-size:1.1rem;transition:all 0.2s}
+        .state-active{border-color:#3b82f6;background:#eff6ff;color:#1d4ed8}.state-inactive{border-color:#e2e8f0;background:white;color:#94a3b8}
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <div class="flex justify-start mb-4">
+        <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页</a>
+    </div>
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">JK触发器</h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">保持·复位·置位·翻转 | J·K输入 | 时钟边沿触发</p>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-4 space-y-6">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4"><span class="w-1 h-6 bg-blue-500 rounded-full"></span>输入</h3>
+                <div class="flex gap-4 justify-center mb-4">
+                    <div class="text-center"><label class="text-sm font-medium text-slate-600 mb-2 block">J</label><div id="jBtn" class="bit-btn off">0</div></div>
+                    <div class="text-center"><label class="text-sm font-medium text-slate-600 mb-2 block">K</label><div id="kBtn" class="bit-btn off">0</div></div>
+                </div>
+                <div class="mb-4"><div class="flex justify-between text-sm font-medium mb-1"><label>时钟频率</label><span class="text-blue-600 font-mono" id="freqDisp">1 Hz</span></div>
+                    <input type="range" id="freqSlider" min="0.5" max="5" step="0.5" value="1" class="w-full"></div>
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-emerald-500 rounded-full"></span>状态</h3>
+                <div class="text-center">
+                    <div id="qDisplay" class="text-4xl font-bold text-blue-600">0</div>
+                    <div id="stateLabel" class="text-sm text-slate-500 mt-1">保持 (J=0,K=0)</div>
+                </div>
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3">状态转换图</h3>
+                <div class="flex justify-center gap-4 items-center">
+                    <div id="s0node" class="state-node state-active">Q=0</div>
+                    <div class="text-slate-400">⇄</div>
+                    <div id="s1node" class="state-node state-inactive">Q=1</div>
+                </div>
+                <div id="transLabel" class="text-center text-xs text-slate-400 mt-2"></div>
+            </div>
+        </div>
+        <div class="lg:col-span-8 space-y-5">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="flex flex-wrap justify-between items-center mb-3 px-2">
+                    <div class="flex items-center gap-4 text-sm">
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-slate-700 rounded-full"></div><span>CLK</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-blue-500 rounded-full"></div><span>J</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-red-500 rounded-full"></div><span>K</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-emerald-500 rounded-full"></div><span>Q</span></div>
+                    </div>
+                </div>
+                <div class="relative"><canvas id="timingChart" width="800" height="380" style="width:100%;height:auto;max-height:420px;"></canvas></div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-purple-500 rounded-full"></span>特征方程</h3>
+                <div id="charEq" class="bg-slate-50 p-3 rounded-lg text-center text-lg"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    let j=0,k=0,freq=1,q=0,timingChart=null;
+    const T=4;
+    function generateTiming(){
+        const t=[],dCLK=[],dJ=[],dK=[],dQ=[];
+        const period=1/freq;
+        let cq=0,lastClk=0;
+        // J,K change pattern
+        const jkPattern=[{t:0,j:0,k:0},{t:0.8,j:1,k:0},{t:1.6,j:0,k:1},{t:2.4,j:1,k:1},{t:3.2,j:0,k:0}];
+        function getJK(tt){let jv=0,kv=0;for(const p of jkPattern)if(tt>=p.t){jv=p.j;kv=p.k;}return{jv,kv};}
+        const PPS=80;
+        for(let i=0;i<=T*PPS;i++){
+            const tt=i/PPS;
+            const clkPhase=(tt%period)/period;
+            const clk=clkPhase<0.5?1:0;
+            const{jv,kv}=getJK(tt);
+            if(lastClk===0&&clk===1){ // rising edge
+                if(jv===0&&kv===0)cq=cq; // hold
+                else if(jv===1&&kv===0)cq=1; // set
+                else if(jv===0&&kv===1)cq=0; // reset
+                else cq=cq?0:1; // toggle
+            }
+            lastClk=clk;
+            t.push(tt);dCLK.push(clk);dJ.push(jv);dK.push(kv);dQ.push(cq);
+        }
+        return{t,dCLK,dJ,dK,dQ};
+    }
+    function initTiming(){
+        if(timingChart)return;
+        timingChart=new Chart(document.getElementById('timingChart').getContext('2d'),{
+            type:'line',data:{datasets:[]},options:{responsive:true,maintainAspectRatio:true,animation:false,interaction:{mode:'index',intersect:false},
+                plugins:{legend:{display:false}},scales:{x:{type:'linear',min:0,max:T,title:{display:true,text:'时间 (s)',font:{weight:'bold'}}},y:{min:-1,max:8,ticks:{callback(v){const m={0:'Q',2:'K',4:'J',6:'CLK'};return m[v]||'';},stepSize:1},grid:{color:'#eef2ff'}}},elements:{point:{radius:0}}}
+        });
+    }
+    function updateTiming(){
+        initTiming();
+        const{t,dCLK,dJ,dK,dQ}=generateTiming();
+        timingChart.data.datasets=[
+            {label:'CLK',data:t.map((x,i)=>({x,y:dCLK[i]+6})),borderColor:'#334155',borderWidth:2,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'},
+            {label:'J',data:t.map((x,i)=>({x,y:dJ[i]+4})),borderColor:'#3b82f6',borderWidth:2,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'},
+            {label:'K',data:t.map((x,i)=>({x,y:dK[i]+2})),borderColor:'#ef4444',borderWidth:2,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'},
+            {label:'Q',data:t.map((x,i)=>({x,y:dQ[i]})),borderColor:'#10b981',borderWidth:2.5,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'}
+        ];
+        timingChart.update('none');
+    }
+    function refreshAll(){
+        document.getElementById('jBtn').className='bit-btn '+(j?'on':'off');document.getElementById('jBtn').textContent=j;
+        document.getElementById('kBtn').className='bit-btn '+(k?'on':'off');document.getElementById('kBtn').textContent=k;
+        document.getElementById('freqDisp').textContent=freq+' Hz';
+        // 根据当前J/K输入直接计算次态（模拟一次时钟上升沿）
+        if(j===0&&k===0); // hold
+        else if(j===1&&k===0)q=1; // set
+        else if(j===0&&k===1)q=0; // reset
+        else if(j===1&&k===1)q=q?0:1; // toggle
+        document.getElementById('qDisplay').textContent=q;
+        document.getElementById('qDisplay').className='text-4xl font-bold '+(q?'text-emerald-600':'text-red-500');
+        let state='保持';if(j===1&&k===0)state='置位';else if(j===0&&k===1)state='复位';else if(j===1&&k===1)state='翻转';
+        document.getElementById('stateLabel').textContent=state+' (J='+j+',K='+k+')';
+        document.getElementById('s0node').className='state-node '+(q===0?'state-active':'state-inactive');
+        document.getElementById('s1node').className='state-node '+(q===1?'state-active':'state-inactive');
+        document.getElementById('transLabel').textContent=j===1&&k===1?'J=1,K=1: 每个时钟边沿翻转':'';
+        const eq=document.getElementById('charEq');eq.innerHTML='';
+        try{katex.render('Q^+ = J\\overline{Q} + \\overline{K}Q',eq,{throwOnError:false});}catch(e){eq.textContent='Q+=JQ+KQ';}
+        updateTiming();
+    }
+    document.getElementById('jBtn').addEventListener('click',()=>{j=j?0:1;refreshAll();});
+    document.getElementById('kBtn').addEventListener('click',()=>{k=k?0:1;refreshAll();});
+    document.getElementById('freqSlider').addEventListener('input',e=>{freq=parseFloat(e.target.value);refreshAll();});
+    initTiming();refreshAll();
+    document.addEventListener('DOMContentLoaded',()=>{if(typeof renderMathInElement!=='undefined')renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false});});
+    window.addEventListener('resize',()=>{if(timingChart){timingChart.resize();timingChart.update();}});
+    console.log('JK触发器已启动 | 保持·置位·复位·翻转');
+</script>
+</body>
+</html>

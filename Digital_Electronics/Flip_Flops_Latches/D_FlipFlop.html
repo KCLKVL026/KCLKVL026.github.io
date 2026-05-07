@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>D触发器 | 边沿触发·建立保持时间</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range]{height:5px;-webkit-appearance:none;background:#e2e8f0;border-radius:5px;outline:none}
+        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#3b82f6;border-radius:50%;cursor:pointer;transition:0.1s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+        ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+        .card-hover{transition:all 0.2s ease}.card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 20px -12px rgba(0,0,0,0.15)}
+        .bit-btn{display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:8px;font-weight:bold;font-size:1.2rem;cursor:pointer;transition:all 0.12s ease;border:2px solid #e2e8f0}
+        .bit-btn.on{background:#3b82f6;color:white;border-color:#3b82f6}.bit-btn.off{background:white;color:#64748b;border-color:#e2e8f0}.bit-btn:active{transform:scale(0.92)}
+        .edge-btn{transition:all 0.15s ease;border:2px solid transparent;cursor:pointer}
+        .edge-btn.active{border-color:#3b82f6;background:#eff6ff;color:#1d4ed8;font-weight:600}
+        .edge-btn:hover:not(.active){background:#f8fafc;border-color:#cbd5e1}
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <div class="flex justify-start mb-4">
+        <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页</a>
+    </div>
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">D触发器</h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">边沿触发 | 上升/下降沿可选 | CLK·D·Q时序 | 建立保持窗口</p>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-4 space-y-6">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4"><span class="w-1 h-6 bg-blue-500 rounded-full"></span>控制</h3>
+                <div class="mb-4"><label class="text-sm font-medium text-slate-600 mb-2 block">D 输入</label><div class="flex justify-center"><div id="dBtn" class="bit-btn off">0</div></div></div>
+                <div class="mb-4"><label class="text-sm font-medium text-slate-600 mb-2 block">时钟边沿</label>
+                    <div class="flex gap-2"><button class="edge-btn active flex-1 rounded-lg px-3 py-2 text-sm text-center" data-edge="rise">上升沿 ↑</button><button class="edge-btn flex-1 rounded-lg px-3 py-2 text-sm text-center" data-edge="fall">下降沿 ↓</button></div></div>
+                <div><div class="flex justify-between text-sm font-medium mb-1"><label>时钟频率</label><span class="text-blue-600 font-mono" id="freqDisp">1 Hz</span></div>
+                    <input type="range" id="freqSlider" min="0.5" max="5" step="0.5" value="1" class="w-full"></div>
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-emerald-500 rounded-full"></span>状态</h3>
+                <div class="text-center">
+                    <div class="text-sm text-slate-500 mb-1">Q 输出</div>
+                    <div id="qDisplay" class="text-4xl font-bold text-blue-600">0</div>
+                    <div class="mt-3 text-sm"><span class="text-slate-500">特征方程:</span></div>
+                    <div id="charEq" class="mt-1"></div>
+                </div>
+            </div>
+        </div>
+        <div class="lg:col-span-8 space-y-5">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="flex flex-wrap justify-between items-center mb-3 px-2">
+                    <div class="flex items-center gap-4 text-sm">
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-slate-700 rounded-full"></div><span>CLK</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-blue-500 rounded-full"></div><span>D</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-emerald-500 rounded-full"></div><span>Q</span></div>
+                    </div>
+                </div>
+                <div class="relative"><canvas id="timingChart" width="800" height="380" style="width:100%;height:auto;max-height:420px;"></canvas></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    let d=0,edge='rise',freq=1,q=0,timingChart=null;
+    const T=4,PPS=80;
+    // D input pattern over time: changes at various points
+    const dPattern=[{t:0,v:0},{t:0.8,v:1},{t:1.6,v:0},{t:2.4,v:1},{t:3.2,v:0}];
+    function getD(t){
+        let v=0;
+        for(const p of dPattern)if(t>=p.t)v=p.v;
+        return v;
+    }
+    function generateTiming(){
+        const t=[],dCLK=[],dD=[],dQ=[];
+        const period=1/freq;
+        let cq=0;
+        let lastClk=0;
+        for(let i=0;i<=T*PPS;i++){
+            const tt=i/PPS;
+            const clkPhase=(tt%period)/period;
+            const clk=clkPhase<0.5?1:0;
+            const dv=getD(tt);
+            // Edge detection
+            if(edge==='rise'&&lastClk===0&&clk===1)cq=dv;
+            if(edge==='fall'&&lastClk===1&&clk===0)cq=dv;
+            lastClk=clk;
+            t.push(tt);dCLK.push(clk);dD.push(dv);dQ.push(cq);
+        }
+        return{t,dCLK,dD,dQ};
+    }
+    function initTiming(){
+        if(timingChart)return;
+        timingChart=new Chart(document.getElementById('timingChart').getContext('2d'),{
+            type:'line',data:{datasets:[]},options:{responsive:true,maintainAspectRatio:true,animation:false,interaction:{mode:'index',intersect:false},
+                plugins:{legend:{display:false}},scales:{x:{type:'linear',min:0,max:T,title:{display:true,text:'时间 (s)',font:{weight:'bold'}}},y:{min:-1,max:6,ticks:{callback(v){const m={0:'Q',2:'D',4:'CLK'};return m[v]||'';},stepSize:1},grid:{color:'#eef2ff'}}},elements:{point:{radius:0}}}
+        });
+    }
+    function updateTiming(){
+        initTiming();
+        const{t,dCLK,dD,dQ}=generateTiming();
+        timingChart.data.datasets=[
+            {label:'CLK',data:t.map((x,i)=>({x,y:dCLK[i]+4})),borderColor:'#334155',borderWidth:2,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'},
+            {label:'D',data:t.map((x,i)=>({x,y:dD[i]+2})),borderColor:'#3b82f6',borderWidth:2,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'},
+            {label:'Q',data:t.map((x,i)=>({x,y:dQ[i]})),borderColor:'#10b981',borderWidth:2.5,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'}
+        ];
+        timingChart.update('none');
+    }
+    function refreshAll(){
+        document.getElementById('dBtn').className='bit-btn '+(d?'on':'off');document.getElementById('dBtn').textContent=d;
+        document.getElementById('freqDisp').textContent=freq+' Hz';
+        // Simulate to get current Q
+        const{dQ}=generateTiming();
+        q=dQ[dQ.length-1];
+        document.getElementById('qDisplay').textContent=q;
+        document.getElementById('qDisplay').className='text-4xl font-bold '+(q?'text-emerald-600':'text-red-500');
+        const eq=document.getElementById('charEq');eq.innerHTML='';
+        try{katex.render('Q^+ = D',eq,{throwOnError:false});}catch(e){eq.textContent='Q+=D';}
+        updateTiming();
+    }
+    document.getElementById('dBtn').addEventListener('click',()=>{d=d?0:1;
+        // Update dPattern to reflect current d at end
+        dPattern[dPattern.length-1].v=d;refreshAll();
+    });
+    document.querySelectorAll('.edge-btn').forEach(btn=>btn.addEventListener('click',()=>{
+        document.querySelectorAll('.edge-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');edge=btn.dataset.edge;refreshAll();
+    }));
+    document.getElementById('freqSlider').addEventListener('input',e=>{freq=parseFloat(e.target.value);refreshAll();});
+    initTiming();refreshAll();
+    document.addEventListener('DOMContentLoaded',()=>{if(typeof renderMathInElement!=='undefined')renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false});});
+    window.addEventListener('resize',()=>{if(timingChart){timingChart.resize();timingChart.update();}});
+    console.log('D触发器已启动 | 边沿触发 | 上升/下降沿可选');
+</script>
+</body>
+</html>

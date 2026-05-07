@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>稳压二极管 | 模拟电子技术辅助教学</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] { height: 5px; -webkit-appearance: none; background: #e2e8f0; border-radius: 5px; outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #6366f1; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb:hover { background: #4f46e5; transform: scale(1.15); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .card-hover { transition: all 0.2s ease; } .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15); }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+    <div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+        <div class="flex justify-start mb-4">
+            <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页
+            </a>
+        </div>
+        <div class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">稳压二极管</h1>
+            <p class="text-slate-600 max-w-2xl mx-auto">齐纳击穿特性与并联稳压电路分析</p>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-4 space-y-5">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-indigo-500 rounded-full"></span>参数控制</h2>
+                    <div class="space-y-4">
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>输入电压 \(V_{in}\)</span><span id="vinValue" class="font-mono font-bold text-indigo-600">12.0 V</span></div><input type="range" id="vinSlider" min="0" max="200" value="120" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>0 V</span><span>20 V</span></div></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>齐纳击穿电压 \(V_Z\)</span><span id="vzValue" class="font-mono font-bold text-indigo-600">5.6 V</span></div><input type="range" id="vzSlider" min="30" max="150" value="56" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>3 V</span><span>15 V</span></div></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>限流电阻 \(R_S\)</span><span id="rsValue" class="font-mono font-bold text-indigo-600">470 Ω</span></div><input type="range" id="rsSlider" min="10" max="100" value="47" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>100 Ω</span><span>10 kΩ</span></div></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>负载电阻 \(R_L\)</span><span id="rlValue" class="font-mono font-bold text-indigo-600">1.0 kΩ</span></div><input type="range" id="rlSlider" min="10" max="100" value="100" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>100 Ω</span><span>10 kΩ</span></div></div>
+                    </div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>稳压参数</h2>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(V_{out}\)</div><div id="voutDisplay" class="text-lg font-bold text-emerald-600 font-mono">5.6 V</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(I_Z\)</div><div id="izDisplay" class="text-lg font-bold text-emerald-600 font-mono">8.0 mA</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(I_L\)</div><div id="ilDisplay" class="text-lg font-bold text-indigo-600 font-mono">5.6 mA</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(P_Z\)</div><div id="pzDisplay" class="text-lg font-bold text-indigo-600 font-mono">45 mW</div></div>
+                    </div>
+                    <div class="mt-3 bg-slate-50 rounded-xl p-3 text-center"><div id="regStatus" class="text-lg font-bold text-emerald-600">稳压正常</div></div>
+                </div>
+            </div>
+            <div class="lg:col-span-8 space-y-5">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <h2 class="text-base font-bold text-slate-800 mb-2">输出电压特性（\(V_{out}\) vs \(V_{in}\)）</h2>
+                    <div class="relative" style="height: 340px;"><canvas id="regChart"></canvas></div>
+                    <p class="text-xs text-slate-400 mt-1 text-center">红线=无稳压(分压)，蓝线=有齐纳稳压，绿色区域=稳压工作区</p>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>关键公式</h2>
+                    <div class="text-sm bg-slate-50 rounded-xl p-4 text-center space-y-2">
+                        \[V_{out} \approx V_Z \quad (\text{when } V_{in} > V_Z + I_{Z,min}R_S) \qquad I_Z = \frac{V_{in} - V_Z}{R_S} - \frac{V_Z}{R_L} \qquad P_Z = V_Z \cdot I_Z\]
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const I_Z_MIN = 0.005;
+        let regChartInst = null;
+
+        function getParams() {
+            return {
+                V_in: parseFloat(vinSlider.value) / 10,
+                V_Z: parseFloat(vzSlider.value) / 10,
+                R_S: parseFloat(rsSlider.value) * 100,
+                R_L: parseFloat(rlSlider.value) * 100
+            };
+        }
+
+        function compute(p) {
+            // Without Zener: resistive divider
+            const Vout_noZener = p.V_in * p.R_L / (p.R_S + p.R_L);
+            // With Zener: if V_in high enough, Vout clamped to V_Z
+            let V_out, I_Z, regulated;
+            const V_threshold = p.V_Z + I_Z_MIN * p.R_S;
+            if (p.V_in > V_threshold) {
+                V_out = p.V_Z;
+                I_Z = (p.V_in - p.V_Z) / p.R_S - p.V_Z / p.R_L;
+                regulated = I_Z >= I_Z_MIN;
+            } else {
+                V_out = Vout_noZener;
+                I_Z = 0;
+                regulated = false;
+            }
+            const I_L = V_out / p.R_L;
+            const P_Z = p.V_Z * I_Z;
+            return { Vout_noZener, V_out, I_Z, I_L, P_Z, regulated, V_threshold };
+        }
+
+        function updateAll() {
+            const p = getParams(), r = compute(p);
+            document.getElementById('vinValue').textContent = p.V_in.toFixed(1) + ' V';
+            document.getElementById('vzValue').textContent = p.V_Z.toFixed(1) + ' V';
+            document.getElementById('rsValue').textContent = p.R_S.toFixed(0) + ' Ω';
+            document.getElementById('rlValue').textContent = (p.R_L/1000).toFixed(1) + ' kΩ';
+            document.getElementById('voutDisplay').textContent = r.V_out.toFixed(2) + ' V';
+            document.getElementById('izDisplay').textContent = (r.I_Z*1000).toFixed(1) + ' mA';
+            document.getElementById('ilDisplay').textContent = (r.I_L*1000).toFixed(1) + ' mA';
+            document.getElementById('pzDisplay').textContent = (r.P_Z*1000).toFixed(0) + ' mW';
+
+            const statusEl = document.getElementById('regStatus');
+            if (r.regulated) { statusEl.textContent = '稳压正常'; statusEl.className = 'text-lg font-bold text-emerald-600'; }
+            else if (p.V_in < p.V_Z) { statusEl.textContent = '输入电压不足'; statusEl.className = 'text-lg font-bold text-slate-500'; }
+            else { statusEl.textContent = '未进入稳压区 (I_Z < 5mA)'; statusEl.className = 'text-lg font-bold text-amber-600'; }
+
+            // Build V_out vs V_in curves
+            const noZener = [], withZener = [];
+            for (let i = 0; i <= 200; i++) {
+                const vin = 20 * i / 200;
+                noZener.push({ x: vin, y: vin * p.R_L / (p.R_S + p.R_L) });
+                let vout;
+                if (vin > p.V_Z + I_Z_MIN * p.R_S) vout = p.V_Z;
+                else vout = vin * p.R_L / (p.R_S + p.R_L);
+                withZener.push({ x: vin, y: vout });
+            }
+            const cfg = { type:'scatter', data:{ datasets:[
+                { label:'无稳压(纯分压)', data:noZener, borderColor:'#f43f5e', borderWidth:1.5, borderDash:[4,3], pointRadius:0, showLine:true, order:2 },
+                { label:'有齐纳稳压', data:withZener, borderColor:'#6366f1', borderWidth:2, pointRadius:0, showLine:true, tension:0.1, order:1 },
+                { label:'工作点', data:[{ x:p.V_in, y:r.V_out }], borderColor:'#ef4444', backgroundColor:'#ef4444', pointRadius:8, showLine:false, order:0 }
+            ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
+                plugins:{ legend:{position:'bottom',labels:{boxWidth:14,font:{size:10}}}, tooltip:{ callbacks:{ label:ctx => `V_in=${ctx.parsed.x.toFixed(1)}V, V_out=${ctx.parsed.y.toFixed(2)}V` } } },
+                scales:{ x:{title:{display:true,text:'V_in (V)'}, grid:{color:'rgba(0,0,0,0.05)'}}, y:{title:{display:true,text:'V_out (V)'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
+            if (regChartInst) regChartInst.destroy();
+            regChartInst = new Chart(document.getElementById('regChart').getContext('2d'), cfg);
+        }
+
+        ['vinSlider','vzSlider','rsSlider','rlSlider'].forEach(id => document.getElementById(id).addEventListener('input', updateAll));
+        updateAll();
+        window.addEventListener('load', () => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); });
+    </script>
+</body>
+</html>

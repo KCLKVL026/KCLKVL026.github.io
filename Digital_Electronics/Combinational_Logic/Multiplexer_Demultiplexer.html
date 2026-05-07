@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>多路复用器与分配器 | MUX·DEMUX</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+        .card-hover{transition:all 0.2s ease}.card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 20px -12px rgba(0,0,0,0.15)}
+        .bit-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:6px;font-weight:bold;cursor:pointer;transition:all 0.12s ease;border:2px solid #e2e8f0}
+        .bit-btn.on{background:#3b82f6;color:white;border-color:#3b82f6}.bit-btn.off{background:white;color:#64748b;border-color:#e2e8f0}.bit-btn:active{transform:scale(0.92)}
+        .mode-btn{transition:all 0.15s ease;border:2px solid transparent;cursor:pointer}
+        .mode-btn.active{border-color:#3b82f6;background:#eff6ff;color:#1d4ed8;font-weight:600}
+        .mode-btn:hover:not(.active){background:#f8fafc;border-color:#cbd5e1}
+        .data-line{display:flex;align-items:center;gap:4px;margin:3px 0}
+        .data-dot{width:10px;height:10px;border-radius:50%}
+        .data-active{background:#3b82f6}.data-inactive{background:#d1d5db}
+        .arrow-line{width:40px;height:2px;background:#6366f1}
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <div class="flex justify-start mb-4">
+        <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页</a>
+    </div>
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">多路复用器与分配器</h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">4:1 MUX 选择路由 | 1:4 DEMUX 分配 | 选择线控制波形</p>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-4 space-y-6">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4"><span class="w-1 h-6 bg-blue-500 rounded-full"></span>模式</h3>
+                <div class="flex gap-2">
+                    <button class="mode-btn active flex-1 rounded-lg px-3 py-2 text-sm text-center" data-mode="MUX">MUX (4:1)</button>
+                    <button class="mode-btn flex-1 rounded-lg px-3 py-2 text-sm text-center" data-mode="DEMUX">DEMUX (1:4)</button>
+                </div>
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>数据输入</h3>
+                <div id="dataInputs" class="flex flex-wrap gap-2 justify-center mb-4"></div>
+                <label class="text-sm font-medium text-slate-600 mb-2 block">选择线 S1 S0</label>
+                <div class="flex gap-2 justify-center">
+                    <div id="s1Btn" class="bit-btn off">0</div>
+                    <div id="s0Btn" class="bit-btn off">0</div>
+                </div>
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-amber-500 rounded-full"></span>输出</h3>
+                <div class="text-center">
+                    <div id="outputDisplay" class="text-4xl font-bold text-blue-600">0</div>
+                    <div id="outputLabel" class="text-sm text-slate-500 mt-1">Y = D0</div>
+                </div>
+            </div>
+        </div>
+        <div class="lg:col-span-8 space-y-5">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="text-sm font-medium text-slate-700 mb-3 px-2">MUX 选择路由时序</div>
+                <div class="relative"><canvas id="timingChart" width="800" height="350" style="width:100%;height:auto;max-height:380px;"></canvas></div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-purple-500 rounded-full"></span>公式</h3>
+                <div class="bg-slate-50 p-3 rounded-lg text-center text-sm" id="formula"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    let mode='MUX',data=[1,0,1,0],s1=0,s0=0,timingChart=null;
+    function renderDataInputs(){
+        const c=document.getElementById('dataInputs');c.innerHTML='';
+        data.forEach((d,i)=>{
+            const div=document.createElement('div');
+            div.className='bit-btn '+(d?'on':'off');
+            div.textContent='D'+i+':'+d;
+            div.addEventListener('click',()=>{data[i]=d?0:1;refreshAll();});
+            c.appendChild(div);
+        });
+    }
+    function mux(d,s1,s0){return d[(s1<<1)|s0];}
+    function updateOutput(){
+        const y=mux(data,s1,s0);
+        document.getElementById('outputDisplay').textContent=y;
+        document.getElementById('outputDisplay').className='text-4xl font-bold '+(y?'text-emerald-600':'text-red-500');
+        document.getElementById('outputLabel').textContent='Y = D'+((s1<<1)|s0);
+    }
+    const T=4,PPS=60;
+    function generateTiming(){
+        const t=[],dS1=[],dS0=[],dY=[];
+        for(let seg=0;seg<4;seg++){
+            const sel=seg;
+            const sy=data[sel];
+            for(let i=0;i<PPS;i++){
+                const tt=seg+i/PPS;
+                t.push(tt);
+                dS1.push((sel>>1)&1);dS0.push(sel&1);dY.push(sy);
+            }
+        }
+        t.push(T);dS1.push(dS1.at(-1));dS0.push(dS0.at(-1));dY.push(dY.at(-1));
+        return {t,dS1,dS0,dY};
+    }
+    function initTiming(){
+        if(timingChart)return;
+        const{t,dS1,dS0,dY}=generateTiming();
+        timingChart=new Chart(document.getElementById('timingChart').getContext('2d'),{
+            type:'line',data:{datasets:[
+                {label:'S1',data:t.map((x,i)=>({x,y:dS1[i]+6})),borderColor:'#8b5cf6',backgroundColor:'transparent',borderWidth:2,stepped:'before',pointRadius:0,tension:0},
+                {label:'S0',data:t.map((x,i)=>({x,y:dS0[i]+4})),borderColor:'#6366f1',backgroundColor:'transparent',borderWidth:2,stepped:'before',pointRadius:0,tension:0},
+                {label:'Y',data:t.map((x,i)=>({x,y:dY[i]})),borderColor:'#ef4444',backgroundColor:'transparent',borderWidth:3,stepped:'before',pointRadius:0,tension:0}
+            ]},
+            options:{responsive:true,maintainAspectRatio:true,animation:false,interaction:{mode:'index',intersect:false},
+                plugins:{legend:{display:false}},scales:{x:{type:'linear',min:0,max:T,grid:{color:'#eef2ff'}},y:{min:-1,max:8,ticks:{callback(v){const m={0:'Y',2:'',4:'S0',6:'S1'};return m[v]||'';},stepSize:1},grid:{color:'#eef2ff'}}},elements:{point:{radius:0}}}
+        });
+    }
+    function updateTiming(){
+        initTiming();
+        const{t,dS1,dS0,dY}=generateTiming();
+        timingChart.data.datasets[0].data=t.map((x,i)=>({x,y:dS1[i]+6}));
+        timingChart.data.datasets[1].data=t.map((x,i)=>({x,y:dS0[i]+4}));
+        timingChart.data.datasets[2].data=t.map((x,i)=>({x,y:dY[i]}));
+        timingChart.update('none');
+    }
+    function renderFormula(){
+        const f=document.getElementById('formula');f.innerHTML='';
+        try{katex.render('Y = \\sum_{i=0}^{3} m_i \\cdot D_i \\quad (m_i = \\text{最小项})',f,{throwOnError:false});}catch(e){f.textContent='Y = Σ mi·Di';}
+    }
+    function refreshAll(){renderDataInputs();updateOutput();updateTiming();renderFormula();}
+    document.getElementById('s1Btn').addEventListener('click',()=>{s1=s1?0:1;document.getElementById('s1Btn').className='bit-btn '+(s1?'on':'off');document.getElementById('s1Btn').textContent=s1;refreshAll();});
+    document.getElementById('s0Btn').addEventListener('click',()=>{s0=s0?0:1;document.getElementById('s0Btn').className='bit-btn '+(s0?'on':'off');document.getElementById('s0Btn').textContent=s0;refreshAll();});
+    initTiming();refreshAll();
+    document.addEventListener('DOMContentLoaded',()=>{if(typeof renderMathInElement!=='undefined')renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false});});
+    window.addEventListener('resize',()=>{if(timingChart){timingChart.resize();timingChart.update();}});
+    console.log('MUX/DEMUX仿真已启动 | 4:1 MUX | 选择线路由');
+</script>
+</body>
+</html>

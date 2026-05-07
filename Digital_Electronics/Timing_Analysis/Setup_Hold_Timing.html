@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>建立保持时间分析 | 建立窗口·保持窗口·亚稳态</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range]{height:5px;-webkit-appearance:none;background:#e2e8f0;border-radius:5px;outline:none}
+        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#3b82f6;border-radius:50%;cursor:pointer;transition:0.1s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+        ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+        .card-hover{transition:all 0.2s ease}.card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 20px -12px rgba(0,0,0,0.15)}
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <div class="flex justify-start mb-4">
+        <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页</a>
+    </div>
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">建立保持时间分析</h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">建立时间 tsu · 保持时间 th · 亚稳态窗口 · 违反检测</p>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-4 space-y-6">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4"><span class="w-1 h-6 bg-blue-500 rounded-full"></span>参数</h3>
+                <div class="mb-4"><div class="flex justify-between text-sm font-medium mb-1"><label>D跳变时间</label><span class="text-blue-600 font-mono" id="tdataDisp">—</span></div>
+                    <input type="range" id="tdataSlider" min="0" max="10" step="0.1" value="5" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-1"><span>0 ns</span><span>10 ns</span></div></div>
+                <div class="mb-4"><div class="flex justify-between text-sm font-medium mb-1"><label>建立时间 tsu</label><span class="text-blue-600 font-mono" id="tsuDisp">1.0 ns</span></div>
+                    <input type="range" id="tsuSlider" min="0.5" max="3" step="0.1" value="1" class="w-full"></div>
+                <div class="mb-4"><div class="flex justify-between text-sm font-medium mb-1"><label>保持时间 th</label><span class="text-blue-600 font-mono" id="thDisp">0.5 ns</span></div>
+                    <input type="range" id="thSlider" min="0.1" max="2" step="0.1" value="0.5" class="w-full"></div>
+                <div><div class="flex justify-between text-sm font-medium mb-1"><label>时钟周期 T</label><span class="text-blue-600 font-mono" id="tclkDisp">10 ns</span></div>
+                    <input type="range" id="tclkSlider" min="5" max="20" step="1" value="10" class="w-full"></div>
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-emerald-500 rounded-full"></span>时序状态</h3>
+                <div id="timingStatus" class="p-3 rounded-lg text-center font-bold text-sm bg-emerald-50 text-emerald-700 border border-emerald-200">✓ 满足时序要求</div>
+            </div>
+        </div>
+        <div class="lg:col-span-8 space-y-5">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="flex flex-wrap justify-between items-center mb-3 px-2">
+                    <div class="flex items-center gap-4 text-sm">
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-slate-700 rounded-full"></div><span>CLK</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-blue-500 rounded-full"></div><span>D</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-4 bg-blue-200 rounded" style="opacity:0.5"></div><span>建立窗口</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-4 bg-red-200 rounded" style="opacity:0.5"></div><span>保持窗口</span></div>
+                    </div>
+                </div>
+                <div class="relative"><canvas id="timingChart" width="800" height="380" style="width:100%;height:auto;max-height:420px;"></canvas></div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-purple-500 rounded-full"></span>公式</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div id="eq1" class="bg-slate-50 p-3 rounded-lg text-center text-sm"></div>
+                    <div id="eq2" class="bg-slate-50 p-3 rounded-lg text-center text-sm"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    let tdata=5,tsu=1,th=0.5,tclk=10,timingChart=null;
+    const CLK_EDGE=5; // clock edge at t=5
+    function checkTiming(){
+        const setupMargin=CLK_EDGE-tdata-tsu; // positive = ok
+        const holdMargin=tdata+th-CLK_EDGE; // positive = ok (D must stay th after edge)
+        const ok=setupMargin>=0&&holdMargin>=0;
+        return{setupMargin,holdMargin,ok};
+    }
+    function initTiming(){
+        if(timingChart)return;
+        timingChart=new Chart(document.getElementById('timingChart').getContext('2d'),{
+            type:'line',data:{datasets:[]},options:{responsive:true,maintainAspectRatio:true,animation:false,interaction:{mode:'index',intersect:false},
+                plugins:{legend:{display:false}},scales:{x:{type:'linear',min:0,max:tclk,title:{display:true,text:'时间 (ns)',font:{weight:'bold'}},grid:{color:'#eef2ff'}},y:{min:-1,max:4,ticks:{callback(v){const m={0:'D',2:'CLK'};return m[v]||'';},stepSize:1},grid:{color:'#eef2ff'}}},elements:{point:{radius:0}}}
+        });
+    }
+    function updateTiming(){
+        if(timingChart){timingChart.destroy();timingChart=null;}
+        initTiming();
+        // CLK: square wave, rising edge at CLK_EDGE
+        const clkPoints=[];
+        for(let t=0;t<=tclk;t+=0.01){
+            const clk=t>=CLK_EDGE&&t<CLK_EDGE+tclk/2?1:0;
+            clkPoints.push({x:t,y:clk+2});
+        }
+        // D: changes at tdata
+        const dPoints=[];
+        for(let t=0;t<=tclk;t+=0.01){
+            const d=t>=tdata?1:0;
+            dPoints.push({x:t,y:d});
+        }
+        // Setup window (blue)
+        const setupRegion=[];
+        for(let t=CLK_EDGE-tsu;t<=CLK_EDGE;t+=0.01)setupRegion.push({x:t,y:0.5});
+
+        timingChart.data.datasets=[
+            {label:'CLK',data:clkPoints,borderColor:'#334155',borderWidth:2,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'},
+            {label:'D',data:dPoints,borderColor:'#3b82f6',borderWidth:2.5,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'},
+            {label:'建立窗口',data:setupRegion,borderColor:'#3b82f6',borderWidth:0,pointRadius:0,tension:0,backgroundColor:'rgba(59,130,246,0.2)',fill:true}
+        ];
+        timingChart.options.scales.x.max=tclk;
+        timingChart.update('none');
+    }
+    function refreshAll(){
+        tdata=parseFloat(document.getElementById('tdataSlider').value);
+        tsu=parseFloat(document.getElementById('tsuSlider').value);
+        th=parseFloat(document.getElementById('thSlider').value);
+        tclk=parseInt(document.getElementById('tclkSlider').value);
+        document.getElementById('tdataDisp').textContent=tdata.toFixed(1)+' ns';
+        document.getElementById('tsuDisp').textContent=tsu.toFixed(1)+' ns';
+        document.getElementById('thDisp').textContent=th.toFixed(1)+' ns';
+        document.getElementById('tclkDisp').textContent=tclk+' ns';
+        const{setupMargin,holdMargin,ok}=checkTiming();
+        const status=document.getElementById('timingStatus');
+        if(ok){status.className='p-3 rounded-lg text-center font-bold text-sm bg-emerald-50 text-emerald-700 border border-emerald-200';status.textContent='✓ 满足时序要求 (setup margin: '+setupMargin.toFixed(1)+'ns, hold margin: '+holdMargin.toFixed(1)+'ns)';}
+        else{
+            status.className='p-3 rounded-lg text-center font-bold text-sm bg-red-50 text-red-700 border border-red-200';
+            let reason=[];
+            if(setupMargin<0)reason.push('建立时间违反');
+            if(holdMargin<0)reason.push('保持时间违反');
+            status.textContent='⚠ '+reason.join(' + ')+' — 亚稳态风险!';
+        }
+        updateTiming();
+        const eq1=document.getElementById('eq1');eq1.innerHTML='';
+        try{katex.render('t_{su}: t_{data} \\leq t_{clk\\_edge} - t_{su}',eq1,{throwOnError:false});}catch(e){eq1.textContent='tsu: tdata <= tclk_edge - tsu';}
+        const eq2=document.getElementById('eq2');eq2.innerHTML='';
+        try{katex.render('t_h: t_{data} \\geq t_{clk\\_edge} + t_h',eq2,{throwOnError:false});}catch(e){eq2.textContent='th: tdata >= tclk_edge + th';}
+    }
+    document.getElementById('tdataSlider').addEventListener('input',refreshAll);
+    document.getElementById('tsuSlider').addEventListener('input',refreshAll);
+    document.getElementById('thSlider').addEventListener('input',refreshAll);
+    document.getElementById('tclkSlider').addEventListener('input',refreshAll);
+    initTiming();refreshAll();
+    document.addEventListener('DOMContentLoaded',()=>{if(typeof renderMathInElement!=='undefined')renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false});});
+    window.addEventListener('resize',()=>{if(timingChart){timingChart.resize();timingChart.update();}});
+    console.log('建立保持时间已启动 | 违反检测 | 亚稳态窗口');
+</script>
+</body>
+</html>

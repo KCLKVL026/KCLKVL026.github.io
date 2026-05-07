@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>ADC量化与误差 | Flash·SAR·量化噪声</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range]{height:5px;-webkit-appearance:none;background:#e2e8f0;border-radius:5px;outline:none}
+        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#3b82f6;border-radius:50%;cursor:pointer;transition:0.1s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+        ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+        .card-hover{transition:all 0.2s ease}.card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 20px -12px rgba(0,0,0,0.15)}
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <div class="flex justify-start mb-4">
+        <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页</a>
+    </div>
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">ADC 量化与误差</h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">量化电平·量化误差·SNR | 分辨率可调 | 传输特性</p>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-4 space-y-6">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4"><span class="w-1 h-6 bg-blue-500 rounded-full"></span>参数</h3>
+                <div class="mb-4"><div class="flex justify-between text-sm font-medium mb-1"><label>模拟输入 Vin</label><span class="text-blue-600 font-mono" id="vinDisp">2.50 V</span></div>
+                    <input type="range" id="vinSlider" min="0" max="5" step="0.01" value="2.5" class="w-full"></div>
+                <div class="mb-4"><div class="flex justify-between text-sm font-medium mb-1"><label>分辨率 N</label><span class="text-blue-600 font-mono" id="nDisp">3 bit</span></div>
+                    <input type="range" id="nSlider" min="2" max="6" step="1" value="3" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-1"><span>2 bit</span><span>6 bit</span></div></div>
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-emerald-500 rounded-full"></span>量化结果</h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between p-2 bg-slate-50 rounded-lg"><span>数字输出码</span><span class="font-mono font-bold text-blue-700" id="codeDisplay">—</span></div>
+                    <div class="flex justify-between p-2 bg-slate-50 rounded-lg"><span>量化电平</span><span class="font-mono font-bold" id="qlevelDisplay">—</span></div>
+                    <div class="flex justify-between p-2 bg-slate-50 rounded-lg"><span>量化误差</span><span class="font-mono font-bold" id="qerrDisplay">—</span></div>
+                    <div class="flex justify-between p-2 bg-slate-50 rounded-lg"><span>量化步长 Q</span><span class="font-mono font-bold" id="qstepDisplay">—</span></div>
+                    <div class="flex justify-between p-2 bg-slate-50 rounded-lg"><span>SNR</span><span class="font-mono font-bold" id="snrDisplay">—</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="lg:col-span-8 space-y-5">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="text-sm font-medium text-slate-700 mb-3 px-2">传输特性 (模拟→数字)</div>
+                <div class="relative"><canvas id="transferChart" width="800" height="320" style="width:100%;height:auto;max-height:350px;"></canvas></div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="text-sm font-medium text-slate-700 mb-3 px-2">量化误差波形</div>
+                <div class="relative"><canvas id="errorChart" width="800" height="220" style="width:100%;height:auto;max-height:250px;"></canvas></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    let vin=2.5,N=3,transferChart=null,errorChart=null;
+    const Vref=5;
+    function quantize(v,n){
+        const levels=Math.pow(2,n);
+        const Q=Vref/levels;
+        const code=Math.min(levels-1,Math.floor(v/Q));
+        const qLevel=code*Q+Q/2;
+        const error=v-qLevel;
+        return{code,qLevel,error,Q,levels};
+    }
+    function refreshAll(){
+        N=parseInt(document.getElementById('nSlider').value);
+        vin=parseFloat(document.getElementById('vinSlider').value);
+        document.getElementById('nDisp').textContent=N+' bit';
+        document.getElementById('vinDisp').textContent=vin.toFixed(2)+' V';
+        const{code,qLevel,error,Q}=quantize(vin,N);
+        document.getElementById('codeDisplay').textContent=code+' ('+code.toString(2).padStart(N,'0')+')';
+        document.getElementById('qlevelDisplay').textContent=qLevel.toFixed(4)+' V';
+        document.getElementById('qerrDisplay').textContent=error.toFixed(4)+' V';
+        document.getElementById('qstepDisplay').textContent=Q.toFixed(4)+' V';
+        document.getElementById('snrDisplay').textContent=(6.02*N+1.76).toFixed(1)+' dB';
+        updateTransfer();updateError();
+    }
+    function initTransfer(){
+        if(transferChart)return;
+        transferChart=new Chart(document.getElementById('transferChart').getContext('2d'),{
+            type:'scatter',data:{datasets:[]},options:{responsive:true,maintainAspectRatio:true,animation:false,
+                plugins:{legend:{display:false}},scales:{x:{title:{display:true,text:'Vin (V)',font:{weight:'bold'}},min:0,max:Vref,grid:{color:'#eef2ff'}},y:{title:{display:true,text:'数字输出码',font:{weight:'bold'}},min:0,grid:{color:'#eef2ff'}}},elements:{point:{radius:0}}}
+        });
+    }
+    function updateTransfer(){
+        initTransfer();
+        const levels=Math.pow(2,N);const Q=Vref/levels;
+        const points=[];for(let i=0;i<=200;i++){const v=i/200*Vref;const{code}=quantize(v,N);points.push({x:v,y:code});}
+        const{code,}=quantize(vin,N);
+        transferChart.data.datasets=[
+            {label:'传输特性',data:points,showLine:true,borderColor:'#3b82f6',borderWidth:2,stepped:false,pointRadius:0},
+            {label:'当前点',data:[{x:vin,y:code}],pointRadius:8,pointBackgroundColor:'#ef4444',pointBorderColor:'#fff',pointBorderWidth:2}
+        ];
+        transferChart.options.scales.y.max=levels-1;
+        transferChart.update('none');
+    }
+    function initError(){
+        if(errorChart)return;
+        errorChart=new Chart(document.getElementById('errorChart').getContext('2d'),{
+            type:'line',data:{datasets:[]},options:{responsive:true,maintainAspectRatio:true,animation:false,
+                plugins:{legend:{display:false}},scales:{x:{title:{display:true,text:'Vin (V)',font:{weight:'bold'}},min:0,max:Vref,grid:{color:'#eef2ff'}},y:{title:{display:true,text:'误差 (V)',font:{weight:'bold'}},grid:{color:'#eef2ff'}}},elements:{point:{radius:0}}}
+        });
+    }
+    function updateError(){
+        initError();
+        const Q=Vref/Math.pow(2,N);
+        const points=[];for(let i=0;i<=200;i++){const v=i/200*Vref;const{error}=quantize(v,N);points.push({x:v,y:error});}
+        errorChart.data.datasets=[
+            {label:'量化误差',data:points,borderColor:'#ef4444',borderWidth:1.5,pointRadius:0,tension:0,backgroundColor:'transparent'},
+            {label:'当前误差',data:[{x:vin,y:quantize(vin,N).error}],pointRadius:6,pointBackgroundColor:'#3b82f6',pointBorderColor:'#fff',pointBorderWidth:2}
+        ];
+        errorChart.update('none');
+    }
+    document.getElementById('vinSlider').addEventListener('input',refreshAll);
+    document.getElementById('nSlider').addEventListener('input',refreshAll);
+    initTransfer();initError();refreshAll();
+    document.addEventListener('DOMContentLoaded',()=>{if(typeof renderMathInElement!=='undefined')renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false});});
+    window.addEventListener('resize',()=>{if(transferChart){transferChart.resize();transferChart.update();}if(errorChart){errorChart.resize();errorChart.update();}});
+    console.log('ADC量化已启动 | 2~6bit | 量化误差·SNR');
+</script>
+</body>
+</html>

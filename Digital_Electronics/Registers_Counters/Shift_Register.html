@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>移位寄存器 | SISO·SIPO·PISO·PIPO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+        .card-hover{transition:all 0.2s ease}.card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 20px -12px rgba(0,0,0,0.15)}
+        .bit-btn{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:6px;font-weight:bold;font-size:1rem;cursor:pointer;transition:all 0.12s ease;border:2px solid #e2e8f0}
+        .bit-btn.on{background:#3b82f6;color:white;border-color:#3b82f6}.bit-btn.off{background:white;color:#64748b;border-color:#e2e8f0}.bit-btn:active{transform:scale(0.92)}
+        .mode-btn{transition:all 0.15s ease;border:2px solid transparent;cursor:pointer}
+        .mode-btn.active{border-color:#3b82f6;background:#eff6ff;color:#1d4ed8;font-weight:600}
+        .mode-btn:hover:not(.active){background:#f8fafc;border-color:#cbd5e1}
+        .reg-cell{display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border:2px solid;border-radius:8px;font-weight:bold;font-size:1.2rem;margin:0 3px;transition:all 0.15s ease}
+        .reg-on{background:#dbeafe;border-color:#3b82f6;color:#1d4ed8}.reg-off{background:white;border-color:#e2e8f0;color:#94a3b8}
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <div class="flex justify-start mb-4">
+        <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页</a>
+    </div>
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">移位寄存器</h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">SISO·SIPO·PISO·PIPO四种模式 | 4位移位 | 串行/并行输入输出</p>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-4 space-y-6">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4"><span class="w-1 h-6 bg-blue-500 rounded-full"></span>模式</h3>
+                <div class="grid grid-cols-2 gap-2">
+                    <button class="mode-btn active rounded-lg px-2 py-2 text-sm text-center" data-mode="SISO">SISO</button>
+                    <button class="mode-btn rounded-lg px-2 py-2 text-sm text-center" data-mode="SIPO">SIPO</button>
+                    <button class="mode-btn rounded-lg px-2 py-2 text-sm text-center" data-mode="PISO">PISO</button>
+                    <button class="mode-btn rounded-lg px-2 py-2 text-sm text-center" data-mode="PIPO">PIPO</button>
+                </div>
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-emerald-500 rounded-full"></span>串行输入</h3>
+                <div class="flex justify-center"><div id="serInBtn" class="bit-btn off">0</div></div>
+                <p class="text-xs text-slate-400 mt-2 text-center">每按"时钟"移入一位</p>
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-amber-500 rounded-full"></span>并行输入 (PISO/PIPO)</h3>
+                <div id="parInputs" class="flex gap-2 justify-center"></div>
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <button id="clkBtn" class="w-full rounded-lg px-4 py-3 text-lg font-bold bg-blue-500 text-white hover:bg-blue-600 transition-colors active:bg-blue-700">⟳ 时钟</button>
+                <button id="resetBtn" class="w-full mt-2 rounded-lg px-4 py-2 text-sm font-medium bg-slate-200 text-slate-600 hover:bg-slate-300 transition-colors">复位</button>
+            </div>
+        </div>
+        <div class="lg:col-span-8 space-y-5">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-6">
+                <h3 class="text-md font-bold text-slate-700 mb-4 text-center">寄存器状态</h3>
+                <div class="flex justify-center items-center gap-1" id="regDisplay"></div>
+                <div class="flex justify-center gap-8 mt-4 text-sm text-slate-500">
+                    <span>串行输出: <span id="serOut" class="font-bold text-blue-600">0</span></span>
+                    <span>并行输出: <span id="parOut" class="font-bold text-emerald-600">0000</span></span>
+                </div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="text-sm font-medium text-slate-700 mb-3 px-2">移位时序</div>
+                <div class="relative"><canvas id="timingChart" width="800" height="300" style="width:100%;height:auto;max-height:330px;"></canvas></div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-purple-500 rounded-full"></span>公式</h3>
+                <div class="bg-slate-50 p-3 rounded-lg text-center text-sm" id="formula"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    let mode='SISO',reg=[0,0,0,0],serIn=0,parIn=[1,0,1,0],timingChart=null;
+    const history=[];
+    function clockPulse(){
+        if(mode==='SISO'||mode==='SIPO'){
+            for(let i=3;i>0;i--)reg[i]=reg[i-1];
+            reg[0]=serIn;
+        }else if(mode==='PISO'){
+            // Load parallel first time, then shift
+            if(history.length===0){reg=[...parIn];}
+            else{for(let i=3;i>0;i--)reg[i]=reg[i-1];reg[0]=0;}
+        }else{ // PIPO
+            reg=[...parIn];
+        }
+        history.push([...reg]);
+        if(history.length>16)history.shift();
+        refreshAll();
+    }
+    function renderReg(){
+        const c=document.getElementById('regDisplay');c.innerHTML='';
+        reg.forEach((v,i)=>{
+            const div=document.createElement('div');
+            div.className='reg-cell '+(v?'reg-on':'reg-off');
+            div.textContent=v;
+            c.appendChild(div);
+        });
+        document.getElementById('serOut').textContent=reg[3];
+        document.getElementById('parOut').textContent=reg.join('');
+    }
+    function renderParInputs(){
+        const c=document.getElementById('parInputs');c.innerHTML='';
+        parIn.forEach((v,i)=>{
+            const div=document.createElement('div');
+            div.className='bit-btn '+(v?'on':'off');
+            div.textContent=v;
+            div.addEventListener('click',()=>{parIn[i]=v?0:1;refreshAll();});
+            c.appendChild(div);
+        });
+    }
+    function initTiming(){
+        if(timingChart)return;
+        timingChart=new Chart(document.getElementById('timingChart').getContext('2d'),{
+            type:'line',data:{datasets:[]},options:{responsive:true,maintainAspectRatio:true,animation:false,interaction:{mode:'index',intersect:false},
+                plugins:{legend:{position:'top',labels:{usePointStyle:true,boxWidth:8,font:{size:10}}}},
+                scales:{x:{type:'linear',title:{display:true,text:'时钟周期',font:{weight:'bold'}},min:0,grid:{color:'#eef2ff'}},y:{min:-1,max:8,ticks:{callback(v){const m={0:'Q3',2:'Q2',4:'Q1',6:'Q0'};return m[v]||null;},stepSize:1},grid:{color:'#eef2ff'}}},elements:{point:{radius:3,hoverRadius:5}}}
+        });
+    }
+    function updateTiming(){
+        initTiming();
+        if(history.length===0){timingChart.data.datasets=[];timingChart.update('none');return;}
+        const colors=['#ef4444','#f59e0b','#3b82f6','#10b981'];
+        const datasets=[];
+        for(let s=0;s<4;s++){
+            datasets.push({label:'Q'+s,data:history.map((h,i)=>({x:i,y:h[s]+(3-s)*2})),borderColor:colors[s],borderWidth:2,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'});
+        }
+        timingChart.data.datasets=datasets;
+        timingChart.update('none');
+    }
+    function renderFormula(){
+        const f=document.getElementById('formula');f.innerHTML='';
+        const formulas={SISO:'Q_i^+ = Q_{i-1},\\; Q_0 = D_{in}',SIPO:'Q_i^+ = Q_{i-1},\\; Q_0 = D_{in} (并行输出)',PISO:'\\text{先加载 } D_0 D_1 D_2 D_3, \\text{再逐位右移}',PIPO:'Q_i^+ = D_i (并行加载)'};
+        try{katex.render(formulas[mode],f,{throwOnError:false});}catch(e){f.textContent=formulas[mode];}
+    }
+    function refreshAll(){renderReg();renderParInputs();updateTiming();renderFormula();}
+    document.querySelectorAll('.mode-btn').forEach(btn=>btn.addEventListener('click',()=>{
+        document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');mode=btn.dataset.mode;reg=[0,0,0,0];history.length=0;refreshAll();
+    }));
+    document.getElementById('serInBtn').addEventListener('click',()=>{serIn=serIn?0:1;document.getElementById('serInBtn').className='bit-btn '+(serIn?'on':'off');document.getElementById('serInBtn').textContent=serIn;});
+    document.getElementById('clkBtn').addEventListener('click',clockPulse);
+    document.getElementById('resetBtn').addEventListener('click',()=>{reg=[0,0,0,0];history.length=0;refreshAll();});
+    initTiming();refreshAll();
+    document.addEventListener('DOMContentLoaded',()=>{if(typeof renderMathInElement!=='undefined')renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false});});
+    window.addEventListener('resize',()=>{if(timingChart){timingChart.resize();timingChart.update();}});
+    console.log('移位寄存器已启动 | SISO·SIPO·PISO·PIPO');
+</script>
+</body>
+</html>

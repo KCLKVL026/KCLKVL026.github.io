@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>多输入门与扇入 | 3~5输入 AND·OR·NAND</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range]{height:5px;-webkit-appearance:none;background:#e2e8f0;border-radius:5px;outline:none}
+        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#3b82f6;border-radius:50%;cursor:pointer;transition:0.1s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+        input[type=range]::-webkit-slider-thumb:hover{background:#2563eb;transform:scale(1.15)}
+        ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+        .card-hover{transition:all 0.2s ease}.card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 20px -12px rgba(0,0,0,0.15)}
+        .gate-btn{transition:all 0.15s ease;border:2px solid transparent;cursor:pointer}
+        .gate-btn.active{border-color:#3b82f6;background:#eff6ff;color:#1d4ed8;font-weight:600}
+        .gate-btn:hover:not(.active){background:#f8fafc;border-color:#cbd5e1}
+        .input-bit{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:8px;font-weight:bold;font-size:1.1rem;cursor:pointer;transition:all 0.12s ease;border:2px solid #e2e8f0}
+        .input-bit.on{background:#3b82f6;color:white;border-color:#3b82f6}
+        .input-bit.off{background:white;color:#64748b;border-color:#e2e8f0}
+        .input-bit:active{transform:scale(0.92)}
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <div class="flex justify-start mb-4">
+        <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            返回主页
+        </a>
+    </div>
+
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">多输入门与扇入</h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">扩展到 3~5 输入门 | 扇入对传播延迟的影响 | 输入输出时序波形</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-4 space-y-6">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4"><span class="w-1 h-6 bg-blue-500 rounded-full"></span>门类型</h3>
+                <div class="grid grid-cols-3 gap-2" id="gateSelector">
+                    <button class="gate-btn active rounded-lg px-2 py-2 text-sm text-center" data-gate="AND">AND</button>
+                    <button class="gate-btn rounded-lg px-2 py-2 text-sm text-center" data-gate="OR">OR</button>
+                    <button class="gate-btn rounded-lg px-2 py-2 text-sm text-center" data-gate="NAND">NAND</button>
+                    <button class="gate-btn rounded-lg px-2 py-2 text-sm text-center" data-gate="NOR">NOR</button>
+                    <button class="gate-btn rounded-lg px-2 py-2 text-sm text-center" data-gate="XOR">XOR</button>
+                </div>
+            </div>
+
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>输入数量</h3>
+                <div class="flex justify-between text-sm font-medium mb-1">
+                    <label>扇入数 N</label>
+                    <span class="text-blue-600 font-mono" id="faninDisplay">3</span>
+                </div>
+                <input type="range" id="faninSlider" min="2" max="5" step="1" value="3" class="w-full">
+                <div class="flex justify-between text-xs text-slate-400 mt-1"><span>2</span><span>5</span></div>
+            </div>
+
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-amber-500 rounded-full"></span>输入值</h3>
+                <div id="inputBits" class="flex flex-wrap gap-2 justify-center"></div>
+                <p class="text-xs text-slate-400 mt-3 text-center">点击切换 0/1</p>
+            </div>
+
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-red-500 rounded-full"></span>输出</h3>
+                <div class="text-center">
+                    <div id="outputDisplay" class="text-5xl font-bold py-3 text-blue-600">0</div>
+                    <div id="outputFormula" class="mt-2 text-sm"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-8 space-y-5">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="flex flex-wrap justify-between items-center mb-3 px-2">
+                    <div class="text-sm font-medium text-slate-700">时序波形</div>
+                    <div class="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded-full">多输入数字信号</div>
+                </div>
+                <div class="relative"><canvas id="timingChart" width="800" height="350" style="width:100%;height:auto;max-height:380px;"></canvas></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                    <div class="text-sm font-medium text-slate-700 mb-2">传播延迟 vs 扇入</div>
+                    <div class="relative"><canvas id="delayChart" width="400" height="250" style="width:100%;height:auto;"></canvas></div>
+                </div>
+                <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-5">
+                    <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-purple-500 rounded-full"></span>扇入参数</h3>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between p-2 bg-slate-50 rounded-lg"><span>当前扇入</span><span class="font-mono font-bold" id="faninVal">3</span></div>
+                        <div class="flex justify-between p-2 bg-slate-50 rounded-lg"><span>门延迟</span><span class="font-mono font-bold" id="delayVal">—</span></div>
+                        <div class="flex justify-between p-2 bg-slate-50 rounded-lg"><span>最大频率</span><span class="font-mono font-bold" id="freqVal">—</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentGate='AND', fanin=3, inputs=[1,0,1,0,1];
+    let timingChart=null, delayChart=null;
+
+    const gateFn={
+        AND:args=>args.reduce((a,b)=>a&b,1),
+        OR:args=>args.reduce((a,b)=>a|b,0),
+        NAND:args=>gateFn.AND(args)?0:1,
+        NOR:args=>gateFn.OR(args)?0:1,
+        XOR:args=>args.reduce((a,b)=>a^b,0)
+    };
+
+    const gateLatex={
+        AND:n=>{const v=Array.from({length:n},(_,i)=>String.fromCharCode(65+i)).join(' \\cdot ');return 'Y = '+v;},
+        OR:n=>{const v=Array.from({length:n},(_,i)=>String.fromCharCode(65+i)).join(' + ');return 'Y = '+v;},
+        NAND:n=>gateLatex.AND(n).replace('Y =','Y = \\overline{')+'}',
+        NOR:n=>gateLatex.OR(n).replace('Y =','Y = \\overline{')+'}',
+        XOR:n=>{const v=Array.from({length:n},(_,i)=>String.fromCharCode(65+i)).join(' \\oplus ');return 'Y = '+v;}
+    };
+
+    const tpd_base=5; // ns per gate level
+    function computeDelay(n){return tpd_base*(1+0.2*(n-2));} // slightly increases with fan-in
+
+    // ====== 输入位 UI ======
+    function renderInputBits(){
+        const c=document.getElementById('inputBits');
+        c.innerHTML='';
+        for(let i=0;i<fanin;i++){
+            const div=document.createElement('div');
+            div.className='input-bit '+(inputs[i]?'on':'off');
+            div.textContent=inputs[i];
+            div.title=String.fromCharCode(65+i);
+            div.addEventListener('click',()=>{inputs[i]=inputs[i]?0:1;refreshAll();});
+            c.appendChild(div);
+        }
+    }
+
+    // ====== 时序图 ======
+    const T_TOTAL=4, PPS=80;
+    // 随机输入模式覆盖真值表组合
+    function generateTiming(){
+        const times=[], dataInputs=[], dataOutput=[];
+        const n=fanin;
+        // 生成8个时间段，每段随机输入
+        const segs=8;
+        const patterns=[];
+        for(let s=0;s<segs;s++){
+            const p=[];
+            for(let i=0;i<n;i++) p.push(Math.random()>0.5?1:0);
+            patterns.push(p);
+        }
+        for(let s=0;s<segs;s++){
+            const pat=patterns[s];
+            const y=gateFn[currentGate](pat);
+            for(let i=0;i<PPS;i++){
+                const t=s*(T_TOTAL/segs)+i/(PPS)*(T_TOTAL/segs);
+                times.push(t);
+                if(!dataInputs.length) for(let j=0;j<n;j++) dataInputs.push([]);
+                for(let j=0;j<n;j++) dataInputs[j].push(pat[j]);
+                dataOutput.push(y);
+            }
+        }
+        return {times, dataInputs, dataOutput, segs};
+    }
+
+    function initTiming(){
+        if(timingChart)return;
+        timingChart=new Chart(document.getElementById('timingChart').getContext('2d'),{
+            type:'line',data:{datasets:[]},options:{
+                responsive:true,maintainAspectRatio:true,animation:false,
+                interaction:{mode:'index',intersect:false},
+                plugins:{legend:{position:'top',labels:{usePointStyle:true,boxWidth:8,font:{size:10}}},
+                    tooltip:{callbacks:{label(ctx){return ctx.dataset.label+' = '+Math.round(ctx.raw.y-[...Array(fanin+1).keys()].reverse().map(v=>v*2)[ctx.datasetIndex]);}}}},
+                scales:{
+                    x:{type:'linear',title:{display:true,text:'时间 (ns)',font:{weight:'bold'}},min:0,max:T_TOTAL,grid:{color:'#eef2ff'}},
+                    y:{min:-0.5,max:fanin*2+1.5,ticks:{callback(v){if(v===0)return 'Y';for(let i=0;i<fanin;i++){if(v===(fanin-i)*2)return String.fromCharCode(65+i);}return '';}},stepSize:1,grid:{color:'#eef2ff'}}
+                },
+                elements:{point:{radius:0}}
+            }
+        });
+    }
+
+    function updateTiming(){
+        initTiming();
+        const{times,dataInputs,dataOutput}=generateTiming();
+        const n=fanin;
+        const colors=['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6'];
+        const datasets=[];
+        for(let j=0;j<n;j++){
+            const off=(n-j)*2;
+            datasets.push({label:String.fromCharCode(65+j),data:times.map((t,i)=>({x:t,y:dataInputs[j][i]+off})),borderColor:colors[j%colors.length],backgroundColor:'transparent',borderWidth:2,stepped:'before',pointRadius:0,tension:0});
+        }
+        datasets.push({label:'Y',data:times.map((t,i)=>({x:t,y:dataOutput[i]})),borderColor:'#000',backgroundColor:'transparent',borderWidth:3,stepped:'before',pointRadius:0,tension:0});
+        timingChart.data.datasets=datasets;
+        timingChart.options.scales.y.max=n*2+1.5;
+        timingChart.update('none');
+    }
+
+    // ====== 延迟图 ======
+    function initDelay(){
+        if(delayChart)return;
+        delayChart=new Chart(document.getElementById('delayChart').getContext('2d'),{
+            type:'bar',data:{labels:['2','3','4','5'],datasets:[{label:'传播延迟 (ns)',data:[5,6,7,8],backgroundColor:['#bfdbfe','#93c5fd','#60a5fa','#3b82f6'],borderColor:'#2563eb',borderWidth:1}]},
+            options:{responsive:true,maintainAspectRatio:true,animation:false,plugins:{legend:{display:false}},
+                scales:{x:{title:{display:true,text:'扇入数',font:{weight:'bold'}}},y:{title:{display:true,text:'延迟 (ns)',font:{weight:'bold'}},min:0,grid:{color:'#eef2ff'}}}}
+        });
+    }
+
+    function updateDelay(){
+        initDelay();
+        const data=[2,3,4,5].map(n=>computeDelay(n));
+        delayChart.data.datasets[0].data=data;
+        // highlight current
+        delayChart.data.datasets[0].backgroundColor=[2,3,4,5].map(n=>n===fanin?'#3b82f6':'#bfdbfe');
+        delayChart.update('none');
+        document.getElementById('delayVal').textContent=computeDelay(fanin).toFixed(1)+' ns';
+        document.getElementById('freqVal').textContent=(1e3/(2*computeDelay(fanin))).toFixed(0)+' MHz';
+    }
+
+    // ====== 输出 & 公式 ======
+    function updateOutput(){
+        const active=inputs.slice(0,fanin);
+        const y=gateFn[currentGate](active);
+        const d=document.getElementById('outputDisplay');
+        d.textContent=y;
+        d.className='text-5xl font-bold py-3 '+(y?'text-emerald-600':'text-red-500');
+
+        const f=document.getElementById('outputFormula');
+        f.innerHTML='';
+        try{katex.render(gateLatex[currentGate](fanin),f,{throwOnError:false});}catch(e){f.textContent=gateLatex[currentGate](fanin);}
+
+        document.getElementById('faninDisplay').textContent=fanin;
+        document.getElementById('faninVal').textContent=fanin;
+    }
+
+    function refreshAll(){renderInputBits();updateTiming();updateDelay();updateOutput();}
+
+    // 事件
+    document.querySelectorAll('.gate-btn').forEach(btn=>btn.addEventListener('click',()=>{
+        document.querySelectorAll('.gate-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');currentGate=btn.dataset.gate;refreshAll();
+    }));
+    document.getElementById('faninSlider').addEventListener('input',e=>{
+        fanin=parseInt(e.target.value);
+        while(inputs.length<fanin) inputs.push(0);
+        refreshAll();
+    });
+
+    initTiming();initDelay();refreshAll();
+    document.addEventListener('DOMContentLoaded',()=>{if(typeof renderMathInElement!=='undefined')renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false});});
+    window.addEventListener('resize',()=>{if(timingChart){timingChart.resize();timingChart.update();}if(delayChart){delayChart.resize();delayChart.update();}});
+    console.log('多输入门仿真已启动 | 2~5扇入 | 5种门类型 | 延迟分析');
+</script>
+</body>
+</html>

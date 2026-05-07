@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>数制转换 | 二进制·八进制·十进制·十六进制</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range]{height:5px;-webkit-appearance:none;background:#e2e8f0;border-radius:5px;outline:none}
+        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#3b82f6;border-radius:50%;cursor:pointer;transition:0.1s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+        input[type=range]::-webkit-slider-thumb:hover{background:#2563eb;transform:scale(1.15)}
+        ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+        .card-hover{transition:all 0.2s ease}.card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 20px -12px rgba(0,0,0,0.15)}
+        .base-btn{transition:all 0.15s ease;border:2px solid transparent;cursor:pointer;min-width:50px}
+        .base-btn.active{border-color:#3b82f6;background:#eff6ff;color:#1d4ed8;font-weight:600}
+        .base-btn:hover:not(.active){background:#f8fafc;border-color:#cbd5e1}
+        .digit-cell{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:6px;font-family:monospace;font-weight:bold;font-size:1rem;margin:2px;border:2px solid #e2e8f0}
+        .digit-one{background:#3b82f6;color:white;border-color:#3b82f6}
+        .digit-zero{background:white;color:#94a3b8;border-color:#e2e8f0}
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <div class="flex justify-start mb-4">
+        <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            返回主页
+        </a>
+    </div>
+
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">数制转换</h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">二进制·八进制·十进制·十六进制交互转换 | 位权可视化 | 位置记数法</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-4 space-y-6">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4"><span class="w-1 h-6 bg-blue-500 rounded-full"></span>输入数值</h3>
+                <div class="mb-4">
+                    <label class="text-sm font-medium text-slate-600 mb-2 block">十进制值</label>
+                    <input type="number" id="decInput" min="0" max="65535" value="170" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
+                </div>
+                <div class="mb-4">
+                    <div class="flex justify-between text-sm font-medium mb-1"><label>位宽</label><span class="text-blue-600 font-mono" id="widthDisplay">8 bit</span></div>
+                    <input type="range" id="widthSlider" min="4" max="16" step="1" value="8" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1"><span>4 bit</span><span>16 bit</span></div>
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-slate-600 mb-2 block">显示进制</label>
+                    <div class="flex gap-2 flex-wrap" id="baseSelector">
+                        <button class="base-btn active rounded-lg px-3 py-2 text-sm text-center" data-base="2">BIN</button>
+                        <button class="base-btn rounded-lg px-3 py-2 text-sm text-center" data-base="8">OCT</button>
+                        <button class="base-btn rounded-lg px-3 py-2 text-sm text-center" data-base="10">DEC</button>
+                        <button class="base-btn rounded-lg px-3 py-2 text-sm text-center" data-base="16">HEX</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-emerald-500 rounded-full"></span>各进制表示</h3>
+                <div class="space-y-2 text-sm font-mono">
+                    <div class="flex justify-between p-2 bg-slate-50 rounded-lg"><span class="text-slate-500">BIN</span><span class="font-bold text-blue-700" id="binDisplay">—</span></div>
+                    <div class="flex justify-between p-2 bg-slate-50 rounded-lg"><span class="text-slate-500">OCT</span><span class="font-bold text-emerald-700" id="octDisplay">—</span></div>
+                    <div class="flex justify-between p-2 bg-slate-50 rounded-lg"><span class="text-slate-500">DEC</span><span class="font-bold text-amber-700" id="decDisplay">—</span></div>
+                    <div class="flex justify-between p-2 bg-slate-50 rounded-lg"><span class="text-slate-500">HEX</span><span class="font-bold text-purple-700" id="hexDisplay">—</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-8 space-y-5">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="flex flex-wrap justify-between items-center mb-3 px-2">
+                    <div class="text-sm font-medium text-slate-700">位权柱状图</div>
+                    <div class="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded-full">每位的权重 \(2^i\) | 蓝色=该位为1</div>
+                </div>
+                <div class="relative"><canvas id="weightChart" width="800" height="350" style="width:100%;height:auto;max-height:380px;"></canvas></div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-indigo-500 rounded-full"></span>二进制位模式</h3>
+                <div id="bitPattern" class="text-center mb-3"></div>
+                <div class="text-center text-sm" id="positionFormula"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentBase=2, bitWidth=8;
+    let chartInstance=null;
+
+    function getDecimal(){
+        const v=parseInt(document.getElementById('decInput').value);
+        return isNaN(v)?0:Math.max(0,Math.min(65535,v));
+    }
+
+    function toBase(n,base,width){
+        if(base===2) return n.toString(2).padStart(width,'0').slice(-width);
+        if(base===8) return n.toString(8);
+        if(base===10) return n.toString(10);
+        if(base===16) return n.toString(16).toUpperCase();
+    }
+
+    function updateDisplays(){
+        const dec=getDecimal();
+        document.getElementById('binDisplay').textContent=toBase(dec,2,bitWidth);
+        document.getElementById('octDisplay').textContent='0o'+toBase(dec,8);
+        document.getElementById('decDisplay').textContent=dec;
+        document.getElementById('hexDisplay').textContent='0x'+toBase(dec,16);
+        document.getElementById('widthDisplay').textContent=bitWidth+' bit';
+    }
+
+    function renderBitPattern(){
+        const dec=getDecimal();
+        const bits=toBase(dec,2,bitWidth);
+        const container=document.getElementById('bitPattern');
+        container.innerHTML='';
+        for(let i=0;i<bits.length;i++){
+            const div=document.createElement('div');
+            div.className='digit-cell '+(bits[i]==='1'?'digit-one':'digit-zero');
+            div.textContent=bits[i];
+            container.appendChild(div);
+        }
+        // position labels
+        const posDiv=document.createElement('div');
+        posDiv.className='mt-2';
+        for(let i=0;i<bits.length;i++){
+            const span=document.createElement('span');
+            span.className='inline-block text-xs text-slate-400 text-center';
+            span.style.width='40px';
+            span.textContent=bits.length-1-i;
+            posDiv.appendChild(span);
+        }
+        container.appendChild(posDiv);
+
+        // formula
+        const formulaDiv=document.getElementById('positionFormula');
+        let terms=[];
+        for(let i=0;i<bits.length;i++){
+            const bit=parseInt(bits[bits.length-1-i]);
+            if(bit) terms.push(`${bit}\\cdot2^{${i}}`);
+        }
+        const formula=terms.length?terms.join(' + '):'0';
+        formulaDiv.innerHTML='';
+        try{katex.render('N = '+formula+' = '+dec,formulaDiv,{throwOnError:false});}catch(e){formulaDiv.textContent='N = '+formula+' = '+dec;}
+    }
+
+    function initChart(){
+        if(chartInstance)return;
+        chartInstance=new Chart(document.getElementById('weightChart').getContext('2d'),{
+            type:'bar',data:{labels:[],datasets:[]},options:{
+                responsive:true,maintainAspectRatio:true,animation:false,
+                plugins:{legend:{display:false},tooltip:{callbacks:{label(ctx){return '2^'+ctx.label+' = '+ctx.raw;}}}},
+                scales:{
+                    x:{title:{display:true,text:'位位置 (i)',font:{weight:'bold'}},grid:{color:'#eef2ff'}},
+                    y:{type:'logarithmic',title:{display:true,text:'位权 2^i',font:{weight:'bold'}},grid:{color:'#eef2ff'},
+                        ticks:{callback:v=>{if(v>=1)return v;return '';}}}
+                }
+            }
+        });
+    }
+
+    function updateChart(){
+        initChart();
+        const dec=getDecimal();
+        const bits=toBase(dec,2,bitWidth);
+        const labels=[], data=[], colors=[];
+        for(let i=0;i<bits.length;i++){
+            const pos=bits.length-1-i;
+            labels.push(pos);
+            data.push(Math.pow(2,pos));
+            colors.push(bits[i]==='1'?'#3b82f6':'#cbd5e1');
+        }
+        chartInstance.data={labels,datasets:[{data,backgroundColor:colors,borderColor:colors.map(c=>c==='#3b82f6'?'#2563eb':'#94a3b8'),borderWidth:1}]};
+        chartInstance.update('none');
+    }
+
+    function refreshAll(){updateDisplays();renderBitPattern();updateChart();}
+
+    // Events
+    document.getElementById('decInput').addEventListener('input',refreshAll);
+    document.getElementById('widthSlider').addEventListener('input',e=>{bitWidth=parseInt(e.target.value);refreshAll();});
+    document.querySelectorAll('.base-btn').forEach(btn=>btn.addEventListener('click',()=>{
+        document.querySelectorAll('.base-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');currentBase=parseInt(btn.dataset.base);refreshAll();
+    }));
+
+    initChart();refreshAll();
+    document.addEventListener('DOMContentLoaded',()=>{if(typeof renderMathInElement!=='undefined')renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false});});
+    window.addEventListener('resize',()=>{if(chartInstance){chartInstance.resize();chartInstance.update();}});
+    console.log('数制转换已启动 | BIN/OCT/DEC/HEX | 位权可视化');
+</script>
+</body>
+</html>

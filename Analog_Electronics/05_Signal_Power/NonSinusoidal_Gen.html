@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>非正弦波发生器 | 模拟电子技术辅助教学</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] { height: 5px; -webkit-appearance: none; background: #e2e8f0; border-radius: 5px; outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #06b6d4; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb:hover { background: #0891b2; transform: scale(1.15); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .gen-tab { cursor: pointer; transition: all 0.2s; } .gen-tab.active { background: #06b6d4; color: white; } .gen-tab:not(.active):hover { background: #ecfeff; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+    <div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+        <div class="flex justify-start mb-4">
+            <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页
+            </a>
+        </div>
+        <div class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">非正弦波发生器</h1>
+            <p class="text-slate-600 max-w-2xl mx-auto">方波/三角波/锯齿波发生器与555定时器</p>
+        </div>
+        <div class="flex justify-center gap-2 mb-6">
+            <button id="tabSquare" class="gen-tab active px-4 py-2 rounded-full text-xs font-medium border border-slate-300 bg-cyan-500 text-white">方波发生器</button>
+            <button id="tabTri" class="gen-tab px-4 py-2 rounded-full text-xs font-medium border border-slate-300 bg-white text-slate-600">三角波发生器</button>
+            <button id="tab555" class="gen-tab px-4 py-2 rounded-full text-xs font-medium border border-slate-300 bg-white text-slate-600">555定时器</button>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-4 space-y-5">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-cyan-500 rounded-full"></span>参数控制</h2>
+                    <div class="space-y-4" id="sliderPanel">
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R\)</span><span id="rValue" class="font-mono font-bold text-cyan-600">10 kΩ</span></div><input type="range" id="rSlider" min="1" max="100" value="10" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(C\)</span><span id="cValue" class="font-mono font-bold text-cyan-600">100 nF</span></div><input type="range" id="cSlider" min="1" max="100" value="10" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_1\)</span><span id="r1Value" class="font-mono font-bold text-cyan-600">10 kΩ</span></div><input type="range" id="r1Slider" min="1" max="50" value="10" step="1" class="w-full"></div>
+                        <div id="r2Div"><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_2\)</span><span id="r2Value" class="font-mono font-bold text-cyan-600">10 kΩ</span></div><input type="range" id="r2Slider" min="1" max="50" value="10" step="1" class="w-full"></div>
+                    </div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>输出特性</h2>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">频率 \(f\)</div><div id="freqDisplay" class="text-lg font-bold text-emerald-600 font-mono">4.54 kHz</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">占空比</div><div id="dutyDisplay" class="text-lg font-bold text-emerald-600 font-mono">50%</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(t_H\)</div><div id="thDisplay" class="text-lg font-bold text-cyan-600 font-mono">0.11 ms</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(t_L\)</div><div id="tlDisplay" class="text-lg font-bold text-cyan-600 font-mono">0.11 ms</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="lg:col-span-8 space-y-5">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <h2 class="text-base font-bold text-slate-800 mb-2">输出波形（输出 + 电容电压，3~4个周期）</h2>
+                    <div class="relative" style="height: 340px;"><canvas id="mainChart"></canvas></div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>关键公式</h2>
+                    <div class="text-sm bg-slate-50 rounded-xl p-4 text-center" id="formulaContent">
+                        \[f = \frac{1}{2RC\ln(1 + 2R_1/R_2)} \qquad T = t_H + t_L\]
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let genType = 'Square', mainChartInst = null;
+
+        function getParams() {
+            return {
+                R: parseFloat(rSlider.value) * 1000,
+                C: parseFloat(cSlider.value) * 1e-8,
+                R1: parseFloat(r1Slider.value) * 1000,
+                R2: parseFloat(r2Slider.value) * 1000,
+                genType
+            };
+        }
+
+        function updateAll() {
+            const p = getParams();
+            let f, duty, tH, tL;
+
+            if (p.genType === 'Square') {
+                const beta = p.R1 / (p.R1 + p.R2);
+                f = 1 / (2 * p.R * p.C * Math.log(1 + 2*p.R1/p.R2));
+                duty = 50;
+                tH = 1/(2*f); tL = 1/(2*f);
+            } else if (p.genType === 'Tri') {
+                const beta = p.R1 / (p.R1 + p.R2);
+                f = beta / (4 * p.R * p.C);
+                duty = 50;
+                tH = 1/(2*f); tL = 1/(2*f);
+            } else {
+                // 555 timer
+                f = 1.44 / ((p.R1 + 2*p.R2) * p.C);
+                tH = 0.693 * (p.R1 + p.R2) * p.C;
+                tL = 0.693 * p.R2 * p.C;
+                duty = tH / (tH + tL) * 100;
+            }
+
+            document.getElementById('rValue').textContent = (p.R/1000).toFixed(0)+' kΩ';
+            document.getElementById('cValue').textContent = p.genType==='555' ? (p.C*1e6).toFixed(1)+' μF' : (p.C*1e9).toFixed(0)+' nF';
+            document.getElementById('r1Value').textContent = (p.R1/1000).toFixed(0)+' kΩ';
+            document.getElementById('r2Value').textContent = (p.R2/1000).toFixed(0)+' kΩ';
+            document.getElementById('r2Div').style.display = p.genType==='Tri' ? 'none' : 'block';
+            document.getElementById('freqDisplay').textContent = f >= 1000 ? (f/1000).toFixed(2)+' kHz' : f.toFixed(1)+' Hz';
+            document.getElementById('dutyDisplay').textContent = duty.toFixed(1)+'%';
+            document.getElementById('thDisplay').textContent = tH >= 0.001 ? tH.toFixed(3)+' ms' : (tH*1e6).toFixed(1)+' μs';
+            document.getElementById('tlDisplay').textContent = tL >= 0.001 ? tL.toFixed(3)+' ms' : (tL*1e6).toFixed(1)+' μs';
+
+            document.getElementById('formulaContent').innerHTML = p.genType === '555' ?
+                '\[f = \\frac{1.44}{(R_1 + 2R_2)C} \\qquad t_H = 0.693(R_1+R_2)C \\qquad t_L = 0.693R_2C\]' :
+                p.genType === 'Tri' ?
+                '\[f = \\frac{\\beta}{4RC} \\quad \\beta = \\frac{R_1}{R_1+R_2} \\qquad V_{tri,pp} = 2\\beta V_{sat}\]' :
+                '\[f = \\frac{1}{2RC\\,\\ln(1 + 2R_1/R_2)} \\qquad T = t_H + t_L\]';
+
+            // Simulate waveform
+            const T_period = 1/f, dur = T_period * 3, N = 500;
+            const out = [], cv = [];
+            let state = 5, vcap = 0;
+
+            for (let i = 0; i <= N; i++) {
+                const t = dur * i / N;
+                out.push({ x: t*1000, y: state });
+                cv.push({ x: t*1000, y: vcap });
+
+                if (p.genType === 'Square') {
+                    const Vsat = 5, beta = p.R1/(p.R1+p.R2);
+                    const dv = (state*Vsat - vcap)/(p.R*p.C) * (dur/N);
+                    vcap += dv;
+                    if (state > 0 && vcap >= beta*Vsat) state = -Vsat;
+                    else if (state < 0 && vcap <= -beta*Vsat) state = Vsat;
+                } else if (p.genType === 'Tri') {
+                    const Vsat = 5, beta = p.R1/(p.R1+p.R2);
+                    const dv = state*Vsat/(p.R*p.C) * (dur/N);
+                    vcap += dv;
+                    if (Math.abs(vcap) >= beta*Vsat) state = -state;
+                } else {
+                    // 555
+                    const Vcc = 5;
+                    const dt = dur/N;
+                    vcap += (state > 0 ? (Vcc - vcap)/((p.R1+p.R2)*p.C) : -vcap/(p.R2*p.C)) * dt;
+                    if (state > 0 && vcap >= 2*Vcc/3) { state = 0; }
+                    else if (state === 0 && vcap <= Vcc/3) { state = Vcc; }
+                    out[out.length-1] = { x: t*1000, y: state > 0 ? Vcc : 0 };
+                }
+            }
+
+            const cfg = { type:'scatter', data:{ datasets:[
+                { label:'输出', data:out, borderColor:genType==='555'?'#10b981':'#06b6d4', borderWidth:2, pointRadius:0, showLine:true, stepped: genType==='555'?true:false },
+                { label:'电容电压', data:cv, borderColor:'#f59e0b', borderWidth:1.5, pointRadius:0, showLine:true, tension:0.2, borderDash: [3,2] }
+            ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
+                plugins:{ legend:{position:'bottom',labels:{boxWidth:14,font:{size:10}}} },
+                scales:{ x:{title:{display:true,text:'时间 (ms)'}}, y:{title:{display:true,text:'V'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
+            if (mainChartInst) mainChartInst.destroy();
+            mainChartInst = new Chart(document.getElementById('mainChart').getContext('2d'), cfg);
+        }
+
+        function setType(t) {
+            genType = t;
+            ['Square','Tri','555'].forEach(tb => { document.getElementById('tab'+tb).classList.remove('active','bg-cyan-500','text-white'); document.getElementById('tab'+tb).classList.add('bg-white','text-slate-600'); });
+            document.getElementById('tab'+t).classList.add('active','bg-cyan-500','text-white'); document.getElementById('tab'+t).classList.remove('bg-white','text-slate-600');
+            if (t === '555') { cSlider.value = 100; } else { cSlider.value = 10; }
+            updateAll();
+            setTimeout(() => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); }, 100);
+        }
+        document.getElementById('tabSquare').addEventListener('click', ()=>setType('Square'));
+        document.getElementById('tabTri').addEventListener('click', ()=>setType('Tri'));
+        document.getElementById('tab555').addEventListener('click', ()=>setType('555'));
+
+        ['rSlider','cSlider','r1Slider','r2Slider'].forEach(id => document.getElementById(id).addEventListener('input', updateAll));
+        updateAll();
+        window.addEventListener('load', () => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); });
+    </script>
+</body>
+</html>

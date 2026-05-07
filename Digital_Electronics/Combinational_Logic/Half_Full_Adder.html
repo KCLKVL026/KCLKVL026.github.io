@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>半加器与全加器 | 行波进位链</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+        .card-hover{transition:all 0.2s ease}.card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 20px -12px rgba(0,0,0,0.15)}
+        .bit-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:8px;font-weight:bold;font-size:1.1rem;cursor:pointer;transition:all 0.12s ease;border:2px solid #e2e8f0}
+        .bit-btn.on{background:#3b82f6;color:white;border-color:#3b82f6}
+        .bit-btn.off{background:white;color:#64748b;border-color:#e2e8f0}
+        .bit-btn:active{transform:scale(0.92)}
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <div class="flex justify-start mb-4">
+        <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            返回主页
+        </a>
+    </div>
+
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">半加器与全加器</h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">半加器 → 全加器 → 多位行波进位加法器 | 进位传播动画</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-4 space-y-6">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4"><span class="w-1 h-6 bg-blue-500 rounded-full"></span>输入</h3>
+                <div class="mb-4">
+                    <label class="text-sm font-medium text-slate-600 mb-2 block">输入 A</label>
+                    <div id="bitsA" class="flex gap-2 justify-center"></div>
+                </div>
+                <div class="mb-4">
+                    <label class="text-sm font-medium text-slate-600 mb-2 block">输入 B</label>
+                    <div id="bitsB" class="flex gap-2 justify-center"></div>
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-slate-600 mb-2 block">进位输入 Cin</label>
+                    <div class="flex justify-center">
+                        <div id="cinBtn" class="bit-btn off" data-bit="cin">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-emerald-500 rounded-full"></span>结果</h3>
+                <div class="text-center">
+                    <div class="text-sm text-slate-500 mb-1">A + B + Cin</div>
+                    <div class="flex justify-center gap-4">
+                        <div><span class="text-xs text-slate-400">Sum</span><div id="sumDisplay" class="text-2xl font-bold text-amber-600">0</div></div>
+                        <div><span class="text-xs text-slate-400">Cout</span><div id="coutDisplay" class="text-2xl font-bold text-red-600">0</div></div>
+                    </div>
+                    <div id="decResult" class="text-sm text-slate-500 mt-2">十进制: 0 + 0 = 0</div>
+                </div>
+            </div>
+
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-amber-500 rounded-full"></span>公式</h3>
+                <div class="space-y-2 text-sm">
+                    <div id="halfAdderFormula" class="bg-slate-50 p-2 rounded-md text-center"></div>
+                    <div id="fullAdderFormula" class="bg-slate-50 p-2 rounded-md text-center"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-8 space-y-5">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="flex flex-wrap justify-between items-center mb-3 px-2">
+                    <div class="flex items-center gap-4 text-sm">
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-blue-500 rounded-full"></div><span class="font-medium">A</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-emerald-500 rounded-full"></div><span class="font-medium">B</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-amber-500 rounded-full"></div><span class="font-medium">Sum</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-red-500 rounded-full"></div><span class="font-medium">Cout</span></div>
+                    </div>
+                    <div class="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded-full">逐位加法时序</div>
+                </div>
+                <div class="relative"><canvas id="timingChart" width="800" height="380" style="width:100%;height:auto;max-height:420px;"></canvas></div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-indigo-500 rounded-full"></span>真值表（全加器）</h3>
+                <div class="overflow-x-auto"><table class="w-full text-center text-sm">
+                    <thead><tr class="text-slate-500"><th>A</th><th>B</th><th>Cin</th><th>Sum</th><th>Cout</th></tr></thead>
+                    <tbody id="truthTableBody"></tbody>
+                </table></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const BIT_WIDTH=4;
+    let bitsA=[0,1,0,1], bitsB=[0,0,1,1], cinBit=0;
+    let timingChart=null;
+
+    function fullAdder(a,b,cin){const s=a^b^cin;const co=(a&b)|((a^b)&cin);return{s,co};}
+
+    function computeAll(){
+        const sumBits=[], coutBits=[];
+        let carry=cinBit;
+        for(let i=0;i<BIT_WIDTH;i++){
+            const{ s, co}=fullAdder(bitsA[i],bitsB[i],carry);
+            sumBits.push(s);coutBits.push(carry);carry=co;
+        }
+        coutBits.push(carry);
+        return {sumBits,coutBits,carryOut:carry};
+    }
+
+    function renderInputBits(){
+        ['bitsA','bitsB'].forEach((id,idx)=>{
+            const container=document.getElementById(id);
+            const bits=idx===0?bitsA:bitsB;
+            container.innerHTML='';
+            bits.forEach((b,i)=>{
+                const div=document.createElement('div');
+                div.className='bit-btn '+(b?'on':'off');
+                div.textContent=b;
+                div.addEventListener('click',()=>{bits[i]=b?0:1;refreshAll();});
+                container.appendChild(div);
+            });
+        });
+        const cinBtn=document.getElementById('cinBtn');
+        cinBtn.className='bit-btn '+(cinBit?'on':'off');
+        cinBtn.textContent=cinBit;
+    }
+
+    const T_TOTAL=4, PPS=60;
+    const patterns=[[0,0,0],[0,1,0],[1,0,0],[1,1,0],[0,0,1],[0,1,1],[1,0,1],[1,1,1]];
+
+    function generateTiming(){
+        const times=[],dA=[],dB=[],dCin=[],dSum=[],dCout=[];
+        for(let s=0;s<8;s++){
+            const[a,b,c]=patterns[s];
+            const{ s:sum,co:cout}=fullAdder(a,b,c);
+            for(let i=0;i<PPS;i++){
+                const t=s*(T_TOTAL/8)+i/PPS*(T_TOTAL/8);
+                times.push(t);dA.push(a);dB.push(b);dCin.push(c);dSum.push(sum);dCout.push(cout);
+            }
+        }
+        times.push(T_TOTAL);
+        dA.push(dA.at(-1));dB.push(dB.at(-1));dCin.push(dCin.at(-1));dSum.push(dSum.at(-1));dCout.push(dCout.at(-1));
+        return {times,dA,dB,dCin,dSum,dCout};
+    }
+
+    function initTiming(){
+        if(timingChart)return;
+        const{times,dA,dB,dCin,dSum,dCout}=generateTiming();
+        const off=[8,6,4,2,0];
+        timingChart=new Chart(document.getElementById('timingChart').getContext('2d'),{
+            type:'line',data:{datasets:[
+                {label:'A',data:times.map((t,i)=>({x:t,y:dA[i]+off[0]})),borderColor:'#3b82f6',backgroundColor:'transparent',borderWidth:2,stepped:'before',pointRadius:0,tension:0},
+                {label:'B',data:times.map((t,i)=>({x:t,y:dB[i]+off[1]})),borderColor:'#10b981',backgroundColor:'transparent',borderWidth:2,stepped:'before',pointRadius:0,tension:0},
+                {label:'Cin',data:times.map((t,i)=>({x:t,y:dCin[i]+off[2]})),borderColor:'#8b5cf6',backgroundColor:'transparent',borderWidth:2,stepped:'before',pointRadius:0,tension:0},
+                {label:'Sum',data:times.map((t,i)=>({x:t,y:dSum[i]+off[3]})),borderColor:'#f59e0b',backgroundColor:'transparent',borderWidth:2.5,stepped:'before',pointRadius:0,tension:0},
+                {label:'Cout',data:times.map((t,i)=>({x:t,y:dCout[i]+off[4]})),borderColor:'#ef4444',backgroundColor:'transparent',borderWidth:2.5,stepped:'before',pointRadius:0,tension:0}
+            ]},
+            options:{responsive:true,maintainAspectRatio:true,animation:false,interaction:{mode:'index',intersect:false},
+                plugins:{legend:{display:false}},
+                scales:{
+                    x:{type:'linear',title:{display:true,text:'时间 (ns)',font:{weight:'bold'}},min:0,max:T_TOTAL,grid:{color:'#eef2ff'}},
+                    y:{min:-1,max:11,ticks:{callback(v){const m={0:'Cout',2:'Sum',4:'Cin',6:'B',8:'A'};return m[v]||'';},stepSize:1},grid:{color:'#eef2ff'}}
+                },elements:{point:{radius:0}}
+            }
+        });
+    }
+
+    function updateTiming(){
+        initTiming();
+        const{times,dA,dB,dCin,dSum,dCout}=generateTiming();
+        timingChart.data.datasets[0].data=times.map((t,i)=>({x:t,y:dA[i]+8}));
+        timingChart.data.datasets[1].data=times.map((t,i)=>({x:t,y:dB[i]+6}));
+        timingChart.data.datasets[2].data=times.map((t,i)=>({x:t,y:dCin[i]+4}));
+        timingChart.data.datasets[3].data=times.map((t,i)=>({x:t,y:dSum[i]+2}));
+        timingChart.data.datasets[4].data=times.map((t,i)=>({x:t,y:dCout[i]}));
+        timingChart.update('none');
+    }
+
+    function updateTruthTable(){
+        const tbody=document.getElementById('truthTableBody');
+        tbody.innerHTML='';
+        const current=(bitsA[0]|(bitsB[0]<<1)|(cinBit<<2));
+        for(let m=0;m<8;m++){
+            const a=m&1,b=(m>>1)&1,c=(m>>2)&1;
+            const{ s,co}=fullAdder(a,b,c);
+            const tr=document.createElement('tr');
+            if(m===current)tr.className='bg-blue-50';
+            tr.innerHTML=`<td class="py-1.5 px-2 font-mono ${a?'text-blue-600 font-bold':'text-slate-400'}">${a}</td><td class="py-1.5 px-2 font-mono ${b?'text-blue-600 font-bold':'text-slate-400'}">${b}</td><td class="py-1.5 px-2 font-mono ${c?'text-purple-600 font-bold':'text-slate-400'}">${c}</td><td class="py-1.5 px-2 font-mono font-bold ${s?'text-amber-600':'text-slate-400'}">${s}</td><td class="py-1.5 px-2 font-mono font-bold ${co?'text-red-600':'text-slate-400'}">${co}</td>`;
+            tbody.appendChild(tr);
+        }
+    }
+
+    function updateResult(){
+        const{sumBits,coutBits,carryOut}=computeAll();
+        const sumVal=sumBits.reduce((a,v,i)=>a+v*(1<<i),0);
+        const aVal=bitsA.reduce((a,v,i)=>a+v*(1<<i),0);
+        const bVal=bitsB.reduce((a,v,i)=>a+v*(1<<i),0);
+        document.getElementById('sumDisplay').textContent=sumVal;
+        document.getElementById('coutDisplay').textContent=carryOut;
+        document.getElementById('decResult').textContent=`十进制: ${aVal} + ${bVal} + ${cinBit} = ${aVal+bVal+cinBit}`;
+    }
+
+    function renderFormulas(){
+        const ha=document.getElementById('halfAdderFormula');
+        ha.innerHTML='';
+        try{katex.render('\\text{半加器: } S=A\\oplus B,\\; C=A\\cdot B',ha,{throwOnError:false});}catch(e){ha.textContent='S=A⊕B, C=A·B';}
+        const fa=document.getElementById('fullAdderFormula');
+        fa.innerHTML='';
+        try{katex.render('\\text{全加器: } S=A\\oplus B\\oplus C_{in},\\; C_{out}=AB+(A\\oplus B)C_{in}',fa,{throwOnError:false});}catch(e){fa.textContent='S=A⊕B⊕Cin, Cout=AB+(A⊕B)Cin';}
+    }
+
+    function refreshAll(){renderInputBits();updateTiming();updateTruthTable();updateResult();renderFormulas();}
+
+    document.getElementById('cinBtn').addEventListener('click',()=>{cinBit=cinBit?0:1;refreshAll();});
+
+    initTiming();refreshAll();
+    document.addEventListener('DOMContentLoaded',()=>{if(typeof renderMathInElement!=='undefined')renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false});});
+    window.addEventListener('resize',()=>{if(timingChart){timingChart.resize();timingChart.update();}});
+    console.log('半加器与全加器已启动 | 4位行波进位 | 进位传播可视化');
+</script>
+</body>
+</html>

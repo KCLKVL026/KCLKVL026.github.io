@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>正弦波振荡器 | 模拟电子技术辅助教学</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] { height: 5px; -webkit-appearance: none; background: #e2e8f0; border-radius: 5px; outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #06b6d4; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb:hover { background: #0891b2; transform: scale(1.15); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .osc-tab { cursor: pointer; transition: all 0.2s; } .osc-tab.active { background: #06b6d4; color: white; } .osc-tab:not(.active):hover { background: #ecfeff; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+    <div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+        <div class="flex justify-start mb-4">
+            <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页
+            </a>
+        </div>
+        <div class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">正弦波振荡器</h1>
+            <p class="text-slate-600 max-w-2xl mx-auto">文氏桥/RC移相/LC振荡器起振分析</p>
+        </div>
+        <div class="flex justify-center gap-2 mb-6">
+            <button id="tabWien" class="osc-tab active px-4 py-2 rounded-full text-xs font-medium border border-slate-300 bg-cyan-500 text-white">文氏桥</button>
+            <button id="tabRC" class="osc-tab px-4 py-2 rounded-full text-xs font-medium border border-slate-300 bg-white text-slate-600">RC移相</button>
+            <button id="tabColp" class="osc-tab px-4 py-2 rounded-full text-xs font-medium border border-slate-300 bg-white text-slate-600">Colpitts</button>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-4 space-y-5">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-cyan-500 rounded-full"></span>振荡器参数</h2>
+                    <div class="space-y-4" id="sliderPanel">
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R\)</span><span id="rValue" class="font-mono font-bold text-cyan-600">10 kΩ</span></div><input type="range" id="rSlider" min="1" max="100" value="10" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(C\)</span><span id="cValue" class="font-mono font-bold text-cyan-600">10 nF</span></div><input type="range" id="cSlider" min="1" max="100" value="10" step="1" class="w-full"></div>
+                        <div id="r2Panel"><div class="flex justify-between text-sm text-slate-600 mb-1"><span>增益设置 \(R_f/R_g\)</span><span id="gainValue" class="font-mono font-bold text-cyan-600">3.1</span></div><input type="range" id="gainSlider" min="20" max="50" value="31" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>2.0</span><span>5.0</span></div></div>
+                    </div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>振荡特性</h2>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(f_{osc}\)</div><div id="foscDisplay" class="text-lg font-bold text-emerald-600 font-mono">1.59 kHz</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">T = 2πRC</div><div id="periodDisplay" class="text-lg font-bold text-emerald-600 font-mono">0.63 ms</div></div>
+                    </div>
+                    <div class="mt-3 bg-slate-50 rounded-xl p-3 text-center"><div id="barkDisplay" class="text-lg font-bold text-emerald-600">Barkhausen: 满足</div></div>
+                </div>
+            </div>
+            <div class="lg:col-span-8 space-y-5">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <h2 class="text-base font-bold text-slate-800 mb-2">起振瞬态波形（幅度从小增长至稳态）</h2>
+                    <div class="relative" style="height: 320px;"><canvas id="oscChart"></canvas></div>
+                    <p class="text-xs text-slate-400 mt-1 text-center">增益>3 → 指数增长；增益=3 → 稳幅振荡；增益&lt;3 → 衰减</p>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>关键公式</h2>
+                    <div class="text-sm bg-slate-50 rounded-xl p-4 text-center">
+                        \[f_{osc} = \frac{1}{2\pi RC}\;\text{(文氏桥)} \qquad f_{osc} = \frac{1}{2\pi RC\sqrt{6}}\;\text{(RC移相)} \qquad f_{osc} = \frac{1}{2\pi\sqrt{LC_{eq}}}\;\text{(Colpitts)}\]
+                        \[|A\beta| \geq 1 \qquad \angle A\beta = 0^\circ\;\text{or}\;360^\circ \quad\text{(Barkhausen判据)}\]
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let oscType = 'Wien', oscChartInst = null;
+
+        function getParams() {
+            return {
+                R: parseFloat(rSlider.value) * 1000,
+                C: parseFloat(cSlider.value) * 1e-9,
+                gain: parseFloat(gainSlider.value) / 10,
+                oscType
+            };
+        }
+
+        function updateAll() {
+            const p = getParams();
+            let f_osc, barkStatus;
+            if (p.oscType === 'Wien') {
+                f_osc = 1 / (2 * Math.PI * p.R * p.C);
+                barkStatus = p.gain >= 3 ? '满足 (增益≥3)' : '不满足 (增益<3)';
+            } else if (p.oscType === 'RC') {
+                f_osc = 1 / (2 * Math.PI * p.R * p.C * Math.sqrt(6));
+                barkStatus = p.gain >= 29 ? '满足 (增益≥29)' : '不满足 (增益<29)';
+            } else {
+                const C1 = p.C, C2 = p.C * 2;
+                const C_eq = C1 * C2 / (C1 + C2);
+                f_osc = 1 / (2 * Math.PI * Math.sqrt((p.R * 0.01) * C_eq));
+                const beta = C1 / (C1 + C2);
+                barkStatus = p.gain >= 1/beta ? '满足' : '不满足';
+            }
+
+            document.getElementById('rValue').textContent = (p.R/1000).toFixed(0) + ' kΩ';
+            document.getElementById('cValue').textContent = (p.C*1e9).toFixed(0) + ' nF';
+            document.getElementById('gainValue').textContent = p.gain.toFixed(1);
+            document.getElementById('foscDisplay').textContent = f_osc >= 1000 ? (f_osc/1000).toFixed(2)+' kHz' : f_osc.toFixed(1)+' Hz';
+            document.getElementById('periodDisplay').textContent = (1/f_osc*1000).toFixed(2)+' ms';
+            const barkEl = document.getElementById('barkDisplay');
+            barkEl.textContent = 'Barkhausen: ' + barkStatus;
+            barkEl.className = barkStatus.includes('满足') ? 'text-lg font-bold text-emerald-600' : 'text-lg font-bold text-rose-600';
+
+            // Simulate startup transient
+            const T_osc = 1/f_osc, dur = T_osc * 15, N = 600;
+            const osc = [];
+            const growth = p.gain >= 3 ? 1 : -1; // positive: growing, negative: decaying
+            let amplitude = 0.01; // start from noise
+            for (let i = 0; i <= N; i++) {
+                const t = dur * i / N;
+                if (growth > 0) {
+                    amplitude = 0.01 + (5 - 0.01) * (1 - Math.exp(-t / (T_osc * 3)));
+                } else {
+                    amplitude = 5 * Math.exp(-t / (T_osc * 3)) + 0.01;
+                }
+                const v = amplitude * Math.sin(2 * Math.PI * f_osc * t);
+                osc.push({ x: t * 1000, y: v });
+            }
+            const cfg = { type:'scatter', data:{ datasets:[
+                { label:'V_out', data:osc, borderColor:'#06b6d4', borderWidth:1.5, pointRadius:0, showLine:true, tension:0.2 }
+            ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
+                plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx => `t=${ctx.parsed.x.toFixed(2)}ms, V=${ctx.parsed.y.toFixed(2)}V` } } },
+                scales:{ x:{title:{display:true,text:'时间 (ms)'}}, y:{title:{display:true,text:'V_out (V)'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
+            if (oscChartInst) oscChartInst.destroy();
+            oscChartInst = new Chart(document.getElementById('oscChart').getContext('2d'), cfg);
+        }
+
+        function setType(t) {
+            oscType = t;
+            ['Wien','RC','Colp'].forEach(tb => { document.getElementById('tab'+tb).classList.remove('active','bg-cyan-500','text-white'); document.getElementById('tab'+tb).classList.add('bg-white','text-slate-600'); });
+            document.getElementById('tab'+t).classList.add('active','bg-cyan-500','text-white'); document.getElementById('tab'+t).classList.remove('bg-white','text-slate-600');
+            document.getElementById('r2Panel').style.display = t === 'Colp' ? 'none' : 'block';
+            if (t === 'RC') document.getElementById('gainSlider').value = 290;
+            else if (t === 'Wien') document.getElementById('gainSlider').value = 31;
+            updateAll();
+        }
+        document.getElementById('tabWien').addEventListener('click', ()=>setType('Wien'));
+        document.getElementById('tabRC').addEventListener('click', ()=>setType('RC'));
+        document.getElementById('tabColp').addEventListener('click', ()=>setType('Colp'));
+
+        ['rSlider','cSlider','gainSlider'].forEach(id => document.getElementById(id).addEventListener('input', updateAll));
+        updateAll();
+        window.addEventListener('load', () => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); });
+    </script>
+</body>
+</html>

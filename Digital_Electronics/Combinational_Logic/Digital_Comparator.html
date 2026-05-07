@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>数值比较器 | 4位级联 A=B·A>B·A<B</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range]{height:5px;-webkit-appearance:none;background:#e2e8f0;border-radius:5px;outline:none}
+        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#3b82f6;border-radius:50%;cursor:pointer;transition:0.1s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+        ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+        .card-hover{transition:all 0.2s ease}.card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 20px -12px rgba(0,0,0,0.15)}
+        .bit-cell{display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:8px;font-weight:bold;font-size:1.3rem;font-family:monospace;transition:all 0.2s ease}
+        .bit-a{background:#dbeafe;color:#1d4ed8;border:2px solid #93c5fd}
+        .bit-b{background:#d1fae5;color:#065f46;border:2px solid #6ee7b7}
+        .bit-match{background:#dbeafe;color:#1d4ed8;border:2px solid #93c5fd}
+        .bit-gt{background:#d1fae5;color:#065f46;border:2px solid #10b981;transform:scale(1.1)}
+        .bit-lt{background:#fce7f3;color:#9d174d;border:2px solid #ec4899;transform:scale(1.1)}
+        .bit-decided{box-shadow:0 0 12px rgba(99,102,241,0.5);border-color:#6366f1}
+        .bit-pending{opacity:0.4}
+        .cmp-icon{font-size:1.5rem;transition:all 0.3s ease}
+        .result-banner{padding:16px 24px;border-radius:16px;text-align:center;font-size:1.5rem;font-weight:bold;transition:all 0.3s ease}
+        .result-gt{background:linear-gradient(135deg,#d1fae5,#a7f3d0);color:#065f46;border:2px solid #10b981}
+        .result-eq{background:linear-gradient(135deg,#dbeafe,#bfdbfe);color:#1d4ed8;border:2px solid #3b82f6}
+        .result-lt{background:linear-gradient(135deg,#fce7f3,#fbcfe8);color:#9d174d;border:2px solid #ec4899}
+        .bit-label{font-size:0.65rem;color:#94a3b8;text-align:center;margin-top:4px}
+        .cascade-line{width:2px;background:linear-gradient(to bottom,#6366f1,#a5b4fc);margin:0 auto;height:16px}
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <div class="flex justify-start mb-4">
+        <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页</a>
+    </div>
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">数值比较器</h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">4位比较器 | 从高位到低位逐位比较 | 决策位高亮</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- 左侧：输入与结果 -->
+        <div class="lg:col-span-4 space-y-6">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4"><span class="w-1 h-6 bg-blue-500 rounded-full"></span>操作数</h3>
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1"><label>数值 A</label><span class="text-blue-600 font-mono text-xl" id="aDisp">5</span></div>
+                    <input type="range" id="aSlider" min="0" max="15" step="1" value="5" class="w-full">
+                    <div class="text-center font-mono text-lg mt-1" id="aBinDisp">0101</div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm font-medium mb-1"><label>数值 B</label><span class="text-blue-600 font-mono text-xl" id="bDisp">3</span></div>
+                    <input type="range" id="bSlider" min="0" max="15" step="1" value="3" class="w-full">
+                    <div class="text-center font-mono text-lg mt-1" id="bBinDisp">0011</div>
+                </div>
+            </div>
+
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-4 flex items-center gap-2"><span class="w-1 h-5 bg-emerald-500 rounded-full"></span>比较结果</h3>
+                <div id="resultBanner" class="result-banner result-gt">A > B</div>
+                <div id="resultExplain" class="text-xs text-slate-500 mt-3 text-center"></div>
+            </div>
+
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-amber-500 rounded-full"></span>级联输入</h3>
+                <div class="text-xs text-slate-500 leading-relaxed">
+                    级联比较器中，高位相等时传递到低位继续比较。当前为独立4位比较器（无级联输入）。
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧：逐位比较可视化 -->
+        <div class="lg:col-span-8 space-y-5">
+            <!-- 逐位比较面板 -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-6">
+                <div class="text-sm font-medium text-slate-700 mb-5 text-center">逐位比较（从高位 bit3 到低位 bit0）</div>
+
+                <!-- 表头 -->
+                <div class="grid grid-cols-[80px_1fr_40px_1fr_80px] gap-2 items-center mb-2 px-2">
+                    <div class="text-xs text-slate-400 text-center font-medium">A</div>
+                    <div></div>
+                    <div class="text-xs text-slate-400 text-center font-medium">比较</div>
+                    <div></div>
+                    <div class="text-xs text-slate-400 text-center font-medium">B</div>
+                </div>
+
+                <!-- 4行逐位比较 -->
+                <div id="bitComparison" class="space-y-1"></div>
+            </div>
+
+            <!-- 比较规则 -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-purple-500 rounded-full"></span>比较规则</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div id="rule1" class="bg-slate-50 p-3 rounded-lg text-center text-sm"></div>
+                    <div id="rule2" class="bg-slate-50 p-3 rounded-lg text-center text-sm"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function compare(a, b) {
+        const binA = a.toString(2).padStart(4, '0');
+        const binB = b.toString(2).padStart(4, '0');
+        const bits = [];
+        let decided = false, result = 0;
+        for (let i = 0; i < 4; i++) {
+            const ai = parseInt(binA[i]), bi = parseInt(binB[i]);
+            let cmp = 0;
+            if (!decided) {
+                if (ai > bi) { cmp = 1; decided = true; result = 1; }
+                else if (ai < bi) { cmp = -1; decided = true; result = -1; }
+            }
+            bits.push({ a: ai, b: bi, cmp, isDecision: decided && cmp !== 0 && bits.every(bb => bb.cmp === 0) });
+        }
+        // Mark the decision bit properly
+        let foundDecision = false;
+        for (let i = 0; i < 4; i++) {
+            if (bits[i].cmp !== 0 && !foundDecision) {
+                bits[i].isDecision = true;
+                foundDecision = true;
+            } else {
+                bits[i].isDecision = false;
+            }
+        }
+        return { bits, gt: a > b, eq: a === b, lt: a < b, result };
+    }
+
+    function refreshAll() {
+        const a = parseInt(document.getElementById('aSlider').value);
+        const b = parseInt(document.getElementById('bSlider').value);
+        document.getElementById('aDisp').textContent = a;
+        document.getElementById('bDisp').textContent = b;
+        document.getElementById('aBinDisp').textContent = a.toString(2).padStart(4, '0');
+        document.getElementById('bBinDisp').textContent = b.toString(2).padStart(4, '0');
+
+        const { bits, gt, eq, lt } = compare(a, b);
+
+        // Result banner
+        const banner = document.getElementById('resultBanner');
+        const explain = document.getElementById('resultExplain');
+        if (gt) {
+            banner.className = 'result-banner result-gt';
+            banner.textContent = 'A > B  (' + a + ' > ' + b + ')';
+        } else if (eq) {
+            banner.className = 'result-banner result-eq';
+            banner.textContent = 'A = B  (' + a + ' = ' + b + ')';
+        } else {
+            banner.className = 'result-banner result-lt';
+            banner.textContent = 'A < B  (' + a + ' < ' + b + ')';
+        }
+
+        // Find decision bit for explanation
+        const decIdx = bits.findIndex(b => b.isDecision);
+        if (eq) {
+            explain.textContent = '所有位相同，A = B';
+        } else if (decIdx >= 0) {
+            explain.textContent = '在 bit' + (3 - decIdx) + ' 处决策：A=' + bits[decIdx].a + (bits[decIdx].cmp > 0 ? ' > ' : ' < ') + 'B=' + bits[decIdx].b;
+        }
+
+        // Bit comparison rows
+        renderBitComparison(bits);
+        renderRules();
+    }
+
+    function renderBitComparison(bits) {
+        const container = document.getElementById('bitComparison');
+        container.innerHTML = '';
+
+        for (let i = 0; i < 4; i++) {
+            const b = bits[i];
+            const bitName = 'bit' + (3 - i);
+            const isDec = b.isDecision;
+            const afterDec = i > 0 && bits.slice(0, i).some(bb => bb.isDecision);
+
+            // Determine bit cell classes
+            let aClass = 'bit-cell bit-a';
+            let bClass = 'bit-cell bit-b';
+            let cmpText = '=';
+            let cmpColor = 'text-slate-400';
+
+            if (isDec) {
+                if (b.cmp > 0) {
+                    aClass += ' bit-gt bit-decided';
+                    bClass += ' bit-lt bit-decided';
+                    cmpText = '>';
+                    cmpColor = 'text-emerald-600';
+                } else {
+                    aClass += ' bit-lt bit-decided';
+                    bClass += ' bit-gt bit-decided';
+                    cmpText = '<';
+                    cmpColor = 'text-pink-600';
+                }
+            } else if (afterDec) {
+                aClass += ' bit-pending';
+                bClass += ' bit-pending';
+                cmpText = '·';
+                cmpColor = 'text-slate-300';
+            } else {
+                // Before decision, bits are equal
+                cmpText = '=';
+                cmpColor = 'text-blue-400';
+            }
+
+            const row = document.createElement('div');
+            row.className = 'grid grid-cols-[80px_1fr_40px_1fr_80px] gap-2 items-center py-1.5 px-2 rounded-lg transition-all ' + (isDec ? 'bg-indigo-50' : '');
+
+            row.innerHTML =
+                `<div class="flex justify-center"><div class="${aClass}">${b.a}</div></div>` +
+                `<div class="flex justify-end pr-2"><span class="text-xs text-slate-400 font-mono">${bitName}</span></div>` +
+                `<div class="flex justify-center"><span class="cmp-icon font-bold ${cmpColor}">${cmpText}</span></div>` +
+                `<div class="flex justify-start pl-2"><span class="text-xs text-slate-400 font-mono">${bitName}</span></div>` +
+                `<div class="flex justify-center"><div class="${bClass}">${b.b}</div></div>`;
+
+            // Cascade line between rows
+            container.appendChild(row);
+            if (i < 3) {
+                const line = document.createElement('div');
+                line.className = 'flex justify-center';
+                line.innerHTML = '<div class="cascade-line"></div>';
+                container.appendChild(line);
+            }
+        }
+    }
+
+    function renderRules() {
+        const r1 = document.getElementById('rule1');
+        r1.innerHTML = '';
+        try { katex.render('A>B \\iff \\exists i: A_i>B_i \\land \\forall j>i: A_j=B_j', r1, { throwOnError: false }); } catch (e) { r1.textContent = 'A>B: 存在某位 A>B 且更高位全等'; }
+        const r2 = document.getElementById('rule2');
+        r2.innerHTML = '';
+        try { katex.render('A=B \\iff \\forall i: A_i = B_i', r2, { throwOnError: false }); } catch (e) { r2.textContent = 'A=B: 所有位相同'; }
+    }
+
+    document.getElementById('aSlider').addEventListener('input', refreshAll);
+    document.getElementById('bSlider').addEventListener('input', refreshAll);
+
+    refreshAll();
+    document.addEventListener('DOMContentLoaded', () => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{ left: '\\[', right: '\\]', display: true }, { left: '\\(', right: '\\)', display: false }], throwOnError: false }); });
+    console.log('数值比较器已启动 | 4位逐位比较 | 决策位高亮');
+</script>
+</body>
+</html>

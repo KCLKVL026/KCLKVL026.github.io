@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>双极型晶体管特性 | 模拟电子技术辅助教学</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] { height: 5px; -webkit-appearance: none; background: #e2e8f0; border-radius: 5px; outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #6366f1; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb:hover { background: #4f46e5; transform: scale(1.15); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .card-hover { transition: all 0.2s ease; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15); }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+    <div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+
+        <!-- BACK BUTTON -->
+        <div class="flex justify-start mb-4">
+            <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                返回主页
+            </a>
+        </div>
+
+        <!-- TITLE -->
+        <div class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">双极型晶体管特性</h1>
+            <p class="text-slate-600 max-w-2xl mx-auto">BJT 输入/输出特性曲线与工作点分析</p>
+        </div>
+
+        <!-- MAIN GRID (no config tabs) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- LEFT: CONTROL PANEL -->
+            <div class="lg:col-span-4 space-y-5">
+
+                <!-- Slider Controls Card -->
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <span class="w-1 h-6 bg-indigo-500 rounded-full"></span>
+                        参数控制
+                    </h2>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between text-sm text-slate-600 mb-1">
+                                <span>基极电流 \(I_B\)</span>
+                                <span id="iBValue" class="font-mono font-bold text-indigo-600">20 μA</span>
+                            </div>
+                            <input type="range" id="iBSlider" min="0" max="100" value="20" step="1" class="w-full">
+                            <div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>0 μA</span><span>100 μA</span></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm text-slate-600 mb-1">
+                                <span>集射极电压 \(V_{CE}\)</span>
+                                <span id="vceValue" class="font-mono font-bold text-indigo-600">6.0 V</span>
+                            </div>
+                            <input type="range" id="vceSlider" min="0" max="200" value="60" step="1" class="w-full">
+                            <div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>0 V</span><span>20 V</span></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm text-slate-600 mb-1">
+                                <span>电流增益 \(\beta\)</span>
+                                <span id="betaValue" class="font-mono font-bold text-indigo-600">100</span>
+                            </div>
+                            <input type="range" id="betaSlider" min="20" max="300" value="180" step="1" class="w-full">
+                            <div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>20</span><span>300</span></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm text-slate-600 mb-1">
+                                <span>厄尔利电压 \(V_A\)</span>
+                                <span id="vaValue" class="font-mono font-bold text-indigo-600">100 V</span>
+                            </div>
+                            <input type="range" id="vaSlider" min="50" max="300" value="100" step="1" class="w-full">
+                            <div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>50 V</span><span>300 V</span></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm text-slate-600 mb-1">
+                                <span>电源电压 \(V_{CC}\)</span>
+                                <span id="vccValue" class="font-mono font-bold text-indigo-600">12 V</span>
+                            </div>
+                            <input type="range" id="vccSlider" min="5" max="20" value="12" step="1" class="w-full">
+                            <div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>5 V</span><span>20 V</span></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm text-slate-600 mb-1">
+                                <span>集电极电阻 \(R_C\)</span>
+                                <span id="rcValue" class="font-mono font-bold text-indigo-600">1.0 kΩ</span>
+                            </div>
+                            <input type="range" id="rcSlider" min="1" max="50" value="10" step="1" class="w-full">
+                            <div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>0.1 kΩ</span><span>5.0 kΩ</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature Cards -->
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <span class="w-1 h-6 bg-emerald-500 rounded-full"></span>
+                        工作点参数
+                    </h2>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-slate-50 rounded-xl p-3 text-center">
+                            <div class="text-xs text-slate-500 mb-1">\(I_{CQ}\)</div>
+                            <div id="icqDisplay" class="text-lg font-bold text-emerald-600 font-mono">2.00 mA</div>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center">
+                            <div class="text-xs text-slate-500 mb-1">\(V_{CEQ}\)</div>
+                            <div id="vceqDisplay" class="text-lg font-bold text-emerald-600 font-mono">6.0 V</div>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center">
+                            <div class="text-xs text-slate-500 mb-1">\(I_{EQ}\)</div>
+                            <div id="ieqDisplay" class="text-lg font-bold text-indigo-600 font-mono">2.02 mA</div>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center">
+                            <div class="text-xs text-slate-500 mb-1">\(\beta\)</div>
+                            <div id="betaDisplay" class="text-lg font-bold text-indigo-600 font-mono">100</div>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center">
+                            <div class="text-xs text-slate-500 mb-1">\(\alpha\)</div>
+                            <div id="alphaDisplay" class="text-lg font-bold text-amber-600 font-mono">0.990</div>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center">
+                            <div class="text-xs text-slate-500 mb-1">\(g_m\)</div>
+                            <div id="gmDisplay" class="text-lg font-bold text-amber-600 font-mono">77 mS</div>
+                        </div>
+                    </div>
+                    <div class="mt-3 bg-slate-50 rounded-xl p-3 text-center">
+                        <div class="text-xs text-slate-500 mb-1">工作区域</div>
+                        <div id="regionDisplay" class="text-lg font-bold text-rose-600">放大区 (Active)</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT: CHARTS + FORMULA -->
+            <div class="lg:col-span-8 space-y-5">
+
+                <!-- Input Characteristic Chart -->
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <h2 class="text-base font-bold text-slate-800 mb-2">输入特性曲线（ \(I_B\) vs \(V_{BE}\) ）</h2>
+                    <div class="relative" style="height: 260px;">
+                        <canvas id="inputChart"></canvas>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1 text-center">基极电流随基射极电压呈指数变化，红色圆点标记当前工作点</p>
+                </div>
+
+                <!-- Output Characteristic Chart -->
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <h2 class="text-base font-bold text-slate-800 mb-2">输出特性曲线族（\(I_C\) vs \(V_{CE}\)）</h2>
+                    <div class="relative" style="height: 320px;">
+                        <canvas id="outputChart"></canvas>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1 text-center">不同 \(I_B\) 下的 \(I_C\)-\(V_{CE}\) 曲线族（含 Early 效应），红色虚线为 DC 负载线，红点为 Q 点</p>
+                </div>
+
+                <!-- Key Formula Card (moved here) -->
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
+                        <span class="w-1 h-6 bg-amber-500 rounded-full"></span>
+                        关键公式
+                    </h2>
+                    <div class="space-y-3 text-sm bg-slate-50 rounded-xl p-4">
+                        <div class="flex flex-wrap justify-center gap-x-6 gap-y-1">
+                            \[I_C = \beta I_B \qquad I_E = I_B + I_C = (1+\beta)I_B\]
+                        </div>
+                        <div class="flex flex-wrap justify-center gap-x-6 gap-y-1">
+                            \[\alpha = \frac{\beta}{1+\beta} \qquad I_C = I_S e^{V_{BE}/V_T} \left(1 + \frac{V_{CE}}{V_A}\right) \qquad g_m = \frac{I_C}{V_T},\ V_T \approx 26\,\text{mV}\]
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // ==================== DEFAULTS ====================
+        const DEFAULTS = {
+            I_B: 20e-6,        // Base current (A)  [0-100uA]
+            V_CE: 6.0,         // V_CE voltage (V)  [0-20V]
+            beta: 100,         // Current gain      [20-300]
+            V_A: 100,          // Early voltage (V) [50-300]
+            V_CC: 12,          // Supply voltage (V) [5-20]
+            R_C: 1000          // Collector resistor (ohm) [100-5000]
+        };
+        const V_T = 0.02585;   // Thermal voltage at room temp (V)
+        const I_S = 1e-14;     // Saturation current (A)
+
+        // ==================== DOM REFS ====================
+        const iBSlider = document.getElementById('iBSlider');
+        const vceSlider = document.getElementById('vceSlider');
+        const betaSlider = document.getElementById('betaSlider');
+        const vaSlider = document.getElementById('vaSlider');
+        const vccSlider = document.getElementById('vccSlider');
+        const rcSlider = document.getElementById('rcSlider');
+
+        const iBValue = document.getElementById('iBValue');
+        const vceValue = document.getElementById('vceValue');
+        const betaValue = document.getElementById('betaValue');
+        const vaValue = document.getElementById('vaValue');
+        const vccValue = document.getElementById('vccValue');
+        const rcValue = document.getElementById('rcValue');
+
+        const icqDisplay = document.getElementById('icqDisplay');
+        const vceqDisplay = document.getElementById('vceqDisplay');
+        const ieqDisplay = document.getElementById('ieqDisplay');
+        const betaDisplay = document.getElementById('betaDisplay');
+        const alphaDisplay = document.getElementById('alphaDisplay');
+        const gmDisplay = document.getElementById('gmDisplay');
+        const regionDisplay = document.getElementById('regionDisplay');
+
+        // ==================== STATE ====================
+        let inputChartInstance = null;
+        let outputChartInstance = null;
+
+        // ==================== GET PARAMS ====================
+        function getParams() {
+            return {
+                I_B: parseFloat(iBSlider.value) * 1e-6,
+                V_CE: parseFloat(vceSlider.value) / 10,   // 0-200 -> 0-20V
+                beta: parseFloat(betaSlider.value),
+                V_A: parseFloat(vaSlider.value),
+                V_CC: parseFloat(vccSlider.value),
+                R_C: parseFloat(rcSlider.value) * 100
+            };
+        }
+
+        // ==================== COMPUTATIONS ====================
+        function computeVbeFromIb(I_B, beta) {
+            const I_C = I_B * beta;
+            if (I_C <= 0) return 0;
+            return V_T * Math.log(I_C / I_S + 1);
+        }
+
+        function computeInputCharacteristic(beta) {
+            const points = [];
+            const vbeStart = 0.30, vbeEnd = 0.85;
+            const steps = 200;
+            const maxIb = 150e-6;   // Stop at 150 µA to avoid flat top
+
+            for (let i = 0; i <= steps; i++) {
+                const vbe = vbeStart + (vbeEnd - vbeStart) * i / steps;
+                const ic = I_S * Math.exp(vbe / V_T);
+                const ib = ic / beta;
+                if (ib > maxIb) break;
+                points.push({ vbe, ib });
+            }
+            return points;
+        }
+
+        function computeOutputCharacteristicFamily(beta, V_A) {
+            const ibValues = [10e-6, 20e-6, 30e-6, 40e-6, 50e-6];
+            const curves = [];
+            const vceSteps = 200;
+            const vceMax = 20;
+
+            for (const ib of ibValues) {
+                const points = [];
+                for (let j = 0; j <= vceSteps; j++) {
+                    const vce = vceMax * j / vceSteps;
+                    let ic;
+                    if (vce < 0.2) {
+                        const icActive = beta * ib * (1 + 0.2 / V_A);
+                        ic = icActive * (vce / 0.2);
+                    } else {
+                        ic = beta * ib * (1 + vce / V_A);
+                    }
+                    points.push({ vce, ic });
+                }
+                curves.push({ ib, points, label: `I_B = ${(ib * 1e6).toFixed(0)} μA` });
+            }
+            return curves;
+        }
+
+        function computeLoadLine(V_CC, R_C) {
+            return [
+                { vce: 0, ic: V_CC / R_C },
+                { vce: V_CC, ic: 0 }
+            ];
+        }
+
+        function computeQPoint(I_B, V_CE, beta, V_A, V_CC, R_C) {
+            const ic = beta * I_B * (1 + V_CE / V_A);
+            const ie = I_B + ic;
+            const vbe = computeVbeFromIb(I_B, beta);
+            const gm = ic / V_T;
+            const alpha = beta / (beta + 1);
+
+            let region;
+            if (I_B <= 0 || ic <= 1e-9) {
+                region = '截止区 (Cutoff)';
+            } else if (V_CE < 0.3) {
+                region = '饱和区 (Saturation)';
+            } else {
+                region = '放大区 (Active)';
+            }
+            const icMax = V_CC / R_C;
+            if (V_CE >= V_CC - 0.5 && ic < icMax * 0.1) {
+                region = '截止区 (Cutoff)';
+            }
+
+            return { ic, ie, vbe, gm, alpha, region, vce: V_CE };
+        }
+
+        // ==================== BUILD CHART DATA ====================
+        function buildInputDataset(beta, I_B_q, beta_q) {
+            const points = computeInputCharacteristic(beta);
+            const qVbe = computeVbeFromIb(I_B_q, beta_q);
+            const qIb = I_B_q;
+            const data = points.map(p => ({ x: p.vbe, y: p.ib * 1e6 }));
+            const qPoint = { x: qVbe, y: qIb * 1e6 };
+            return { data, qPoint };
+        }
+
+        function buildOutputDatasets(beta, V_A, V_CC, R_C, qIb, qVce) {
+            const curves = computeOutputCharacteristicFamily(beta, V_A);
+            const datasets = [];
+            const colors = ['#93c5fd', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8'];
+
+            curves.forEach((curve, idx) => {
+                const data = curve.points.map(p => ({ x: p.vce, y: p.ic * 1e3 }));
+                datasets.push({
+                    label: curve.label,
+                    data: data,
+                    borderColor: colors[idx],
+                    backgroundColor: colors[idx],
+                    borderWidth: idx === 1 ? 2.5 : 1.5,
+                    pointRadius: 0,
+                    fill: false,
+                    showLine: true,
+                    tension: 0.1,
+                    order: 2
+                });
+            });
+
+            const ll = computeLoadLine(V_CC, R_C);
+            datasets.push({
+                label: 'DC 负载线',
+                data: ll.map(p => ({ x: p.vce, y: p.ic * 1e3 })),
+                borderColor: '#f43f5e',
+                backgroundColor: '#f43f5e',
+                borderWidth: 2,
+                borderDash: [6, 3],
+                pointRadius: 0,
+                fill: false,
+                showLine: true,
+                order: 1
+            });
+
+            const qIc = beta * qIb * (1 + qVce / V_A);
+            datasets.push({
+                label: 'Q 点 (工作点)',
+                data: [{ x: qVce, y: qIc * 1e3 }],
+                borderColor: '#ef4444',
+                backgroundColor: '#ef4444',
+                pointRadius: 8,
+                pointHoverRadius: 10,
+                showLine: false,
+                order: 0
+            });
+
+            return datasets;
+        }
+
+        // ==================== UPDATE CHARTS ====================
+        function updateInputChart(beta, I_B_q, beta_q) {
+            const { data, qPoint } = buildInputDataset(beta, I_B_q, beta_q);
+
+            const config = {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'I_B vs V_BE',
+                        data: data,
+                        borderColor: '#6366f1',
+                        backgroundColor: '#6366f1',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        showLine: true,
+                        tension: 0.3,
+                        order: 1
+                    }, {
+                        label: '工作点',
+                        data: [qPoint],
+                        borderColor: '#ef4444',
+                        backgroundColor: '#ef4444',
+                        pointRadius: 8,
+                        pointHoverRadius: 10,
+                        showLine: false,
+                        order: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: 150 },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    if (ctx.datasetIndex === 0) {
+                                        return `V_BE = ${ctx.parsed.x.toFixed(3)}V, I_B = ${ctx.parsed.y.toFixed(1)} μA`;
+                                    }
+                                    return `Q点: V_BE = ${ctx.parsed.x.toFixed(3)}V, I_B = ${ctx.parsed.y.toFixed(1)} μA`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'V_BE (V)', font: { size: 12 } },
+                            min: 0.30, max: 0.85,
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        y: {
+                            title: { display: true, text: 'I_B (μA)', font: { size: 12 } },
+                            min: 0,
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        }
+                    }
+                }
+            };
+
+            if (inputChartInstance) inputChartInstance.destroy();
+            const ctx = document.getElementById('inputChart').getContext('2d');
+            inputChartInstance = new Chart(ctx, config);
+        }
+
+        function updateOutputChart(beta, V_A, V_CC, R_C, qIb, qVce) {
+            const datasets = buildOutputDatasets(beta, V_A, V_CC, R_C, qIb, qVce);
+
+            const config = {
+                type: 'scatter',
+                data: { datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: 150 },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { boxWidth: 14, padding: 12, font: { size: 10 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    const ds = ctx.dataset;
+                                    if (ds.label === 'Q 点 (工作点)') {
+                                        return `Q点: V_CE = ${ctx.parsed.x.toFixed(2)}V, I_C = ${ctx.parsed.y.toFixed(2)} mA`;
+                                    }
+                                    if (ds.label === 'DC 负载线') {
+                                        return `负载线: V_CE = ${ctx.parsed.x.toFixed(1)}V, I_C = ${ctx.parsed.y.toFixed(2)} mA`;
+                                    }
+                                    return `${ds.label}: I_C = ${ctx.parsed.y.toFixed(2)} mA`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'V_CE (V)', font: { size: 12 } },
+                            min: 0, max: Math.max(V_CC + 2, 22),
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        y: {
+                            title: { display: true, text: 'I_C (mA)', font: { size: 12 } },
+                            min: 0,
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        }
+                    }
+                }
+            };
+
+            if (outputChartInstance) outputChartInstance.destroy();
+            const ctx = document.getElementById('outputChart').getContext('2d');
+            outputChartInstance = new Chart(ctx, config);
+        }
+
+        // ==================== MAIN UPDATE ====================
+        function updateAll() {
+            const p = getParams();
+            const q = computeQPoint(p.I_B, p.V_CE, p.beta, p.V_A, p.V_CC, p.R_C);
+
+            // Update display labels
+            iBValue.textContent = (p.I_B * 1e6).toFixed(0) + ' μA';
+            vceValue.textContent = p.V_CE.toFixed(1) + ' V';
+            betaValue.textContent = p.beta;
+            vaValue.textContent = p.V_A + ' V';
+            vccValue.textContent = p.V_CC + ' V';
+            rcValue.textContent = (p.R_C / 1000).toFixed(1) + ' kΩ';
+
+            icqDisplay.textContent = (q.ic * 1e3).toFixed(2) + ' mA';
+            vceqDisplay.textContent = q.vce.toFixed(1) + ' V';
+            ieqDisplay.textContent = (q.ie * 1e3).toFixed(2) + ' mA';
+            betaDisplay.textContent = p.beta;
+            alphaDisplay.textContent = q.alpha.toFixed(3);
+            gmDisplay.textContent = (q.gm * 1e3).toFixed(0) + ' mS';
+            regionDisplay.textContent = q.region;
+
+            if (q.region.includes('放大')) {
+                regionDisplay.className = 'text-lg font-bold text-emerald-600';
+            } else if (q.region.includes('饱和')) {
+                regionDisplay.className = 'text-lg font-bold text-amber-600';
+            } else {
+                regionDisplay.className = 'text-lg font-bold text-slate-500';
+            }
+
+            updateInputChart(p.beta, p.I_B, p.beta);
+            updateOutputChart(p.beta, p.V_A, p.V_CC, p.R_C, p.I_B, p.V_CE);
+        }
+
+        // ==================== EVENT LISTENERS ====================
+        [iBSlider, vceSlider, betaSlider, vaSlider, vccSlider, rcSlider].forEach(slider => {
+            slider.addEventListener('input', updateAll);
+        });
+
+        // ==================== INIT ====================
+        updateAll();
+
+        // KaTeX rendering after full load
+        window.addEventListener('load', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            } else {
+                console.warn('KaTeX auto-render 未加载');
+            }
+        });
+
+        console.log('BJT 特性仿真模块已启动');
+    </script>
+</body>
+</html>

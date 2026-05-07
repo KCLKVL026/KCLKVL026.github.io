@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>T触发器与分频 | 2分频·级联分频链</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+        .card-hover{transition:all 0.2s ease}.card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 20px -12px rgba(0,0,0,0.15)}
+        .bit-btn{display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:8px;font-weight:bold;font-size:1.2rem;cursor:pointer;transition:all 0.12s ease;border:2px solid #e2e8f0}
+        .bit-btn.on{background:#3b82f6;color:white;border-color:#3b82f6}.bit-btn.off{background:white;color:#64748b;border-color:#e2e8f0}.bit-btn:active{transform:scale(0.92)}
+        input[type=range]{height:5px;-webkit-appearance:none;background:#e2e8f0;border-radius:5px;outline:none}
+        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#3b82f6;border-radius:50%;cursor:pointer;transition:0.1s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <div class="flex justify-start mb-4">
+        <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页</a>
+    </div>
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">T触发器与分频</h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">T=1翻转·T=0保持 | 2分频 | 多级级联分频链 | 频谱分析</p>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-4 space-y-6">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4"><span class="w-1 h-6 bg-blue-500 rounded-full"></span>控制</h3>
+                <div class="mb-4"><label class="text-sm font-medium text-slate-600 mb-2 block">T 输入</label><div class="flex justify-center"><div id="tBtn" class="bit-btn on">1</div></div></div>
+                <div class="mb-4"><div class="flex justify-between text-sm font-medium mb-1"><label>时钟频率</label><span class="text-blue-600 font-mono" id="freqDisp">1 Hz</span></div>
+                    <input type="range" id="freqSlider" min="0.5" max="4" step="0.5" value="1" class="w-full"></div>
+                <div><div class="flex justify-between text-sm font-medium mb-1"><label>级联级数</label><span class="text-blue-600 font-mono" id="stageDisp">2</span></div>
+                    <input type="range" id="stageSlider" min="1" max="4" step="1" value="2" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-1"><span>1</span><span>4</span></div></div>
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-emerald-500 rounded-full"></span>分频比</h3>
+                <div class="text-center">
+                    <div class="text-sm text-slate-500">输出频率</div>
+                    <div id="outFreq" class="text-2xl font-bold text-blue-600">f/4</div>
+                    <div class="mt-2 text-sm" id="formula"></div>
+                </div>
+            </div>
+        </div>
+        <div class="lg:col-span-8 space-y-5">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="text-sm font-medium text-slate-700 mb-3 px-2">多级分频时序</div>
+                <div class="relative"><canvas id="timingChart" width="800" height="400" style="width:100%;height:auto;max-height:450px;"></canvas></div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="text-sm font-medium text-slate-700 mb-3 px-2">频谱柱状图</div>
+                <div class="relative"><canvas id="spectrumChart" width="800" height="220" style="width:100%;height:auto;max-height:250px;"></canvas></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    let t=1,freq=1,stages=2,timingChart=null,spectrumChart=null;
+    const T=8;
+    function generateTiming(){
+        const tt=[],dCLK=[],dQs=[];
+        const period=1/freq;
+        const PPS=80;
+        let lastClk=0;
+        const qs=Array(stages).fill(0);
+        for(let i=0;i<=T*PPS;i++){
+            const t=i/PPS;
+            const clkPhase=(t%period)/period;
+            const clk=clkPhase<0.5?1:0;
+            // Rising edge detection for each stage
+            if(t===0||lastClk===0&&clk===1){
+                if(t===1){ // T input
+                    for(let s=0;s<stages;s++){
+                        if(s===0)qs[0]=qs[0]?0:1; // toggle
+                        // cascaded: each stage toggles when previous goes from 1 to 0
+                    }
+                }
+            }
+            // Better cascaded logic
+            if(lastClk===0&&clk===1){
+                if(t===1){
+                    let prevToggle=true;
+                    for(let s=0;s<stages;s++){
+                        if(prevToggle){qs[s]=qs[s]?0:1;prevToggle=qs[s]===0;} // toggle, and if went to 0, propagate
+                        else break;
+                    }
+                }
+            }
+            lastClk=clk;
+            tt.push(t);dCLK.push(clk);
+            for(let s=0;s<stages;s++)if(!dQs[s])dQs[s]=[];dQs[s].push(qs[s]);
+        }
+        return{tt,dCLK,dQs};
+    }
+    // Re-implement with cleaner cascaded logic
+    function generateTiming2(){
+        const tt=[],dCLK=[];
+        const dQs=Array.from({length:stages},()=>[]);
+        const period=1/freq;
+        const PPS=80;
+        let lastClk=0;
+        const qs=Array(stages).fill(0);
+        for(let i=0;i<=T*PPS;i++){
+            const time=i/PPS;
+            const clkPhase=(time%period)/period;
+            const clk=clkPhase<0.5?1:0;
+            if(lastClk===0&&clk===1&&t===1){
+                // Stage 0 toggles on every rising edge of CLK
+                qs[0]=qs[0]?0:1;
+                // Higher stages toggle when previous stage falls (1->0)
+                for(let s=1;s<stages;s++){
+                    if(qs[s-1]===0)qs[s]=qs[s]?0:1; // previous just went to 0
+                    else break;
+                }
+            }
+            lastClk=clk;
+            tt.push(time);dCLK.push(clk);
+            for(let s=0;s<stages;s++)dQs[s].push(qs[s]);
+        }
+        return{tt,dCLK,dQs};
+    }
+    function initTiming(){
+        if(timingChart)return;
+        timingChart=new Chart(document.getElementById('timingChart').getContext('2d'),{
+            type:'line',data:{datasets:[]},options:{responsive:true,maintainAspectRatio:true,animation:false,interaction:{mode:'index',intersect:false},
+                plugins:{legend:{display:false}},scales:{x:{type:'linear',min:0,max:T,title:{display:true,text:'时间 (s)',font:{weight:'bold'}}},y:{min:-1,max:stages*2+2,ticks:{callback(v){if(v===stages*2)return 'CLK';const s=stages-1-v/2;if(s>=0)return 'Q'+s;return null;},stepSize:1},grid:{color:'#eef2ff'}}},elements:{point:{radius:0}}}
+        });
+    }
+    function updateTiming(){
+        if(timingChart){timingChart.destroy();timingChart=null;}
+        initTiming();
+        const{tt,dCLK,dQs}=generateTiming2();
+        const colors=['#10b981','#3b82f6','#f59e0b','#ef4444'];
+        const datasets=[{label:'CLK',data:tt.map((x,i)=>({x,y:dCLK[i]+stages*2})),borderColor:'#334155',borderWidth:2,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'}];
+        for(let s=0;s<stages;s++){
+            datasets.push({label:'Q'+s,data:tt.map((x,i)=>({x,y:dQs[s][i]+(stages-1-s)*2})),borderColor:colors[s%colors.length],borderWidth:2.5,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'});
+        }
+        timingChart.data.datasets=datasets;
+        timingChart.options.scales.y.max=stages*2+2;
+        timingChart.update('none');
+    }
+    function initSpectrum(){
+        if(spectrumChart)return;
+        spectrumChart=new Chart(document.getElementById('spectrumChart').getContext('2d'),{
+            type:'bar',data:{labels:[],datasets:[]},options:{responsive:true,maintainAspectRatio:true,animation:false,plugins:{legend:{display:false}},
+                scales:{x:{grid:{color:'#eef2ff'}},y:{title:{display:true,text:'相对频率',font:{weight:'bold'}},min:0,grid:{color:'#eef2ff'}}}}
+        });
+    }
+    function updateSpectrum(){
+        initSpectrum();
+        const labels=['CLK'];const data=[1];const colors=['#334155'];
+        for(let s=0;s<stages;s++){labels.push('Q'+s);data.push(1/Math.pow(2,s+1));colors.push(['#10b981','#3b82f6','#f59e0b','#ef4444'][s%4]);}
+        spectrumChart.data={labels,datasets:[{data,backgroundColor:colors.map(c=>c+'99'),borderColor:colors,borderWidth:1}]};
+        spectrumChart.update('none');
+    }
+    function refreshAll(){
+        document.getElementById('tBtn').className='bit-btn '+(t?'on':'off');document.getElementById('tBtn').textContent=t;
+        document.getElementById('freqDisp').textContent=freq+' Hz';
+        document.getElementById('stageDisp').textContent=stages;
+        document.getElementById('outFreq').textContent='f/'+Math.pow(2,stages);
+        const f=document.getElementById('formula');f.innerHTML='';
+        try{katex.render('f_{out} = \\frac{f_{clk}}{2^'+stages+'}',f,{throwOnError:false});}catch(e){f.textContent='f_out=f_clk/2^'+stages;}
+        updateTiming();updateSpectrum();
+    }
+    document.getElementById('tBtn').addEventListener('click',()=>{t=t?0:1;refreshAll();});
+    document.getElementById('freqSlider').addEventListener('input',e=>{freq=parseFloat(e.target.value);refreshAll();});
+    document.getElementById('stageSlider').addEventListener('input',e=>{stages=parseInt(e.target.value);refreshAll();});
+    initTiming();initSpectrum();refreshAll();
+    document.addEventListener('DOMContentLoaded',()=>{if(typeof renderMathInElement!=='undefined')renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false});});
+    window.addEventListener('resize',()=>{if(timingChart){timingChart.resize();timingChart.update();}if(spectrumChart){spectrumChart.resize();spectrumChart.update();}});
+    console.log('T触发器已启动 | 2分频 | 1~4级级联');
+</script>
+</body>
+</html>

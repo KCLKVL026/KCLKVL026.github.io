@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>布尔代数与化简 | DeMorgan·吸收律·分配律</title>
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js">
+    </script>
+    <style>
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #2563eb;
+            transform: scale(1.15);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0, 0, 0, 0.15);
+        }
+        .preset-btn {
+            transition: all 0.15s ease;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+        .preset-btn.active {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-weight: 600;
+        }
+        .preset-btn:hover:not(.active) {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+        .step-line {
+            border-left: 3px solid #3b82f6;
+            padding-left: 12px;
+            margin: 8px 0;
+        }
+        .step-rule {
+            font-size: 0.7rem;
+            color: #6366f1;
+            background: #eef2ff;
+            padding: 1px 6px;
+            border-radius: 8px;
+        }
+
+        /* 最小项网格样式 */
+        .minterm-grid-cell {
+            transition: all 0.2s ease;
+            cursor: default;
+            position: relative;
+            user-select: none;
+        }
+        .minterm-grid-cell:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+            z-index: 2;
+        }
+        .minterm-grid-cell.cell-active-orig {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 3px 10px rgba(59, 130, 246, 0.35);
+        }
+        .minterm-grid-cell.cell-active-simp {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 3px 10px rgba(16, 185, 129, 0.4);
+        }
+        .minterm-grid-cell.cell-inactive {
+            background: #f1f5f9;
+            color: #94a3b8;
+            border: 1.5px dashed #cbd5e1;
+        }
+        .minterm-grid-cell.cell-match-both {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 3px 12px rgba(99, 102, 241, 0.4);
+            animation: pulseMatch 2s ease-in-out infinite;
+        }
+        @keyframes pulseMatch {
+            0%,
+            100% {
+                box-shadow: 0 3px 12px rgba(99, 102, 241, 0.4);
+            }
+            50% {
+                box-shadow: 0 6px 22px rgba(99, 102, 241, 0.7);
+            }
+        }
+        .minterm-row-label {
+            writing-mode: vertical-lr;
+            text-orientation: mixed;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 28px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+        }
+        .truth-row-highlight {
+            background: #fef3c7 !important;
+            outline: 2px solid #f59e0b;
+            outline-offset: -2px;
+            transition: all 0.15s ease;
+            border-radius: 6px;
+        }
+
+        @media (max-width: 640px) {
+            .minterm-grid-cell {
+                width: 32px;
+                height: 32px;
+                font-size: 0.65rem;
+                border-radius: 6px;
+            }
+            .minterm-row-label {
+                min-width: 20px;
+                font-size: 0.6rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+    <div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+        <div class="flex justify-start mb-4">
+            <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                返回主页
+            </a>
+        </div>
+
+        <div class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">布尔代数与化简</h1>
+            <p class="text-slate-600 max-w-2xl mx-auto">选择布尔表达式，观察逐步化简过程 | 真值表同步验证 | 最小项网格对比</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- 左侧 -->
+            <div class="lg:col-span-4 space-y-6">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                    <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                        <span class="w-1 h-6 bg-blue-500 rounded-full"></span>表达式选择
+                    </h3>
+                    <div class="space-y-2" id="presetSelector"></div>
+                </div>
+
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                    <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                        <span class="w-1 h-5 bg-purple-500 rounded-full"></span>原始表达式
+                    </h3>
+                    <div id="originalExpr" class="bg-slate-50 p-3 rounded-lg text-center text-base min-h-[40px] flex items-center justify-center"></div>
+                </div>
+
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                    <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                        <span class="w-1 h-5 bg-emerald-500 rounded-full"></span>化简结果
+                    </h3>
+                    <div id="simplifiedExpr" class="bg-emerald-50 p-3 rounded-lg text-center text-lg font-bold min-h-[40px] flex items-center justify-center"></div>
+                </div>
+
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                        <span class="w-1 h-5 bg-amber-500 rounded-full"></span>化简步骤
+                    </h3>
+                    <div id="stepsContainer" class="space-y-1 text-sm max-h-[300px] overflow-y-auto"></div>
+                </div>
+            </div>
+
+            <!-- 右侧 -->
+            <div class="lg:col-span-8 space-y-5">
+                <!-- 最小项网格对比 -->
+                <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-5 transition-all card-hover">
+                    <div class="flex flex-wrap justify-between items-center mb-4 px-1">
+                        <div class="flex items-center gap-4 text-sm">
+                            <div class="flex items-center gap-1.5"><div class="w-4 h-3 rounded-sm" style="background:#3b82f6;"></div><span class="font-medium">原始表达式</span></div>
+                            <div class="flex items-center gap-1.5"><div class="w-4 h-3 rounded-sm" style="background:#10b981;"></div><span class="font-medium">化简表达式</span></div>
+                            <div class="flex items-center gap-1.5"><div class="w-4 h-3 rounded-sm" style="background:#6366f1;"></div><span class="font-medium">两者一致</span></div>
+                        </div>
+                        <div id="matchBadge" class="text-xs font-semibold px-3 py-1.5 rounded-full shadow-sm"></div>
+                    </div>
+                    <div id="mintermGridContainer" class="space-y-4">
+                        <!-- 动态生成 -->
+                    </div>
+                    <p class="text-xs text-slate-400 mt-4 text-center">悬停最小项可高亮真值表对应行 | 网格展示 m₀~m₇ 的激活状态</p>
+                </div>
+
+                <!-- 真值表验证 -->
+                <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-5">
+                    <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                        <span class="w-1 h-5 bg-indigo-500 rounded-full"></span>真值表验证
+                    </h3>
+                    <div class="overflow-x-auto"><table class="w-full text-center text-sm" id="truthTable">
+                            <thead><tr class="text-slate-500"><th class="py-2 px-2">A</th><th class="py-2 px-2">B</th><th class="py-2 px-2">C</th><th class="py-2 px-2">原始 Y</th><th class="py-2 px-2">化简 Y</th><th class="py-2 px-2">匹配</th></tr></thead>
+                            <tbody id="truthTableBody"></tbody>
+                    </table></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ====== 表达式定义 ======
+            const presets = [{
+                name: '吸收律: A + AB = A',
+                katex: 'F = A + A \\cdot B',
+                simplified_katex: 'F = A',
+                vars: ['A', 'B', 'C'],
+                origFn: (a, b, c) => (a | (a & b)) & 1,
+                simplifiedFn: (a, b, c) => a,
+                steps: [
+                    { expr: 'A + A \\cdot B', rule: '原式' },
+                    { expr: 'A \\cdot (1 + B)', rule: '提取公因子 A' },
+                    { expr: 'A \\cdot 1', rule: '因为 1+B = 1' },
+                    { expr: 'A', rule: '吸收律' }
+                ],
+                minterms_orig: [0, 1, 2, 3, 4, 5, 6, 7].filter(m => { const a = (m >> 2) & 1,
+                    b = (m >> 1) & 1,
+                    c = m & 1; return (a | (a & b)) & 1; }),
+                minterms_simp: [0, 1, 2, 3, 4, 5, 6, 7].filter(m => { const a = (m >> 2) & 1,
+                    b = (m >> 1) & 1,
+                    c = m & 1; return a; })
+            }, {
+                name: 'DeMorgan: (AB)\' = A\'+B\'',
+                katex: 'F = \\overline{A \\cdot B}',
+                simplified_katex: 'F = \\overline{A} + \\overline{B}',
+                vars: ['A', 'B', 'C'],
+                origFn: (a, b, c) => ((a & b) ? 0 : 1),
+                simplifiedFn: (a, b, c) => ((a ? 0 : 1) | (b ? 0 : 1)) & 1,
+                steps: [
+                    { expr: '\\overline{A \\cdot B}', rule: '原式' },
+                    { expr: '\\overline{A} + \\overline{B}', rule: 'DeMorgan 定理' }
+                ],
+                minterms_orig: [0, 1, 2, 3, 4, 5, 6, 7].filter(m => { const a = (m >> 2) & 1,
+                    b = (m >> 1) & 1,
+                    c = m & 1; return ((a & b) ? 0 : 1); }),
+                minterms_simp: [0, 1, 2, 3, 4, 5, 6, 7].filter(m => { const a = (m >> 2) & 1,
+                    b = (m >> 1) & 1,
+                    c = m & 1; return ((a ? 0 : 1) | (b ? 0 : 1)) & 1; })
+            }, {
+                name: 'DeMorgan: (A+B)\' = A\'B\'',
+                katex: 'F = \\overline{A + B}',
+                simplified_katex: 'F = \\overline{A} \\cdot \\overline{B}',
+                vars: ['A', 'B', 'C'],
+                origFn: (a, b, c) => ((a | b) ? 0 : 1),
+                simplifiedFn: (a, b, c) => ((a ? 0 : 1) & (b ? 0 : 1)) & 1,
+                steps: [
+                    { expr: '\\overline{A + B}', rule: '原式' },
+                    { expr: '\\overline{A} \\cdot \\overline{B}', rule: 'DeMorgan 定理' }
+                ],
+                minterms_orig: [0, 1, 2, 3, 4, 5, 6, 7].filter(m => { const a = (m >> 2) & 1,
+                    b = (m >> 1) & 1,
+                    c = m & 1; return ((a | b) ? 0 : 1); }),
+                minterms_simp: [0, 1, 2, 3, 4, 5, 6, 7].filter(m => { const a = (m >> 2) & 1,
+                    b = (m >> 1) & 1,
+                    c = m & 1; return ((a ? 0 : 1) & (b ? 0 : 1)) & 1; })
+            }, {
+                name: '分配律: A+BC = (A+B)(A+C)',
+                katex: 'F = A + B \\cdot C',
+                simplified_katex: 'F = (A+B)(A+C)',
+                vars: ['A', 'B', 'C'],
+                origFn: (a, b, c) => (a | (b & c)) & 1,
+                simplifiedFn: (a, b, c) => ((a | b) & (a | c)) & 1,
+                steps: [
+                    { expr: 'A + B \\cdot C', rule: '原式 (SOP)' },
+                    { expr: '(A + B) \\cdot (A + C)', rule: '分配律展开为 POS' }
+                ],
+                minterms_orig: [0, 1, 2, 3, 4, 5, 6, 7].filter(m => { const a = (m >> 2) & 1,
+                    b = (m >> 1) & 1,
+                    c = m & 1; return (a | (b & c)) & 1; }),
+                minterms_simp: [0, 1, 2, 3, 4, 5, 6, 7].filter(m => { const a = (m >> 2) & 1,
+                    b = (m >> 1) & 1,
+                    c = m & 1; return ((a | b) & (a | c)) & 1; })
+            }, {
+                name: '冗余项消除: AB+A\'C+BC',
+                katex: 'F = AB + \\overline{A}C + BC',
+                simplified_katex: 'F = AB + \\overline{A}C',
+                vars: ['A', 'B', 'C'],
+                origFn: (a, b, c) => ((a & b) | ((a ? 0 : 1) & c) | (b & c)) & 1,
+                simplifiedFn: (a, b, c) => ((a & b) | ((a ? 0 : 1) & c)) & 1,
+                steps: [
+                    { expr: 'AB + \\overline{A}C + BC', rule: '原式' },
+                    { expr: 'AB + \\overline{A}C + BC(A+\\overline{A})', rule: 'BC = BC·1 = BC(A+A\')' },
+                    { expr: 'AB + \\overline{A}C + ABC + \\overline{A}BC', rule: '展开' },
+                    { expr: 'AB(1+C) + \\overline{A}C(1+B)', rule: '合并同类项' },
+                    { expr: 'AB + \\overline{A}C', rule: '冗余项 BC 被消除' }
+                ],
+                minterms_orig: [0, 1, 2, 3, 4, 5, 6, 7].filter(m => { const a = (m >> 2) & 1,
+                    b = (m >> 1) & 1,
+                    c = m & 1; return ((a & b) | ((a ? 0 : 1) & c) | (b & c)) & 1; }),
+                minterms_simp: [0, 1, 2, 3, 4, 5, 6, 7].filter(m => { const a = (m >> 2) & 1,
+                    b = (m >> 1) & 1,
+                    c = m & 1; return ((a & b) | ((a ? 0 : 1) & c)) & 1; })
+            }, {
+                name: '互补律: AA\' = 0, A+A\' = 1',
+                katex: 'F = A \\cdot \\overline{A} + A \\cdot B',
+                simplified_katex: 'F = A \\cdot B',
+                vars: ['A', 'B', 'C'],
+                origFn: (a, b, c) => (((a & (a ? 0 : 1)) | (a & b))) & 1,
+                simplifiedFn: (a, b, c) => (a & b) & 1,
+                steps: [
+                    { expr: 'A \\cdot \\overline{A} + A \\cdot B', rule: '原式' },
+                    { expr: '0 + A \\cdot B', rule: '互补律 A·A\' = 0' },
+                    { expr: 'A \\cdot B', rule: '恒等律 0+A = A' }
+                ],
+                minterms_orig: [0, 1, 2, 3, 4, 5, 6, 7].filter(m => { const a = (m >> 2) & 1,
+                    b = (m >> 1) & 1,
+                    c = m & 1; return ((a & (a ? 0 : 1)) | (a & b)) & 1; }),
+                minterms_simp: [0, 1, 2, 3, 4, 5, 6, 7].filter(m => { const a = (m >> 2) & 1,
+                    b = (m >> 1) & 1,
+                    c = m & 1; return (a & b) & 1; })
+            }];
+
+            let currentPreset = 0;
+
+            // ====== DOM引用缓存 ======
+            const $ = (id) => document.getElementById(id);
+            const presetSelector = $('presetSelector');
+            const originalExpr = $('originalExpr');
+            const simplifiedExpr = $('simplifiedExpr');
+            const stepsContainer = $('stepsContainer');
+            const truthTableBody = $('truthTableBody');
+            const mintermGridContainer = $('mintermGridContainer');
+            const matchBadge = $('matchBadge');
+
+            // ====== 安全KaTeX渲染辅助函数 ======
+            function safeKatexRender(latexStr, container, options = {}) {
+                if (!container) return;
+                container.innerHTML = '';
+                if (typeof katex !== 'undefined' && katex.render) {
+                    try {
+                        katex.render(latexStr, container, { throwOnError: false, ...options });
+                    } catch (e) {
+                        container.textContent = latexStr;
+                        console.warn('KaTeX render failed:', e.message);
+                    }
+                } else {
+                    container.textContent = latexStr;
+                }
+            }
+
+            // ====== UI: 预设按钮 ======
+            function renderPresetButtons() {
+                if (!presetSelector) return;
+                presetSelector.innerHTML = '';
+                presets.forEach((p, i) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'preset-btn w-full text-left rounded-lg px-3 py-2 text-sm ' + (i ===
+                        currentPreset ? 'active' : '');
+                    btn.textContent = p.name;
+                    btn.addEventListener('click', () => {
+                        currentPreset = i;
+                        document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove(
+                            'active'));
+                        btn.classList.add('active');
+                        refreshAll();
+                    });
+                    presetSelector.appendChild(btn);
+                });
+            }
+
+            // ====== 公式渲染 ======
+            function renderFormulas() {
+                const p = presets[currentPreset];
+                safeKatexRender(p.katex, originalExpr);
+                safeKatexRender(p.simplified_katex, simplifiedExpr);
+            }
+
+            // ====== 化简步骤 ======
+            function renderSteps() {
+                if (!stepsContainer) return;
+                stepsContainer.innerHTML = '';
+                const p = presets[currentPreset];
+                p.steps.forEach(s => {
+                    const div = document.createElement('div');
+                    div.className = 'step-line';
+                    const span = document.createElement('span');
+                    span.className = 'step-rule';
+                    span.textContent = s.rule;
+                    const exprSpan = document.createElement('span');
+                    exprSpan.className = 'ml-2 inline-block';
+                    safeKatexRender(s.expr, exprSpan);
+                    div.appendChild(span);
+                    div.appendChild(document.createElement('br'));
+                    div.appendChild(exprSpan);
+                    stepsContainer.appendChild(div);
+                });
+            }
+
+            // ====== 真值表 ======
+            function renderTruthTable() {
+                if (!truthTableBody) return;
+                const p = presets[currentPreset];
+                truthTableBody.innerHTML = '';
+                for (let m = 0; m < 8; m++) {
+                    const a = (m >> 2) & 1,
+                        b = (m >> 1) & 1,
+                        c = m & 1;
+                    const yOrig = p.origFn(a, b, c);
+                    const ySimp = p.simplifiedFn(a, b, c);
+                    const match = yOrig === ySimp;
+                    const tr = document.createElement('tr');
+                    tr.className = 'truth-table-row ' + (match ? 'hover:bg-slate-50' : 'bg-red-50');
+                    tr.setAttribute('data-minterm', m);
+                    tr.innerHTML = `
+                        <td class="py-1.5 px-2 font-mono ${a ? 'text-blue-600 font-bold' : 'text-slate-400'}">${a}</td>
+                        <td class="py-1.5 px-2 font-mono ${b ? 'text-blue-600 font-bold' : 'text-slate-400'}">${b}</td>
+                        <td class="py-1.5 px-2 font-mono ${c ? 'text-blue-600 font-bold' : 'text-slate-400'}">${c}</td>
+                        <td class="py-1.5 px-2 font-mono font-bold ${yOrig ? 'text-emerald-600' : 'text-red-400'}">${yOrig}</td>
+                        <td class="py-1.5 px-2 font-mono font-bold ${ySimp ? 'text-emerald-600' : 'text-red-400'}">${ySimp}</td>
+                        <td class="py-1.5 px-2">${match ? '<span class="text-emerald-500 text-lg">✓</span>' : '<span class="text-red-500 font-bold text-lg">✗</span>'}</td>
+                    `;
+                    truthTableBody.appendChild(tr);
+                }
+            }
+
+            // ====== 最小项网格可视化 ======
+            function renderMintermGrid() {
+                if (!mintermGridContainer) return;
+                const p = presets[currentPreset];
+                const origSet = new Set(p.minterms_orig);
+                const simpSet = new Set(p.minterms_simp);
+                const allMatch = arraysEqual(p.minterms_orig, p.minterms_simp);
+
+                // 匹配徽章
+                if (matchBadge) {
+                    if (allMatch) {
+                        matchBadge.textContent = '✓ 验证通过 — 最小项完全匹配';
+                        matchBadge.className = 'text-xs font-semibold px-3 py-1.5 rounded-full shadow-sm bg-emerald-100 text-emerald-700';
+                    } else {
+                        matchBadge.textContent = '✗ 不匹配 — 请检查表达式';
+                        matchBadge.className = 'text-xs font-semibold px-3 py-1.5 rounded-full shadow-sm bg-red-100 text-red-700';
+                    }
+                }
+
+                mintermGridContainer.innerHTML = '';
+
+                // 创建两行网格：原始表达式行 & 化简表达式行
+                const rows = [
+                    { label: '原始', colorClass: 'cell-active-orig', minterms: p.minterms_orig,
+                        bgLabel: 'bg-blue-100 text-blue-700' },
+                    { label: '化简', colorClass: 'cell-active-simp', minterms: p.minterms_simp,
+                        bgLabel: 'bg-emerald-100 text-emerald-700' }
+                ];
+
+                rows.forEach((rowDef, rowIdx) => {
+                    const rowWrapper = document.createElement('div');
+                    rowWrapper.className = 'flex items-center gap-2';
+
+                    // 行标签
+                    const labelDiv = document.createElement('div');
+                    labelDiv.className =
+                        'minterm-row-label px-2 py-1 rounded-lg text-xs font-bold shrink-0 ' + rowDef
+                        .bgLabel;
+                    labelDiv.textContent = rowDef.label;
+                    rowWrapper.appendChild(labelDiv);
+
+                    // 8个最小项单元格
+                    const cellsRow = document.createElement('div');
+                    cellsRow.className = 'flex gap-1.5 flex-1 flex-wrap justify-start';
+
+                    for (let m = 0; m < 8; m++) {
+                        const cell = document.createElement('div');
+                        const isActive = rowDef.minterms.includes(m);
+                        const bothActive = origSet.has(m) && simpSet.has(m);
+                        const bothInactive = !origSet.has(m) && !simpSet.has(m);
+
+                        let cellClass = 'minterm-grid-cell ';
+                        if (allMatch && isActive) {
+                            cellClass += 'cell-match-both';
+                        } else if (isActive) {
+                            cellClass += rowDef.colorClass;
+                        } else {
+                            cellClass += 'cell-inactive';
+                        }
+
+                        cell.className = cellClass +
+                            ' w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-lg flex items-center justify-center text-xs sm:text-sm font-mono transition-all';
+                        cell.textContent = 'm' + m;
+                        cell.setAttribute('data-minterm', m);
+                        cell.setAttribute('data-row-type', rowIdx === 0 ? 'orig' : 'simp');
+                        cell.title = '最小项 m' + m + ' — ' + (isActive ? '激活 (值为1)' : '未激活 (值为0)') +
+                            ' | ' + rowDef.label + '表达式';
+
+                        // 悬停联动真值表
+                        cell.addEventListener('mouseenter', () => highlightTruthRow(m, true));
+                        cell.addEventListener('mouseleave', () => highlightTruthRow(m, false));
+
+                        cellsRow.appendChild(cell);
+                    }
+
+                    rowWrapper.appendChild(cellsRow);
+                    mintermGridContainer.appendChild(rowWrapper);
+                });
+
+                // 添加图例说明
+                const legendDiv = document.createElement('div');
+                legendDiv.className =
+                    'flex flex-wrap items-center gap-3 text-xs text-slate-500 mt-3 pt-3 border-t border-slate-100';
+                legendDiv.innerHTML = `
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm inline-block" style="background:#f1f5f9;border:1.5px dashed #cbd5e1;"></span> 未激活</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm inline-block" style="background:linear-gradient(135deg,#3b82f6,#2563eb);"></span> 原始激活</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm inline-block" style="background:linear-gradient(135deg,#10b981,#059669);"></span> 化简激活</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm inline-block" style="background:linear-gradient(135deg,#6366f1,#4f46e5);"></span> 两者一致激活</span>
+                `;
+                mintermGridContainer.appendChild(legendDiv);
+            }
+
+            function highlightTruthRow(minterm, highlight) {
+                const rows = document.querySelectorAll('.truth-table-row[data-minterm="' + minterm + '"]');
+                rows.forEach(row => {
+                    if (highlight) {
+                        row.classList.add('truth-row-highlight');
+                    } else {
+                        row.classList.remove('truth-row-highlight');
+                    }
+                });
+            }
+
+            function arraysEqual(a, b) {
+                if (a.length !== b.length) return false;
+                const sa = [...a].sort();
+                const sb = [...b].sort();
+                return sa.every((v, i) => v === sb[i]);
+            }
+
+            // ====== 全局刷新 ======
+            function refreshAll() {
+                renderFormulas();
+                renderSteps();
+                renderTruthTable();
+                renderMintermGrid();
+            }
+
+            // ====== 初始化（确保KaTeX已加载） ======
+            function initApplication() {
+                renderPresetButtons();
+                refreshAll();
+                console.log('布尔代数化简已启动 | ' + presets.length + '种预设表达式 | 真值表+最小项网格同步');
+            }
+
+            // 等待KaTeX加载完成后再初始化
+            function waitForKatexAndInit() {
+                if (typeof katex !== 'undefined' && katex.render) {
+                    initApplication();
+                } else {
+                    // KaTeX尚未加载，轮询等待（最多等待5秒）
+                    let attempts = 0;
+                    const maxAttempts = 50;
+                    const interval = setInterval(() => {
+                        attempts++;
+                        if (typeof katex !== 'undefined' && katex.render) {
+                            clearInterval(interval);
+                            initApplication();
+                        } else if (attempts >= maxAttempts) {
+                            clearInterval(interval);
+                            console.warn('KaTeX加载超时，使用降级模式显示');
+                            initApplication();
+                        }
+                    }, 100);
+                }
+            }
+
+            // 在DOM解析完成后启动
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', waitForKatexAndInit);
+            } else {
+                // DOM已就绪（readyState为interactive或complete）
+                waitForKatexAndInit();
+            }
+
+            // auto-render补充（处理可能遗漏的公式）
+            document.addEventListener('DOMContentLoaded', function() {
+                if (typeof renderMathInElement !== 'undefined') {
+                    setTimeout(() => {
+                        renderMathInElement(document.body, {
+                            delimiters: [
+                                { left: '\\[', right: '\\]', display: true },
+                                { left: '\\(', right: '\\)', display: false }
+                            ],
+                            throwOnError: false
+                        });
+                    }, 300);
+                }
+            });
+
+            // 窗口大小变化时不需要特殊处理（纯HTML/CSS网格自动适应）
+
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>理想运放基础 | 模拟电子技术辅助教学</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] { height: 5px; -webkit-appearance: none; background: #e2e8f0; border-radius: 5px; outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #8b5cf6; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb:hover { background: #7c3aed; transform: scale(1.15); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .card-hover { transition: all 0.2s ease; } .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15); }
+        .topo-tab { cursor: pointer; transition: all 0.2s; } .topo-tab.active { background: #8b5cf6; color: white; } .topo-tab:not(.active):hover { background: #f3e8ff; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+    <div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+        <div class="flex justify-start mb-4">
+            <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页
+            </a>
+        </div>
+        <div class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">理想运放基础</h1>
+            <p class="text-slate-600 max-w-2xl mx-auto">反相/同相/跟随器——虚短与虚断概念</p>
+        </div>
+        <div class="flex justify-center gap-2 mb-6">
+            <button id="tabInv" class="topo-tab active px-5 py-2 rounded-full text-sm font-medium border border-slate-300 bg-violet-600 text-white">反相放大</button>
+            <button id="tabNon" class="topo-tab px-5 py-2 rounded-full text-sm font-medium border border-slate-300 bg-white text-slate-600">同相放大</button>
+            <button id="tabFol" class="topo-tab px-5 py-2 rounded-full text-sm font-medium border border-slate-300 bg-white text-slate-600">电压跟随器</button>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-4 space-y-5">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-violet-500 rounded-full"></span>电路参数</h2>
+                    <div class="space-y-4">
+                        <div id="r1Div"><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_1\)</span><span id="r1Value" class="font-mono font-bold text-violet-600">10 kΩ</span></div><input type="range" id="r1Slider" min="1" max="100" value="10" step="1" class="w-full"></div>
+                        <div id="rfDiv"><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_f\)</span><span id="rfValue" class="font-mono font-bold text-violet-600">100 kΩ</span></div><input type="range" id="rfSlider" min="1" max="200" value="100" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(V_{in}\) 幅度</span><span id="vinValue" class="font-mono font-bold text-violet-600">2.0 V</span></div><input type="range" id="vinSlider" min="1" max="50" value="20" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>频率</span><span id="freqValue" class="font-mono font-bold text-violet-600">1.0 kHz</span></div><input type="range" id="freqSlider" min="1" max="100" value="10" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>电源 \(\pm V_{CC}\)</span><span id="vccValue" class="font-mono font-bold text-violet-600">±15 V</span></div><input type="range" id="vccSlider" min="5" max="18" value="15" step="1" class="w-full"></div>
+                    </div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>运放性能</h2>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(A_v\)</div><div id="avDisplay" class="text-lg font-bold text-emerald-600 font-mono">-10</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(Z_{in}\)</div><div id="zinDisplay" class="text-lg font-bold text-emerald-600 font-mono">10 kΩ</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(V_{out,pk}\)</div><div id="voutDisplay" class="text-lg font-bold text-emerald-600 font-mono">-20 V</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">削波</div><div id="clipDisplay" class="text-lg font-bold text-rose-600">正饱和</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="lg:col-span-8 space-y-5">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <h2 class="text-base font-bold text-slate-800 mb-2">输入/输出波形</h2>
+                    <div class="relative" style="height: 300px;"><canvas id="waveChart"></canvas></div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <h2 class="text-base font-bold text-slate-800 mb-2">传输特性（\(V_{out}\) vs \(V_{in}\)）</h2>
+                    <div class="relative" style="height: 240px;"><canvas id="transChart"></canvas></div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>关键公式</h2>
+                    <div class="text-sm bg-slate-50 rounded-xl p-4 text-center space-y-2">
+                        \[A_v = -\frac{R_f}{R_1}\;\text{(反相)} \qquad A_v = 1 + \frac{R_f}{R_1}\;\text{(同相)} \qquad A_v = 1\;\text{(跟随器)}\]
+                        \[V_+ \approx V_- \quad\text{(虚短)} \qquad I_+ = I_- \approx 0 \quad\text{(虚断)}\]
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let topo = 'inv', waveChartInst = null, transChartInst = null;
+
+        function getParams() {
+            return {
+                R1: parseFloat(r1Slider.value) * 1000,
+                Rf: parseFloat(rfSlider.value) * 1000,
+                V_in: parseFloat(vinSlider.value) / 10,
+                freq: parseFloat(freqSlider.value) * 100,
+                V_CC: parseFloat(vccSlider.value),
+                topo
+            };
+        }
+
+        function compute(p) {
+            let A_v, Z_in, V_out_max;
+            if (p.topo === 'inv') { A_v = -p.Rf / p.R1; Z_in = p.R1; }
+            else if (p.topo === 'non') { A_v = 1 + p.Rf / p.R1; Z_in = 1e9; }
+            else { A_v = 1; Z_in = 1e9; }
+            V_out_max = p.V_CC * 0.9;
+            return { A_v, Z_in, V_out_max };
+        }
+
+        function updateAll() {
+            const p = getParams(), r = compute(p);
+            const V_out_ideal = p.V_in * r.A_v;
+            const V_out_actual = Math.max(-r.V_out_max, Math.min(r.V_out_max, V_out_ideal));
+            let clipText = '正常';
+            if (V_out_actual >= r.V_out_max) clipText = '正饱和';
+            else if (V_out_actual <= -r.V_out_max) clipText = '负饱和';
+
+            document.getElementById('r1Value').textContent = (p.R1/1000).toFixed(0) + ' kΩ';
+            document.getElementById('rfValue').textContent = (p.Rf/1000).toFixed(0) + ' kΩ';
+            document.getElementById('vinValue').textContent = p.V_in.toFixed(1) + ' V';
+            document.getElementById('freqValue').textContent = (p.freq/1000).toFixed(1) + ' kHz';
+            document.getElementById('vccValue').textContent = '±' + p.V_CC + ' V';
+            document.getElementById('avDisplay').textContent = r.A_v.toFixed(1);
+            document.getElementById('zinDisplay').textContent = r.Z_in > 1e6 ? '极高(>1MΩ)' : (r.Z_in/1000).toFixed(0)+' kΩ';
+            document.getElementById('voutDisplay').textContent = V_out_actual.toFixed(1) + ' V';
+            document.getElementById('clipDisplay').textContent = clipText;
+
+            // --- Compute new data ---
+            const T = 1/p.freq, dur = 2*T, N = 400;
+            const vinData = [], voutData = [];
+            for (let i = 0; i <= N; i++) {
+                const t = dur * i/N, v = p.V_in * Math.sin(2*Math.PI*p.freq*t);
+                vinData.push({ x: t*1000, y: v });
+                voutData.push({ x: t*1000, y: Math.max(-r.V_out_max, Math.min(r.V_out_max, v * r.A_v)) });
+            }
+
+            const transPts = [];
+            for (let i = 0; i <= 200; i++) {
+                const x = -r.V_out_max*1.2/0.9 + 2*r.V_out_max*1.2/0.9*i/200;
+                transPts.push({ x: x, y: Math.max(-r.V_out_max, Math.min(r.V_out_max, x * r.A_v)) });
+            }
+
+            // --- Update or create charts ---
+            if (waveChartInst) {
+                waveChartInst.data.datasets[0].data = vinData;
+                waveChartInst.data.datasets[1].data = voutData;
+                waveChartInst.update();
+            } else {
+                waveChartInst = new Chart(document.getElementById('waveChart').getContext('2d'), {
+                    type:'scatter', data:{ datasets:[
+                        { label:'V_in', data:vinData, borderColor:'#3b82f6', borderWidth:2, pointRadius:0, showLine:true, tension:0.3 },
+                        { label:'V_out', data:voutData, borderColor:'#8b5cf6', borderWidth:2, pointRadius:0, showLine:true, tension:0.3 }
+                    ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:300},
+                        plugins:{ legend:{position:'bottom',labels:{boxWidth:14,font:{size:10}}} },
+                        scales:{ x:{title:{display:true,text:'时间 (ms)'}}, y:{title:{display:true,text:'V'}, grid:{color:'rgba(0,0,0,0.05)'}} } }
+                });
+            }
+
+            if (transChartInst) {
+                transChartInst.data.datasets[0].data = transPts;
+                transChartInst.data.datasets[1].data = [{ x:p.V_in, y:V_out_actual }];
+                transChartInst.update();
+            } else {
+                transChartInst = new Chart(document.getElementById('transChart').getContext('2d'), {
+                    type:'scatter', data:{ datasets:[
+                        { data:transPts, borderColor:'#8b5cf6', borderWidth:2, pointRadius:0, showLine:true, order:1 },
+                        { data:[{ x:p.V_in, y:V_out_actual }], borderColor:'#ef4444', backgroundColor:'#ef4444', pointRadius:8, showLine:false, order:0 }
+                    ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:300},
+                        plugins:{ legend:{display:false} },
+                        scales:{ x:{title:{display:true,text:'V_in (V)'}}, y:{title:{display:true,text:'V_out (V)'}, grid:{color:'rgba(0,0,0,0.05)'}} } }
+                });
+            }
+        }
+
+        function setTopo(t) {
+            topo = t;
+            ['tabInv','tabNon','tabFol'].forEach(id => { const el = document.getElementById(id); el.classList.remove('active','bg-violet-600','text-white'); el.classList.add('bg-white','text-slate-600'); });
+            const activeTab = document.getElementById(t === 'inv' ? 'tabInv' : t === 'non' ? 'tabNon' : 'tabFol');
+            activeTab.classList.add('active','bg-violet-600','text-white'); activeTab.classList.remove('bg-white','text-slate-600');
+            document.getElementById('r1Div').style.display = t === 'fol' ? 'none' : 'block';
+            document.getElementById('rfDiv').style.display = t === 'fol' ? 'none' : 'block';
+            updateAll();
+        }
+        document.getElementById('tabInv').addEventListener('click', () => setTopo('inv'));
+        document.getElementById('tabNon').addEventListener('click', () => setTopo('non'));
+        document.getElementById('tabFol').addEventListener('click', () => setTopo('fol'));
+
+        ['r1Slider','rfSlider','vinSlider','freqSlider','vccSlider'].forEach(id => document.getElementById(id).addEventListener('input', updateAll));
+        updateAll();
+        window.addEventListener('load', () => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); });
+    </script>
+</body>
+</html>

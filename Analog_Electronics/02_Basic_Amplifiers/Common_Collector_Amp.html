@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>共集电极放大电路 | 模拟电子技术辅助教学</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] { height: 5px; -webkit-appearance: none; background: #e2e8f0; border-radius: 5px; outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #10b981; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb:hover { background: #059669; transform: scale(1.15); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .card-hover { transition: all 0.2s ease; } .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15); }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+    <div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+        <div class="flex justify-start mb-4">
+            <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页
+            </a>
+        </div>
+        <div class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">共集电极放大电路（射极跟随器）</h1>
+            <p class="text-slate-600 max-w-2xl mx-auto">高输入阻抗 · 低输出阻抗 · 电压增益≈1</p>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-4 space-y-5">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>电路参数</h2>
+                    <div class="space-y-4">
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>电源电压 \(V_{CC}\)</span><span id="vccValue" class="font-mono font-bold text-emerald-600">15 V</span></div><input type="range" id="vccSlider" min="5" max="30" value="15" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>上偏电阻 \(R_{B1}\)</span><span id="rb1Value" class="font-mono font-bold text-emerald-600">100 kΩ</span></div><input type="range" id="rb1Slider" min="10" max="500" value="100" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>下偏电阻 \(R_{B2}\)</span><span id="rb2Value" class="font-mono font-bold text-emerald-600">22 kΩ</span></div><input type="range" id="rb2Slider" min="1" max="50" value="22" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>射极电阻 \(R_E\)</span><span id="reValue" class="font-mono font-bold text-emerald-600">2.2 kΩ</span></div><input type="range" id="reSlider" min="1" max="50" value="22" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>负载电阻 \(R_L\)</span><span id="rlValue" class="font-mono font-bold text-emerald-600">10 kΩ</span></div><input type="range" id="rlSlider" min="1" max="100" value="100" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>信号幅度 \(V_{sig}\)</span><span id="vsigValue" class="font-mono font-bold text-emerald-600">100 mV</span></div><input type="range" id="vsigSlider" min="1" max="500" value="100" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>信号频率 \(f_{sig}\)</span><span id="fsigValue" class="font-mono font-bold text-emerald-600">1.0 kHz</span></div><input type="range" id="fsigSlider" min="1" max="100" value="10" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>电流增益 \(\beta\)</span><span id="betaLabel" class="font-mono font-bold text-emerald-600">150</span></div><input type="range" id="betaSlider" min="50" max="300" value="150" step="1" class="w-full"></div>
+                    </div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>电路性能</h2>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(I_{CQ}\)</div><div id="icqDisplay" class="text-lg font-bold text-emerald-600 font-mono">1.45 mA</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(V_{CEQ}\)</div><div id="vceqDisplay" class="text-lg font-bold text-emerald-600 font-mono">11.8 V</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(A_v\)</div><div id="avDisplay" class="text-lg font-bold text-emerald-600 font-mono">0.98</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(Z_{in}\)</div><div id="zinDisplay" class="text-lg font-bold text-emerald-600 font-mono">52 kΩ</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(Z_{out}\)</div><div id="zoutDisplay" class="text-lg font-bold text-emerald-600 font-mono">18 Ω</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">工作区域</div><div id="regionDisplay" class="text-lg font-bold text-emerald-600">放大区</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="lg:col-span-8 space-y-5">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <h2 class="text-base font-bold text-slate-800 mb-2">输入/输出波形（同相，增益≈1）</h2>
+                    <div class="relative" style="height: 300px;"><canvas id="waveChart"></canvas></div>
+                    <p class="text-xs text-slate-400 mt-1 text-center">输入（蓝）与输出（红）几乎重合，射极跟随器提供单位电压增益</p>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <h2 class="text-base font-bold text-slate-800 mb-2">输入/输出阻抗对比</h2>
+                    <div class="relative" style="height: 250px;"><canvas id="impChart"></canvas></div>
+                    <p class="text-xs text-slate-400 mt-1 text-center">射极跟随器的关键优势：极高Z_in（左）与极低Z_out（右）</p>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>关键公式</h2>
+                    <div class="text-sm bg-slate-50 rounded-xl p-4 text-center space-y-2">
+                        \[A_v = \frac{R_E \parallel R_L}{r_e' + (R_E \parallel R_L)} \approx 1 \qquad Z_{in} = R_{B1}\parallel R_{B2}\parallel \beta(r_e' + R_E\parallel R_L) \qquad Z_{out} = R_E \parallel \frac{r_e' + R_{B1}\parallel R_{B2}\parallel R_s}{\beta}\]
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const V_T = 0.02585;
+        let waveChartInst = null, impChartInst = null;
+
+        function getParams() {
+            return {
+                V_CC: +vccSlider.value, R_B1: +rb1Slider.value * 1000, R_B2: +rb2Slider.value * 1000,
+                R_E: +reSlider.value * 100, R_L: +rlSlider.value * 100, V_sig: +vsigSlider.value / 1000,
+                f_sig: +fsigSlider.value * 100, beta: +betaSlider.value
+            };
+        }
+
+        function compute(p) {
+            const V_B = p.V_CC * p.R_B2 / (p.R_B1 + p.R_B2), V_E = Math.max(0, V_B - 0.7);
+            const I_E = V_E / p.R_E, I_C = I_E * p.beta / (p.beta + 1), V_CE = p.V_CC - I_E * p.R_E;
+            const r_e = I_C > 0 ? V_T / I_C : 1e6;
+            const R_EL = (p.R_E * p.R_L) / (p.R_E + p.R_L);
+            const A_v = R_EL / (r_e + R_EL);
+            const Z_in = 1 / (1/p.R_B1 + 1/p.R_B2 + 1/(p.beta * (r_e + R_EL)));
+            const Z_out = 1 / (1/p.R_E + 1/r_e);
+            let region = '放大区'; if (V_CE < 0.3) region = '饱和区'; else if (I_C < 1e-9) region = '截止区';
+            return { V_B, V_E, I_C, I_E, V_CE, r_e, A_v, Z_in, Z_out, region };
+        }
+
+        function updateAll() {
+            const p = getParams(), dc = compute(p);
+            document.getElementById('vccValue').textContent = p.V_CC + ' V';
+            document.getElementById('rb1Value').textContent = (p.R_B1/1000).toFixed(0) + ' kΩ';
+            document.getElementById('rb2Value').textContent = (p.R_B2/1000).toFixed(1) + ' kΩ';
+            document.getElementById('reValue').textContent = (p.R_E/1000).toFixed(1) + ' kΩ';
+            document.getElementById('rlValue').textContent = (p.R_L/1000).toFixed(0) + ' kΩ';
+            document.getElementById('vsigValue').textContent = (p.V_sig*1000).toFixed(0) + ' mV';
+            document.getElementById('fsigValue').textContent = (p.f_sig/1000).toFixed(1) + ' kHz';
+            document.getElementById('betaLabel').textContent = p.beta;
+            document.getElementById('icqDisplay').textContent = (dc.I_C*1e3).toFixed(2) + ' mA';
+            document.getElementById('vceqDisplay').textContent = dc.V_CE.toFixed(1) + ' V';
+            document.getElementById('avDisplay').textContent = dc.A_v.toFixed(2);
+            document.getElementById('zinDisplay').textContent = dc.Z_in > 1000 ? (dc.Z_in/1000).toFixed(0) + ' kΩ' : dc.Z_in.toFixed(0) + ' Ω';
+            document.getElementById('zoutDisplay').textContent = dc.Z_out > 1000 ? (dc.Z_out/1000).toFixed(1) + ' kΩ' : dc.Z_out.toFixed(0) + ' Ω';
+            document.getElementById('regionDisplay').textContent = dc.region;
+
+            const T = 1/p.f_sig, dur = 2*T, N = 400;
+            const vin = [], vout = [];
+            for (let i = 0; i <= N; i++) {
+                const t = dur * i / N, vs = p.V_sig * Math.sin(2*Math.PI*p.f_sig*t);
+                vin.push({ x: t*1000, y: vs*1000 });
+                vout.push({ x: t*1000, y: vs * dc.A_v * 1000 });
+            }
+            let cfg = { type:'scatter', data:{ datasets:[
+                { label:'V_in (mV)', data:vin, borderColor:'#3b82f6', borderWidth:2, pointRadius:0, showLine:true, tension:0.3 },
+                { label:'V_out (mV)', data:vout, borderColor:'#ef4444', borderWidth:2, pointRadius:0, showLine:true, tension:0.3, borderDash:[4,2] }
+            ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
+                plugins:{ legend:{position:'bottom',labels:{boxWidth:14,font:{size:10}}} },
+                scales:{ x:{title:{display:true,text:'时间 (ms)'}}, y:{title:{display:true,text:'mV'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
+            if (waveChartInst) waveChartInst.destroy();
+            waveChartInst = new Chart(document.getElementById('waveChart').getContext('2d'), cfg);
+
+            cfg = { type:'bar', data:{ labels:['输入阻抗 Z_in','输出阻抗 Z_out'], datasets:[
+                { label:'Ω', data:[dc.Z_in, dc.Z_out], backgroundColor:['#10b981','#f59e0b'], borderRadius:8 }
+            ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
+                plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx => ctx.raw > 1000 ? (ctx.raw/1000).toFixed(0)+' kΩ' : ctx.raw.toFixed(0)+' Ω' } } },
+                scales:{ y:{ title:{display:true,text:'阻抗 (Ω)'}, grid:{color:'rgba(0,0,0,0.05)'}, type:'logarithmic',
+                    ticks:{ callback:v => v>=1000?(v/1000).toFixed(0)+'k':v.toFixed(0) } } } } };
+            if (impChartInst) impChartInst.destroy();
+            impChartInst = new Chart(document.getElementById('impChart').getContext('2d'), cfg);
+        }
+
+        ['vccSlider','rb1Slider','rb2Slider','reSlider','rlSlider','vsigSlider','fsigSlider','betaSlider'].forEach(id => document.getElementById(id).addEventListener('input', updateAll));
+        updateAll();
+        window.addEventListener('load', () => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); });
+        console.log('共集电极放大电路仿真已启动');
+    </script>
+</body>
+</html>

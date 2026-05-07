@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>多级放大电路 | 模拟电子技术辅助教学</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] { height: 5px; -webkit-appearance: none; background: #e2e8f0; border-radius: 5px; outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #10b981; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb:hover { background: #059669; transform: scale(1.15); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .card-hover { transition: all 0.2s ease; } .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15); }
+        .topo-tab { cursor: pointer; transition: all 0.2s; }
+        .topo-tab.active { background: #10b981; color: white; }
+        .topo-tab:not(.active):hover { background: #ecfdf5; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+    <div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+        <div class="flex justify-start mb-4">
+            <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页
+            </a>
+        </div>
+        <div class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">多级放大电路</h1>
+            <p class="text-slate-600 max-w-2xl mx-auto">级联放大器 · 差分对 · 逐级增益与阻抗匹配</p>
+        </div>
+        <div class="flex justify-center gap-2 mb-6">
+            <button id="tabCECE" class="topo-tab active px-5 py-2 rounded-full text-sm font-medium border border-slate-300 bg-emerald-600 text-white">CE-CE级联</button>
+            <button id="tabCECC" class="topo-tab px-5 py-2 rounded-full text-sm font-medium border border-slate-300 bg-white text-slate-600">CE-CC级联</button>
+            <button id="tabDiff" class="topo-tab px-5 py-2 rounded-full text-sm font-medium border border-slate-300 bg-white text-slate-600">差分对</button>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-4 space-y-5">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>电路参数</h2>
+                    <div class="space-y-4" id="sliderPanel">
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(V_{CC}\)</span><span id="vccValue" class="font-mono font-bold text-emerald-600">15 V</span></div><input type="range" id="vccSlider" min="5" max="30" value="15" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_{C1}\) (第1级)</span><span id="rc1Value" class="font-mono font-bold text-emerald-600">4.7 kΩ</span></div><input type="range" id="rc1Slider" min="1" max="50" value="47" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_{C2}\) (第2级)</span><span id="rc2Value" class="font-mono font-bold text-emerald-600">4.7 kΩ</span></div><input type="range" id="rc2Slider" min="1" max="50" value="47" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(\beta\)</span><span id="betaValue" class="font-mono font-bold text-emerald-600">150</span></div><input type="range" id="betaSlider" min="50" max="300" value="150" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(V_{sig}\)</span><span id="vsigValue" class="font-mono font-bold text-emerald-600">10 mV</span></div><input type="range" id="vsigSlider" min="1" max="100" value="10" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(f_{sig}\)</span><span id="fsigValue" class="font-mono font-bold text-emerald-600">1.0 kHz</span></div><input type="range" id="fsigSlider" min="1" max="100" value="10" step="1" class="w-full"></div>
+                    </div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>级联性能</h2>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(A_{v1}\)</div><div id="av1Display" class="text-lg font-bold text-emerald-600 font-mono">-98</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(A_{v2}\)</div><div id="av2Display" class="text-lg font-bold text-emerald-600 font-mono">-98</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(A_{v,total}\)</div><div id="avtDisplay" class="text-lg font-bold text-emerald-600 font-mono">9604</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(A_{v,total}\) dB</div><div id="avdbDisplay" class="text-lg font-bold text-emerald-600 font-mono">79.6 dB</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(Z_{in}\)</div><div id="zinDisplay" class="text-lg font-bold text-emerald-600 font-mono">2.5 kΩ</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(Z_{out}\)</div><div id="zoutDisplay" class="text-lg font-bold text-emerald-600 font-mono">4.7 kΩ</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="lg:col-span-8 space-y-5">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <h2 class="text-base font-bold text-slate-800 mb-2">逐级波形（输入 → 第1级输出 → 第2级输出）</h2>
+                    <div class="relative" style="height: 300px;"><canvas id="waveChart"></canvas></div>
+                    <p class="text-xs text-slate-400 mt-1 text-center">蓝=输入(V_in), 红=第1级输出, 绿=第2级输出(总输出)</p>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <h2 class="text-base font-bold text-slate-800 mb-2">各级增益（dB）</h2>
+                    <div class="relative" style="height: 240px;"><canvas id="gainChart"></canvas></div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>关键公式</h2>
+                    <div class="text-sm bg-slate-50 rounded-xl p-4 text-center space-y-2">
+                        \[A_{v,total} = A_{v1} \times A_{v2} \qquad A_{v,dB} = 20\log_{10}|A_v|\]
+                        \[Z_{in} = Z_{in1} \qquad Z_{out} = Z_{out2}\]
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const V_T = 0.02585;
+        let topo = 'CECE', waveChartInst = null, gainChartInst = null;
+
+        function getParams() {
+            return {
+                V_CC: +vccSlider.value, R_C1: +rc1Slider.value*100, R_C2: +rc2Slider.value*100,
+                beta: +betaSlider.value, V_sig: +vsigSlider.value/1000, f_sig: +fsigSlider.value*100, topo
+            };
+        }
+
+        function computeCE(V_CC, R_C, beta) {
+            const I_C = 1.5e-3; // simplified fixed bias
+            const r_e = V_T / I_C;
+            const A_v = -R_C / r_e;
+            const Z_in = beta * r_e;
+            return { I_C, r_e, A_v, Z_in };
+        }
+
+        function compute(p) {
+            if (p.topo === 'CECE') {
+                const s1 = computeCE(p.V_CC, p.R_C1, p.beta);
+                const s2 = computeCE(p.V_CC, p.R_C2, p.beta);
+                return {
+                    A_v1: s1.A_v, A_v2: s2.A_v * (s2.Z_in/(s1.R_C1 + s2.Z_in)),
+                    Z_in: s1.Z_in, Z_out: p.R_C2
+                };
+            } else if (p.topo === 'CECC') {
+                const s1 = computeCE(p.V_CC, p.R_C1, p.beta);
+                const R_E2 = 2200, R_EL = R_E2 * 10000 / (R_E2 + 10000);
+                const A_v2 = R_EL / (V_T/1.5e-3 + R_EL);
+                const Z_in2 = p.beta * (V_T/1.5e-3 + R_EL);
+                return {
+                    A_v1: s1.A_v, A_v2: A_v2 * (Z_in2/(s1.R_C1 + Z_in2)),
+                    Z_in: s1.Z_in, Z_out: V_T/1.5e-3
+                };
+            } else {
+                // Diff pair: A_dm = gm*R_C, where gm = I_EE/(2*V_T)
+                const I_EE = 1e-3, gm = I_EE / (2*V_T);
+                return {
+                    A_v1: gm * p.R_C1, A_v2: 1, // single-ended output
+                    Z_in: 2 * p.beta * V_T / (I_EE/2), Z_out: p.R_C1,
+                    CMRR: gm * p.R_C1 * 100 // approximate
+                };
+            }
+        }
+
+        function updateAll() {
+            const p = getParams(), r = compute(p);
+            const A_v_total = r.A_v1 * r.A_v2;
+            const A_v_dB = 20 * Math.log10(Math.abs(A_v_total));
+
+            document.getElementById('vccValue').textContent = p.V_CC + ' V';
+            document.getElementById('rc1Value').textContent = (p.R_C1/1000).toFixed(1) + ' kΩ';
+            document.getElementById('rc2Value').textContent = (p.R_C2/1000).toFixed(1) + ' kΩ';
+            document.getElementById('betaValue').textContent = p.beta;
+            document.getElementById('vsigValue').textContent = (p.V_sig*1000).toFixed(0) + ' mV';
+            document.getElementById('fsigValue').textContent = (p.f_sig/1000).toFixed(1) + ' kHz';
+            document.getElementById('av1Display').textContent = r.A_v1.toFixed(0);
+            document.getElementById('av2Display').textContent = r.A_v2.toFixed(0);
+            document.getElementById('avtDisplay').textContent = A_v_total.toFixed(0);
+            document.getElementById('avdbDisplay').textContent = A_v_dB.toFixed(1) + ' dB';
+            document.getElementById('zinDisplay').textContent = r.Z_in > 1000 ? (r.Z_in/1000).toFixed(1)+' kΩ' : r.Z_in.toFixed(0)+' Ω';
+            document.getElementById('zoutDisplay').textContent = r.Z_out > 1000 ? (r.Z_out/1000).toFixed(1)+' kΩ' : r.Z_out.toFixed(0)+' Ω';
+
+            // Waveforms
+            const T = 1/p.f_sig, dur = 2*T, N = 400;
+            const vin = [], v1 = [], v2 = [];
+            for (let i = 0; i <= N; i++) {
+                const t = dur * i/N, vs = p.V_sig * Math.sin(2*Math.PI*p.f_sig*t);
+                vin.push({ x: t*1000, y: vs*1000 });
+                v1.push({ x: t*1000, y: vs * r.A_v1 * 1000 });
+                v2.push({ x: t*1000, y: vs * A_v_total * 1000 });
+            }
+            let cfg = { type:'scatter', data:{ datasets:[
+                { label:'V_in (mV)', data:vin, borderColor:'#3b82f6', borderWidth:1.5, pointRadius:0, showLine:true, tension:0.3 },
+                { label:'Stage1 Out (mV)', data:v1, borderColor:'#ef4444', borderWidth:1.5, pointRadius:0, showLine:true, tension:0.3 },
+                { label:'Stage2 Out (mV)', data:v2, borderColor:'#10b981', borderWidth:2, pointRadius:0, showLine:true, tension:0.3 }
+            ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
+                plugins:{ legend:{position:'bottom',labels:{boxWidth:14,font:{size:10}}} },
+                scales:{ x:{title:{display:true,text:'时间 (ms)'}}, y:{title:{display:true,text:'mV'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
+            if (waveChartInst) waveChartInst.destroy();
+            waveChartInst = new Chart(document.getElementById('waveChart').getContext('2d'), cfg);
+
+            // Gain bar chart
+            cfg = { type:'bar', data:{ labels:['第1级增益','第2级增益','总增益'], datasets:[
+                { label:'dB', data:[20*Math.log10(Math.abs(r.A_v1)), 20*Math.log10(Math.abs(r.A_v2)), A_v_dB],
+                    backgroundColor:['#10b981','#f59e0b','#6366f1'], borderRadius:8 }
+            ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
+                plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx => ctx.raw.toFixed(1)+' dB' } } },
+                scales:{ y:{ title:{display:true,text:'增益 (dB)'}, grid:{color:'rgba(0,0,0,0.05)'} } } } };
+            if (gainChartInst) gainChartInst.destroy();
+            gainChartInst = new Chart(document.getElementById('gainChart').getContext('2d'), cfg);
+        }
+
+        function setTopo(t) {
+            topo = t;
+            ['tabCECE','tabCECC','tabDiff'].forEach(id => { const el = document.getElementById(id); el.classList.remove('active','bg-emerald-600','text-white'); el.classList.add('bg-white','text-slate-600'); });
+            document.getElementById(t === 'CECE' ? 'tabCECE' : t === 'CECC' ? 'tabCECC' : 'tabDiff').classList.add('active','bg-emerald-600','text-white');
+            document.getElementById(t === 'CECE' ? 'tabCECE' : t === 'CECC' ? 'tabCECC' : 'tabDiff').classList.remove('bg-white','text-slate-600');
+            updateAll();
+        }
+        document.getElementById('tabCECE').addEventListener('click', () => setTopo('CECE'));
+        document.getElementById('tabCECC').addEventListener('click', () => setTopo('CECC'));
+        document.getElementById('tabDiff').addEventListener('click', () => setTopo('Diff'));
+
+        ['vccSlider','rc1Slider','rc2Slider','betaSlider','vsigSlider','fsigSlider'].forEach(id => document.getElementById(id).addEventListener('input', updateAll));
+        updateAll();
+        window.addEventListener('load', () => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); });
+    </script>
+</body>
+</html>

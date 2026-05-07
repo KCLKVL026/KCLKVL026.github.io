@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>负反馈放大电路 | 模拟电子技术辅助教学</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] { height: 5px; -webkit-appearance: none; background: #e2e8f0; border-radius: 5px; outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #f59e0b; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb:hover { background: #d97706; transform: scale(1.15); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .card-hover { transition: all 0.2s ease; } .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15); }
+        .topo-tab { cursor: pointer; transition: all 0.2s; } .topo-tab.active { background: #f59e0b; color: white; } .topo-tab:not(.active):hover { background: #fffbeb; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+    <div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+        <div class="flex justify-start mb-4">
+            <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页
+            </a>
+        </div>
+        <div class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">负反馈放大电路</h1>
+            <p class="text-slate-600 max-w-2xl mx-auto">四种反馈拓扑：增益、带宽与阻抗变化</p>
+        </div>
+        <div class="flex justify-center gap-2 mb-6">
+            <button id="tabVS" class="topo-tab active px-4 py-2 rounded-full text-xs font-medium border border-slate-300 bg-amber-500 text-white">电压串联</button>
+            <button id="tabPS" class="topo-tab px-4 py-2 rounded-full text-xs font-medium border border-slate-300 bg-white text-slate-600">电压并联</button>
+            <button id="tabCS" class="topo-tab px-4 py-2 rounded-full text-xs font-medium border border-slate-300 bg-white text-slate-600">电流串联</button>
+            <button id="tabCP" class="topo-tab px-4 py-2 rounded-full text-xs font-medium border border-slate-300 bg-white text-slate-600">电流并联</button>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-4 space-y-5">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>反馈参数</h2>
+                    <div class="space-y-4">
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>开环增益 \(A\)</span><span id="aValue" class="font-mono font-bold text-amber-600">10000</span></div><input type="range" id="aSlider" min="1" max="1000" value="100" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>100</span><span>100000</span></div></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>反馈系数 \(\beta\)</span><span id="betaValue" class="font-mono font-bold text-amber-600">0.10</span></div><input type="range" id="betaSlider" min="1" max="100" value="10" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>0.01</span><span>1.0</span></div></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>开环带宽 BW</span><span id="bwValue" class="font-mono font-bold text-amber-600">100 kHz</span></div><input type="range" id="bwSlider" min="1" max="200" value="100" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>1 kHz</span><span>200 kHz</span></div></div>
+                    </div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>反馈效果</h2>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(A_f\) (闭环)</div><div id="afDisplay" class="text-lg font-bold text-emerald-600 font-mono">9.9</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">环路增益 \(T\)</div><div id="tDisplay" class="text-lg font-bold text-amber-600 font-mono">1000</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(BW_f\) (闭环)</div><div id="bwfDisplay" class="text-lg font-bold text-emerald-600 font-mono">10.0 MHz</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(Z_{in}\) 变化</div><div id="zinDisplay" class="text-lg font-bold text-emerald-600 font-mono">×1001</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="lg:col-span-8 space-y-5">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <h2 class="text-base font-bold text-slate-800 mb-2">开环与闭环增益对比</h2>
+                    <div class="relative" style="height: 280px;"><canvas id="gainChart"></canvas></div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <h2 class="text-base font-bold text-slate-800 mb-2">输入/输出阻抗对比</h2>
+                    <div class="relative" style="height: 240px;"><canvas id="impChart"></canvas></div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>关键公式</h2>
+                    <div class="text-sm bg-slate-50 rounded-xl p-4 text-center">
+                        \[A_f = \frac{A}{1 + A\beta} \qquad T = A\beta \qquad BW_f = BW(1+A\beta)\]
+                        <p class="mt-2 text-slate-500 text-xs" id="ztip">电压串联: Z_in ↑×(1+T), Z_out ↓/(1+T)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let topo = 'VS', gainChartInst = null, impChartInst = null;
+        const topoInfo = {
+            VS: { name:'电压串联', ZinMult:'Z_in ↑(×1+T)', ZoutMult:'Z_out ↓(÷(1+T))', ZinFactor: 1, ZoutFactor: -1 },
+            PS: { name:'电压并联', ZinMult:'Z_in ↓(÷(1+T))', ZoutMult:'Z_out ↓(÷(1+T))', ZinFactor: -1, ZoutFactor: -1 },
+            CS: { name:'电流串联', ZinMult:'Z_in ↑(×1+T)', ZoutMult:'Z_out ↑(×1+T)', ZinFactor: 1, ZoutFactor: 1 },
+            CP: { name:'电流并联', ZinMult:'Z_in ↓(÷(1+T))', ZoutMult:'Z_out ↑(×1+T)', ZinFactor: -1, ZoutFactor: 1 }
+        };
+
+        function getParams() {
+            return {
+                A: parseFloat(aSlider.value) * 100,
+                beta: parseFloat(betaSlider.value) / 100,
+                BW: parseFloat(bwSlider.value) * 1000,
+                topo
+            };
+        }
+
+        function updateAll() {
+            const p = getParams(), T = p.A * p.beta, Af = p.A / (1 + T);
+            const BWF = p.BW * (1 + T);
+            const ti = topoInfo[p.topo];
+            let ZinChange, ZoutChange;
+            if (ti.ZinFactor > 0) ZinChange = (1 + T);
+            else ZinChange = 1 / (1 + T);
+            if (ti.ZoutFactor > 0) ZoutChange = (1 + T);
+            else ZoutChange = 1 / (1 + T);
+
+            document.getElementById('aValue').textContent = p.A;
+            document.getElementById('betaValue').textContent = p.beta.toFixed(2);
+            document.getElementById('bwValue').textContent = (p.BW/1000).toFixed(0) + ' kHz';
+            document.getElementById('afDisplay').textContent = Af.toFixed(1);
+            document.getElementById('tDisplay').textContent = T.toFixed(0);
+            document.getElementById('bwfDisplay').textContent = BWF >= 1e6 ? (BWF/1e6).toFixed(1)+' MHz' : (BWF/1000).toFixed(0)+' kHz';
+            document.getElementById('zinDisplay').textContent = ZinChange > 1 ? '×'+ZinChange.toFixed(0) : '÷'+(1/ZinChange).toFixed(0);
+            document.getElementById('ztip').textContent = ti.name + ': ' + ti.ZinMult + ', ' + ti.ZoutMult;
+
+            let cfg = { type:'bar', data:{ labels:['开环增益','闭环增益 A_f'], datasets:[
+                { label:'线性值', data:[p.A, Af], backgroundColor:['#fbbf24','#f59e0b'], borderRadius:8 }
+            ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
+                plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx => ctx.raw.toFixed(0)} } },
+                scales:{ y:{ title:{display:true,text:'增益'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
+            if (gainChartInst) gainChartInst.destroy();
+            gainChartInst = new Chart(document.getElementById('gainChart').getContext('2d'), cfg);
+
+            cfg = { type:'bar', data:{ labels:['Z_in 开环','Z_in 闭环','Z_out 开环','Z_out 闭环'], datasets:[
+                { label:'相对值 (Ω)', data:[1, ZinChange, 1, ZoutChange], backgroundColor:['#93c5fd','#3b82f6','#fca5a5','#ef4444'], borderRadius:8 }
+            ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
+                plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx => ctx.raw.toFixed(3)} } },
+                scales:{ y:{ title:{display:true,text:'相对值'}, grid:{color:'rgba(0,0,0,0.05)'}, type:'logarithmic' } } } };
+            if (impChartInst) impChartInst.destroy();
+            impChartInst = new Chart(document.getElementById('impChart').getContext('2d'), cfg);
+        }
+
+        function setTopo(t) {
+            topo = t;
+            ['VS','PS','CS','CP'].forEach(tb => { document.getElementById('tab'+tb).classList.remove('active','bg-amber-500','text-white'); document.getElementById('tab'+tb).classList.add('bg-white','text-slate-600'); });
+            document.getElementById('tab'+t).classList.add('active','bg-amber-500','text-white'); document.getElementById('tab'+t).classList.remove('bg-white','text-slate-600');
+            updateAll();
+        }
+        document.getElementById('tabVS').addEventListener('click', ()=>setTopo('VS'));
+        document.getElementById('tabPS').addEventListener('click', ()=>setTopo('PS'));
+        document.getElementById('tabCS').addEventListener('click', ()=>setTopo('CS'));
+        document.getElementById('tabCP').addEventListener('click', ()=>setTopo('CP'));
+
+        ['aSlider','betaSlider','bwSlider'].forEach(id => document.getElementById(id).addEventListener('input', updateAll));
+        updateAll();
+        window.addEventListener('load', () => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); });
+    </script>
+</body>
+</html>

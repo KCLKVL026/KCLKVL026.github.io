@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>运放线性应用 | 模拟电子技术辅助教学</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] { height: 5px; -webkit-appearance: none; background: #e2e8f0; border-radius: 5px; outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #8b5cf6; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb:hover { background: #7c3aed; transform: scale(1.15); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .card-hover { transition: all 0.2s ease; } .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15); }
+        .app-tab { cursor: pointer; transition: all 0.2s; } .app-tab.active { background: #8b5cf6; color: white; } .app-tab:not(.active):hover { background: #f3e8ff; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+    <div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+        <div class="flex justify-start mb-4">
+            <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页
+            </a>
+        </div>
+        <div class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">运放线性应用</h1>
+            <p class="text-slate-600 max-w-2xl mx-auto">求和/差分/积分/微分/仪表放大器</p>
+        </div>
+        <div class="flex justify-center gap-1.5 mb-6 flex-wrap">
+            <button id="tabSum" class="app-tab active px-4 py-2 rounded-full text-xs font-medium border border-slate-300 bg-violet-600 text-white">求和</button>
+            <button id="tabDiff" class="app-tab px-4 py-2 rounded-full text-xs font-medium border border-slate-300 bg-white text-slate-600">差分</button>
+            <button id="tabInt" class="app-tab px-4 py-2 rounded-full text-xs font-medium border border-slate-300 bg-white text-slate-600">积分</button>
+            <button id="tabDer" class="app-tab px-4 py-2 rounded-full text-xs font-medium border border-slate-300 bg-white text-slate-600">微分</button>
+            <button id="tabIns" class="app-tab px-4 py-2 rounded-full text-xs font-medium border border-slate-300 bg-white text-slate-600">仪表放大器</button>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-4 space-y-5" id="controlPanel"></div>
+            <div class="lg:col-span-8 space-y-5">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <h2 class="text-base font-bold text-slate-800 mb-2" id="chartTitle">输入/输出波形</h2>
+                    <div class="relative" style="height: 340px;"><canvas id="mainChart"></canvas></div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5" id="formulaCard"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let app = 'sum', mainChartInst = null, currentAppForChart = null;
+
+        const apps = {
+            sum: {
+                title: '反相加法器', subtitle: '\\(V_{out} = -R_f(V_1/R_1 + V_2/R_2 + V_3/R_3)\\)',
+                sliders: [
+                    {id:'v1',label:'V_1',val:10,min:0,max:50,step:0.5,unit:'0.5 V'},
+                    {id:'v2',label:'V_2',val:15,min:0,max:50,step:0.5,unit:'0.75 V'},
+                    {id:'v3',label:'V_3',val:5,min:0,max:50,step:0.5,unit:'0.25 V'},
+                    {id:'rf',label:'R_f',val:100,min:1,max:200,step:1,unit:'10 kΩ'}
+                ],
+                compute(p) { return { result: -p.Rf/10000*(p.v1/10+p.v2/10+p.v3/10), info: `权重: R_f/R_1=${(p.Rf/10000).toFixed(0)}, R_f/R_2=${(p.Rf/10000).toFixed(0)}, R_f/R_3=${(p.Rf/10000).toFixed(0)}` }; },
+                chartData(p) {
+                    const T = 0.002, N = 300, vin1 = [], vin2 = [], vin3 = [], vout = [];
+                    for (let i = 0; i <= N; i++) {
+                        const t = T*i/N;
+                        const v1v = p.v1/10*Math.sin(2*Math.PI*500*t);
+                        const v2v = p.v2/10*Math.sin(2*Math.PI*1000*t);
+                        const v3v = p.v3/10*Math.sin(2*Math.PI*250*t);
+                        vin1.push({x:t*1000, y:v1v}); vin2.push({x:t*1000, y:v2v}); vin3.push({x:t*1000, y:v3v});
+                        vout.push({x:t*1000, y:-p.Rf/10000*(v1v+v2v+v3v)});
+                    }
+                    return { datasets:[
+                        {label:'V1',data:vin1,borderColor:'#3b82f6',borderWidth:1,pointRadius:0,showLine:true,tension:0.3},
+                        {label:'V2',data:vin2,borderColor:'#10b981',borderWidth:1,pointRadius:0,showLine:true,tension:0.3},
+                        {label:'V3',data:vin3,borderColor:'#f59e0b',borderWidth:1,pointRadius:0,showLine:true,tension:0.3},
+                        {label:'V_out',data:vout,borderColor:'#8b5cf6',borderWidth:2,pointRadius:0,showLine:true,tension:0.3}
+                    ], desc:'三个不同频率的正弦信号加权求和' };
+                }
+            },
+            diff: {
+                title: '差分放大器', subtitle: '\\(V_{out} = (R_2/R_1)(V_2 - V_1)\\)',
+                sliders: [
+                    {id:'dv1',label:'V_1',val:10,min:0,max:50,step:0.5,unit:'1.0 V'},
+                    {id:'dv2',label:'V_2',val:20,min:0,max:50,step:0.5,unit:'2.0 V'},
+                    {id:'dr1',label:'R_1=R_3',val:10,min:1,max:100,step:1,unit:'10 kΩ'},
+                    {id:'dr2',label:'R_2=R_4',val:100,min:1,max:200,step:1,unit:'100 kΩ'}
+                ],
+                compute(p) { const g = p.dr2/p.dr1; return { result: g*(p.dv2/10-p.dv1/10), info: `增益 = R_2/R_1 = ${g.toFixed(0)}, CMRR→∞ (理想匹配)` }; },
+                chartData(p) {
+                    const T=0.004,N=400,g=p.dr2/p.dr1; const v1=[],v2=[],vo=[];
+                    for(let i=0;i<=N;i++) { const t=T*i/N; const v1v=p.dv1/10*Math.sin(2*Math.PI*500*t),v2v=p.dv2/10*Math.sin(2*Math.PI*500*t); v1.push({x:t*1000,y:v1v}); v2.push({x:t*1000,y:v2v}); vo.push({x:t*1000,y:g*(v2v-v1v)}); }
+                    return { datasets:[{label:'V1',data:v1,borderColor:'#3b82f6',borderWidth:1,pointRadius:0,showLine:true},{label:'V2',data:v2,borderColor:'#10b981',borderWidth:1,pointRadius:0,showLine:true},{label:'V_out',data:vo,borderColor:'#8b5cf6',borderWidth:2,pointRadius:0,showLine:true}], desc:'差分放大器仅放大差模信号' };
+                }
+            },
+            int: {
+                title: '积分器', subtitle: '\\(V_{out} = -\\frac{1}{RC}\\int V_{in}\\,dt\\)',
+                sliders: [
+                    {id:'ir',label:'R',val:100,min:1,max:200,step:1,unit:'100 kΩ'},
+                    {id:'ic',label:'C',val:1,min:0.1,max:10,step:0.1,unit:'0.1 μF'},
+                    {id:'iamp',label:'V_in幅度',val:10,min:1,max:50,step:1,unit:'1.0 V'},
+                    {id:'iwave',label:'输入波形',val:1,min:0,max:2,step:1,unit:'正弦', type:'select', options:['正弦','方波','三角波']}
+                ],
+                compute(p) { const tau = p.ir*1000 * p.ic*1e-7; return { result: tau, info: `时间常数 τ = RC = ${(tau*1e6).toFixed(1)} μs` }; },
+                chartData(p) {
+                    const T=0.004,N=400,tau=p.ir*1000*p.ic*1e-7; const vi=[],vo=[]; let integral=0;
+                    for(let i=0;i<=N;i++) { const t=T*i/N,dt=T/N; let sv; const wt=2*Math.PI*500*t;
+                        if(p.iwave==0) sv=Math.sin(wt); else if(p.iwave==1) sv=Math.sin(wt)>=0?1:-1; else sv=2*Math.abs(2*(t*500-Math.floor(t*500+0.5)))-1;
+                        integral += sv*p.iamp/10*dt; vi.push({x:t*1000,y:sv*p.iamp/10}); vo.push({x:t*1000,y:-integral/tau});
+                    }
+                    return { datasets:[{label:'V_in',data:vi,borderColor:'#3b82f6',borderWidth:1,pointRadius:0,showLine:true},{label:'V_out',data:vo,borderColor:'#8b5cf6',borderWidth:2,pointRadius:0,showLine:true}], desc:'方波输入→三角波输出；正弦输入→余弦输出(90°相移)' };
+                }
+            },
+            der: {
+                title: '微分器', subtitle: '\\(V_{out} = -RC\\frac{dV_{in}}{dt}\\)',
+                sliders: [
+                    {id:'derc',label:'C',val:1,min:0.1,max:10,step:0.1,unit:'0.1 μF'},
+                    {id:'derr',label:'R',val:100,min:1,max:200,step:1,unit:'100 kΩ'},
+                    {id:'deamp',label:'V_in幅度',val:10,min:1,max:50,step:1,unit:'1.0 V'},
+                    {id:'dewave',label:'输入波形',val:0,min:0,max:2,step:1,unit:'正弦', type:'select', options:['正弦','方波','三角波']}
+                ],
+                compute(p) { const tau = p.derc*1e-7 * p.derr*1000; return { result: tau, info: `时间常数 τ = RC = ${(tau*1e6).toFixed(1)} μs` }; },
+                chartData(p) {
+                    const T=0.004,N=400,RC=p.derc*1e-7*p.derr*1000; const vi=[],vo=[]; let prev=0;
+                    for(let i=0;i<=N;i++) { const t=T*i/N,dt=T/N; let sv; const wt=2*Math.PI*500*t;
+                        if(p.dewave==0) sv=Math.sin(wt); else if(p.dewave==1) sv=Math.sin(wt)>=0?1:-1; else sv=2*Math.abs(2*(t*500-Math.floor(t*500+0.5)))-1;
+                        const dv = i===0 ? 0 : (sv*p.deamp/10-prev)/dt;
+                        vi.push({x:t*1000,y:sv*p.deamp/10}); vo.push({x:t*1000,y:-RC*dv}); prev=sv*p.deamp/10;
+                    }
+                    return { datasets:[{label:'V_in',data:vi,borderColor:'#3b82f6',borderWidth:1,pointRadius:0,showLine:true},{label:'V_out',data:vo,borderColor:'#8b5cf6',borderWidth:2,pointRadius:0,showLine:true}], desc:'方波→尖峰脉冲；三角波→方波；正弦→余弦' };
+                }
+            },
+            ins: {
+                title: '仪表放大器', subtitle: '\\(V_{out} = (1 + 2R/R_g)(V_2 - V_1)\\)',
+                sliders: [
+                    {id:'inv1',label:'V_1',val:5,min:0,max:20,step:0.5,unit:'0.5 V'},
+                    {id:'inv2',label:'V_2',val:10,min:0,max:20,step:0.5,unit:'1.0 V'},
+                    {id:'irg',label:'R_gain',val:10,min:1,max:50,step:1,unit:'1.0 kΩ'}
+                ],
+                compute(p) { const g = 1+20000/(p.irg*1000); return { result: g*(p.inv2/10-p.inv1/10), info: `增益 = 1+2R/R_g = ${g.toFixed(1)}, 极高CMRR, 极高Z_in` }; },
+                chartData(p) {
+                    const T=0.004,N=400,g=1+20000/(p.irg*1000); const v1=[],v2=[],vo=[];
+                    for(let i=0;i<=N;i++) { const t=T*i/N; const v1v=p.inv1/10*Math.sin(2*Math.PI*500*t),v2v=p.inv2/10*Math.sin(2*Math.PI*500*t); v1.push({x:t*1000,y:v1v}); v2.push({x:t*1000,y:v2v}); vo.push({x:t*1000,y:g*(v2v-v1v)}); }
+                    return { datasets:[{label:'V1',data:v1,borderColor:'#3b82f6',borderWidth:1,pointRadius:0,showLine:true},{label:'V2',data:v2,borderColor:'#10b981',borderWidth:1,pointRadius:0,showLine:true},{label:'V_out',data:vo,borderColor:'#8b5cf6',borderWidth:2,pointRadius:0,showLine:true}], desc:'仪表放大器：高共模抑制，高输入阻抗，适合微弱信号放大' };
+                }
+            }
+        };
+
+        function buildUI(a) {
+            const cfg = apps[a];
+            let html = `<div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-violet-500 rounded-full"></span>${cfg.title}参数</h2><div class="space-y-4">`;
+            cfg.sliders.forEach(s => {
+                if (s.type === 'select') {
+                    html += `<div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>${s.label}</span></div>
+                        <select id="${s.id}Slider" class="w-full rounded-lg border-slate-200 p-2 text-sm">${s.options.map((o,i)=>`<option value="${i}" ${i===s.val?'selected':''}>${o}</option>`).join('')}</select></div>`;
+                } else {
+                    html += `<div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>${s.label}</span><span id="${s.id}Value" class="font-mono font-bold text-violet-600">${s.unit}</span></div>
+                        <input type="range" id="${s.id}Slider" min="${s.min}" max="${s.max}" value="${s.val}" step="${s.step}" class="w-full"></div>`;
+                }
+            });
+            html += `</div></div><div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>计算结果</h2>
+                <div class="bg-slate-50 rounded-xl p-4 text-center"><div id="resultDisplay" class="text-xl font-bold text-violet-600 font-mono"></div><div id="infoDisplay" class="text-sm text-slate-500 mt-1"></div></div></div>`;
+            document.getElementById('controlPanel').innerHTML = html;
+            document.getElementById('chartTitle').textContent = cfg.title + ' - 波形';
+            document.getElementById('formulaCard').innerHTML = `<h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>关键公式</h2><div class="text-sm bg-slate-50 rounded-xl p-4 text-center">${cfg.subtitle}</div>`;
+        }
+
+        function updateAll() {
+            const cfg = apps[app], p = {};
+            cfg.sliders.forEach(s => { p[s.id] = parseFloat(document.getElementById(s.id+'Slider').value); });
+            cfg.sliders.forEach(s => {
+                const el = document.getElementById(s.id+'Value');
+                if (el && s.type !== 'select') el.textContent = s.unit;
+            });
+            const r = cfg.compute(p);
+            document.getElementById('resultDisplay').textContent = typeof r.result === 'number' ? r.result.toFixed(3) + ' V' : r.result;
+            document.getElementById('infoDisplay').textContent = r.info;
+
+            const cd = cfg.chartData(p);
+            if (mainChartInst && currentAppForChart === app) {
+                // Same app — update datasets in place for smooth animation
+                while (mainChartInst.data.datasets.length > cd.datasets.length) {
+                    mainChartInst.data.datasets.pop();
+                }
+                cd.datasets.forEach((ds, i) => {
+                    if (i < mainChartInst.data.datasets.length) {
+                        Object.assign(mainChartInst.data.datasets[i], { data: ds.data, label: ds.label, borderColor: ds.borderColor, borderWidth: ds.borderWidth });
+                    } else {
+                        mainChartInst.data.datasets.push({ label: ds.label, data: ds.data, borderColor: ds.borderColor, borderWidth: ds.borderWidth, pointRadius: ds.pointRadius || 0, showLine: true, tension: ds.tension || 0.3 });
+                    }
+                });
+                mainChartInst.update();
+            } else {
+                // Different app — destroy and recreate with new dataset structure
+                if (mainChartInst) mainChartInst.destroy();
+                mainChartInst = new Chart(document.getElementById('mainChart').getContext('2d'), {
+                    type:'scatter', data:{ datasets:cd.datasets }, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:300},
+                        plugins:{ legend:{position:'bottom',labels:{boxWidth:14,font:{size:10}}} },
+                        scales:{ x:{title:{display:true,text:'时间 (ms)'}}, y:{title:{display:true,text:'V'}, grid:{color:'rgba(0,0,0,0.05)'}} } }
+                });
+                currentAppForChart = app;
+            }
+        }
+
+        function setApp(a) {
+            app = a;
+            ['sum','diff','int','der','ins'].forEach(t => { document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.remove('active','bg-violet-600','text-white'); document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.add('bg-white','text-slate-600'); });
+            const cap = a.charAt(0).toUpperCase()+a.slice(1);
+            const tabName = a==='int'?'Int':a==='der'?'Der':a==='ins'?'Ins':cap;
+            document.getElementById('tab'+tabName).classList.add('active','bg-violet-600','text-white');
+            document.getElementById('tab'+tabName).classList.remove('bg-white','text-slate-600');
+            buildUI(a);
+            // Rebind listeners after UI rebuild
+            setTimeout(() => {
+                apps[a].sliders.forEach(s => {
+                    const el = document.getElementById(s.id+'Slider');
+                    if (el) el.addEventListener('input', updateAll);
+                });
+            }, 0);
+            setTimeout(updateAll, 50);
+            setTimeout(() => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); }, 100);
+        }
+
+        document.getElementById('tabSum').addEventListener('click', () => setApp('sum'));
+        document.getElementById('tabDiff').addEventListener('click', () => setApp('diff'));
+        document.getElementById('tabInt').addEventListener('click', () => setApp('int'));
+        document.getElementById('tabDer').addEventListener('click', () => setApp('der'));
+        document.getElementById('tabIns').addEventListener('click', () => setApp('ins'));
+
+        setApp('sum');
+    </script>
+</body>
+</html>

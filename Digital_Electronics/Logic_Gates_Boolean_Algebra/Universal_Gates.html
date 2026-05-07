@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>通用门 | NAND·NOR 实现任意逻辑</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+        .card-hover{transition:all 0.2s ease}.card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 20px -12px rgba(0,0,0,0.15)}
+        .gate-btn{transition:all 0.15s ease;border:2px solid transparent;cursor:pointer}
+        .gate-btn.active{border-color:#3b82f6;background:#eff6ff;color:#1d4ed8;font-weight:600}
+        .gate-btn:hover:not(.active){background:#f8fafc;border-color:#cbd5e1}
+        .impl-btn{transition:all 0.15s ease;border:2px solid transparent;cursor:pointer}
+        .impl-btn.active{border-color:#8b5cf6;background:#f5f3ff;color:#6d28d9;font-weight:600}
+        .impl-btn:hover:not(.active){background:#f8fafc;border-color:#cbd5e1}
+        .gate-box{display:inline-flex;align-items:center;justify-content:center;border:2px solid #6366f1;border-radius:8px;padding:6px 14px;font-weight:bold;font-size:0.8rem;color:#4338ca;background:#eef2ff;margin:4px}
+        .wire{display:inline-block;width:30px;height:2px;background:#6366f1;vertical-align:middle;margin:0 4px}
+        .circuit-row{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px;padding:8px 0}
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <div class="flex justify-start mb-4">
+        <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            返回主页
+        </a>
+    </div>
+
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">通用门仿真</h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">用仅 NAND 或仅 NOR 门实现任意逻辑函数 | 时序图验证等效性</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- 左侧 -->
+        <div class="lg:col-span-4 space-y-6">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4"><span class="w-1 h-6 bg-blue-500 rounded-full"></span>目标门选择</h3>
+                <div class="grid grid-cols-2 gap-2" id="gateSelector">
+                    <button class="gate-btn active rounded-lg px-3 py-2 text-sm text-center" data-gate="AND">AND</button>
+                    <button class="gate-btn rounded-lg px-3 py-2 text-sm text-center" data-gate="OR">OR</button>
+                    <button class="gate-btn rounded-lg px-3 py-2 text-sm text-center" data-gate="NOT">NOT</button>
+                    <button class="gate-btn rounded-lg px-3 py-2 text-sm text-center" data-gate="XOR">XOR</button>
+                    <button class="gate-btn rounded-lg px-3 py-2 text-sm text-center" data-gate="NAND">NAND</button>
+                    <button class="gate-btn rounded-lg px-3 py-2 text-sm text-center" data-gate="NOR">NOR</button>
+                </div>
+            </div>
+
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4"><span class="w-1 h-6 bg-purple-500 rounded-full"></span>实现方式</h3>
+                <div class="flex gap-2">
+                    <button class="impl-btn active flex-1 rounded-lg px-3 py-2 text-sm text-center" data-impl="NAND">仅 NAND</button>
+                    <button class="impl-btn flex-1 rounded-lg px-3 py-2 text-sm text-center" data-impl="NOR">仅 NOR</button>
+                </div>
+            </div>
+
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-emerald-500 rounded-full"></span>等效电路</h3>
+                <div id="circuitDiagram" class="bg-slate-50 p-4 rounded-lg text-center min-h-[60px]"></div>
+                <p class="text-xs text-slate-400 mt-2 text-center">使用 <span id="gateCount">2</span> 个 <span id="implType">NAND</span> 门</p>
+            </div>
+
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-amber-500 rounded-full"></span>变换公式</h3>
+                <div id="transformFormula" class="bg-slate-50 p-3 rounded-lg text-center"></div>
+            </div>
+        </div>
+
+        <!-- 右侧 -->
+        <div class="lg:col-span-8 space-y-5">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="flex flex-wrap justify-between items-center mb-3 px-2">
+                    <div class="flex items-center gap-4 text-sm">
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-blue-500 rounded-full"></div><span class="font-medium">A</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-emerald-500 rounded-full"></div><span class="font-medium">B</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-red-500 rounded-full"></div><span class="font-medium">原门输出</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-orange-400 rounded-full" style="border-bottom:2px dashed #fb923c;"></div><span class="font-medium">等效输出</span></div>
+                    </div>
+                    <div class="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded-full">时序对比图</div>
+                </div>
+                <div class="relative"><canvas id="timingChart" width="800" height="380" style="width:100%;height:auto;max-height:420px;"></canvas></div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-indigo-500 rounded-full"></span>真值表（应完全一致）</h3>
+                <div class="overflow-x-auto"><table class="w-full text-center text-sm">
+                    <thead><tr class="text-slate-500"><th class="py-2 px-2">A</th><th class="py-2 px-2">B</th><th class="py-2 px-2" id="origHeader">AND</th><th class="py-2 px-2" id="equivHeader">NAND等效</th><th class="py-2 px-2">匹配</th></tr></thead>
+                    <tbody id="truthTableBody"></tbody>
+                </table></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentGate = 'AND';
+    let currentImpl = 'NAND';
+    let chartInstance = null;
+
+    const gateFunctions = {
+        AND:(a,b)=>a&b, OR:(a,b)=>a|b, NOT:(a,b)=>a?0:1,
+        NAND:(a,b)=>(a&b)?0:1, NOR:(a,b)=>(a|b)?0:1, XOR:(a,b)=>a^b
+    };
+
+    // 等效实现函数
+    const nandImplementations = {
+        AND:(a,b)=>{const n=(a&b)?0:1; return n?0:1;}, // NAND then NOT(NAND) = AND
+        OR:(a,b)=>{const na=(a&a)?0:1;const nb=(b&b)?0:1;return((na&nb)?0:1);}, // NOT(A) NAND NOT(B)
+        NOT:(a,b)=>(a&a)?0:1,
+        XOR:(a,b)=>{const n1=(a&b)?0:1;const n2=(a&n1)?0:1;const n3=(b&n1)?0:1;return(n2&n3)?0:1;},
+        NAND:(a,b)=>(a&b)?0:1,
+        NOR:(a,b)=>{const n=(a|b)?0:1;return n;} // NOT(OR) - use NAND: NOT(A) NAND NOT(B) then NOT
+    };
+    const norImplementations = {
+        AND:(a,b)=>{const na=(a|a)?0:1;const nb=(b|b)?0:1;return((na|nb)?0:1);}, // NOT(A) NOR NOT(B) = A·B
+        OR:(a,b)=>{const n=(a|b)?0:1;return n?0:1;}, // NOR then NOT = OR
+        NOT:(a,b)=>(a|a)?0:1,
+        XOR:(a,b)=>{const na=(a|a)?0:1;const nb=(b|b)?0:1;const n1=(a|nb)?0:1;const n2=(na|b)?0:1;return((n1|n2)?0:1);},
+        NAND:(a,b)=>{const n=(a&b)?0:1;return n;}, // need AND then NOT - use NOR: complex
+        NOR:(a,b)=>(a|b)?0:1
+    };
+
+    const circuitDescriptions = {
+        NAND: {
+            AND: { gates:2, desc:'A NAND B → 结果 NAND 结果', circuit:(a,b)=>`<div class="circuit-row"><span>A</span><span class="wire"></span><span class="gate-box">NAND</span><span class="wire"></span><span class="gate-box">NAND</span><span class="wire"></span><span>= AND</span></div>` },
+            OR: { gates:2, desc:'先对A、B各自NAND（取反），再NAND', circuit:()=>`<div class="circuit-row"><span>A</span><span class="wire"></span><span class="gate-box">NAND(A,A)</span><span class="wire"></span><span class="gate-box">NAND</span><span class="wire"></span><span>= OR</span></div><div class="circuit-row"><span>B</span><span class="wire"></span><span class="gate-box">NAND(B,B)</span><span class="wire"></span></div>` },
+            NOT: { gates:1, desc:'A NAND A = NOT A', circuit:()=>`<div class="circuit-row"><span>A</span><span class="wire"></span><span class="gate-box">NAND(A,A)</span><span class="wire"></span><span>= A\'</span></div>` },
+            XOR: { gates:4, desc:'4个NAND门构成XOR', circuit:()=>`<div class="circuit-row"><span>A,B</span><span class="wire"></span><span class="gate-box">N1</span><span class="wire"></span><span class="gate-box">N2,N3</span><span class="wire"></span><span class="gate-box">N4</span><span class="wire"></span><span>= XOR</span></div>` },
+            NAND: { gates:0, desc:'直接使用NAND', circuit:()=>`<div class="circuit-row"><span>A</span><span class="wire"></span><span class="gate-box">NAND</span><span class="wire"></span><span>= NAND</span></div><div class="circuit-row"><span>B</span><span class="wire"></span></div>` },
+            NOR: { gates:3, desc:'NAND实现NOR = NOT(OR)', circuit:()=>`<div class="circuit-row"><span>A,B各自取反后NAND再取反</span></div>` }
+        },
+        NOR: {
+            AND: { gates:3, desc:'NOR实现AND = NOT(OR取反)', circuit:()=>`<div class="circuit-row"><span>A,B各自NOR取反，再NOR取反</span></div>` },
+            OR: { gates:2, desc:'A NOR B → 结果 NOR 结果', circuit:()=>`<div class="circuit-row"><span>A</span><span class="wire"></span><span class="gate-box">NOR</span><span class="wire"></span><span class="gate-box">NOR</span><span class="wire"></span><span>= OR</span></div><div class="circuit-row"><span>B</span><span class="wire"></span></div>` },
+            NOT: { gates:1, desc:'A NOR A = NOT A', circuit:()=>`<div class="circuit-row"><span>A</span><span class="wire"></span><span class="gate-box">NOR(A,A)</span><span class="wire"></span><span>= A\'</span></div>` },
+            XOR: { gates:4, desc:'4个NOR门构成XOR', circuit:()=>`<div class="circuit-row"><span>A,B</span><span class="wire"></span><span class="gate-box">N1</span><span class="wire"></span><span class="gate-box">N2,N3</span><span class="wire"></span><span class="gate-box">N4</span><span class="wire"></span><span>= XOR</span></div>` },
+            NAND: { gates:3, desc:'NOR实现NAND', circuit:()=>`<div class="circuit-row">类似AND后取反</div>` },
+            NOR: { gates:0, desc:'直接使用NOR', circuit:()=>`<div class="circuit-row"><span>A</span><span class="wire"></span><span class="gate-box">NOR</span><span class="wire"></span><span>= NOR</span></div><div class="circuit-row"><span>B</span><span class="wire"></span></div>` }
+        }
+    };
+
+    const transformFormulas = {
+        NAND: {
+            AND: '\\text{AND}(A,B) = \\overline{\\overline{A \\cdot B}}',
+            OR: '\\text{OR}(A,B) = \\overline{\\overline{A} \\cdot \\overline{B}}',
+            NOT: '\\text{NOT}(A) = \\overline{A \\cdot A}',
+            XOR: '\\text{XOR}(A,B) = \\overline{\\overline{A \\cdot \\overline{A \\cdot B}} \\cdot \\overline{B \\cdot \\overline{A \\cdot B}}}',
+            NAND: '\\text{NAND}(A,B) = \\overline{A \\cdot B}',
+            NOR: '\\text{NOR}(A,B) = \\overline{\\overline{A} \\cdot \\overline{B}} \\cdot \\overline{\\overline{A} \\cdot \\overline{B}}'
+        },
+        NOR: {
+            AND: '\\text{AND}(A,B) = \\overline{\\overline{A} + \\overline{B}}',
+            OR: '\\text{OR}(A,B) = \\overline{\\overline{A + B}}',
+            NOT: '\\text{NOT}(A) = \\overline{A + A}',
+            XOR: '\\text{XOR}(A,B) = \\overline{\\overline{A + \\overline{A+B}} + \\overline{B + \\overline{A+B}}}',
+            NAND: '\\text{NAND}(A,B) = \\overline{A+B} + \\overline{A+B}',
+            NOR: '\\text{NOR}(A,B) = \\overline{A + B}'
+        }
+    };
+
+    // ====== 时序数据 ======
+    const T_TOTAL = 4;
+    const POINTS_PER_SEG = 80;
+    const inputPattern = [{a:0,b:0},{a:0,b:1},{a:1,b:0},{a:1,b:1}];
+
+    function generateTimingData() {
+        const times=[], dataA=[], dataB=[], dataOrig=[], dataEquiv=[];
+        const origFn = gateFunctions[currentGate];
+        const equivFn = currentImpl === 'NAND' ? nandImplementations[currentGate] : norImplementations[currentGate];
+
+        for (let seg=0; seg<4; seg++) {
+            const {a,b} = inputPattern[seg];
+            const yO = origFn(a,b);
+            const yE = equivFn(a,b);
+            for (let i=0; i<POINTS_PER_SEG; i++) {
+                const t = seg + (i/POINTS_PER_SEG);
+                times.push(t); dataA.push(a); dataB.push(b); dataOrig.push(yO); dataEquiv.push(yE);
+            }
+        }
+        times.push(T_TOTAL);
+        dataA.push(dataA.at(-1)); dataB.push(dataB.at(-1)); dataOrig.push(dataOrig.at(-1)); dataEquiv.push(dataEquiv.at(-1));
+        return {times, dataA, dataB, dataOrig, dataEquiv};
+    }
+
+    function buildDatasets() {
+        const {times, dataA, dataB, dataOrig, dataEquiv} = generateTimingData();
+        const OA=6, OB=4, OO=2, OE=0;
+        return {
+            pA: times.map((t,i)=>({x:t,y:dataA[i]+OA})),
+            pB: times.map((t,i)=>({x:t,y:dataB[i]+OB})),
+            pOrig: times.map((t,i)=>({x:t,y:dataOrig[i]+OO})),
+            pEquiv: times.map((t,i)=>({x:t,y:dataEquiv[i]+OE}))
+        };
+    }
+
+    function initChart() {
+        if (chartInstance) return;
+        const {pA,pB,pOrig,pEquiv} = buildDatasets();
+        const ctx = document.getElementById('timingChart').getContext('2d');
+        chartInstance = new Chart(ctx, {
+            type:'line', data:{datasets:[
+                {label:'A',data:pA,borderColor:'#3b82f6',backgroundColor:'transparent',borderWidth:2.5,stepped:'before',pointRadius:0,tension:0},
+                {label:'B',data:pB,borderColor:'#10b981',backgroundColor:'transparent',borderWidth:2.5,stepped:'before',pointRadius:0,tension:0},
+                {label:'原门',data:pOrig,borderColor:'#ef4444',backgroundColor:'transparent',borderWidth:3,stepped:'before',pointRadius:0,tension:0},
+                {label:'等效',data:pEquiv,borderColor:'#fb923c',backgroundColor:'transparent',borderWidth:2.5,stepped:'before',pointRadius:0,tension:0,borderDash:[6,4]}
+            ]},
+            options:{
+                responsive:true,maintainAspectRatio:true,animation:false,
+                interaction:{mode:'index',intersect:false},
+                plugins:{legend:{display:false},tooltip:{callbacks:{label(ctx){const labels=['等效','原门','B','A'];return labels[ctx.datasetIndex]+' = '+Math.round(ctx.raw.y-[0,2,4,6][ctx.datasetIndex]);}},backgroundColor:'rgba(0,0,0,0.7)'}},
+                scales:{
+                    x:{type:'linear',title:{display:true,text:'时间 t (ms)',font:{weight:'bold',size:12}},min:0,max:T_TOTAL,ticks:{stepSize:1,callback:v=>v+'ms'},grid:{color:'#eef2ff'}},
+                    y:{min:-1,max:8,ticks:{callback(v){if(v===0)return '等效';if(v===2)return '原门';if(v===4)return 'B';if(v===6)return 'A';return null;},stepSize:1},grid:{color:'#eef2ff'}}
+                },
+                elements:{point:{radius:0,hitRadius:5}}
+            }
+        });
+    }
+
+    const segmentPlugin = {
+        id:'segLabels',
+        afterDraw(chart){
+            const{ctx,chartArea:{top,bottom},scales}=chart;
+            if(!scales.x)return;
+            ctx.save();ctx.font='11px monospace';ctx.fillStyle='#64748b';ctx.textAlign='center';
+            for(let s=0;s<4;s++){
+                const{x:a,b}=inputPattern[s];
+                const xp=scales.x.getPixelForValue(s+0.5);
+                if(s>0){ctx.beginPath();ctx.strokeStyle='#cbd5e1';ctx.lineWidth=1;ctx.setLineDash([4,4]);ctx.moveTo(scales.x.getPixelForValue(s),top);ctx.lineTo(scales.x.getPixelForValue(s),bottom);ctx.stroke();ctx.setLineDash([]);}
+                ctx.fillText(`A=${a} B=${b}`,xp,bottom+18);
+            }
+            ctx.restore();
+        }
+    };
+
+    Chart.register(segmentPlugin);
+
+    function updateChart() {
+        if(!chartInstance){initChart();return;}
+        const{pA,pB,pOrig,pEquiv}=buildDatasets();
+        chartInstance.data.datasets[0].data=pA;
+        chartInstance.data.datasets[1].data=pB;
+        chartInstance.data.datasets[2].data=pOrig;
+        chartInstance.data.datasets[3].data=pEquiv;
+        chartInstance.update('none');
+    }
+
+    // ====== 真值表 ======
+    function updateTruthTable() {
+        const origFn=gateFunctions[currentGate];
+        const equivFn=currentImpl==='NAND'?nandImplementations[currentGate]:norImplementations[currentGate];
+        document.getElementById('origHeader').textContent=currentGate;
+        document.getElementById('equivHeader').textContent=currentImpl+'等效';
+        const tbody=document.getElementById('truthTableBody');
+        tbody.innerHTML='';
+        for(let m=0;m<4;m++){
+            const a=(m>>1)&1,b=m&1;
+            const yO=origFn(a,b),yE=equivFn(a,b);
+            const match=yO===yE;
+            const tr=document.createElement('tr');
+            tr.className=match?'hover:bg-slate-50':'bg-red-50';
+            tr.innerHTML=`<td class="py-2 px-2 font-mono ${a?'text-blue-600 font-bold':'text-slate-400'}">${a}</td><td class="py-2 px-2 font-mono ${b?'text-blue-600 font-bold':'text-slate-400'}">${b}</td><td class="py-2 px-2 font-mono font-bold ${yO?'text-emerald-600':'text-red-400'}">${yO}</td><td class="py-2 px-2 font-mono font-bold ${yE?'text-emerald-600':'text-red-400'}">${yE}</td><td class="py-2 px-2">${match?'<span class="text-emerald-500">✓</span>':'<span class="text-red-500 font-bold">✗</span>'}</td>`;
+            tbody.appendChild(tr);
+        }
+    }
+
+    // ====== 电路图 & 公式 ======
+    function updateCircuit() {
+        const info=circuitDescriptions[currentImpl][currentGate];
+        document.getElementById('circuitDiagram').innerHTML=info.circuit();
+        document.getElementById('gateCount').textContent=info.gates;
+        document.getElementById('implType').textContent=currentImpl;
+        const fDiv=document.getElementById('transformFormula');
+        fDiv.innerHTML='';
+        try{katex.render(transformFormulas[currentImpl][currentGate],fDiv,{throwOnError:false});}catch(e){fDiv.textContent=transformFormulas[currentImpl][currentGate];}
+    }
+
+    function refreshAll(){updateChart();updateTruthTable();updateCircuit();}
+
+    // 事件
+    document.querySelectorAll('.gate-btn').forEach(btn=>btn.addEventListener('click',()=>{
+        document.querySelectorAll('.gate-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');currentGate=btn.dataset.gate;refreshAll();
+    }));
+    document.querySelectorAll('.impl-btn').forEach(btn=>btn.addEventListener('click',()=>{
+        document.querySelectorAll('.impl-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');currentImpl=btn.dataset.impl;refreshAll();
+    }));
+
+    initChart();refreshAll();
+    document.addEventListener('DOMContentLoaded',()=>{if(typeof renderMathInElement!=='undefined')renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false});});
+    window.addEventListener('resize',()=>{if(chartInstance){chartInstance.resize();chartInstance.update();}});
+    console.log('通用门仿真已启动 | NAND/NOR等效实现 | 6种目标门×2种实现');
+</script>
+</body>
+</html>

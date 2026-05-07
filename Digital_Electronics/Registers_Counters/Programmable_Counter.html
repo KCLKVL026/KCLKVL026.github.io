@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>模N计数器 | 可编程模数·十进制计数器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+        .card-hover{transition:all 0.2s ease}.card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 20px -12px rgba(0,0,0,0.15)}
+        input[type=range]{height:5px;-webkit-appearance:none;background:#e2e8f0;border-radius:5px;outline:none}
+        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#3b82f6;border-radius:50%;cursor:pointer;transition:0.1s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <div class="flex justify-start mb-4">
+        <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页</a>
+    </div>
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">模N计数器</h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">可编程模数 N=2~16 | 计数 0→N-1→复位 | 十进制特例</p>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-4 space-y-6">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4"><span class="w-1 h-6 bg-blue-500 rounded-full"></span>模数设置</h3>
+                <div class="flex justify-between text-sm font-medium mb-1"><label>模数 N</label><span class="text-blue-600 font-mono text-xl" id="nDisp">10</span></div>
+                <input type="range" id="nSlider" min="2" max="16" step="1" value="10" class="w-full">
+                <div class="flex justify-between text-xs text-slate-400 mt-1"><span>2</span><span>16</span></div>
+                <p class="text-xs text-slate-500 mt-2">N=10 为十进制计数器</p>
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-emerald-500 rounded-full"></span>控制</h3>
+                <div class="mb-4"><div class="flex justify-between text-sm font-medium mb-1"><label>时钟频率</label><span class="text-blue-600 font-mono" id="freqDisp">1 Hz</span></div>
+                    <input type="range" id="freqSlider" min="0.5" max="4" step="0.5" value="1" class="w-full"></div>
+                <div class="flex gap-2">
+                    <button id="clkBtn" class="flex-1 rounded-lg px-3 py-3 text-lg font-bold bg-blue-500 text-white hover:bg-blue-600 transition-colors active:bg-blue-700">⟳ 时钟</button>
+                    <button id="resetBtn" class="flex-1 rounded-lg px-3 py-2 text-sm font-medium bg-slate-200 text-slate-600 hover:bg-slate-300 transition-colors">复位</button>
+                </div>
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-amber-500 rounded-full"></span>计数值</h3>
+                <div class="text-center">
+                    <div id="countDisplay" class="text-4xl font-bold text-blue-600">0</div>
+                    <div id="seqDisplay" class="text-sm font-mono text-slate-500 mt-2"></div>
+                </div>
+            </div>
+        </div>
+        <div class="lg:col-span-8 space-y-5">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="text-sm font-medium text-slate-700 mb-3 px-2">模N计数时序</div>
+                <div class="relative"><canvas id="timingChart" width="800" height="350" style="width:100%;height:auto;max-height:380px;"></canvas></div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-purple-500 rounded-full"></span>公式</h3>
+                <div class="bg-slate-50 p-3 rounded-lg text-center text-sm" id="formula"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    let N=10,freq=1,count=0,timingChart=null;
+    const history=[];
+    const MAX_HIST=20;
+
+    function clockPulse(){
+        count=(count+1)%N;
+        history.push({val:count});
+        if(history.length>MAX_HIST)history.shift();
+        refreshAll();
+    }
+
+    function initTiming(){
+        if(timingChart)return;
+        timingChart=new Chart(document.getElementById('timingChart').getContext('2d'),{
+            type:'line',data:{datasets:[]},options:{responsive:true,maintainAspectRatio:true,animation:false,interaction:{mode:'index',intersect:false},
+                plugins:{legend:{display:false}},scales:{x:{type:'linear',min:0,title:{display:true,text:'时钟周期',font:{weight:'bold'}},grid:{color:'#eef2ff'}},y:{min:0,max:N,title:{display:true,text:'计数值',font:{weight:'bold'}},ticks:{stepSize:1},grid:{color:'#eef2ff'}}},elements:{point:{radius:0}}}
+        });
+    }
+
+    function updateTiming(){
+        initTiming();
+        if(history.length===0){timingChart.data.datasets=[];timingChart.update('none');return;}
+        const data=history.map((h,i)=>({x:i,y:h.val}));
+        timingChart.data.datasets=[{label:'计数值',data,borderColor:'#3b82f6',borderWidth:2.5,stepped:'before',pointRadius:0,tension:0,backgroundColor:'rgba(59,130,246,0.1)',fill:true}];
+        timingChart.options.scales.y.max=N;
+        timingChart.options.scales.x.max=Math.max(history.length-1,5);
+        timingChart.update('none');
+    }
+
+    function refreshAll(){
+        document.getElementById('nDisp').textContent=N;
+        document.getElementById('freqDisp').textContent=freq+' Hz';
+        document.getElementById('countDisplay').textContent=count;
+        const seq=[];
+        for(let i=0;i<Math.min(N,16);i++)seq.push(i);
+        document.getElementById('seqDisplay').textContent='计序: '+seq.join(' → ')+' → 0 → ...';
+        const f=document.getElementById('formula');f.innerHTML='';
+        try{katex.render('\\text{Reset} = 1 \\text{ when } Q = '+N+' \\quad \\Rightarrow \\text{模'+N+'计数}',f,{throwOnError:false});}catch(e){f.textContent='Reset=1 when Q='+N;}
+        updateTiming();
+    }
+
+    document.getElementById('clkBtn').addEventListener('click',clockPulse);
+    document.getElementById('nSlider').addEventListener('input',e=>{N=parseInt(e.target.value);count=0;history.length=0;refreshAll();});
+    document.getElementById('freqSlider').addEventListener('input',e=>{freq=parseFloat(e.target.value);});
+    document.getElementById('resetBtn').addEventListener('click',()=>{count=0;history.length=0;refreshAll();});
+    initTiming();refreshAll();
+    document.addEventListener('DOMContentLoaded',()=>{if(typeof renderMathInElement!=='undefined')renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false});});
+    window.addEventListener('resize',()=>{if(timingChart){timingChart.resize();timingChart.update();}});
+    console.log('模N计数器已启动 | 逐拍计数 | N=2~16');
+</script>
+</body>
+</html>

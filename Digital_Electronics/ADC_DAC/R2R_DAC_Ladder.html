@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>R-2R梯形DAC | 传输特性·阶梯波形</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range]{height:5px;-webkit-appearance:none;background:#e2e8f0;border-radius:5px;outline:none}
+        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#3b82f6;border-radius:50%;cursor:pointer;transition:0.1s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+        ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+        .card-hover{transition:all 0.2s ease}.card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 20px -12px rgba(0,0,0,0.15)}
+        .bit-btn{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:6px;font-weight:bold;font-size:1rem;cursor:pointer;transition:all 0.12s ease;border:2px solid #e2e8f0}
+        .bit-btn.on{background:#3b82f6;color:white;border-color:#3b82f6}.bit-btn.off{background:white;color:#64748b;border-color:#e2e8f0}.bit-btn:active{transform:scale(0.92)}
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <div class="flex justify-start mb-4">
+        <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页</a>
+    </div>
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">R-2R 梯形 DAC</h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">4位R-2R DAC | 传输特性曲线 | 阶梯斜坡 | 各位电流贡献</p>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-4 space-y-6">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4"><span class="w-1 h-6 bg-blue-500 rounded-full"></span>数字输入 (4bit)</h3>
+                <div class="flex gap-2 justify-center mb-4" id="bitInputs"></div>
+                <div class="text-center"><span class="text-sm text-slate-500">十进制:</span> <span id="decDisplay" class="text-xl font-bold text-blue-600">0</span></div>
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-emerald-500 rounded-full"></span>参考电压</h3>
+                <div class="flex justify-between text-sm font-medium mb-1"><label>Vref</label><span class="text-blue-600 font-mono" id="vrefDisp">5.0 V</span></div>
+                <input type="range" id="vrefSlider" min="1" max="10" step="0.5" value="5" class="w-full">
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-amber-500 rounded-full"></span>输出电压</h3>
+                <div class="text-center">
+                    <div id="voutDisplay" class="text-3xl font-bold text-blue-600">0.000 V</div>
+                    <div class="text-xs text-slate-400 mt-1">分辨率: <span id="resDisplay">0.3125 V</span></div>
+                </div>
+            </div>
+            <button id="autoBtn" class="w-full rounded-lg px-4 py-2 text-sm font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors">自动计数 ▶</button>
+        </div>
+        <div class="lg:col-span-8 space-y-5">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="text-sm font-medium text-slate-700 mb-3 px-2">传输特性曲线</div>
+                <div class="relative"><canvas id="transferChart" width="800" height="350" style="width:100%;height:auto;max-height:380px;"></canvas></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                    <div class="text-sm font-medium text-slate-700 mb-3 px-2">各位电流贡献</div>
+                    <div class="relative"><canvas id="currentChart" width="400" height="250" style="width:100%;height:auto;"></canvas></div>
+                </div>
+                <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-5">
+                    <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-purple-500 rounded-full"></span>公式</h3>
+                    <div id="formula" class="bg-slate-50 p-3 rounded-lg text-center text-sm"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    let bits=[0,0,0,0],vref=5,autoRunning=false,autoInterval=null,transferChart=null,currentChart=null;
+    function computeVout(){
+        let val=0;
+        for(let i=0;i<4;i++)val+=bits[i]*Math.pow(2,i);
+        return vref*val/16;
+    }
+    function renderBits(){
+        const c=document.getElementById('bitInputs');c.innerHTML='';
+        bits.forEach((b,i)=>{
+            const div=document.createElement('div');
+            div.className='bit-btn '+(b?'on':'off');
+            div.textContent='b'+i+':'+b;
+            div.addEventListener('click',()=>{bits[i]=b?0:1;refreshAll();});
+            c.appendChild(div);
+        });
+    }
+    function initTransfer(){
+        if(transferChart)return;
+        transferChart=new Chart(document.getElementById('transferChart').getContext('2d'),{
+            type:'scatter',data:{datasets:[]},options:{responsive:true,maintainAspectRatio:true,animation:false,
+                plugins:{legend:{display:false}},
+                scales:{x:{title:{display:true,text:'数字码 (十进制)',font:{weight:'bold'}},min:-0.5,max:15.5,ticks:{stepSize:1},grid:{color:'#eef2ff'}},y:{title:{display:true,text:'Vout (V)',font:{weight:'bold'}},min:0,grid:{color:'#eef2ff'}}},
+                elements:{point:{radius:0}}}
+        });
+    }
+    function updateTransfer(){
+        initTransfer();
+        const points=[];
+        for(let d=0;d<16;d++)points.push({x:d,y:vref*d/16});
+        const currentVal=bits.reduce((a,v,i)=>a+v*Math.pow(2,i),0);
+        const currentVout=computeVout();
+        transferChart.data.datasets=[
+            {label:'传输特性',data:points,showLine:true,borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.1)',borderWidth:2,stepped:true,pointRadius:0,fill:true},
+            {label:'当前点',data:[{x:currentVal,y:currentVout}],pointRadius:8,pointBackgroundColor:'#ef4444',pointBorderColor:'#fff',pointBorderWidth:2}
+        ];
+        transferChart.update('none');
+    }
+    function initCurrent(){
+        if(currentChart)return;
+        currentChart=new Chart(document.getElementById('currentChart').getContext('2d'),{
+            type:'bar',data:{labels:['b3','b2','b1','b0'],datasets:[]},options:{responsive:true,maintainAspectRatio:true,animation:false,plugins:{legend:{display:false}},
+                scales:{x:{grid:{color:'#eef2ff'}},y:{title:{display:true,text:'电流贡献',font:{weight:'bold'}},min:0,grid:{color:'#eef2ff'}}}}
+        });
+    }
+    function updateCurrent(){
+        initCurrent();
+        const currents=bits.map((b,i)=>b*vref/(16*Math.pow(2,3-i)));
+        currentChart.data.datasets=[{data:currents,backgroundColor:['#ef4444','#f59e0b','#3b82f6','#10b981'].map((c,i)=>bits[i]?c+'99':'#e2e8f0'),borderColor:['#ef4444','#f59e0b','#3b82f6','#10b981'],borderWidth:1}];
+        currentChart.update('none');
+    }
+    function refreshAll(){
+        renderBits();
+        const dec=bits.reduce((a,v,i)=>a+v*Math.pow(2,i),0);
+        document.getElementById('decDisplay').textContent=dec;
+        document.getElementById('vrefDisp').textContent=vref.toFixed(1)+' V';
+        const vout=computeVout();
+        document.getElementById('voutDisplay').textContent=vout.toFixed(4)+' V';
+        document.getElementById('resDisplay').textContent=(vref/16).toFixed(4)+' V';
+        updateTransfer();updateCurrent();
+        const f=document.getElementById('formula');f.innerHTML='';
+        try{katex.render('V_{out} = V_{ref} \\cdot \\frac{D}{2^n} = '+vref.toFixed(1)+' \\cdot \\frac{'+dec+'}{16}',f,{throwOnError:false});}catch(e){f.textContent='Vout=Vref·D/2^n';}
+    }
+    document.getElementById('vrefSlider').addEventListener('input',e=>{vref=parseFloat(e.target.value);refreshAll();});
+    document.getElementById('autoBtn').addEventListener('click',()=>{
+        if(!autoRunning){autoRunning=true;document.getElementById('autoBtn').textContent='停止 ■';autoInterval=setInterval(()=>{const d=bits.reduce((a,v,i)=>a+v*Math.pow(2,i),0);const nd=(d+1)%16;for(let i=0;i<4;i++)bits[i]>>(nd>>i)&1?1:0;bits=[nd&1,(nd>>1)&1,(nd>>2)&1,(nd>>3)&1];refreshAll();},300);}
+        else{autoRunning=false;clearInterval(autoInterval);document.getElementById('autoBtn').textContent='自动计数 ▶';}
+    });
+    initTransfer();initCurrent();refreshAll();
+    document.addEventListener('DOMContentLoaded',()=>{if(typeof renderMathInElement!=='undefined')renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false});});
+    window.addEventListener('resize',()=>{if(transferChart){transferChart.resize();transferChart.update();}if(currentChart){currentChart.resize();currentChart.update();}});
+    console.log('R-2R DAC已启动 | 传输特性 | 自动计数');
+</script>
+</body>
+</html>

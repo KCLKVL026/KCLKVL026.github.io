@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>直流稳压电源 | 模拟电子技术辅助教学</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] { height: 5px; -webkit-appearance: none; background: #e2e8f0; border-radius: 5px; outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #06b6d4; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb:hover { background: #0891b2; transform: scale(1.15); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .rect-tab { cursor: pointer; transition: all 0.2s; } .rect-tab.active { background: #06b6d4; color: white; } .rect-tab:not(.active):hover { background: #ecfeff; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+    <div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+        <div class="flex justify-start mb-4">
+            <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页
+            </a>
+        </div>
+        <div class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">直流稳压电源</h1>
+            <p class="text-slate-600 max-w-2xl mx-auto">变压器 → 整流 → 滤波 → 稳压 四阶段分析</p>
+        </div>
+        <div class="flex justify-center gap-2 mb-6">
+            <button id="tabHalf" class="rect-tab active px-4 py-2 rounded-full text-xs font-medium border border-slate-300 bg-cyan-500 text-white">半波整流</button>
+            <button id="tabFull" class="rect-tab px-4 py-2 rounded-full text-xs font-medium border border-slate-300 bg-white text-slate-600">全波桥式</button>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-4 space-y-5">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-cyan-500 rounded-full"></span>电源参数</h2>
+                    <div class="space-y-4">
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>变压器变比 \(n\)</span><span id="nValue" class="font-mono font-bold text-cyan-600">10</span></div><input type="range" id="nSlider" min="2" max="30" value="10" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>2</span><span>30</span></div></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>二极管 \(V_F\)</span><span id="vfValue" class="font-mono font-bold text-cyan-600">0.7 V</span></div><input type="range" id="vfSlider" min="0.5" max="1.0" value="0.7" step="0.05" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>滤波电容 \(C\)</span><span id="cValue" class="font-mono font-bold text-cyan-600">1000 μF</span></div><input type="range" id="cSlider" min="1" max="50" value="10" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>100 μF</span><span>5000 μF</span></div></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>负载电流 \(I_L\)</span><span id="ilValue" class="font-mono font-bold text-cyan-600">100 mA</span></div><input type="range" id="ilSlider" min="1" max="50" value="10" step="0.5" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>10 mA</span><span>500 mA</span></div></div>
+                    </div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>输出特性</h2>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(V_{DC}\)</div><div id="vdcDisplay" class="text-lg font-bold text-emerald-600 font-mono">28.7 V</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(V_{ripple}\)</div><div id="vripDisplay" class="text-lg font-bold text-amber-600 font-mono">1.0 V</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(V_{peak}\)</div><div id="vpkDisplay" class="text-lg font-bold text-cyan-600 font-mono">30.4 V</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">效率 \(\eta\)</div><div id="effDisplay" class="text-lg font-bold text-emerald-600 font-mono">74%</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="lg:col-span-8 space-y-5">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <h2 class="text-base font-bold text-slate-800 mb-2">各阶段波形（交流 → 整流 → 滤波）</h2>
+                    <div class="relative" style="height: 340px;"><canvas id="waveChart"></canvas></div>
+                    <p class="text-xs text-slate-400 mt-1 text-center">蓝=变压器次级交流，橙=整流后脉动直流，绿=滤波后直流（含纹波）</p>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <h2 class="text-base font-bold text-slate-800 mb-2">纹波电压 vs 负载电流</h2>
+                    <div class="relative" style="height: 240px;"><canvas id="rippleChart"></canvas></div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>关键公式</h2>
+                    <div class="text-sm bg-slate-50 rounded-xl p-4 text-center space-y-2">
+                        \[V_{peak} = V_{rms}\sqrt{2} - n_{diodes}V_F \qquad V_{ripple} \approx \frac{I_L}{f_{ripple} \cdot C} \qquad V_{DC} \approx V_{peak} - \frac{V_{ripple}}{2}\]
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const V_PRIMARY_RMS = 220, F_LINE = 50;
+        let rectType = 'half', waveChartInst = null, rippleChartInst = null;
+
+        function getParams() {
+            return {
+                n: parseFloat(nSlider.value),
+                V_F: parseFloat(vfSlider.value),
+                C: parseFloat(cSlider.value) * 1e-4,
+                I_L: parseFloat(ilSlider.value) * 0.01,
+                rectType
+            };
+        }
+
+        function updateAll() {
+            const p = getParams();
+            const V_sec_rms = V_PRIMARY_RMS / p.n;
+            const V_sec_peak = V_sec_rms * Math.SQRT2;
+            const nDiodes = p.rectType === 'full' ? 2 : 1;
+            const f_ripple = p.rectType === 'full' ? 2 * F_LINE : F_LINE;
+            const V_peak = V_sec_peak - nDiodes * p.V_F;
+            const V_ripple = p.I_L / (f_ripple * p.C);
+            const V_DC = V_peak - V_ripple / 2;
+            const eta = (V_DC * p.I_L) / (V_PRIMARY_RMS * p.I_L / p.n) * 100;
+
+            document.getElementById('nValue').textContent = p.n;
+            document.getElementById('vfValue').textContent = p.V_F.toFixed(2)+' V';
+            document.getElementById('cValue').textContent = (p.C*1e6).toFixed(0)+' μF';
+            document.getElementById('ilValue').textContent = (p.I_L*1000).toFixed(0)+' mA';
+            document.getElementById('vdcDisplay').textContent = V_DC.toFixed(1)+' V';
+            document.getElementById('vripDisplay').textContent = V_ripple.toFixed(2)+' V';
+            document.getElementById('vpkDisplay').textContent = V_peak.toFixed(1)+' V';
+            document.getElementById('effDisplay').textContent = Math.min(eta, 95).toFixed(0)+'%';
+
+            // Waveforms
+            const T_ac = 1/F_LINE, dur = T_ac * 2, N = 500;
+            const ac = [], rect = [], filt = [];
+            let vfilt = 0;
+            for (let i = 0; i <= N; i++) {
+                const t = dur * i/N;
+                const vac = V_sec_peak * Math.sin(2*Math.PI*F_LINE*t);
+                ac.push({ x: t*1000, y: vac });
+                let vrect;
+                if (p.rectType === 'full') vrect = Math.abs(vac) - 2*p.V_F;
+                else vrect = vac > p.V_F ? vac - p.V_F : 0;
+                vrect = Math.max(0, vrect);
+                rect.push({ x: t*1000, y: vrect });
+                // Filter: charge/discharge
+                const dt = dur/N;
+                if (vrect > vfilt) vfilt = vrect;
+                else vfilt -= p.I_L / p.C * dt;
+                vfilt = Math.max(0, vfilt);
+                filt.push({ x: t*1000, y: vfilt });
+            }
+
+            let cfg = { type:'scatter', data:{ datasets:[
+                { label:'变压器次级AC', data:ac, borderColor:'#3b82f6', borderWidth:1, pointRadius:0, showLine:true },
+                { label:'整流输出', data:rect, borderColor:'#f59e0b', borderWidth:1.5, pointRadius:0, showLine:true },
+                { label:'滤波输出', data:filt, borderColor:'#10b981', borderWidth:2, pointRadius:0, showLine:true }
+            ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
+                plugins:{ legend:{position:'bottom',labels:{boxWidth:14,font:{size:10}}} },
+                scales:{ x:{title:{display:true,text:'时间 (ms)'}}, y:{title:{display:true,text:'V'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
+            if (waveChartInst) waveChartInst.destroy();
+            waveChartInst = new Chart(document.getElementById('waveChart').getContext('2d'), cfg);
+
+            // Ripple vs load current
+            const iLoads = [], ripples = [], ripplesNoReg = [];
+            for (let il = 0.01; il <= 0.5; il += 0.01) {
+                iLoads.push(il*1000);
+                ripples.push(il/(f_ripple*p.C)*1000);
+            }
+            cfg = { type:'scatter', data:{ datasets:[
+                { label:'V_ripple (mV)', data:iLoads.map((il,i)=>({x:il,y:ripples[i]})), borderColor:'#06b6d4', borderWidth:2, pointRadius:0, showLine:true }
+            ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
+                plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx => `I_L=${ctx.parsed.x.toFixed(0)}mA, V_ripple=${ctx.parsed.y.toFixed(1)}mV` } } },
+                scales:{ x:{title:{display:true,text:'I_L (mA)'}}, y:{title:{display:true,text:'V_ripple (mV)'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
+            if (rippleChartInst) rippleChartInst.destroy();
+            rippleChartInst = new Chart(document.getElementById('rippleChart').getContext('2d'), cfg);
+        }
+
+        function setRect(t) {
+            rectType = t;
+            ['tabHalf','tabFull'].forEach(tb => { document.getElementById(tb).classList.remove('active','bg-cyan-500','text-white'); document.getElementById(tb).classList.add('bg-white','text-slate-600'); });
+            document.getElementById(t==='half'?'tabHalf':'tabFull').classList.add('active','bg-cyan-500','text-white');
+            document.getElementById(t==='half'?'tabHalf':'tabFull').classList.remove('bg-white','text-slate-600');
+            updateAll();
+        }
+        document.getElementById('tabHalf').addEventListener('click', ()=>setRect('half'));
+        document.getElementById('tabFull').addEventListener('click', ()=>setRect('full'));
+
+        ['nSlider','vfSlider','cSlider','ilSlider'].forEach(id => document.getElementById(id).addEventListener('input', updateAll));
+        updateAll();
+        window.addEventListener('load', () => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); });
+    </script>
+</body>
+</html>

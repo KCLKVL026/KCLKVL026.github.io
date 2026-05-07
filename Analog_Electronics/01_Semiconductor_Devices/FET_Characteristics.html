@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>场效应管特性 | 模拟电子技术辅助教学</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] { height: 5px; -webkit-appearance: none; background: #e2e8f0; border-radius: 5px; outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #6366f1; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb:hover { background: #4f46e5; transform: scale(1.15); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .card-hover { transition: all 0.2s ease; } .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15); }
+        .dev-tab { cursor: pointer; transition: all 0.2s; } .dev-tab.active { background: #6366f1; color: white; } .dev-tab:not(.active):hover { background: #eef2ff; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+    <div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+        <div class="flex justify-start mb-4">
+            <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页
+            </a>
+        </div>
+        <div class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">场效应管特性</h1>
+            <p class="text-slate-600 max-w-2xl mx-auto">JFET/MOSFET 转移特性与输出特性曲线</p>
+        </div>
+        <div class="flex justify-center gap-2 mb-6">
+            <button id="tabJFET" class="dev-tab active px-5 py-2 rounded-full text-sm font-medium border border-slate-300 bg-indigo-600 text-white">N-JFET</button>
+            <button id="tabMOS" class="dev-tab px-5 py-2 rounded-full text-sm font-medium border border-slate-300 bg-white text-slate-600">增强型NMOS</button>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-4 space-y-5">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-indigo-500 rounded-full"></span>参数控制</h2>
+                    <div class="space-y-4">
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(V_{GS}\)</span><span id="vgsValue" class="font-mono font-bold text-indigo-600">-2.0 V</span></div><input type="range" id="vgsSlider" min="-60" max="0" value="-20" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>-6 V</span><span>0 V</span></div></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(V_{DS}\)</span><span id="vdsValue" class="font-mono font-bold text-indigo-600">10.0 V</span></div><input type="range" id="vdsSlider" min="0" max="200" value="100" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>0 V</span><span>20 V</span></div></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span id="param1Label">\(I_{DSS}\)</span><span id="param1Val" class="font-mono font-bold text-indigo-600">10 mA</span></div><input type="range" id="param1Slider" min="1" max="20" value="10" step="0.5" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span id="param2Label">\(V_P\)</span><span id="param2Val" class="font-mono font-bold text-indigo-600">-4.0 V</span></div><input type="range" id="param2Slider" min="-6" max="-1" value="-4" step="0.5" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(V_{DD}\)</span><span id="vddValue" class="font-mono font-bold text-indigo-600">15 V</span></div><input type="range" id="vddSlider" min="5" max="20" value="15" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_D\)</span><span id="rdValue" class="font-mono font-bold text-indigo-600">1.0 kΩ</span></div><input type="range" id="rdSlider" min="1" max="50" value="10" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>0.1 kΩ</span><span>5.0 kΩ</span></div></div>
+                    </div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>工作点参数</h2>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(I_D\)</div><div id="idDisplay" class="text-lg font-bold text-emerald-600 font-mono">2.5 mA</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(V_{DS}\)</div><div id="vdsqDisplay" class="text-lg font-bold text-emerald-600 font-mono">10.0 V</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(g_m\)</div><div id="gmDisplay" class="text-lg font-bold text-indigo-600 font-mono">2.5 mS</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">工作区域</div><div id="regionDisplay" class="text-lg font-bold text-emerald-600">饱和区</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="lg:col-span-8 space-y-5">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <h2 class="text-base font-bold text-slate-800 mb-2">转移特性（\(I_D\) vs \(V_{GS}\)）</h2>
+                    <div class="relative" style="height: 280px;"><canvas id="transferChart"></canvas></div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <h2 class="text-base font-bold text-slate-800 mb-2">输出特性曲线族（\(I_D\) vs \(V_{DS}\)）</h2>
+                    <div class="relative" style="height: 300px;"><canvas id="outputChart"></canvas></div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>关键公式</h2>
+                    <div class="text-sm bg-slate-50 rounded-xl p-4 text-center space-y-2">
+                        \[I_D = I_{DSS}\left(1 - \frac{V_{GS}}{V_P}\right)^2 \;\text{(JFET)} \qquad I_D = k_n(V_{GS} - V_{TH})^2 \;\text{(MOSFET)}\]
+                        \[g_m = \frac{2I_{DSS}}{|V_P|}\left(1 - \frac{V_{GS}}{V_P}\right) \;\text{(JFET)} \qquad g_m = 2k_n(V_{GS} - V_{TH}) \;\text{(MOSFET)}\]
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let devType = 'JFET', transferChartInst = null, outputChartInst = null;
+
+        function getParams() {
+            return {
+                V_GS: parseFloat(vgsSlider.value) / 10,
+                V_DS: parseFloat(vdsSlider.value) / 10,
+                param1: parseFloat(param1Slider.value),
+                param2: parseFloat(param2Slider.value),
+                V_DD: parseFloat(vddSlider.value),
+                R_D: parseFloat(rdSlider.value) * 100,
+                devType
+            };
+        }
+
+        function calcId(vgs, p) {
+            if (p.devType === 'JFET') {
+                if (vgs <= p.param2) return 0;
+                return p.param1 * 1e-3 * Math.pow(1 - vgs / p.param2, 2);
+            } else {
+                if (vgs <= p.param2) return 0;
+                return p.param1 * 1e-3 * Math.pow(vgs - p.param2, 2);
+            }
+        }
+
+        function calcGm(vgs, p) {
+            if (p.devType === 'JFET') {
+                if (vgs <= p.param2) return 0;
+                return (2 * p.param1 * 1e-3 / Math.abs(p.param2)) * (1 - vgs / p.param2);
+            } else {
+                if (vgs <= p.param2) return 0;
+                return 2 * p.param1 * 1e-3 * (vgs - p.param2);
+            }
+        }
+
+        function updateAll() {
+            const p = getParams();
+            const I_DQ = calcId(p.V_GS, p);
+            const g_m = calcGm(p.V_GS, p);
+            let region = '饱和区(恒流区)';
+            if (I_DQ <= 1e-9) region = '截止区';
+            else if (p.V_DS < p.V_GS - p.param2) region = '欧姆区(可变电阻区)';
+
+            document.getElementById('vgsValue').textContent = p.V_GS.toFixed(1) + ' V';
+            document.getElementById('vdsValue').textContent = p.V_DS.toFixed(1) + ' V';
+            document.getElementById('param1Val').textContent = p.devType === 'JFET' ? p.param1 + ' mA' : p.param1 + ' mA/V²';
+            document.getElementById('param2Val').textContent = p.param2.toFixed(1) + ' V';
+            document.getElementById('vddValue').textContent = p.V_DD + ' V';
+            document.getElementById('rdValue').textContent = (p.R_D/1000).toFixed(1) + ' kΩ';
+            document.getElementById('idDisplay').textContent = (I_DQ*1000).toFixed(2) + ' mA';
+            document.getElementById('vdsqDisplay').textContent = p.V_DS.toFixed(1) + ' V';
+            document.getElementById('gmDisplay').textContent = (g_m*1000).toFixed(1) + ' mS';
+            document.getElementById('regionDisplay').textContent = region;
+
+            // Transfer characteristic
+            const transferPts = [];
+            const gsMin = p.devType === 'JFET' ? p.param2 : 0;
+            const gsMax = p.devType === 'JFET' ? 0 : Math.abs(p.param2) + 5;
+            for (let i = 0; i <= 200; i++) {
+                const vgs = gsMin + (gsMax - gsMin) * i / 200;
+                transferPts.push({ x: vgs, y: calcId(vgs, p) * 1000 });
+            }
+            let cfg = { type:'scatter', data:{ datasets:[
+                { data:transferPts, borderColor:'#6366f1', borderWidth:2, pointRadius:0, showLine:true, tension:0.3, order:1 },
+                { data:[{ x:p.V_GS, y:I_DQ*1000 }], borderColor:'#ef4444', backgroundColor:'#ef4444', pointRadius:8, showLine:false, order:0 }
+            ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
+                plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx => ctx.datasetIndex===0 ? `V_GS=${ctx.parsed.x.toFixed(2)}V, I_D=${ctx.parsed.y.toFixed(2)}mA` : `Q: V_GS=${ctx.parsed.x.toFixed(2)}V` } } },
+                scales:{ x:{title:{display:true,text:'V_GS (V)'}}, y:{title:{display:true,text:'I_D (mA)'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
+            if (transferChartInst) transferChartInst.destroy();
+            transferChartInst = new Chart(document.getElementById('transferChart').getContext('2d'), cfg);
+
+            // Output characteristic family
+            const vgsValues = p.devType === 'JFET' ? [-4, -3, -2, -1, 0] : [1, 2, 3, 4, 5];
+            const colors = ['#93c5fd','#60a5fa','#3b82f6','#2563eb','#1d4ed8'];
+            const datasets = vgsValues.map((vgs, idx) => {
+                const pts = [];
+                for (let j = 0; j <= 200; j++) {
+                    const vds = 20 * j / 200;
+                    let id;
+                    if (vds < 0.3) {
+                        const idSat = calcId(vgs, p);
+                        id = idSat * vds / 0.3;
+                    } else {
+                        id = calcId(vgs, p);
+                    }
+                    pts.push({ x: vds, y: id * 1000 });
+                }
+                return { label: `V_GS=${vgs}V`, data:pts, borderColor:colors[idx], borderWidth:1.5, pointRadius:0, showLine:true, order:2 };
+            });
+            // Load line
+            const ll = [{ x:0, y:p.V_DD/p.R_D*1000 }, { x:p.V_DD, y:0 }];
+            datasets.push({ label:'DC负载线', data:ll, borderColor:'#f43f5e', borderWidth:2, borderDash:[6,3], pointRadius:0, showLine:true, order:1 });
+            // Q point
+            datasets.push({ label:'Q点', data:[{ x:p.V_DS, y:I_DQ*1000 }], borderColor:'#ef4444', backgroundColor:'#ef4444', pointRadius:8, showLine:false, order:0 });
+
+            cfg = { type:'scatter', data:{ datasets }, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
+                plugins:{ legend:{position:'bottom',labels:{boxWidth:14,font:{size:10}}} },
+                scales:{ x:{title:{display:true,text:'V_DS (V)'}, grid:{color:'rgba(0,0,0,0.05)'}}, y:{title:{display:true,text:'I_D (mA)'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
+            if (outputChartInst) outputChartInst.destroy();
+            outputChartInst = new Chart(document.getElementById('outputChart').getContext('2d'), cfg);
+        }
+
+        function setDevice(type) {
+            devType = type;
+            [tabJFET, tabMOS].forEach(el => { el.classList.remove('active','bg-indigo-600','text-white'); el.classList.add('bg-white','text-slate-600'); });
+            const tab = document.getElementById(type === 'JFET' ? 'tabJFET' : 'tabMOS');
+            tab.classList.add('active','bg-indigo-600','text-white'); tab.classList.remove('bg-white','text-slate-600');
+            document.getElementById('param1Label').innerHTML = type === 'JFET' ? '\\(I_{DSS}\\)' : '\\(k_n\\)';
+            document.getElementById('param2Label').innerHTML = type === 'JFET' ? '\\(V_P\\)' : '\\(V_{TH}\\)';
+            if (type === 'JFET') { vgsSlider.min = -60; vgsSlider.max = 0; vgsSlider.value = -20; param1Slider.value = 10; param2Slider.min = -6; param2Slider.max = -1; param2Slider.value = -4; }
+            else { vgsSlider.min = 0; vgsSlider.max = 80; vgsSlider.value = 30; param1Slider.value = 2; param2Slider.min = 0.5; param2Slider.max = 4; param2Slider.value = 2; }
+            updateAll();
+            setTimeout(() => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); }, 80);
+        }
+        document.getElementById('tabJFET').addEventListener('click', () => setDevice('JFET'));
+        document.getElementById('tabMOS').addEventListener('click', () => setDevice('MOS'));
+
+        ['vgsSlider','vdsSlider','param1Slider','param2Slider','vddSlider','rdSlider'].forEach(id => document.getElementById(id).addEventListener('input', updateAll));
+        updateAll();
+        window.addEventListener('load', () => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); });
+    </script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Moore状态机 | 输出仅取决于状态</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+        .card-hover{transition:all 0.2s ease}.card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 20px -12px rgba(0,0,0,0.15)}
+        .state-circle{display:flex;align-items:center;justify-content:center;width:72px;height:72px;border-radius:50%;border:3px solid;font-weight:bold;font-size:0.9rem;text-align:center;transition:all 0.2s}
+        .state-active{border-color:#3b82f6;background:#eff6ff;color:#1d4ed8;transform:scale(1.1)}.state-inactive{border-color:#e2e8f0;background:white;color:#94a3b8}
+        .arrow-line{position:absolute;height:2px;background:#6366f1;transform-origin:left center}
+        .bit-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:8px;font-weight:bold;font-size:1.1rem;cursor:pointer;transition:all 0.12s ease;border:2px solid #e2e8f0}
+        .bit-btn.on{background:#3b82f6;color:white;border-color:#3b82f6}.bit-btn.off{background:white;color:#64748b;border-color:#e2e8f0}.bit-btn:active{transform:scale(0.92)}
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <div class="flex justify-start mb-4">
+        <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页</a>
+    </div>
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">Moore状态机</h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">输出仅取决于当前状态 | 状态图·时序图·状态编码</p>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-4 space-y-6">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4"><span class="w-1 h-6 bg-blue-500 rounded-full"></span>输入 X</h3>
+                <div class="flex justify-center"><div id="xBtn" class="bit-btn off">0</div></div>
+                <p class="text-xs text-slate-400 mt-2 text-center">每次时钟边沿前切换输入</p>
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-emerald-500 rounded-full"></span>当前状态</h3>
+                <div class="text-center">
+                    <div id="stateDisplay" class="text-2xl font-bold text-blue-600">S0</div>
+                    <div id="stateOutput" class="text-lg text-emerald-600 mt-1">输出 Z = 0</div>
+                    <div id="stateEncoding" class="text-xs text-slate-400 mt-1">编码: 00</div>
+                </div>
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-amber-500 rounded-full"></span>状态图</h3>
+                <div class="flex justify-center gap-4 items-center">
+                    <div id="s0circle" class="state-circle state-active">S0<br>Z=0</div>
+                    <div class="text-slate-400 text-xs">⇄</div>
+                    <div id="s1circle" class="state-circle state-inactive">S1<br>Z=1</div>
+                </div>
+                <div id="transLabels" class="text-center text-xs text-slate-400 mt-2"></div>
+            </div>
+            <button id="clkBtn" class="w-full rounded-lg px-4 py-3 text-lg font-bold bg-blue-500 text-white hover:bg-blue-600 transition-colors active:bg-blue-700">⟳ 时钟</button>
+        </div>
+        <div class="lg:col-span-8 space-y-5">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="flex flex-wrap justify-between items-center mb-3 px-2">
+                    <div class="flex items-center gap-4 text-sm">
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-slate-700 rounded-full"></div><span>CLK</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-blue-500 rounded-full"></div><span>X</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-emerald-500 rounded-full"></div><span>State</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-amber-500 rounded-full"></div><span>Z</span></div>
+                    </div>
+                </div>
+                <div class="relative"><canvas id="timingChart" width="800" height="380" style="width:100%;height:auto;max-height:420px;"></canvas></div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3">状态转换表</h3>
+                <div class="overflow-x-auto"><table class="w-full text-center text-sm">
+                    <thead><tr class="text-slate-500"><th>当前状态</th><th>X=0</th><th>X=1</th><th>输出 Z</th></tr></thead>
+                    <tbody id="stateTable"></tbody>
+                </table></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    let x=0,state=0,timingChart=null;
+    const history=[];
+    // Moore FSM: 2 states (S0, S1)
+    // S0: X=0→S0, X=1→S1, Z=0
+    // S1: X=0→S0, X=1→S1, Z=1
+    function nextState(s,input){return input?1:0;}
+    function output(s){return s;}
+    function clockPulse(){
+        state=nextState(state,x);
+        history.push({x,state,z:output(state)});
+        if(history.length>16)history.shift();
+        refreshAll();
+    }
+    function initTiming(){
+        if(timingChart)return;
+        timingChart=new Chart(document.getElementById('timingChart').getContext('2d'),{
+            type:'line',data:{datasets:[]},options:{responsive:true,maintainAspectRatio:true,animation:false,interaction:{mode:'index',intersect:false},
+                plugins:{legend:{display:false}},scales:{x:{title:{display:true,text:'时钟周期',font:{weight:'bold'}}},y:{min:-1,max:8,ticks:{callback(v){const m={0:'Z',2:'State',4:'X',6:'CLK'};return m[v]||null;},stepSize:1},grid:{color:'#eef2ff'}}},elements:{point:{radius:0}}}
+        });
+    }
+    function updateTiming(){
+        initTiming();
+        if(history.length===0){timingChart.data.datasets=[];timingChart.update('none');return;}
+        const tt=history.map((_,i)=>i);
+        timingChart.data.datasets=[
+            {label:'CLK',data:tt.map(i=>({x:i,y:1+6})),borderColor:'#334155',borderWidth:2,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'},
+            {label:'X',data:history.map((h,i)=>({x:i,y:h.x+4})),borderColor:'#3b82f6',borderWidth:2,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'},
+            {label:'State',data:history.map((h,i)=>({x:i,y:h.state+2})),borderColor:'#10b981',borderWidth:2.5,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'},
+            {label:'Z',data:history.map((h,i)=>({x:i,y:h.z})),borderColor:'#f59e0b',borderWidth:2.5,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'}
+        ];
+        timingChart.update('none');
+    }
+    function refreshAll(){
+        document.getElementById('xBtn').className='bit-btn '+(x?'on':'off');document.getElementById('xBtn').textContent=x;
+        document.getElementById('stateDisplay').textContent='S'+state;
+        document.getElementById('stateOutput').textContent='输出 Z = '+output(state);
+        document.getElementById('stateEncoding').textContent='编码: '+state.toString(2).padStart(2,'0');
+        document.getElementById('s0circle').className='state-circle '+(state===0?'state-active':'state-inactive');
+        document.getElementById('s1circle').className='state-circle '+(state===1?'state-active':'state-inactive');
+        document.getElementById('transLabels').textContent='X=0: S0→S0, S1→S0 | X=1: S0→S1, S1→S1';
+        updateTiming();
+        const tb=document.getElementById('stateTable');tb.innerHTML='';
+        [[0,'S0','S0 (X=0)','S1 (X=1)','0'],[1,'S1','S0 (X=0)','S1 (X=1)','1']].forEach(([s,name,s0,s1,z])=>{
+            const tr=document.createElement('tr');
+            tr.className=s===state?'bg-blue-50':'hover:bg-slate-50';
+            tr.innerHTML=`<td class="py-1.5 px-3">${name}</td><td class="py-1.5 px-3">${s0}</td><td class="py-1.5 px-3">${s1}</td><td class="py-1.5 px-3 font-bold">${z}</td>`;
+            tb.appendChild(tr);
+        });
+    }
+    document.getElementById('xBtn').addEventListener('click',()=>{x=x?0:1;refreshAll();});
+    document.getElementById('clkBtn').addEventListener('click',clockPulse);
+    initTiming();refreshAll();
+    document.addEventListener('DOMContentLoaded',()=>{if(typeof renderMathInElement!=='undefined')renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false});});
+    window.addEventListener('resize',()=>{if(timingChart){timingChart.resize();timingChart.update();}});
+    console.log('Moore状态机已启动 | 2状态 | 状态图·时序图');
+</script>
+</body>
+</html>

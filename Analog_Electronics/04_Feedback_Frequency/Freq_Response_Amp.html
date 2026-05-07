@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>放大电路频率响应 | 模拟电子技术辅助教学</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] { height: 5px; -webkit-appearance: none; background: #e2e8f0; border-radius: 5px; outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #f59e0b; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb:hover { background: #d97706; transform: scale(1.15); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+    <div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+        <div class="flex justify-start mb-4">
+            <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页
+            </a>
+        </div>
+        <div class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">放大电路频率响应</h1>
+            <p class="text-slate-600 max-w-2xl mx-auto">伯德图、米勒效应与增益带宽积</p>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-4 space-y-5">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>放大器参数</h2>
+                    <div class="space-y-4">
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>中频增益 \(A_M\)</span><span id="amValue" class="font-mono font-bold text-amber-600">200</span></div><input type="range" id="amSlider" min="10" max="1000" value="200" step="10" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(C_\pi\) (BE结电容)</span><span id="cpiValue" class="font-mono font-bold text-amber-600">10 pF</span></div><input type="range" id="cpiSlider" min="1" max="50" value="10" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(C_\mu\) (BC结电容)</span><span id="cmuValue" class="font-mono font-bold text-amber-600">2.0 pF</span></div><input type="range" id="cmuSlider" min="0.5" max="10" value="2" step="0.5" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(r_\pi\)</span><span id="rpiValue" class="font-mono font-bold text-amber-600">2.0 kΩ</span></div><input type="range" id="rpiSlider" min="5" max="50" value="20" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_L'\) (等效负载)</span><span id="rlValue" class="font-mono font-bold text-amber-600">3.2 kΩ</span></div><input type="range" id="rlSlider" min="10" max="100" value="32" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>耦合电容 \(f_L\)</span><span id="flValue" class="font-mono font-bold text-amber-600">100 Hz</span></div><input type="range" id="flSlider" min="1" max="100" value="10" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>10 Hz</span><span>1 kHz</span></div></div>
+                    </div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>频率特性</h2>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(f_L\)</div><div id="fLDisplay" class="text-lg font-bold text-emerald-600 font-mono">100 Hz</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(f_H\)</div><div id="fHDisplay" class="text-lg font-bold text-emerald-600 font-mono">1.2 MHz</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(BW\)</div><div id="bwDisplay" class="text-lg font-bold text-emerald-600 font-mono">1.2 MHz</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(GBW\)</div><div id="gbwDisplay" class="text-lg font-bold text-emerald-600 font-mono">240 MHz</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="lg:col-span-8 space-y-5">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <h2 class="text-base font-bold text-slate-800 mb-2">幅频响应 Bode Plot（增益 dB vs 频率）</h2>
+                    <div class="relative" style="height: 290px;"><canvas id="magChart"></canvas></div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <h2 class="text-base font-bold text-slate-800 mb-2">相频响应（相位 ° vs 频率）</h2>
+                    <div class="relative" style="height: 240px;"><canvas id="phaseChart"></canvas></div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>关键公式</h2>
+                    <div class="text-sm bg-slate-50 rounded-xl p-4 text-center">
+                        \[C_M = C_\mu(1 + g_m R_L') \quad f_H \approx \frac{1}{2\pi(C_\pi + C_M)r_\pi} \quad \text{GBW} = A_M \cdot f_H\]
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const V_T = 0.02585;
+        let magChartInst = null, phaseChartInst = null;
+
+        function getParams() {
+            return {
+                A_M: parseFloat(amSlider.value), C_pi: parseFloat(cpiSlider.value)*1e-12,
+                C_mu: parseFloat(cmuSlider.value)*1e-12, r_pi: parseFloat(rpiSlider.value)*100,
+                R_L: parseFloat(rlSlider.value)*100, f_L_ref: parseFloat(flSlider.value)*10
+            };
+        }
+
+        function updateAll() {
+            const p = getParams();
+            const I_C = V_T / (p.r_pi / p.A_M) * p.A_M; // approximate
+            const g_m = I_C > 0 ? p.A_M / p.R_L : 0.04;
+            const C_M = p.C_mu * (1 + g_m * p.R_L);
+            const f_H = 1 / (2 * Math.PI * (p.C_pi + C_M) * p.r_pi);
+            const f_L = p.f_L_ref;
+            const BW = f_H - f_L;
+            const GBW = p.A_M * f_H;
+            const A_M_dB = 20 * Math.log10(p.A_M);
+
+            document.getElementById('amValue').textContent = p.A_M;
+            document.getElementById('cpiValue').textContent = (p.C_pi*1e12).toFixed(0)+' pF';
+            document.getElementById('cmuValue').textContent = (p.C_mu*1e12).toFixed(1)+' pF';
+            document.getElementById('rpiValue').textContent = (p.r_pi/1000).toFixed(1)+' kΩ';
+            document.getElementById('rlValue').textContent = (p.R_L/1000).toFixed(1)+' kΩ';
+            document.getElementById('flValue').textContent = p.f_L_ref.toFixed(0)+' Hz';
+            document.getElementById('fLDisplay').textContent = f_L.toFixed(0)+' Hz';
+            document.getElementById('fHDisplay').textContent = f_H >= 1e6 ? (f_H/1e6).toFixed(1)+' MHz' : (f_H/1000).toFixed(0)+' kHz';
+            document.getElementById('bwDisplay').textContent = BW >= 1e6 ? (BW/1e6).toFixed(1)+' MHz' : (BW/1000).toFixed(0)+' kHz';
+            document.getElementById('gbwDisplay').textContent = GBW >= 1e6 ? (GBW/1e6).toFixed(0)+' MHz' : (GBW/1000).toFixed(0)+' kHz';
+
+            const freqs = [], mags = [], phases = [];
+            for (let f = 1; f <= 10e6; f *= 1.05) {
+                const w = 2*Math.PI*f;
+                // Simplified transfer: low-freq pole at f_L, high-freq pole at f_H, midband gain A_M
+                const H_low = (f > 0.1) ? f / Math.sqrt(f*f + f_L*f_L) : 0.01;
+                const H_high = 1 / Math.sqrt(1 + (f/f_H)*(f/f_H));
+                const H = p.A_M * H_low * H_high;
+                const phase = -Math.atan(f_L/Math.max(f,0.1)) * 180/Math.PI - Math.atan(f/f_H) * 180/Math.PI;
+                freqs.push(f);
+                mags.push(20*Math.log10(Math.max(H, 0.001)));
+                phases.push(phase);
+            }
+
+            let cfg = { type:'scatter', data:{ datasets:[
+                { data:freqs.map((f,i)=>({x:f,y:mags[i]})), borderColor:'#f59e0b', borderWidth:2, pointRadius:0, showLine:true }
+            ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
+                plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx => `f=${ctx.parsed.x.toFixed(0)}Hz, Gain=${ctx.parsed.y.toFixed(1)}dB` } } },
+                scales:{ x:{type:'logarithmic', title:{display:true,text:'频率 (Hz)'}}, y:{title:{display:true,text:'增益 (dB)'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
+            if (magChartInst) magChartInst.destroy();
+            magChartInst = new Chart(document.getElementById('magChart').getContext('2d'), cfg);
+
+            cfg.data.datasets = [{ data:freqs.map((f,i)=>({x:f,y:phases[i]})), borderColor:'#f97316', borderWidth:2, pointRadius:0, showLine:true }];
+            cfg.options.plugins.tooltip.callbacks.label = ctx => `f=${ctx.parsed.x.toFixed(0)}Hz, Phase=${ctx.parsed.y.toFixed(1)}°`;
+            cfg.options.scales.y.title.text = '相位 (°)';
+            if (phaseChartInst) phaseChartInst.destroy();
+            phaseChartInst = new Chart(document.getElementById('phaseChart').getContext('2d'), cfg);
+        }
+
+        ['amSlider','cpiSlider','cmuSlider','rpiSlider','rlSlider','flSlider'].forEach(id => document.getElementById(id).addEventListener('input', updateAll));
+        updateAll();
+        window.addEventListener('load', () => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); });
+    </script>
+</body>
+</html>

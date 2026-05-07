@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>数字电子技术辅助教学 | 交互仿真全索引</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}::-webkit-scrollbar-thumb:hover{background:#94a3b8}
+        .card-hover{transition:all 0.25s ease}.card-hover:hover{transform:translateY(-4px);box-shadow:0 20px 25px -12px rgba(0,0,0,0.15)}
+        a{text-decoration:none;color:inherit}
+        .nav-card:active{transform:scale(0.98);transition:transform 0.05s}
+        .nav-card:focus-visible{outline:2px solid #3b82f6;outline-offset:2px;border-radius:1rem}
+        .section-title{position:relative;display:inline-block}.section-title:after{content:'';position:absolute;bottom:-6px;left:0;width:100%;height:3px;background:linear-gradient(to right,#3b82f6,#06b6d4);border-radius:3px}
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans antialiased">
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-10">
+
+    <!-- 标题 -->
+    <div class="text-center mb-10">
+        <h1 class="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-3 tracking-tight">数字电子技术辅助教学</h1>
+        <p class="text-slate-600 max-w-2xl mx-auto text-base md:text-lg">交互式仿真 · 直观理解数字电路原理<br>按知识模块分组，点击卡片开启沉浸式学习体验</p>
+    </div>
+
+    <!-- 1. 逻辑门与布尔代数 -->
+    <div class="mb-12">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg></div>
+            <h2 class="text-2xl md:text-3xl font-bold text-slate-800 section-title">逻辑门与布尔代数</h2>
+            <span class="text-sm text-slate-400 ml-2">AND·OR·NOT·NAND·NOR·XOR·化简</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-7 auto-rows-fr">
+            <a href="./Logic_Gates_Boolean_Algebra/Basic_Logic_Gates.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xl shadow-sm">🔌</div><svg class="w-5 h-5 text-slate-400 group-hover:text-indigo-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-indigo-700 transition-colors">基本逻辑门</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">七种标准逻辑门，时序图与真值表同步交互。</p><div class="mt-3 flex items-center text-xs font-medium text-indigo-500 gap-1"><span>7种门</span><span class="text-slate-300">|</span><span>时序图</span></div></div>
+            </a>
+            <a href="./Logic_Gates_Boolean_Algebra/Boolean_Algebra_Simplification.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xl shadow-sm">📝</div><svg class="w-5 h-5 text-slate-400 group-hover:text-indigo-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-indigo-700 transition-colors">布尔代数化简</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">DeMorgan·吸收律·分配律，逐步化简过程可视化。</p><div class="mt-3 flex items-center text-xs font-medium text-indigo-500 gap-1"><span>化简步骤</span><span class="text-slate-300">|</span><span>真值表</span></div></div>
+            </a>
+            <a href="./Logic_Gates_Boolean_Algebra/Universal_Gates.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xl shadow-sm">🔄</div><svg class="w-5 h-5 text-slate-400 group-hover:text-indigo-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-indigo-700 transition-colors">通用门</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">仅NAND或仅NOR实现任意逻辑函数，时序等效验证。</p><div class="mt-3 flex items-center text-xs font-medium text-indigo-500 gap-1"><span>NAND</span><span class="text-slate-300">|</span><span>NOR</span></div></div>
+            </a>
+            <a href="./Logic_Gates_Boolean_Algebra/Multi_Input_Gates.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xl shadow-sm">⚡</div><svg class="w-5 h-5 text-slate-400 group-hover:text-indigo-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-indigo-700 transition-colors">多输入门与扇入</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">2~5输入门扩展，传播延迟随扇入变化分析。</p><div class="mt-3 flex items-center text-xs font-medium text-indigo-500 gap-1"><span>扇入2~5</span><span class="text-slate-300">|</span><span>延迟分析</span></div></div>
+            </a>
+        </div>
+    </div>
+
+    <!-- 2. 数制与编码 -->
+    <div class="mb-12">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path></svg></div>
+            <h2 class="text-2xl md:text-3xl font-bold text-slate-800 section-title">数制与编码</h2>
+            <span class="text-sm text-slate-400 ml-2">二进制·BCD·Gray码·算术</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7 auto-rows-fr">
+            <a href="./Number_Systems_Encoding/Number_Base_Conversion.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-xl shadow-sm">🔢</div><svg class="w-5 h-5 text-slate-400 group-hover:text-emerald-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-emerald-700 transition-colors">数制转换</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">BIN·OCT·DEC·HEX交互转换，位权柱状图可视化。</p><div class="mt-3 flex items-center text-xs font-medium text-emerald-500 gap-1"><span>4进制</span><span class="text-slate-300">|</span><span>位权图</span></div></div>
+            </a>
+            <a href="./Number_Systems_Encoding/Binary_Codes.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-xl shadow-sm">📊</div><svg class="w-5 h-5 text-slate-400 group-hover:text-emerald-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-emerald-700 transition-colors">二进制编码</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">BCD·Gray码·余3码对比，汉明距离分析。</p><div class="mt-3 flex items-center text-xs font-medium text-emerald-500 gap-1"><span>4种编码</span><span class="text-slate-300">|</span><span>汉明距离</span></div></div>
+            </a>
+            <a href="./Number_Systems_Encoding/Binary_Arithmetic.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-xl shadow-sm">➕</div><svg class="w-5 h-5 text-slate-400 group-hover:text-emerald-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-emerald-700 transition-colors">二进制算术</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">加法·减法·进位链可视化，补码运算与溢出检测。</p><div class="mt-3 flex items-center text-xs font-medium text-emerald-500 gap-1"><span>进位链</span><span class="text-slate-300">|</span><span>溢出检测</span></div></div>
+            </a>
+        </div>
+    </div>
+    
+    <!-- 3. 卡诺图化简 -->
+    <div class="mb-12">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg></div>
+            <h2 class="text-2xl md:text-3xl font-bold text-slate-800 section-title">卡诺图化简</h2>
+            <span class="text-sm text-slate-400 ml-2">3变量·4变量·质蕴含项</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-7 auto-rows-fr">
+            <a href="./Karnaugh_Maps/Three_Variable_KMap.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 text-xl shadow-sm">📋</div><svg class="w-5 h-5 text-slate-400 group-hover:text-purple-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-purple-700 transition-colors">3变量卡诺图</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">2×4交互K图，点击切换0/1/X，自动质蕴含项。</p><div class="mt-3 flex items-center text-xs font-medium text-purple-500 gap-1"><span>2×4</span><span class="text-slate-300">|</span><span>SOP化简</span></div></div>
+            </a>
+            <a href="./Karnaugh_Maps/Four_Variable_KMap.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 text-xl shadow-sm">📋</div><svg class="w-5 h-5 text-slate-400 group-hover:text-purple-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-purple-700 transition-colors">4变量卡诺图</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">4×4交互K图，16最小项+无关项，必要质蕴含项检测。</p><div class="mt-3 flex items-center text-xs font-medium text-purple-500 gap-1"><span>4×4</span><span class="text-slate-300">|</span><span>自动化简</span></div></div>
+            </a>
+        </div>
+    </div>
+
+    <!-- 4. 组合逻辑电路 -->
+    <div class="mb-12">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg></div>
+            <h2 class="text-2xl md:text-3xl font-bold text-slate-800 section-title">组合逻辑电路</h2>
+            <span class="text-sm text-slate-400 ml-2">加法器·比较器·MUX·编码器</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7 auto-rows-fr">
+            <a href="./Combinational_Logic/Half_Full_Adder.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xl shadow-sm">➕</div><svg class="w-5 h-5 text-slate-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-blue-700 transition-colors">半加器与全加器</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">门级构建加法器，多位行波进位链可视化。</p><div class="mt-3 flex items-center text-xs font-medium text-blue-500 gap-1"><span>进位链</span><span class="text-slate-300">|</span><span>时序图</span></div></div>
+            </a>
+            <a href="./Combinational_Logic/Binary_Subtractor.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xl shadow-sm">➖</div><svg class="w-5 h-5 text-slate-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-blue-700 transition-colors">二进制加减法器</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">Add/Sub控制线，XOR门控制补码减法。</p><div class="mt-3 flex items-center text-xs font-medium text-blue-500 gap-1"><span>补码</span><span class="text-slate-300">|</span><span>溢出</span></div></div>
+            </a>
+            <a href="./Combinational_Logic/Multiplexer_Demultiplexer.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xl shadow-sm">🔀</div><svg class="w-5 h-5 text-slate-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-blue-700 transition-colors">多路复用器</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">4:1 MUX选择路由，选择线控制波形可视化。</p><div class="mt-3 flex items-center text-xs font-medium text-blue-500 gap-1"><span>4:1 MUX</span><span class="text-slate-300">|</span><span>路由</span></div></div>
+            </a>
+            <a href="./Combinational_Logic/Encoder_Decoder.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xl shadow-sm">🔢</div><svg class="w-5 h-5 text-slate-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-blue-700 transition-colors">编码器与译码器</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">BCD-7段数码管显示，交互式译码。</p><div class="mt-3 flex items-center text-xs font-medium text-blue-500 gap-1"><span>7段显示</span><span class="text-slate-300">|</span><span>BCD</span></div></div>
+            </a>
+            <a href="./Combinational_Logic/Digital_Comparator.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xl shadow-sm">⚖️</div><svg class="w-5 h-5 text-slate-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-blue-700 transition-colors">数值比较器</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">4位逐位比较，A=B·A>B·A<B可视化。</p><div class="mt-3 flex items-center text-xs font-medium text-blue-500 gap-1"><span>4位比较</span><span class="text-slate-300">|</span><span>逐位</span></div></div>
+            </a>
+        </div>
+    </div>
+
+
+
+    <!-- 5. 触发器与锁存器 -->
+    <div class="mb-12">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
+            <h2 class="text-2xl md:text-3xl font-bold text-slate-800 section-title">触发器与锁存器</h2>
+            <span class="text-sm text-slate-400 ml-2">SR·D·JK·T 触发器</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-7 auto-rows-fr">
+            <a href="./Flip_Flops_Latches/SR_Latch.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 text-xl shadow-sm">🔒</div><svg class="w-5 h-5 text-slate-400 group-hover:text-amber-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-amber-700 transition-colors">SR锁存器</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">NOR/NAND交叉耦合，禁用态检测。</p><div class="mt-3 flex items-center text-xs font-medium text-amber-500 gap-1"><span>NOR</span><span class="text-slate-300">|</span><span>NAND</span></div></div>
+            </a>
+            <a href="./Flip_Flops_Latches/D_FlipFlop.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 text-xl shadow-sm">⏱️</div><svg class="w-5 h-5 text-slate-400 group-hover:text-amber-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-amber-700 transition-colors">D触发器</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">边沿触发，上升/下降沿可选，建立保持窗口。</p><div class="mt-3 flex items-center text-xs font-medium text-amber-500 gap-1"><span>边沿触发</span><span class="text-slate-300">|</span><span>tsu/th</span></div></div>
+            </a>
+            <a href="./Flip_Flops_Latches/JK_FlipFlop.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 text-xl shadow-sm">🔄</div><svg class="w-5 h-5 text-slate-400 group-hover:text-amber-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-amber-700 transition-colors">JK触发器</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">通用触发器：保持·置位·复位·翻转。</p><div class="mt-3 flex items-center text-xs font-medium text-amber-500 gap-1"><span>4种功能</span><span class="text-slate-300">|</span><span>翻转</span></div></div>
+            </a>
+            <a href="./Flip_Flops_Latches/T_FlipFlop.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 text-xl shadow-sm">➗</div><svg class="w-5 h-5 text-slate-400 group-hover:text-amber-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-amber-700 transition-colors">T触发器与分频</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">2分频·级联分频链·频谱分析。</p><div class="mt-3 flex items-center text-xs font-medium text-amber-500 gap-1"><span>分频</span><span class="text-slate-300">|</span><span>级联</span></div></div>
+            </a>
+        </div>
+    </div>
+
+    <!-- 6. 寄存器与计数器 -->
+    <div class="mb-12">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center text-rose-600"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg></div>
+            <h2 class="text-2xl md:text-3xl font-bold text-slate-800 section-title">寄存器与计数器</h2>
+            <span class="text-sm text-slate-400 ml-2">移位寄存器·行波·同步·模N</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-7 auto-rows-fr">
+            <a href="./Registers_Counters/Shift_Register.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 text-xl shadow-sm">↔️</div><svg class="w-5 h-5 text-slate-400 group-hover:text-rose-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-rose-700 transition-colors">移位寄存器</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">SISO·SIPO·PISO·PIPO四种模式。</p><div class="mt-3 flex items-center text-xs font-medium text-rose-500 gap-1"><span>4模式</span><span class="text-slate-300">|</span><span>串/并行</span></div></div>
+            </a>
+            <a href="./Registers_Counters/Ripple_Counter.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 text-xl shadow-sm">🌊</div><svg class="w-5 h-5 text-slate-400 group-hover:text-rose-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-rose-700 transition-colors">行波计数器</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">4位异步计数器，延迟累积与毛刺可视化。</p><div class="mt-3 flex items-center text-xs font-medium text-rose-500 gap-1"><span>延迟累积</span><span class="text-slate-300">|</span><span>毛刺</span></div></div>
+            </a>
+            <a href="./Registers_Counters/Synchronous_Counter.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 text-xl shadow-sm">⚡</div><svg class="w-5 h-5 text-slate-400 group-hover:text-rose-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-rose-700 transition-colors">同步计数器</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">4位同步计数器，所有输出同时变化，无行波延迟。</p><div class="mt-3 flex items-center text-xs font-medium text-rose-500 gap-1"><span>同步</span><span class="text-slate-300">|</span><span>无毛刺</span></div></div>
+            </a>
+            <a href="./Registers_Counters/Programmable_Counter.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 text-xl shadow-sm">🎯</div><svg class="w-5 h-5 text-slate-400 group-hover:text-rose-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-rose-700 transition-colors">模N计数器</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">可编程模数N=2~16，十进制计数器为特例。</p><div class="mt-3 flex items-center text-xs font-medium text-rose-500 gap-1"><span>模N</span><span class="text-slate-300">|</span><span>N=2~16</span></div></div>
+            </a>
+        </div>
+    </div>
+
+    <!-- 7. 状态机 -->
+    <div class="mb-12">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-8 h-8 rounded-full bg-cyan-100 flex items-center justify-center text-cyan-600"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg></div>
+            <h2 class="text-2xl md:text-3xl font-bold text-slate-800 section-title">状态机</h2>
+            <span class="text-sm text-slate-400 ml-2">Moore·Mealy·序列检测</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7 auto-rows-fr">
+            <a href="./State_Machines/Moore_State_Machine.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-cyan-100 flex items-center justify-center text-cyan-600 text-xl shadow-sm">🔵</div><svg class="w-5 h-5 text-slate-400 group-hover:text-cyan-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-cyan-700 transition-colors">Moore状态机</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">输出仅取决于状态，状态图·时序图·状态编码。</p><div class="mt-3 flex items-center text-xs font-medium text-cyan-500 gap-1"><span>Moore</span><span class="text-slate-300">|</span><span>状态图</span></div></div>
+            </a>
+            <a href="./State_Machines/Mealy_State_Machine.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-cyan-100 flex items-center justify-center text-cyan-600 text-xl shadow-sm">🟡</div><svg class="w-5 h-5 text-slate-400 group-hover:text-cyan-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-cyan-700 transition-colors">Mealy状态机</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">输出=f(状态,输入)，输入变化即时影响输出。</p><div class="mt-3 flex items-center text-xs font-medium text-cyan-500 gap-1"><span>Mealy</span><span class="text-slate-300">|</span><span>输入敏感</span></div></div>
+            </a>
+            <a href="./State_Machines/Sequence_Detector.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-cyan-100 flex items-center justify-center text-cyan-600 text-xl shadow-sm">🔍</div><svg class="w-5 h-5 text-slate-400 group-hover:text-cyan-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-cyan-700 transition-colors">序列检测器</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">FSM检测串行位序列，可自定义目标序列。</p><div class="mt-3 flex items-center text-xs font-medium text-cyan-500 gap-1"><span>FSM</span><span class="text-slate-300">|</span><span>序列匹配</span></div></div>
+            </a>
+        </div>
+    </div>
+
+    <!-- 8. ADC与DAC -->
+    <div class="mb-12">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg></div>
+            <h2 class="text-2xl md:text-3xl font-bold text-slate-800 section-title">ADC与DAC</h2>
+            <span class="text-sm text-slate-400 ml-2">R-2R DAC·量化·采样定理</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7 auto-rows-fr">
+            <a href="./ADC_DAC/R2R_DAC_Ladder.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-xl shadow-sm">📈</div><svg class="w-5 h-5 text-slate-400 group-hover:text-orange-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-orange-700 transition-colors">R-2R梯形DAC</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">4位DAC传输特性曲线，阶梯波形与自动计数。</p><div class="mt-3 flex items-center text-xs font-medium text-orange-500 gap-1"><span>传输特性</span><span class="text-slate-300">|</span><span>阶梯</span></div></div>
+            </a>
+            <a href="./ADC_DAC/ADC_Quantization.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-xl shadow-sm">📊</div><svg class="w-5 h-5 text-slate-400 group-hover:text-orange-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-orange-700 transition-colors">ADC量化与误差</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">量化电平·量化误差·SNR，2~6bit分辨率可调。</p><div class="mt-3 flex items-center text-xs font-medium text-orange-500 gap-1"><span>量化</span><span class="text-slate-300">|</span><span>SNR</span></div></div>
+            </a>
+            <a href="./ADC_DAC/Sampling_Aliasing.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-xl shadow-sm">📡</div><svg class="w-5 h-5 text-slate-400 group-hover:text-orange-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-orange-700 transition-colors">采样定理与混叠</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">Nyquist准则，采样率过低时混叠现象可视化。</p><div class="mt-3 flex items-center text-xs font-medium text-orange-500 gap-1"><span>Nyquist</span><span class="text-slate-300">|</span><span>混叠</span></div></div>
+            </a>
+        </div>
+    </div>
+
+    <!-- 9. 时序分析 -->
+    <div class="mb-12">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></div>
+            <h2 class="text-2xl md:text-3xl font-bold text-slate-800 section-title">时序分析</h2>
+            <span class="text-sm text-slate-400 ml-2">传播延迟·冒险·建立保持</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-7 auto-rows-fr">
+            <a href="./Timing_Analysis/Propagation_Delay_Hazards.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 text-xl shadow-sm">⚡</div><svg class="w-5 h-5 text-slate-400 group-hover:text-red-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-red-700 transition-colors">传播延迟与冒险</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">不等路径延迟产生毛刺，静态冒险检测与消除。</p><div class="mt-3 flex items-center text-xs font-medium text-red-500 gap-1"><span>毛刺</span><span class="text-slate-300">|</span><span>冒险</span></div></div>
+            </a>
+            <a href="./Timing_Analysis/Setup_Hold_Timing.html" target="_blank" rel="noopener noreferrer" class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between"><div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 text-xl shadow-sm">⏱️</div><svg class="w-5 h-5 text-slate-400 group-hover:text-red-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                <div class="mt-4"><h3 class="text-xl font-bold text-slate-800 group-hover:text-red-700 transition-colors">建立保持时间</h3><p class="text-slate-500 text-sm mt-2 leading-relaxed">建立时间tsu·保持时间th·亚稳态窗口·违反检测。</p><div class="mt-3 flex items-center text-xs font-medium text-red-500 gap-1"><span>tsu/th</span><span class="text-slate-300">|</span><span>亚稳态</span></div></div>
+            </a>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div class="bg-white/70 backdrop-blur-sm rounded-xl shadow-md border border-slate-200 p-5 transition-all hover:shadow-lg">
+            <div class="flex items-center gap-2 text-indigo-700 mb-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg><h3 class="font-bold text-base">交互式仿真教学</h3></div>
+            <p class="text-xs text-slate-600 leading-relaxed">覆盖数字电子技术核心知识点：逻辑门、数制编码、组合逻辑、卡诺图、触发器、计数器、状态机、ADC/DAC及时序分析。适配电脑及平板，建议使用现代浏览器。</p>
+        </div>
+        <div class="bg-white/70 backdrop-blur-sm rounded-xl shadow-md border border-slate-200 p-5 transition-all hover:shadow-lg">
+            <div class="flex items-center gap-2 text-emerald-700 mb-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg><h3 class="font-bold text-base">技术架构</h3></div>
+            <p class="text-xs text-slate-600 leading-relaxed">自包含HTML文件，零构建步骤。Chart.js时序图+KaTeX公式渲染+Tailwind CSS响应式布局。直接打开即可运行，支持Chrome/Edge浏览器。</p>
+        </div>
+    </div>
+
+    <div class="mt-12 text-center text-xs text-slate-400 border-t border-slate-200/60 pt-6">
+        <p>数字电子技术辅助教学 · 动态仿真工具集 | 共30个交互模块，按9大知识体系分组</p>
+        <p class="mt-1">点击卡片将在新标签页打开交互界面，建议最大化窗口获取完整功能</p>
+    </div>
+</div>
+
+<script>
+    (function(){console.log("数字电子技术辅助教学 | 全索引页已加载 | 包含逻辑门/数制编码/组合逻辑/卡诺图/触发器/计数器/状态机/ADC-DAC/时序分析共30个仿真模块");})();
+</script>
+</body>
+</html>

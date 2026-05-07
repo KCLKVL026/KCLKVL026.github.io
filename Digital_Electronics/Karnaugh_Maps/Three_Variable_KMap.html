@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>3变量卡诺图 | 2×4 K图·质蕴含项·SOP/POS化简</title>
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js">
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js">
+    </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px
+        }
+
+        .card-hover {
+            transition: all 0.2s ease
+        }
+
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0, 0, 0, 0.15)
+        }
+
+        .kmap-cell {
+            width: 64px;
+            height: 48px;
+            border: 2px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.15s ease;
+            user-select: none;
+            border-radius: 6px;
+        }
+
+        .kmap-cell:hover {
+            border-color: #3b82f6;
+            background: #f0f9ff;
+            transform: scale(1.05);
+            z-index: 2;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+        }
+
+        .kmap-cell.v0 {
+            background: #f8fafc;
+            color: #94a3b8;
+        }
+
+        .kmap-cell.v1 {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .kmap-cell.vx {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .kmap-header {
+            font-size: 0.7rem;
+            color: #475569;
+            font-weight: 700;
+            text-align: center;
+            padding: 4px 6px;
+            letter-spacing: 0.02em;
+        }
+
+        .mode-btn {
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .mode-btn.active {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+        }
+
+        .mode-btn:hover:not(.active) {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .pi-badge {
+            display: inline-block;
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+
+        .pi-essential {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .pi-regular {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        @keyframes pulse-glow {
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+            }
+        }
+
+        .uncovered-pulse {
+            animation: pulse-glow 1.8s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+    <div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+        <div class="flex justify-start mb-4">
+            <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页
+            </a>
+        </div>
+        <div class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">3变量卡诺图</h1>
+            <p class="text-slate-600 max-w-2xl mx-auto">2×4交互网格 | A (纵向) · BC (横向) | 自动质蕴含项 & 必要项检测 | SOP / POS</p>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-5 space-y-6">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                    <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4"><span class="w-1 h-6 bg-blue-500 rounded-full"></span>卡诺图 (2×4) </h3>
+                    <div class="flex justify-center">
+                        <div id="kmapGrid"></div>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-3 text-center">点击格子: 0 → 1 → X → 0 | 行=A, 列=BC (Gray码: 00,01,11,10)</p>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <div class="flex gap-2 mb-3">
+                        <button class="mode-btn active flex-1 rounded-lg px-3 py-2 text-sm text-center" data-mode="SOP" id="sopBtn">SOP (与或式)</button>
+                        <button class="mode-btn flex-1 rounded-lg px-3 py-2 text-sm text-center" data-mode="POS" id="posBtn">POS (或与式)</button>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="autoBtn" class="flex-1 rounded-lg px-3 py-2 text-sm font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors shadow-sm">自动化简</button>
+                        <button id="clearBtn" class="flex-1 rounded-lg px-3 py-2 text-sm font-medium bg-slate-200 text-slate-600 hover:bg-slate-300 transition-colors">清空</button>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-2 text-center" id="modeHint">SOP: 对<span class="text-blue-600 font-semibold">1</span>分组，X可作1使用</p>
+                </div>
+            </div>
+            <div class="lg:col-span-7 space-y-5">
+                <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-5">
+                    <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-amber-500 rounded-full"></span>质蕴含项 <span class="text-xs font-normal text-slate-400">(Prime Implicants)</span></h3>
+                    <div id="primeImplicants" class="space-y-2 text-sm"></div>
+                </div>
+                <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-5">
+                    <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-purple-500 rounded-full"></span>化简结果</h3>
+                    <div id="simplifiedExpr" class="bg-slate-50 p-4 rounded-lg text-center text-lg min-h-[50px] flex items-center justify-center"></div>
+                </div>
+                <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-5">
+                    <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-indigo-500 rounded-full"></span>覆盖进度</h3>
+                    <div class="flex items-center gap-4 text-sm flex-wrap">
+                        <span class="inline-flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-red-400"></span>未覆盖: <span id="uncovered" class="font-bold text-red-500">0</span></span>
+                        <span class="inline-flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-emerald-400"></span>已覆盖: <span id="covered" class="font-bold text-emerald-500">0</span></span>
+                        <span class="inline-flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-blue-400"></span>总目标项: <span id="total" class="font-bold text-blue-500">0</span></span>
+                    </div>
+                    <div class="mt-2 h-2 bg-slate-200 rounded-full overflow-hidden" id="progressBarContainer" style="display:none;">
+                        <div id="progressBar" class="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-300" style="width:0%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        (function() {
+            // ============ 常量与状态 ============
+            const bcGray = [0, 1, 3, 2]; // BC格雷码值: 00,01,11,10
+            const NUM_ROWS = 2; // A=0,1
+            const NUM_COLS = 4;
+            // cells[row][col], row:0/1 -> A值, col:0~3 -> BC格雷码索引
+            let cells = Array.from({ length: NUM_ROWS }, () => Array(NUM_COLS).fill(0));
+            let mode = 'SOP';
+
+            // ============ DOM元素 ============
+            const kmapGrid = document.getElementById('kmapGrid');
+            const primeImplicantsDiv = document.getElementById('primeImplicants');
+            const simplifiedExprDiv = document.getElementById('simplifiedExpr');
+            const uncoveredSpan = document.getElementById('uncovered');
+            const coveredSpan = document.getElementById('covered');
+            const totalSpan = document.getElementById('total');
+            const sopBtn = document.getElementById('sopBtn');
+            const posBtn = document.getElementById('posBtn');
+            const autoBtn = document.getElementById('autoBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const modeHint = document.getElementById('modeHint');
+            const progressBarContainer = document.getElementById('progressBarContainer');
+            const progressBar = document.getElementById('progressBar');
+            const allModeBtns = document.querySelectorAll('.mode-btn');
+
+            // ============ 工具函数 ============
+            function mintermNumber(row, col) {
+                // A = row, BC = bcGray[col], minterm = A*4 + BC_value
+                return row * 4 + bcGray[col];
+            }
+
+            function mintermsKey(ms) {
+                return [...ms].sort((a, b) => a - b).join(',');
+            }
+
+            function isSubsetOf(arrA, arrB) {
+                const setB = new Set(arrB);
+                return arrA.every(v => setB.has(v));
+            }
+
+            // ============ 渲染K图 ============
+            function renderGrid() {
+                let html = '<table class="border-collapse"><tr><td class="kmap-header">A \\ BC</td>';
+                for (let c = 0; c < NUM_COLS; c++) {
+                    const bcVal = bcGray[c];
+                    const bcLabel = bcVal.toString(2).padStart(2, '0');
+                    html +=
+                        `<td class="kmap-header">${bcLabel}<br><span class="text-[0.6rem] font-normal text-slate-400">BC=${bcVal}</span></td>`;
+                }
+                html += '</tr>';
+                for (let r = 0; r < NUM_ROWS; r++) {
+                    html +=
+                        `<tr><td class="kmap-header pr-2">A=${r}<br><span class="text-[0.6rem] font-normal text-slate-400">R${r}</span></td>`;
+                    for (let c = 0; c < NUM_COLS; c++) {
+                        const v = cells[r][c];
+                        const cls = v === 0 ? 'v0' : v === 1 ? 'v1' : 'vx';
+                        const displayVal = v === 2 ? 'X' : v;
+                        const m = mintermNumber(r, c);
+                        html +=
+                            `<td><div class="kmap-cell ${cls}" data-row="${r}" data-col="${c}" title="最小项 m${m} | A=${r} BC=${bcGray[c].toString(2).padStart(2,'0')}">${displayVal}</div></td>`;
+                    }
+                    html += '</tr>';
+                }
+                html += '</table>';
+                kmapGrid.innerHTML = html;
+                kmapGrid.querySelectorAll('.kmap-cell').forEach(cell => {
+                    cell.addEventListener('click', () => {
+                        const r = parseInt(cell.dataset.row);
+                        const c = parseInt(cell.dataset.col);
+                        cells[r][c] = (cells[r][c] + 1) % 3; // 0->1->X->0
+                        refreshAll();
+                    });
+                });
+            }
+
+            // ============ 生成所有有效矩形组 ============
+            function generateAllValidGroups(targetOnes, dcs) {
+                const all = [...targetOnes, ...dcs];
+                const allSet = new Set(all);
+                if (targetOnes.length === 0) return [];
+
+                const groups = [];
+
+                function addGroup(rows, cols) {
+                    const ms = [];
+                    for (const r of rows) {
+                        for (const c of cols) {
+                            ms.push(mintermNumber(r, c));
+                        }
+                    }
+                    if (ms.length === 0) return;
+                    if (!ms.every(m => allSet.has(m))) return;
+                    if (!targetOnes.some(o => ms.includes(o))) return;
+                    groups.push({
+                        rows: [...rows],
+                        cols: [...cols],
+                        minterms: ms,
+                        size: ms.length,
+                    });
+                }
+
+                // 行集合：单行[0],[1]；两行[0,1]（全行）
+                const rowSets = [[0], [1], [0, 1]];
+                // 列集合：单列[0],[1],[2],[3]；相邻两列(含循环)；全列[0,1,2,3]
+                const colSets = [
+                    [0],
+                    [1],
+                    [2],
+                    [3],
+                    [0, 1],
+                    [1, 2],
+                    [2, 3],
+                    [3, 0],
+                    [0, 1, 2, 3]
+                ];
+
+                for (const rs of rowSets) {
+                    for (const cs of colSets) {
+                        const size = rs.length * cs.length;
+                        if (![1, 2, 4, 8].includes(size)) continue;
+                        // 8格只能是2行×4列
+                        if (size === 8 && (rs.length !== 2 || cs.length !== 4)) continue;
+                        addGroup(rs, cs);
+                    }
+                }
+                return groups;
+            }
+
+            // ============ 筛选质蕴含项 ============
+            function filterPrimeImplicants(groups) {
+                const uniqueMap = new Map();
+                for (const g of groups) {
+                    const key = mintermsKey(g.minterms);
+                    if (!uniqueMap.has(key)) {
+                        uniqueMap.set(key, g);
+                    }
+                }
+                const uniqueGroups = [...uniqueMap.values()];
+
+                const primeImplicants = [];
+                for (let i = 0; i < uniqueGroups.length; i++) {
+                    const gi = uniqueGroups[i];
+                    let isPrime = true;
+                    for (let j = 0; j < uniqueGroups.length; j++) {
+                        if (i === j) continue;
+                        const gj = uniqueGroups[j];
+                        if (gi.size < gj.size && isSubsetOf(gi.minterms, gj.minterms)) {
+                            isPrime = false;
+                            break;
+                        }
+                    }
+                    if (isPrime) {
+                        primeImplicants.push(gi);
+                    }
+                }
+                return primeImplicants;
+            }
+
+            // ============ 必要质蕴含项与覆盖 ============
+            function findPrimeImplicantsAndCover(targetOnes, dcs) {
+                if (targetOnes.length === 0) {
+                    return { primeImplicants: [], essential: [], cover: [], uncoveredTargets: [] };
+                }
+
+                const allGroups = generateAllValidGroups(targetOnes, dcs);
+                if (allGroups.length === 0) {
+                    return { primeImplicants: [], essential: [], cover: [], uncoveredTargets: [...targetOnes] };
+                }
+
+                const primeImplicants = filterPrimeImplicants(allGroups);
+                if (primeImplicants.length === 0) {
+                    const fallbackMap = new Map();
+                    for (const g of allGroups) {
+                        const key = mintermsKey(g.minterms);
+                        if (!fallbackMap.has(key)) fallbackMap.set(key, g);
+                    }
+                    const fallback = [...fallbackMap.values()];
+                    return { primeImplicants: fallback, essential: [], cover: fallback, uncoveredTargets: [] };
+                }
+
+                // 必要质蕴含项
+                const essentialSet = new Set();
+                const essentialList = [];
+                for (const m of targetOnes) {
+                    const covering = primeImplicants.filter(g => g.minterms.includes(m));
+                    if (covering.length === 1) {
+                        const epi = covering[0];
+                        const key = mintermsKey(epi.minterms);
+                        if (!essentialSet.has(key)) {
+                            essentialSet.add(key);
+                            essentialList.push(epi);
+                        }
+                    }
+                }
+
+                // 贪心覆盖剩余目标
+                const coveredByEssential = new Set();
+                for (const epi of essentialList) {
+                    for (const m of epi.minterms) {
+                        if (targetOnes.includes(m)) coveredByEssential.add(m);
+                    }
+                }
+
+                const remainingTargets = targetOnes.filter(m => !coveredByEssential.has(m));
+                const selectedCover = [...essentialList];
+                const uncoveredSet = new Set(remainingTargets);
+
+                if (uncoveredSet.size > 0) {
+                    const availablePI = primeImplicants.filter(g => !essentialSet.has(mintermsKey(g.minterms)));
+                    while (uncoveredSet.size > 0) {
+                        let best = null;
+                        let bestCoverCount = 0;
+                        for (const pi of availablePI) {
+                            const coverCount = pi.minterms.filter(m => uncoveredSet.has(m)).length;
+                            if (coverCount > bestCoverCount) {
+                                bestCoverCount = coverCount;
+                                best = pi;
+                            }
+                        }
+                        if (!best || bestCoverCount === 0) break;
+                        selectedCover.push(best);
+                        for (const m of best.minterms) uncoveredSet.delete(m);
+                        const bestKey = mintermsKey(best.minterms);
+                        const idx = availablePI.findIndex(g => mintermsKey(g.minterms) === bestKey);
+                        if (idx >= 0) availablePI.splice(idx, 1);
+                    }
+                }
+
+                const finalUncovered = targetOnes.filter(m => {
+                    const allCovered = new Set();
+                    for (const g of selectedCover) {
+                        for (const mm of g.minterms) allCovered.add(mm);
+                    }
+                    return !allCovered.has(m);
+                });
+
+                return {
+                    primeImplicants: primeImplicants,
+                    essential: essentialList,
+                    cover: selectedCover,
+                    uncoveredTargets: finalUncovered,
+                };
+            }
+
+            // ============ 表达式生成 ============
+            function getVariableName(bit) {
+                // minterm: bit2=A, bit1=B, bit0=C
+                return String.fromCharCode(65 + (2 - bit)); // bit2->'A', bit1->'B', bit0->'C'
+            }
+
+            function groupToExpr(group, mode) {
+                const terms = [];
+                for (let bit = 2; bit >= 0; bit--) {
+                    let has0 = false,
+                        has1 = false;
+                    for (const m of group.minterms) {
+                        if ((m >> bit) & 1) has1 = true;
+                        else has0 = true;
+                    }
+                    if (has0 && has1) continue; // 变量被消去
+                    const varName = getVariableName(bit);
+                    if (mode === 'SOP') {
+                        if (has1) terms.push(varName);
+                        else terms.push('\\overline{' + varName + '}');
+                    } else {
+                        if (has0) terms.push(varName);
+                        else terms.push('\\overline{' + varName + '}');
+                    }
+                }
+                if (terms.length === 0) return mode === 'SOP' ? '1' : '0';
+                if (mode === 'SOP') {
+                    return terms.join(' \\cdot ');
+                } else {
+                    return '(' + terms.join(' + ') + ')';
+                }
+            }
+
+            function buildFinalExpression(groups, mode) {
+                if (groups.length === 0) return mode === 'SOP' ? '0' : '1';
+                const termExprs = groups.map(g => groupToExpr(g, mode));
+                if (mode === 'SOP') {
+                    return termExprs.join(' + ');
+                } else {
+                    return termExprs.join(' \\cdot ');
+                }
+            }
+
+            // ============ 主刷新 ============
+            function refreshAll() {
+                renderGrid();
+
+                const targetVal = mode === 'SOP' ? 1 : 0;
+                const targetOnes = [];
+                const dcs = [];
+                for (let r = 0; r < NUM_ROWS; r++) {
+                    for (let c = 0; c < NUM_COLS; c++) {
+                        const m = mintermNumber(r, c);
+                        if (cells[r][c] === targetVal) targetOnes.push(m);
+                        else if (cells[r][c] === 2) dcs.push(m);
+                    }
+                }
+
+                const result = findPrimeImplicantsAndCover(targetOnes, dcs);
+                const { primeImplicants, essential, cover, uncoveredTargets } = result;
+                const essentialKeys = new Set(essential.map(g => mintermsKey(g.minterms)));
+                const coverKeys = new Set(cover.map(g => mintermsKey(g.minterms)));
+
+                // 渲染质蕴含项列表
+                primeImplicantsDiv.innerHTML = '';
+                const piColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+
+                if (primeImplicants.length === 0) {
+                    primeImplicantsDiv.innerHTML =
+                        '<span class="text-slate-400 italic">' + (targetOnes.length === 0 ?
+                            '无目标最小项（所有格均为' + (mode === 'SOP' ? '0或X' : '1或X') + '）' :
+                            '无质蕴含项') + '</span>';
+                } else {
+                    primeImplicants.forEach((g, i) => {
+                        const div = document.createElement('div');
+                        const isEssential = essentialKeys.has(mintermsKey(g.minterms));
+                        const isInCover = coverKeys.has(mintermsKey(g.minterms));
+                        div.className = 'flex items-center gap-2 flex-wrap py-1.5 px-2 rounded-lg ' + (
+                            isInCover ? 'bg-slate-50 border border-slate-100' : 'bg-white');
+                        const dotColor = piColors[i % piColors.length];
+                        const expr = groupToExpr(g, mode);
+                        const exprSpan = document.createElement('span');
+                        exprSpan.className = 'font-mono text-sm';
+                        try {
+                            katex.render(expr, exprSpan, { throwOnError: false });
+                        } catch (e) {
+                            exprSpan.textContent = expr;
+                        }
+                        div.innerHTML =
+                            `<span class="w-3 h-3 rounded-full flex-shrink-0" style="background:${dotColor};${!isInCover?'opacity:0.4':''}"></span>`;
+                        div.appendChild(exprSpan);
+                        div.innerHTML +=
+                            ` <span class="text-xs text-slate-400">(${g.size}格, m[${g.minterms.sort((a,b)=>a-b).join(',')}])</span>`;
+                        if (isEssential) {
+                            div.innerHTML += ' <span class="pi-badge pi-essential">必要</span>';
+                        } else if (isInCover) {
+                            div.innerHTML += ' <span class="pi-badge pi-regular">已选</span>';
+                        }
+                        if (!isInCover) {
+                            div.style.opacity = '0.55';
+                        }
+                        primeImplicantsDiv.appendChild(div);
+                    });
+                }
+
+                // 渲染化简结果
+                simplifiedExprDiv.innerHTML = '';
+                if (cover.length === 0) {
+                    const fallbackExpr = mode === 'SOP' ? 'F = 0' : 'F = 1';
+                    if (targetOnes.length === 0 && dcs.length === (NUM_ROWS * NUM_COLS)) {
+                        simplifiedExprDiv.innerHTML = '<span class="text-slate-400 italic">F = X（全为无关项）</span>';
+                    } else if (targetOnes.length === 0) {
+                        simplifiedExprDiv.innerHTML = '<span class="text-slate-600 font-semibold">' + fallbackExpr +
+                            '</span>';
+                    } else if (uncoveredTargets.length > 0) {
+                        simplifiedExprDiv.innerHTML =
+                            '<span class="text-red-500 font-semibold">部分目标项未被覆盖！</span>';
+                    } else {
+                        simplifiedExprDiv.innerHTML = '<span class="text-slate-600 font-semibold">' + fallbackExpr +
+                            '</span>';
+                    }
+                } else {
+                    const finalExpr = buildFinalExpression(cover, mode);
+                    const displayExpr = 'F = ' + finalExpr;
+                    const exprContainer = document.createElement('span');
+                    exprContainer.className = 'font-semibold text-slate-800';
+                    try {
+                        katex.render(displayExpr, exprContainer, { throwOnError: false });
+                    } catch (e) {
+                        exprContainer.textContent = displayExpr;
+                    }
+                    simplifiedExprDiv.appendChild(exprContainer);
+                }
+
+                // 覆盖进度
+                const coveredSet = new Set();
+                for (const g of cover) {
+                    for (const m of g.minterms) {
+                        if (targetOnes.includes(m)) coveredSet.add(m);
+                    }
+                }
+                const uncoveredCount = targetOnes.filter(m => !coveredSet.has(m)).length;
+                const coveredCount = coveredSet.size;
+                const totalCount = targetOnes.length;
+
+                uncoveredSpan.textContent = uncoveredCount;
+                coveredSpan.textContent = coveredCount;
+                totalSpan.textContent = totalCount;
+
+                if (totalCount > 0) {
+                    progressBarContainer.style.display = 'block';
+                    const pct = Math.round((coveredCount / totalCount) * 100);
+                    progressBar.style.width = pct + '%';
+                    if (uncoveredCount > 0) {
+                        progressBar.classList.add('uncovered-pulse');
+                        progressBar.style.background = 'linear-gradient(to right, #f87171, #ef4444)';
+                    } else {
+                        progressBar.classList.remove('uncovered-pulse');
+                        progressBar.style.background = 'linear-gradient(to right, #34d399, #10b981)';
+                    }
+                } else {
+                    progressBarContainer.style.display = 'none';
+                    progressBar.classList.remove('uncovered-pulse');
+                }
+            }
+
+            // ============ 模式切换 ============
+            function setMode(newMode) {
+                mode = newMode;
+                allModeBtns.forEach(b => b.classList.remove('active'));
+                if (newMode === 'SOP') {
+                    sopBtn.classList.add('active');
+                    modeHint.innerHTML = 'SOP: 对<span class="text-blue-600 font-semibold">1</span>分组，X可作1使用 | 结果=乘积项之和';
+                } else {
+                    posBtn.classList.add('active');
+                    modeHint.innerHTML = 'POS: 对<span class="text-slate-700 font-semibold">0</span>分组，X可作0使用 | 结果=和项之积';
+                }
+                refreshAll();
+            }
+
+            // ============ 事件绑定 ============
+            sopBtn.addEventListener('click', () => setMode('SOP'));
+            posBtn.addEventListener('click', () => setMode('POS'));
+            autoBtn.addEventListener('click', refreshAll);
+            clearBtn.addEventListener('click', () => {
+                cells = Array.from({ length: NUM_ROWS }, () => Array(NUM_COLS).fill(0));
+                refreshAll();
+            });
+
+            // ============ 预设示例：F = Σm(0,1,2,5,6,7) + d(3) 典型的合并 ============
+            function loadExample() {
+                cells = Array.from({ length: NUM_ROWS }, () => Array(NUM_COLS).fill(0));
+                // 设置一些1和X以便展示化简效果
+                // m0(A=0,BC=00), m1(A=0,BC=01), m3(A=0,BC=11)为X, m2(A=0,BC=10)为1, m5(A=1,BC=01), m6(A=1,BC=10), m7(A=1,BC=11)
+                const targetMinterms = [0, 1, 2, 5, 6, 7]; // 这些格子设为1
+                const dcMinterms = [3]; // 无关项
+                for (let r = 0; r < NUM_ROWS; r++) {
+                    for (let c = 0; c < NUM_COLS; c++) {
+                        const m = mintermNumber(r, c);
+                        if (targetMinterms.includes(m)) cells[r][c] = 1;
+                        else if (dcMinterms.includes(m)) cells[r][c] = 2;
+                    }
+                }
+                setMode('SOP');
+            }
+
+            // 键盘快捷键
+            document.addEventListener('keydown', (e) => {
+                if (e.key === '1' && !e.ctrlKey && !e.metaKey && document.activeElement === document.body) {
+                    loadExample();
+                    console.log('已加载示例');
+                }
+                if (e.key === '0' && !e.ctrlKey && !e.metaKey && document.activeElement === document.body) {
+                    cells = Array.from({ length: NUM_ROWS }, () => Array(NUM_COLS).fill(0));
+                    refreshAll();
+                    console.log('已清空');
+                }
+                if (e.key === 's' && e.ctrlKey && document.activeElement === document.body) {
+                    e.preventDefault();
+                    setMode('SOP');
+                }
+                if (e.key === 'p' && e.ctrlKey && document.activeElement === document.body) {
+                    e.preventDefault();
+                    setMode('POS');
+                }
+            });
+
+            // 初始加载示例
+            loadExample();
+            refreshAll();
+
+            // KaTeX自动渲染
+            document.addEventListener('DOMContentLoaded', () => {
+                if (typeof renderMathInElement !== 'undefined') {
+                    renderMathInElement(document.body, {
+                        delimiters: [
+                            { left: '\\[', right: '\\]', display: true },
+                            { left: '\\(', right: '\\)', display: false },
+                        ],
+                        throwOnError: false,
+                    });
+                }
+            });
+
+            console.log('✅ 3变量卡诺图已启动 | 2×4 A/BC布局 | 自动质蕴含项 | SOP/POS双模式');
+            console.log('💡 提示: 点击格子切换 0→1→X→0');
+            console.log('⌨ 快捷键: 按1加载示例 | 按0清空 | Ctrl+S→SOP | Ctrl+P→POS');
+        })();
+    </script>
+</body>
+</html>

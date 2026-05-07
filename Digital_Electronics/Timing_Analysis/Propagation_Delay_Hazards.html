@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>传播延迟与冒险 | 静态冒险·毛刺·K图覆盖</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range]{height:5px;-webkit-appearance:none;background:#e2e8f0;border-radius:5px;outline:none}
+        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#3b82f6;border-radius:50%;cursor:pointer;transition:0.1s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+        ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+        .card-hover{transition:all 0.2s ease}.card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 20px -12px rgba(0,0,0,0.15)}
+        .gate-box{display:inline-flex;align-items:center;justify-content:center;border:2px solid #6366f1;border-radius:8px;padding:6px 14px;font-weight:bold;font-size:0.8rem;color:#4338ca;background:#eef2ff;margin:4px}
+        .wire{display:inline-block;width:30px;height:2px;background:#6366f1;vertical-align:middle;margin:0 4px}
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <div class="flex justify-start mb-4">
+        <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页</a>
+    </div>
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">传播延迟与冒险</h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">不等路径延迟产生毛刺 | 静态-0/1冒险 | 冒险消除</p>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-4 space-y-6">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4"><span class="w-1 h-6 bg-blue-500 rounded-full"></span>电路拓扑</h3>
+                <div class="text-center text-sm mb-3">
+                    <div>F = A·B + A'·C</div>
+                    <div class="flex justify-center items-center gap-1 mt-2">
+                        <span>A</span><span class="wire"></span><span class="gate-box">AND</span><span class="wire"></span><span class="gate-box">OR</span><span class="wire"></span><span>= F</span>
+                    </div>
+                    <div class="flex justify-center items-center gap-1 mt-1">
+                        <span>A'</span><span class="wire"></span><span class="gate-box">AND</span><span class="wire"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-emerald-500 rounded-full"></span>门延迟</h3>
+                <div class="mb-3"><div class="flex justify-between text-sm font-medium mb-1"><label>AND门延迟</label><span class="text-blue-600 font-mono" id="andDelayDisp">2 ns</span></div>
+                    <input type="range" id="andDelay" min="1" max="10" step="1" value="2" class="w-full"></div>
+                <div class="mb-3"><div class="flex justify-between text-sm font-medium mb-1"><label>NOT门延迟</label><span class="text-blue-600 font-mono" id="notDelayDisp">1 ns</span></div>
+                    <input type="range" id="notDelay" min="1" max="5" step="1" value="1" class="w-full"></div>
+                <div><div class="flex justify-between text-sm font-medium mb-1"><label>OR门延迟</label><span class="text-blue-600 font-mono" id="orDelayDisp">2 ns</span></div>
+                    <input type="range" id="orDelay" min="1" max="10" step="1" value="2" class="w-full"></div>
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-amber-500 rounded-full"></span>冒险检测</h3>
+                <div id="hazardStatus" class="p-3 rounded-lg text-center font-bold text-sm bg-slate-50 text-slate-500">等待输入变化...</div>
+            </div>
+        </div>
+        <div class="lg:col-span-8 space-y-5">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="text-sm font-medium text-slate-700 mb-3 px-2">时序图（注意毛刺区域）</div>
+                <div class="relative"><canvas id="timingChart" width="800" height="400" style="width:100%;height:auto;max-height:450px;"></canvas></div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-purple-500 rounded-full"></span>冒险条件</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div id="eq1" class="bg-slate-50 p-3 rounded-lg text-center text-sm"></div>
+                    <div id="eq2" class="bg-slate-50 p-3 rounded-lg text-center text-sm"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    let andDelay=2,notDelay=1,orDelay=2,timingChart=null;
+    // F = A·B + A'·C, when B=C=1, F should always be 1
+    // But if A changes, A and A' arrive at different times → glitch
+    const T=10;
+    function generateTiming(){
+        const t=[];
+        const dA=[],dNotA=[],dAnd1=[],dAnd2=[],dF=[];
+        const PPS=200;
+        // A changes at t=2 from 0 to 1
+        const aChangeTime=2;
+        const B=1,C=1;
+        for(let i=0;i<=T*PPS;i++){
+            const time=i/PPS;
+            const A=time>=aChangeTime?1:0;
+            // Delayed signals
+            const dlyA=Math.max(0,A); // A arrives immediately for simplicity
+            const notA=A?0:1;
+            const dlyNotA_raw=time>=aChangeTime+notDelay?(A?0:1):(A?0:1);
+            // More precise: notA changes notDelay after A changes
+            let dlyNotA;
+            if(time<aChangeTime)dlyNotA=1; // A=0, notA=1
+            else if(time>=aChangeTime+notDelay)dlyNotA=0; // A=1, notA=0 after delay
+            else dlyNotA=1; // still propagating
+
+            // AND1 = A·B
+            const and1_raw=dlyA&B;
+            const dlyAnd1=time>=aChangeTime+andDelay?and1_raw:0;
+
+            // AND2 = notA·C
+            const and2_raw=dlyNotA&C;
+            const dlyAnd2=time>=aChangeTime+notDelay+andDelay?and2_raw:(time<aChangeTime?1:and2_raw);
+
+            // F = AND1 + AND2 through OR gate
+            const f_raw=dlyAnd1|dlyAnd2;
+            const maxPath=Math.max(andDelay, notDelay+andDelay);
+            const dlyF=time>=aChangeTime+maxPath+orDelay?f_raw:(time<aChangeTime?1:f_raw);
+
+            t.push(time);dA.push(A);dNotA.push(dlyNotA);dAnd1.push(dlyAnd1);dAnd2.push(dlyAnd2);dF.push(dlyF);
+        }
+        return{t,dA,dNotA,dAnd1,dAnd2,dF};
+    }
+    function initTiming(){
+        if(timingChart)return;
+        timingChart=new Chart(document.getElementById('timingChart').getContext('2d'),{
+            type:'line',data:{datasets:[]},options:{responsive:true,maintainAspectRatio:true,animation:false,interaction:{mode:'index',intersect:false},
+                plugins:{legend:{display:false}},scales:{x:{type:'linear',min:0,max:T,title:{display:true,text:'时间 (ns)',font:{weight:'bold'}},grid:{color:'#eef2ff'}},y:{min:-1,max:11,ticks:{callback(v){const m={0:'F',2:'AND2',4:'AND1',6:'A\'',8:'A',10:'B=C=1'};return m[v]||null;},stepSize:1},grid:{color:'#eef2ff'}}},elements:{point:{radius:0}}}
+        });
+    }
+    function updateTiming(){
+        if(timingChart){timingChart.destroy();timingChart=null;}
+        initTiming();
+        const{t,dA,dNotA,dAnd1,dAnd2,dF}=generateTiming();
+        timingChart.data.datasets=[
+            {label:'A',data:t.map((x,i)=>({x,y:dA[i]+8})),borderColor:'#3b82f6',borderWidth:2,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'},
+            {label:'A\'',data:t.map((x,i)=>({x,y:dNotA[i]+6})),borderColor:'#8b5cf6',borderWidth:2,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'},
+            {label:'AND1',data:t.map((x,i)=>({x,y:dAnd1[i]+4})),borderColor:'#10b981',borderWidth:2,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'},
+            {label:'AND2',data:t.map((x,i)=>({x,y:dAnd2[i]+2})),borderColor:'#f59e0b',borderWidth:2,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'},
+            {label:'F',data:t.map((x,i)=>({x,y:dF[i]})),borderColor:'#ef4444',borderWidth:3,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'}
+        ];
+        timingChart.update('none');
+        // Detect glitch in F
+        const{dF:df}=generateTiming();
+        let hasGlitch=false;
+        for(let i=1;i<df.length-1;i++){
+            if(df[i]===0&&df[i-1]===1&&df[i+1]===1){hasGlitch=true;break;}
+        }
+        const hs=document.getElementById('hazardStatus');
+        if(hasGlitch){hs.className='p-3 rounded-lg text-center font-bold text-sm bg-red-50 text-red-700 border border-red-200';hs.textContent='⚠ 检测到静态-1冒险 (毛刺)!';}
+        else{hs.className='p-3 rounded-lg text-center font-bold text-sm bg-emerald-50 text-emerald-700 border border-emerald-200';hs.textContent='✓ 无冒险';}
+    }
+    function refreshAll(){
+        document.getElementById('andDelayDisp').textContent=andDelay+' ns';
+        document.getElementById('notDelayDisp').textContent=notDelay+' ns';
+        document.getElementById('orDelayDisp').textContent=orDelay+' ns';
+        updateTiming();
+        const eq1=document.getElementById('eq1');eq1.innerHTML='';
+        try{katex.render('\\text{静态-1冒险: } F = A + \\overline{A} \\text{ 瞬时为0}',eq1,{throwOnError:false});}catch(e){eq1.textContent='F=A+A瞬时为0';}
+        const eq2=document.getElementById('eq2');eq2.innerHTML='';
+        try{katex.render('\\text{消除: 添加冗余项 } AB+AC \\rightarrow AB+AC+BC',eq2,{throwOnError:false});}catch(e){eq2.textContent='添加冗余项消除冒险';}
+    }
+    document.getElementById('andDelay').addEventListener('input',e=>{andDelay=parseInt(e.target.value);refreshAll();});
+    document.getElementById('notDelay').addEventListener('input',e=>{notDelay=parseInt(e.target.value);refreshAll();});
+    document.getElementById('orDelay').addEventListener('input',e=>{orDelay=parseInt(e.target.value);refreshAll();});
+    initTiming();refreshAll();
+    document.addEventListener('DOMContentLoaded',()=>{if(typeof renderMathInElement!=='undefined')renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false});});
+    window.addEventListener('resize',()=>{if(timingChart){timingChart.resize();timingChart.update();}});
+    console.log('传播延迟与冒险已启动 | 毛刺可视化');
+</script>
+</body>
+</html>

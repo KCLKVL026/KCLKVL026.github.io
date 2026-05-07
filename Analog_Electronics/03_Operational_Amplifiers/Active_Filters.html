@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>有源滤波器 | 模拟电子技术辅助教学</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] { height: 5px; -webkit-appearance: none; background: #e2e8f0; border-radius: 5px; outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #8b5cf6; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb:hover { background: #7c3aed; transform: scale(1.15); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .card-hover { transition: all 0.2s ease; } .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15); }
+        .filt-tab { cursor: pointer; transition: all 0.2s; } .filt-tab.active { background: #8b5cf6; color: white; } .filt-tab:not(.active):hover { background: #f3e8ff; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+    <div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+        <div class="flex justify-start mb-4">
+            <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页
+            </a>
+        </div>
+        <div class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">有源滤波器</h1>
+            <p class="text-slate-600 max-w-2xl mx-auto">Sallen-Key二阶滤波器：幅频与相频响应</p>
+        </div>
+        <div class="flex justify-center gap-2 mb-6">
+            <button id="tabLP" class="filt-tab active px-5 py-2 rounded-full text-sm font-medium border border-slate-300 bg-violet-600 text-white">低通</button>
+            <button id="tabHP" class="filt-tab px-5 py-2 rounded-full text-sm font-medium border border-slate-300 bg-white text-slate-600">高通</button>
+            <button id="tabBP" class="filt-tab px-5 py-2 rounded-full text-sm font-medium border border-slate-300 bg-white text-slate-600">带通</button>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-4 space-y-5">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-violet-500 rounded-full"></span>滤波器参数</h2>
+                    <div class="space-y-4">
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_1\)</span><span id="r1Value" class="font-mono font-bold text-violet-600">10 kΩ</span></div><input type="range" id="r1Slider" min="1" max="100" value="10" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_2\)</span><span id="r2Value" class="font-mono font-bold text-violet-600">10 kΩ</span></div><input type="range" id="r2Slider" min="1" max="100" value="10" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(C_1\)</span><span id="c1Value" class="font-mono font-bold text-violet-600">100 nF</span></div><input type="range" id="c1Slider" min="1" max="200" value="100" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(C_2\)</span><span id="c2Value" class="font-mono font-bold text-violet-600">100 nF</span></div><input type="range" id="c2Slider" min="1" max="200" value="100" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>增益 \(K=1+R_f/R_g\)</span><span id="kValue" class="font-mono font-bold text-violet-600">1.59</span></div><input type="range" id="kSlider" min="10" max="30" value="16" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>1.0</span><span>3.0</span></div></div>
+                    </div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>滤波器特性</h2>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(f_c\)</div><div id="fcDisplay" class="text-lg font-bold text-emerald-600 font-mono">159 Hz</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(Q\)</div><div id="qDisplay" class="text-lg font-bold text-emerald-600 font-mono">0.71</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">通带增益</div><div id="gainDisplay" class="text-lg font-bold text-emerald-600 font-mono">1.59</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">滚降率</div><div id="rolloffDisplay" class="text-lg font-bold text-emerald-600 font-mono">-40 dB/dec</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="lg:col-span-8 space-y-5">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <h2 class="text-base font-bold text-slate-800 mb-2">幅频响应（增益 dB vs 频率）</h2>
+                    <div class="relative" style="height: 290px;"><canvas id="magChart"></canvas></div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <h2 class="text-base font-bold text-slate-800 mb-2">相频响应（相位 ° vs 频率）</h2>
+                    <div class="relative" style="height: 240px;"><canvas id="phaseChart"></canvas></div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>关键公式</h2>
+                    <div class="text-sm bg-slate-50 rounded-xl p-4 text-center space-y-2">
+                        \[f_c = \frac{1}{2\pi\sqrt{R_1 R_2 C_1 C_2}} \qquad Q = \frac{\sqrt{R_1 R_2 C_1 C_2}}{R_2 C_2 + R_1 C_2 + R_1 C_1(1-K)} \qquad H(s) = \frac{K\omega_c^2}{s^2 + (\omega_c/Q)s + \omega_c^2}\]
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let filtType = 'LP', magChartInst = null, phaseChartInst = null;
+
+        function getParams() {
+            return {
+                R1: parseFloat(r1Slider.value) * 1000,
+                R2: parseFloat(r2Slider.value) * 1000,
+                C1: parseFloat(c1Slider.value) * 1e-9,
+                C2: parseFloat(c2Slider.value) * 1e-9,
+                K: parseFloat(kSlider.value) / 10
+            };
+        }
+
+        function computeResponse(p) {
+            const f_c = 1 / (2 * Math.PI * Math.sqrt(p.R1 * p.R2 * p.C1 * p.C2));
+            const denom = p.R2*p.C2 + p.R1*p.C2 + p.R1*p.C1*(1-p.K);
+            const Q = Math.sqrt(p.R1*p.R2*p.C1*p.C2) / Math.max(denom, 1e-30);
+            const w_c = 2 * Math.PI * f_c;
+            const freqs = [], mags = [], phases = [];
+            for (let f = 1; f <= 100000; f *= 1.05) {
+                const w = 2 * Math.PI * f;
+                let H;
+                if (filtType === 'LP') {
+                    H = { re: p.K*w_c*w_c, im: 0 };
+                    const den = { re: w_c*w_c - w*w, im: w_c*w/Q };
+                    const d2 = den.re*den.re + den.im*den.im;
+                    H = { re: (H.re*den.re + H.im*den.im)/d2, im: (H.im*den.re - H.re*den.im)/d2 };
+                } else if (filtType === 'HP') {
+                    H = { re: p.K*w*w, im: 0 };
+                    const den = { re: w_c*w_c - w*w, im: w_c*w/Q };
+                    const d2 = den.re*den.re+den.im*den.im;
+                    H = { re: (H.re*den.re)/d2, im: (-H.re*den.im)/d2 };
+                } else {
+                    H = { re: p.K*w_c/Q*w, im: 0 };
+                    const den = { re: w_c*w_c - w*w, im: w_c*w/Q };
+                    const d2 = den.re*den.re+den.im*den.im;
+                    H = { re: (H.re*den.im)/d2, im: (H.re*den.re)/d2 };
+                }
+                const mag = Math.sqrt(H.re*H.re + H.im*H.im);
+                freqs.push(f);
+                mags.push(20*Math.log10(Math.max(mag, 1e-10)));
+                phases.push(Math.atan2(H.im, H.re) * 180 / Math.PI);
+            }
+            return { f_c, Q, freqs, mags, phases };
+        }
+
+        function updateAll() {
+            const p = getParams(), r = computeResponse(p);
+            document.getElementById('r1Value').textContent = (p.R1/1000).toFixed(0) + ' kΩ';
+            document.getElementById('r2Value').textContent = (p.R2/1000).toFixed(0) + ' kΩ';
+            document.getElementById('c1Value').textContent = (p.C1*1e9).toFixed(0) + ' nF';
+            document.getElementById('c2Value').textContent = (p.C2*1e9).toFixed(0) + ' nF';
+            document.getElementById('kValue').textContent = p.K.toFixed(2);
+            document.getElementById('fcDisplay').textContent = r.f_c >= 1000 ? (r.f_c/1000).toFixed(1)+' kHz' : r.f_c.toFixed(0)+' Hz';
+            document.getElementById('qDisplay').textContent = r.Q.toFixed(2);
+            document.getElementById('gainDisplay').textContent = (20*Math.log10(p.K)).toFixed(1)+' dB';
+            const rolloff = filtType === 'BP' ? '-20 dB/dec' : '-40 dB/dec';
+            document.getElementById('rolloffDisplay').textContent = rolloff;
+
+            // --- Compute new data ---
+            const magData = r.freqs.map((f,i)=>({x:f,y:r.mags[i]}));
+            const phaseData = r.freqs.map((f,i)=>({x:f,y:r.phases[i]}));
+
+            // --- Update or create charts ---
+            if (magChartInst) {
+                magChartInst.data.datasets[0].data = magData;
+                magChartInst.update();
+            } else {
+                magChartInst = new Chart(document.getElementById('magChart').getContext('2d'), {
+                    type:'scatter', data:{ datasets:[
+                        { data:magData, borderColor:'#8b5cf6', borderWidth:2, pointRadius:0, showLine:true, tension:0.2 }
+                    ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:300},
+                        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx => `f=${ctx.parsed.x.toFixed(0)}Hz, Gain=${ctx.parsed.y.toFixed(1)}dB` } } },
+                        scales:{ x:{type:'logarithmic', title:{display:true,text:'频率 (Hz)'}, grid:{color:'rgba(0,0,0,0.05)'}},
+                            y:{title:{display:true,text:'增益 (dB)'}, grid:{color:'rgba(0,0,0,0.05)'}} } }
+                });
+            }
+
+            if (phaseChartInst) {
+                phaseChartInst.data.datasets[0].data = phaseData;
+                phaseChartInst.update();
+            } else {
+                phaseChartInst = new Chart(document.getElementById('phaseChart').getContext('2d'), {
+                    type:'scatter', data:{ datasets:[
+                        { data:phaseData, borderColor:'#f59e0b', borderWidth:2, pointRadius:0, showLine:true, tension:0.2 }
+                    ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:300},
+                        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx => `f=${ctx.parsed.x.toFixed(0)}Hz, Phase=${ctx.parsed.y.toFixed(1)}°` } } },
+                        scales:{ x:{type:'logarithmic', title:{display:true,text:'频率 (Hz)'}, grid:{color:'rgba(0,0,0,0.05)'}},
+                            y:{title:{display:true,text:'相位 (°)'}, grid:{color:'rgba(0,0,0,0.05)'}} } }
+                });
+            }
+        }
+
+        function setFilter(t) {
+            filtType = t;
+            ['LP','HP','BP'].forEach(f => { document.getElementById('tab'+f).classList.remove('active','bg-violet-600','text-white'); document.getElementById('tab'+f).classList.add('bg-white','text-slate-600'); });
+            document.getElementById('tab'+t).classList.add('active','bg-violet-600','text-white'); document.getElementById('tab'+t).classList.remove('bg-white','text-slate-600');
+            updateAll();
+        }
+        document.getElementById('tabLP').addEventListener('click', ()=>setFilter('LP'));
+        document.getElementById('tabHP').addEventListener('click', ()=>setFilter('HP'));
+        document.getElementById('tabBP').addEventListener('click', ()=>setFilter('BP'));
+
+        ['r1Slider','r2Slider','c1Slider','c2Slider','kSlider'].forEach(id => document.getElementById(id).addEventListener('input', updateAll));
+        updateAll();
+        window.addEventListener('load', () => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); });
+    </script>
+</body>
+</html>

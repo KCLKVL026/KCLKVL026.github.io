@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>二进制编码 | BCD·Gray码·余3码</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range]{height:5px;-webkit-appearance:none;background:#e2e8f0;border-radius:5px;outline:none}
+        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#3b82f6;border-radius:50%;cursor:pointer;transition:0.1s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+        input[type=range]::-webkit-slider-thumb:hover{background:#2563eb;transform:scale(1.15)}
+        ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+        .card-hover{transition:all 0.2s ease}.card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 20px -12px rgba(0,0,0,0.15)}
+        .code-table{width:100%;text-align:center;font-family:monospace;font-size:0.85rem}
+        .code-table th{padding:6px 4px;color:#64748b;font-weight:600;font-size:0.75rem}
+        .code-table td{padding:6px 4px;font-weight:bold}
+        .code-table tr:hover{background:#f8fafc}
+        .highlight-row{background:#eff6ff !important;ring:2px}
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <div class="flex justify-start mb-4">
+        <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            返回主页
+        </a>
+    </div>
+
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">二进制编码</h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">Binary · 8421-BCD · Gray码 · 余3码 | 汉明距离对比 | 编码规则可视化</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-4 space-y-6">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4"><span class="w-1 h-6 bg-blue-500 rounded-full"></span>十进制值</h3>
+                <div class="flex justify-between text-sm font-medium mb-1"><label>选择数值 (0~15)</label><span class="text-blue-600 font-mono text-xl" id="decDisplay">0</span></div>
+                <input type="range" id="decSlider" min="0" max="15" step="1" value="0" class="w-full">
+                <div class="flex justify-between text-xs text-slate-400 mt-1"><span>0</span><span>15</span></div>
+            </div>
+
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-emerald-500 rounded-full"></span>当前编码</h3>
+                <div class="space-y-3" id="currentCodes"></div>
+            </div>
+
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-amber-500 rounded-full"></span>编码规则</h3>
+                <div class="text-xs text-slate-600 space-y-2">
+                    <div id="grayRule" class="bg-slate-50 p-2 rounded-md"></div>
+                    <div id="bceRule" class="bg-slate-50 p-2 rounded-md"></div>
+                    <div id="excess3Rule" class="bg-slate-50 p-2 rounded-md"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-8 space-y-5">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="text-sm font-medium text-slate-700 mb-3 px-2">四种编码位模式对比</div>
+                <div class="relative"><canvas id="codeChart" width="800" height="350" style="width:100%;height:auto;max-height:380px;"></canvas></div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="text-sm font-medium text-slate-700 mb-3 px-2">Gray码汉明距离 (相邻值)</div>
+                <div class="relative"><canvas id="hammingChart" width="800" height="250" style="width:100%;height:auto;max-height:280px;"></canvas></div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-indigo-500 rounded-full"></span>编码对照表</h3>
+                <div class="overflow-x-auto"><table class="code-table" id="fullTable">
+                    <thead><tr><th>DEC</th><th>Binary</th><th>BCD</th><th>Gray</th><th>余3码</th></tr></thead>
+                    <tbody id="fullTableBody"></tbody>
+                </table></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let decVal=0, codeChart=null, hammingChart=null;
+
+    // 编码函数
+    function toBinary(n,w){return n.toString(2).padStart(w,'0');}
+    function toBCD(n){return n.toString().split('').map(d=>parseInt(d).toString(2).padStart(4,'0')).join('');}
+    function toGray(n,w){const b=toBinary(n,w);let g=b[0];for(let i=1;i<b.length;i++)g+=(b[i-1]^b[i])?'1':'0';return g;}
+    function toExcess3(n){return(n+3).toString(2).padStart(4,'0');}
+
+    function hammingDist(a,b){let d=0;for(let i=0;i<Math.max(a.length,b.length);i++){const ai=i<a.length?parseInt(a[a.length-1-i]):0;const bi=i<b.length?parseInt(b[b.length-1-i]):0;if(ai!==bi)d++;}return d;}
+
+    function refreshAll(){
+        decVal=parseInt(document.getElementById('decSlider').value);
+        document.getElementById('decDisplay').textContent=decVal;
+
+        const w=4;
+        const bin=toBinary(decVal,w);
+        const bcd=toBCD(decVal);
+        const gray=toGray(decVal,w);
+        const ex3=toExcess3(decVal);
+
+        // 当前编码显示
+        const codes=[
+            {name:'Binary',val:bin,color:'blue'},
+            {name:'BCD (8421)',val:bcd,color:'emerald'},
+            {name:'Gray',val:gray,color:'amber'},
+            {name:'余3码',val:ex3,color:'purple'}
+        ];
+        const cc=document.getElementById('currentCodes');
+        cc.innerHTML='';
+        codes.forEach(c=>{
+            const div=document.createElement('div');
+            div.className=`flex justify-between items-center p-2 bg-${c.color}-50 rounded-lg`;
+            div.innerHTML=`<span class="text-${c.color}-700 font-semibold text-sm">${c.name}</span><span class="font-mono font-bold text-${c.color}-800 text-lg">${c.val}</span>`;
+            cc.appendChild(div);
+        });
+
+        // 编码规则
+        try{
+            katex.render('G_i = B_i \\oplus B_{i+1}',document.getElementById('grayRule'),{throwOnError:false});
+            katex.render('\\text{BCD}: \\text{每位十进制独立编码4bit}',document.getElementById('bceRule'),{throwOnError:false});
+            katex.render('\\text{余3码} = \\text{BCD} + 3',document.getElementById('excess3Rule'),{throwOnError:false});
+        }catch(e){}
+
+        updateCodeChart();
+        updateHammingChart();
+        updateFullTable();
+    }
+
+    function initCodeChart(){
+        if(codeChart)return;
+        codeChart=new Chart(document.getElementById('codeChart').getContext('2d'),{
+            type:'bar',data:{labels:['b3','b2','b1','b0'],datasets:[]},options:{
+                responsive:true,maintainAspectRatio:true,animation:false,
+                plugins:{legend:{position:'top',labels:{usePointStyle:true,boxWidth:8,font:{size:10}}}},
+                scales:{x:{grid:{color:'#eef2ff'}},y:{min:0,max:1,ticks:{stepSize:1},grid:{color:'#eef2ff'}}}
+            }
+        });
+    }
+
+    function updateCodeChart(){
+        initCodeChart();
+        const w=4;
+        const bin=toBinary(decVal,w);
+        const gray=toGray(decVal,w);
+        const ex3=toExcess3(decVal);
+        const bcdBits=toBCD(decVal).slice(-4);
+
+        codeChart.data={
+            labels:['b3','b2','b1','b0'],
+            datasets:[
+                {label:'Binary',data:[...bin].map(Number),backgroundColor:'rgba(59,130,246,0.6)',borderColor:'#3b82f6',borderWidth:1},
+                {label:'Gray',data:[...gray].map(Number),backgroundColor:'rgba(245,158,11,0.6)',borderColor:'#f59e0b',borderWidth:1},
+                {label:'余3码',data:[...ex3].map(Number),backgroundColor:'rgba(139,92,246,0.6)',borderColor:'#8b5cf6',borderWidth:1}
+            ]
+        };
+        codeChart.update('none');
+    }
+
+    function initHammingChart(){
+        if(hammingChart)return;
+        hammingChart=new Chart(document.getElementById('hammingChart').getContext('2d'),{
+            type:'line',data:{datasets:[]},options:{
+                responsive:true,maintainAspectRatio:true,animation:false,
+                interaction:{mode:'index',intersect:false},
+                plugins:{legend:{position:'top',labels:{usePointStyle:true,boxWidth:8,font:{size:10}}}},
+                scales:{
+                    x:{title:{display:true,text:'相邻值对 (n, n+1)',font:{weight:'bold'}},grid:{color:'#eef2ff'}},
+                    y:{min:0,max:4,title:{display:true,text:'汉明距离',font:{weight:'bold'}},ticks:{stepSize:1},grid:{color:'#eef2ff'}}
+                },
+                elements:{point:{radius:4,hoverRadius:6}}
+            }
+        });
+    }
+
+    function updateHammingChart(){
+        initHammingChart();
+        const w=4;
+        const binHam=[], grayHam=[];
+        for(let i=0;i<15;i++){
+            binHam.push({x:i,y:hammingDist(toBinary(i,w),toBinary(i+1,w))});
+            grayHam.push({x:i,y:hammingDist(toGray(i,w),toGray(i+1,w))});
+        }
+        hammingChart.data={
+            datasets:[
+                {label:'Binary汉明距离',data:binHam,borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.1)',borderWidth:2,fill:true,tension:0.3,pointRadius:3},
+                {label:'Gray汉明距离',data:grayHam,borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.1)',borderWidth:2,fill:true,tension:0.3,pointRadius:3}
+            ]
+        };
+        hammingChart.update('none');
+    }
+
+    function updateFullTable(){
+        const tbody=document.getElementById('fullTableBody');
+        tbody.innerHTML='';
+        for(let n=0;n<=15;n++){
+            const tr=document.createElement('tr');
+            if(n===decVal)tr.className='bg-blue-50';
+            const bin=toBinary(n,4), gray=toGray(n,4), bcd=toBCD(n), ex3=toExcess3(n);
+            tr.innerHTML=`<td class="text-slate-700">${n}</td><td class="text-blue-700">${bin}</td><td class="text-emerald-700">${bcd}</td><td class="text-amber-700">${gray}</td><td class="text-purple-700">${ex3}</td>`;
+            tbody.appendChild(tr);
+        }
+    }
+
+    document.getElementById('decSlider').addEventListener('input',refreshAll);
+    initCodeChart();initHammingChart();refreshAll();
+    document.addEventListener('DOMContentLoaded',()=>{if(typeof renderMathInElement!=='undefined')renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false});});
+    window.addEventListener('resize',()=>{if(codeChart){codeChart.resize();codeChart.update();}if(hammingChart){hammingChart.resize();hammingChart.update();}});
+    console.log('二进制编码已启动 | BCD·Gray·余3码 | 汉明距离对比');
+</script>
+</body>
+</html>

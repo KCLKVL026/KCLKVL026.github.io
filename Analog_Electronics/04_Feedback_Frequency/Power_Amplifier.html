@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>功率放大电路 | 模拟电子技术辅助教学</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] { height: 5px; -webkit-appearance: none; background: #e2e8f0; border-radius: 5px; outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #f59e0b; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb:hover { background: #d97706; transform: scale(1.15); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .class-tab { cursor: pointer; transition: all 0.2s; } .class-tab.active { background: #f59e0b; color: white; } .class-tab:not(.active):hover { background: #fffbeb; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+    <div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+        <div class="flex justify-start mb-4">
+            <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页
+            </a>
+        </div>
+        <div class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">功率放大电路</h1>
+            <p class="text-slate-600 max-w-2xl mx-auto">A类/B类/AB类功放效率与失真分析</p>
+        </div>
+        <div class="flex justify-center gap-2 mb-6">
+            <button id="tabA" class="class-tab active px-5 py-2 rounded-full text-sm font-medium border border-slate-300 bg-amber-500 text-white">A类</button>
+            <button id="tabB" class="class-tab px-5 py-2 rounded-full text-sm font-medium border border-slate-300 bg-white text-slate-600">B类</button>
+            <button id="tabAB" class="class-tab px-5 py-2 rounded-full text-sm font-medium border border-slate-300 bg-white text-slate-600">AB类</button>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-4 space-y-5">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>功放参数</h2>
+                    <div class="space-y-4">
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>电源 \(V_{CC}\)</span><span id="vccValue" class="font-mono font-bold text-amber-600">12 V</span></div><input type="range" id="vccSlider" min="5" max="30" value="12" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>负载 \(R_L\)</span><span id="rlValue" class="font-mono font-bold text-amber-600">8 Ω</span></div><input type="range" id="rlSlider" min="4" max="32" value="8" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>输入幅度 \(V_{in}\)</span><span id="vinValue" class="font-mono font-bold text-amber-600">5.0 V</span></div><input type="range" id="vinSlider" min="1" max="120" value="50" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>0.1 V</span><span>12 V</span></div></div>
+                        <div id="iqDiv"><div class="flex justify-between text-sm text-slate-600 mb-1"><span>静态电流 \(I_{CQ}\) (A类)</span><span id="iqValue" class="font-mono font-bold text-amber-600">0.50 A</span></div><input type="range" id="iqSlider" min="1" max="20" value="5" step="0.5" class="w-full"></div>
+                        <div id="vbbDiv" style="display:none"><div class="flex justify-between text-sm text-slate-600 mb-1"><span>偏置电压 \(V_{BB}\) (AB类)</span><span id="vbbValue" class="font-mono font-bold text-amber-600">1.4 V</span></div><input type="range" id="vbbSlider" min="10" max="18" value="14" step="0.5" class="w-full"></div>
+                    </div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>功率特性</h2>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(P_{out}\)</div><div id="poutDisplay" class="text-lg font-bold text-emerald-600 font-mono">1.56 W</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(P_{DC}\)</div><div id="pdcDisplay" class="text-lg font-bold text-amber-600 font-mono">6.00 W</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(P_{diss}\)</div><div id="pdissDisplay" class="text-lg font-bold text-rose-600 font-mono">4.44 W</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">效率 \(\eta\)</div><div id="effDisplay" class="text-lg font-bold text-emerald-600 font-mono">26.0%</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="lg:col-span-8 space-y-5">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <h2 class="text-base font-bold text-slate-800 mb-2">输出波形（\(V_{out}\) vs t，2个周期）</h2>
+                    <div class="relative" style="height: 280px;"><canvas id="waveChart"></canvas></div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <h2 class="text-base font-bold text-slate-800 mb-2">功率分布</h2>
+                    <div class="relative" style="height: 240px;"><canvas id="powerChart"></canvas></div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>关键公式</h2>
+                    <div class="text-sm bg-slate-50 rounded-xl p-4 text-center space-y-2">
+                        \[\eta_A \leq 25\%\text{(阻性)}, \approx 50\%\text{(变压器)} \qquad \eta_B = \frac{\pi}{4}\frac{V_p}{V_{CC}} \leq 78.5\% \qquad \eta_{AB} \approx \eta_B\]
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ampClass = 'A', waveChartInst = null, powerChartInst = null;
+
+        function getParams() {
+            return {
+                V_CC: parseFloat(vccSlider.value),
+                R_L: parseFloat(rlSlider.value),
+                V_in: parseFloat(vinSlider.value) / 10,
+                I_CQ: parseFloat(iqSlider.value) / 10,
+                V_BB: parseFloat(vbbSlider.value) / 10,
+                ampClass
+            };
+        }
+
+        function compute(p) {
+            let P_out, P_DC, P_diss, eta, V_out_peak;
+            if (p.ampClass === 'A') {
+                V_out_peak = Math.min(p.V_in, p.V_CC * 0.9);
+                P_out = V_out_peak * V_out_peak / (2 * p.R_L);
+                P_DC = p.V_CC * p.I_CQ;
+                P_diss = P_DC - P_out;
+                eta = P_out / P_DC * 100;
+            } else if (p.ampClass === 'B') {
+                V_out_peak = Math.min(p.V_in, p.V_CC - 0.7);
+                const V_p = V_out_peak;
+                P_out = V_p * V_p / (2 * p.R_L);
+                P_DC = 2 * p.V_CC * V_p / (Math.PI * p.R_L);
+                P_diss = P_DC - P_out;
+                eta = P_out / P_DC * 100;
+            } else {
+                V_out_peak = Math.min(p.V_in, p.V_CC - 0.3);
+                const V_p = V_out_peak;
+                P_out = V_p * V_p / (2 * p.R_L);
+                P_DC = 2 * p.V_CC * V_p / (Math.PI * p.R_L) + p.V_CC * 0.02;
+                P_diss = P_DC - P_out;
+                eta = P_out / P_DC * 100;
+            }
+            return { P_out, P_DC, P_diss, eta, V_out_peak };
+        }
+
+        function updateAll() {
+            const p = getParams(), r = compute(p);
+            document.getElementById('vccValue').textContent = p.V_CC + ' V';
+            document.getElementById('rlValue').textContent = p.R_L + ' Ω';
+            document.getElementById('vinValue').textContent = p.V_in.toFixed(1) + ' V';
+            document.getElementById('iqValue').textContent = p.I_CQ.toFixed(2) + ' A';
+            document.getElementById('vbbValue').textContent = p.V_BB.toFixed(1) + ' V';
+            document.getElementById('poutDisplay').textContent = r.P_out.toFixed(2) + ' W';
+            document.getElementById('pdcDisplay').textContent = r.P_DC.toFixed(2) + ' W';
+            document.getElementById('pdissDisplay').textContent = r.P_diss.toFixed(2) + ' W';
+            document.getElementById('effDisplay').textContent = r.eta.toFixed(1) + '%';
+            document.getElementById('iqDiv').style.display = p.ampClass === 'A' ? 'block' : 'none';
+            document.getElementById('vbbDiv').style.display = p.ampClass === 'AB' ? 'block' : 'none';
+
+            // Waveform
+            const T = 0.002, N = 400, vout = [];
+            for (let i = 0; i <= N; i++) {
+                const t = T*i/N, v_in = p.V_in * Math.sin(2*Math.PI*500*t);
+                let vo;
+                if (p.ampClass === 'A') vo = v_in;
+                else if (p.ampClass === 'B') vo = v_in > 0 ? v_in : 0;
+                else vo = v_in > 0.1 ? v_in : v_in < -0.1 ? v_in : 0.1 * Math.sign(v_in);
+                vout.push({ x: t*1000, y: Math.min(p.V_CC*0.9, Math.max(-p.V_CC*0.9, vo)) });
+            }
+            let cfg = { type:'scatter', data:{ datasets:[
+                { label:'V_out', data:vout, borderColor:'#f59e0b', borderWidth:2, pointRadius:0, showLine:true, tension:0.3 }
+            ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
+                plugins:{ legend:{position:'bottom',labels:{boxWidth:14}} },
+                scales:{ x:{title:{display:true,text:'时间 (ms)'}}, y:{title:{display:true,text:'V_out (V)'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
+            if (waveChartInst) waveChartInst.destroy();
+            waveChartInst = new Chart(document.getElementById('waveChart').getContext('2d'), cfg);
+
+            cfg = { type:'bar', data:{ labels:['P_DC (直流功率)','P_out (交流输出)','P_diss (耗散热量)'], datasets:[
+                { data:[r.P_DC, r.P_out, r.P_diss], backgroundColor:['#fbbf24','#10b981','#ef4444'], borderRadius:8 }
+            ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
+                plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx => ctx.raw.toFixed(2)+' W' } } },
+                scales:{ y:{ title:{display:true,text:'功率 (W)'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
+            if (powerChartInst) powerChartInst.destroy();
+            powerChartInst = new Chart(document.getElementById('powerChart').getContext('2d'), cfg);
+        }
+
+        function setClass(c) {
+            ampClass = c;
+            ['A','B','AB'].forEach(t => { document.getElementById('tab'+t).classList.remove('active','bg-amber-500','text-white'); document.getElementById('tab'+t).classList.add('bg-white','text-slate-600'); });
+            document.getElementById('tab'+c).classList.add('active','bg-amber-500','text-white'); document.getElementById('tab'+c).classList.remove('bg-white','text-slate-600');
+            updateAll();
+        }
+        document.getElementById('tabA').addEventListener('click', ()=>setClass('A'));
+        document.getElementById('tabB').addEventListener('click', ()=>setClass('B'));
+        document.getElementById('tabAB').addEventListener('click', ()=>setClass('AB'));
+
+        ['vccSlider','rlSlider','vinSlider','iqSlider','vbbSlider'].forEach(id => document.getElementById(id).addEventListener('input', updateAll));
+        updateAll();
+        window.addEventListener('load', () => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); });
+    </script>
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>运放非线性应用 | 模拟电子技术辅助教学</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] { height: 5px; -webkit-appearance: none; background: #e2e8f0; border-radius: 5px; outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #8b5cf6; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb:hover { background: #7c3aed; transform: scale(1.15); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .card-hover { transition: all 0.2s ease; } .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15); }
+        .mode-tab { cursor: pointer; transition: all 0.2s; } .mode-tab.active { background: #8b5cf6; color: white; } .mode-tab:not(.active):hover { background: #f3e8ff; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+    <div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+        <div class="flex justify-start mb-4">
+            <a href="../index.html" class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>返回主页
+            </a>
+        </div>
+        <div class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">运放非线性应用</h1>
+            <p class="text-slate-600 max-w-2xl mx-auto">比较器 · 施密特触发器 · 波形发生器</p>
+        </div>
+        <div class="flex justify-center gap-2 mb-6">
+            <button id="tabComp" class="mode-tab active px-5 py-2 rounded-full text-sm font-medium border border-slate-300 bg-violet-600 text-white">比较器</button>
+            <button id="tabSch" class="mode-tab px-5 py-2 rounded-full text-sm font-medium border border-slate-300 bg-white text-slate-600">施密特触发器</button>
+            <button id="tabGen" class="mode-tab px-5 py-2 rounded-full text-sm font-medium border border-slate-300 bg-white text-slate-600">方波-三角波发生器</button>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-4 space-y-5" id="controlPanel"></div>
+            <div class="lg:col-span-8 space-y-5">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <h2 class="text-base font-bold text-slate-800 mb-2" id="chart1Title">输入/输出波形</h2>
+                    <div class="relative" style="height: 320px;"><canvas id="chart1"></canvas></div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4" id="chart2Container">
+                    <h2 class="text-base font-bold text-slate-800 mb-2" id="chart2Title">传输特性</h2>
+                    <div class="relative" style="height: 240px;"><canvas id="chart2"></canvas></div>
+                </div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5" id="formulaCard"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let mode = 'comp', chart1Inst = null, chart2Inst = null, currentModeForChart = null;
+
+        const modes = {
+            comp: {
+                title: '比较器', formula: '\\[V_{out} = +V_{sat} \\text{ (}V_{in} > V_{ref}\\text{)} \\qquad V_{out} = -V_{sat} \\text{ (}V_{in} < V_{ref}\\text{)}\\]',
+                sliders: [
+                    {id:'ref',label:'V_ref',val:0,min:-100,max:100,step:1,unit:'0 V'},
+                    {id:'amp',label:'V_in 幅度',val:50,min:1,max:150,step:1,unit:'5.0 V'},
+                    {id:'freq',label:'频率',val:5,min:1,max:50,step:1,unit:'500 Hz'},
+                    {id:'sat',label:'±V_sat',val:13,min:5,max:15,step:1,unit:'±13 V'}
+                ],
+                compute(p) { return { V_UTP: p.ref/10, V_LTP: p.ref/10, hysteresis: 0 }; },
+                chartData(p) {
+                    const T=0.004,N=400,vin=[],vout=[]; const Vref=p.ref/10,Vsat=p.sat;
+                    for(let i=0;i<=N;i++) { const t=T*i/N, v=p.amp/10*Math.sin(2*Math.PI*p.freq*100*t); vin.push({x:t*1000,y:v}); vout.push({x:t*1000,y:v>Vref?Vsat:Vref>=v?-Vsat:Vsat}); }
+                    return { w:vin, wo:vout, desc:'无迟滞，信号过零切换' };
+                }
+            },
+            sch: {
+                title: '施密特触发器', formula: '\\[V_{UTP} = V_{ref} + \\frac{R_1}{R_1+R_2}V_{sat} \\qquad V_{LTP} = V_{ref} - \\frac{R_1}{R_1+R_2}V_{sat} \\qquad \\Delta V = V_{UTP} - V_{LTP}\\]',
+                sliders: [
+                    {id:'sref',label:'V_ref',val:20,min:-50,max:50,step:1,unit:'2.0 V'},
+                    {id:'sr1',label:'R_1',val:10,min:1,max:50,step:1,unit:'10 kΩ'},
+                    {id:'sr2',label:'R_2',val:10,min:1,max:50,step:1,unit:'10 kΩ'},
+                    {id:'samp',label:'V_in 幅度',val:80,min:10,max:150,step:1,unit:'8.0 V'},
+                    {id:'sfreq',label:'频率',val:5,min:1,max:50,step:1,unit:'500 Hz'},
+                    {id:'ssat',label:'±V_sat',val:13,min:5,max:15,step:1,unit:'±13 V'},
+                    {id:'noise',label:'噪声',val:0,min:0,max:10,step:1,unit:'关闭'}
+                ],
+                compute(p) {
+                    const beta = p.sr1/(p.sr1+p.sr2), Vref = p.sref/10, Vsat = p.ssat;
+                    const V_UTP = Vref + beta*Vsat, V_LTP = Vref - beta*Vsat;
+                    return { V_UTP, V_LTP, hysteresis: V_UTP-V_LTP };
+                },
+                chartData(p) {
+                    const T=0.004,N=400,vin=[],vout=[]; const r=this.compute(p); let outState = p.ssat;
+                    for(let i=0;i<=N;i++) { const t=T*i/N; let v=p.samp/10*Math.sin(2*Math.PI*p.sfreq*100*t); if(p.noise>0) v+=(Math.random()-0.5)*p.noise/50;
+                        if(v>r.V_UTP) outState=-p.ssat; else if(v<r.V_LTP) outState=p.ssat;
+                        vin.push({x:t*1000,y:v}); vout.push({x:t*1000,y:outState});
+                    }
+                    const tc=[]; for(let i=0;i<=200;i++) { const vi=-15+30*i/200; let o=vi>r.V_UTP?-p.ssat:(vi<r.V_LTP?p.ssat:p.ssat); tc.push({x:vi,y:o}); }
+                    return { w:vin, wo:vout, tc, desc:`迟滞宽度 = ${r.hysteresis.toFixed(1)}V` };
+                }
+            },
+            gen: {
+                title: '方波-三角波发生器', formula: '\\[f = \\frac{1}{2RC\\,\\ln(1+2R_1/R_2)} \\qquad V_{tri,pk} = \\frac{R_1}{R_1+R_2}V_{sat}\\]',
+                sliders: [
+                    {id:'gR',label:'R',val:100,min:1,max:200,step:1,unit:'10 kΩ'},
+                    {id:'gC',label:'C',val:10,min:1,max:100,step:1,unit:'10 nF'},
+                    {id:'gR1',label:'R_1',val:10,min:1,max:50,step:1,unit:'10 kΩ'},
+                    {id:'gR2',label:'R_2',val:10,min:1,max:50,step:1,unit:'10 kΩ'},
+                    {id:'gsat',label:'±V_sat',val:13,min:5,max:15,step:1,unit:'±13 V'}
+                ],
+                compute(p) {
+                    const R = p.gR*1000, C = p.gC*1e-9, beta = p.gR1/(p.gR1+p.gR2);
+                    const f = 1/(2*R*C*Math.log(1+2*p.gR1/p.gR2));
+                    return { f, V_tri_pk: beta*p.gsat, info: `f = ${f<1000?f.toFixed(0)+' Hz':(f/1000).toFixed(1)+' kHz'}` };
+                },
+                chartData(p) {
+                    const r=this.compute(p), T_period=1/r.f, dur=T_period*2.5, N=600;
+                    const sq=[], tri=[]; const beta=p.gR1/(p.gR1+p.gR2); let vcap=0, sqState=p.gsat;
+                    const R=p.gR*1000, C=p.gC*1e-9;
+                    for(let i=0;i<=N;i++) { const t=dur*i/N; sq.push({x:t*1000,y:sqState}); tri.push({x:t*1000,y:vcap});
+                        const dv = (sqState-vcap)/(R*C)*(dur/N);
+                        vcap += dv;
+                        if(sqState>0 && vcap>=beta*p.gsat) sqState=-p.gsat;
+                        else if(sqState<0 && vcap<=-beta*p.gsat) sqState=p.gsat;
+                    }
+                    return { w:sq, wo:tri, desc:r.info };
+                }
+            }
+        };
+
+        function buildUI(m) {
+            const cfg = modes[m];
+            let html = `<div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-violet-500 rounded-full"></span>${cfg.title}参数</h2><div class="space-y-4">`;
+            cfg.sliders.forEach(s => {
+                html += `<div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>${s.label}</span><span id="${s.id}Value" class="font-mono font-bold text-violet-600">${s.unit}</span></div>
+                    <input type="range" id="${s.id}Slider" min="${s.min}" max="${s.max}" value="${s.val}" step="${s.step}" class="w-full"></div>`;
+            });
+            html += `</div></div><div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>特性参数</h2>
+                <div class="grid grid-cols-2 gap-3"><div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1" id="p1Label">状态</div><div id="p1Display" class="text-lg font-bold text-emerald-600 font-mono">--</div></div>
+                <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1" id="p2Label">阈值</div><div id="p2Display" class="text-lg font-bold text-emerald-600 font-mono">--</div></div></div></div>`;
+            document.getElementById('controlPanel').innerHTML = html;
+            document.getElementById('chart1Title').textContent = cfg.title + ' - 波形';
+            document.getElementById('formulaCard').innerHTML = `<h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>关键公式</h2><div class="text-sm bg-slate-50 rounded-xl p-4 text-center">${cfg.formula}</div>`;
+            document.getElementById('chart2Container').style.display = m==='gen' ? 'none' : 'block';
+            if (m==='gen') { document.getElementById('p1Label').textContent='振荡频率'; document.getElementById('p2Label').textContent='三角波幅值'; }
+            else { document.getElementById('p1Label').textContent='状态'; document.getElementById('p2Label').textContent=m==='comp'?'阈值':'迟滞宽度'; }
+        }
+
+        function updateAll() {
+            const cfg = modes[mode], p = {};
+            cfg.sliders.forEach(s => { p[s.id] = parseFloat(document.getElementById(s.id+'Slider').value); });
+            cfg.sliders.forEach(s => { const el=document.getElementById(s.id+'Value'); if(el) el.textContent=s.unit; });
+            const r = cfg.compute(p);
+            if (mode==='comp') { document.getElementById('p1Display').textContent='比较器'; document.getElementById('p2Display').textContent = p.ref/10+' V'; }
+            else if (mode==='sch') { document.getElementById('p1Display').textContent='施密特'; document.getElementById('p2Display').textContent=r.hysteresis.toFixed(1)+' V'; }
+            else { document.getElementById('p1Display').textContent=r.info; document.getElementById('p2Display').textContent=r.V_tri_pk.toFixed(1)+' V'; }
+
+            const cd = cfg.chartData(p);
+
+            // --- Chart 1: waveform ---
+            if (chart1Inst && currentModeForChart === mode) {
+                chart1Inst.data.datasets[0].data = cd.w;
+                chart1Inst.data.datasets[0].label = 'V_in';
+                chart1Inst.data.datasets[1].data = cd.wo;
+                chart1Inst.data.datasets[1].label = mode==='gen' ? '方波' : 'V_out';
+                chart1Inst.update();
+            } else {
+                if (chart1Inst) chart1Inst.destroy();
+                chart1Inst = new Chart(document.getElementById('chart1').getContext('2d'), {
+                    type:'scatter', data:{ datasets:[
+                        { label:'V_in', data:cd.w, borderColor:'#3b82f6', borderWidth:1.5, pointRadius:0, showLine:true, tension:0.3 },
+                        { label:mode==='gen'?'方波':'V_out', data:cd.wo, borderColor:'#8b5cf6', borderWidth:2, pointRadius:0, showLine:true, tension:0.2 }
+                    ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:300},
+                        plugins:{ legend:{position:'bottom',labels:{boxWidth:14,font:{size:10}}} },
+                        scales:{ x:{title:{display:true,text:'时间 (ms)'}}, y:{title:{display:true,text:'V'}, grid:{color:'rgba(0,0,0,0.05)'}} } }
+                });
+                currentModeForChart = mode;
+            }
+
+            // --- Chart 2: transfer characteristic (Schmitt only) ---
+            if (cd.tc && mode==='sch') {
+                if (chart2Inst) {
+                    chart2Inst.data.datasets[0].data = cd.tc;
+                    chart2Inst.data.datasets[1].data = [{ x:p.samp/10*0.5, y:0 }];
+                    chart2Inst.update();
+                } else {
+                    chart2Inst = new Chart(document.getElementById('chart2').getContext('2d'), {
+                        type:'scatter', data:{ datasets:[
+                            { label:'V_out vs V_in', data:cd.tc, borderColor:'#8b5cf6', borderWidth:2, pointRadius:0, showLine:true, order:1 },
+                            { data:[{ x:p.samp/10*0.5, y:0 }], pointRadius:0, showLine:false }
+                        ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:300},
+                            plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx => `V_in=${ctx.parsed.x.toFixed(1)}V, V_out=${ctx.parsed.y.toFixed(0)}V` } } },
+                            scales:{ x:{title:{display:true,text:'V_in (V)'}}, y:{title:{display:true,text:'V_out (V)'}, grid:{color:'rgba(0,0,0,0.05)'}} } }
+                    });
+                }
+            } else if (chart2Inst) {
+                chart2Inst.destroy();
+                chart2Inst = null;
+            }
+        }
+
+        function setMode(m) {
+            mode = m;
+            ['Comp','Sch','Gen'].forEach(t => { document.getElementById('tab'+t).classList.remove('active','bg-violet-600','text-white'); document.getElementById('tab'+t).classList.add('bg-white','text-slate-600'); });
+            document.getElementById('tab'+m.charAt(0).toUpperCase()+m.slice(1)).classList.add('active','bg-violet-600','text-white');
+            buildUI(m);
+            setTimeout(() => { modes[m].sliders.forEach(s => { const el=document.getElementById(s.id+'Slider'); if(el) el.addEventListener('input', updateAll); }); }, 0);
+            setTimeout(updateAll, 50);
+            setTimeout(() => { if(typeof renderMathInElement!=='undefined') renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false}); }, 100);
+        }
+
+        document.getElementById('tabComp').addEventListener('click', ()=>setMode('comp'));
+        document.getElementById('tabSch').addEventListener('click', ()=>setMode('sch'));
+        document.getElementById('tabGen').addEventListener('click', ()=>setMode('gen'));
+        setMode('comp');
+    </script>
+</body>
+</html>

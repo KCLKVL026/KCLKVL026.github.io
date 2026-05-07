@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>基本逻辑门 | AND·OR·NOT·NAND·NOR·XOR·XNOR</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #2563eb;
+            transform: scale(1.15);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15);
+        }
+        .gate-btn {
+            transition: all 0.15s ease;
+            border: 2px solid transparent;
+        }
+        .gate-btn.active {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-weight: 600;
+        }
+        .gate-btn:hover:not(.active) {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+        .input-btn {
+            transition: all 0.12s ease;
+            min-width: 52px;
+        }
+        .input-btn:active {
+            transform: scale(0.95);
+        }
+        .truth-cell {
+            transition: background 0.2s ease;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- 返回主页 -->
+    <div class="flex justify-start mb-4">
+        <a href="../index.html"
+           class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            返回主页
+        </a>
+    </div>
+
+    <!-- 标题 -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            基本逻辑门仿真
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            选择逻辑门类型，切换输入 A、B 的值，观察输出 Y 的变化 | 时序图与真值表同步更新
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- 左侧控制面板 -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- 门类型选择 -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    逻辑门选择
+                </h3>
+                <div class="grid grid-cols-2 gap-2" id="gateSelector">
+                    <button class="gate-btn active rounded-lg px-3 py-2 text-sm text-center cursor-pointer" data-gate="AND">AND</button>
+                    <button class="gate-btn rounded-lg px-3 py-2 text-sm text-center cursor-pointer" data-gate="OR">OR</button>
+                    <button class="gate-btn rounded-lg px-3 py-2 text-sm text-center cursor-pointer" data-gate="NOT">NOT</button>
+                    <button class="gate-btn rounded-lg px-3 py-2 text-sm text-center cursor-pointer" data-gate="NAND">NAND</button>
+                    <button class="gate-btn rounded-lg px-3 py-2 text-sm text-center cursor-pointer" data-gate="NOR">NOR</button>
+                    <button class="gate-btn rounded-lg px-3 py-2 text-sm text-center cursor-pointer" data-gate="XOR">XOR</button>
+                    <button class="gate-btn rounded-lg px-3 py-2 text-sm text-center cursor-pointer" data-gate="XNOR">XNOR</button>
+                </div>
+            </div>
+
+            <!-- 输入控制 -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-emerald-500 rounded-full"></span>
+                    输入控制
+                </h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-sm font-medium text-slate-600 mb-2 block">输入 A</label>
+                        <div class="flex gap-2">
+                            <button class="input-btn flex-1 rounded-lg px-4 py-3 text-lg font-bold border-2 border-slate-200 bg-white hover:border-blue-400 cursor-pointer" data-input="A" data-value="0">
+                                0
+                            </button>
+                            <button class="input-btn flex-1 rounded-lg px-4 py-3 text-lg font-bold border-2 border-blue-500 bg-blue-50 text-blue-700 cursor-pointer" data-input="A" data-value="1">
+                                1
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-slate-600 mb-2 block">输入 B</label>
+                        <div class="flex gap-2">
+                            <button class="input-btn flex-1 rounded-lg px-4 py-3 text-lg font-bold border-2 border-slate-200 bg-white hover:border-blue-400 cursor-pointer" data-input="B" data-value="0">
+                                0
+                            </button>
+                            <button class="input-btn flex-1 rounded-lg px-4 py-3 text-lg font-bold border-2 border-blue-500 bg-blue-50 text-blue-700 cursor-pointer" data-input="B" data-value="1">
+                                1
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 当前输出 -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-amber-500 rounded-full"></span>
+                    当前输出
+                </h3>
+                <div class="text-center">
+                    <div class="text-sm text-slate-500 mb-1">Y = <span id="formulaDisplay">A &middot; B</span></div>
+                    <div id="outputDisplay" class="text-5xl font-bold text-blue-600 py-3">0</div>
+                    <div id="outputLabel" class="text-xs text-slate-400 mt-1">低电平</div>
+                </div>
+            </div>
+
+            <!-- 布尔公式 -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-purple-500 rounded-full"></span>
+                    布尔表达式
+                </h3>
+                <div id="booleanFormula" class="bg-slate-50 p-3 rounded-lg text-center text-lg">
+                    \(Y = A \cdot B\)
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧图形区 -->
+        <div class="lg:col-span-8 space-y-5">
+            <!-- 时序图 -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 transition-all">
+                <div class="flex flex-wrap justify-between items-center mb-3 px-2">
+                    <div class="flex items-center gap-4 text-sm">
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-blue-500 rounded-full"></div><span class="font-medium">A</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-emerald-500 rounded-full"></div><span class="font-medium">B</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-red-500 rounded-full"></div><span class="font-medium">Y (输出)</span></div>
+                    </div>
+                    <div class="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded-full">
+                        数字时序图 | 时间轴 (ms)
+                    </div>
+                </div>
+                <div class="relative">
+                    <canvas id="timingChart" width="800" height="360" style="width:100%; height:auto; max-height:400px;"></canvas>
+                </div>
+            </div>
+
+            <!-- 真值表 -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-indigo-500 rounded-full"></span>
+                    真值表
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-center" id="truthTable">
+                        <thead>
+                            <tr class="text-sm text-slate-500">
+                                <th class="py-2 px-4">A</th>
+                                <th class="py-2 px-4">B</th>
+                                <th class="py-2 px-4">Y</th>
+                            </tr>
+                        </thead>
+                        <tbody id="truthTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ====== 状态 ======
+    let currentGate = 'AND';
+    let inputA = 1;
+    let inputB = 1;
+    let chartInstance = null;
+
+    // ====== 门逻辑 ======
+    const gateFunctions = {
+        AND:  (a, b) => a & b,
+        OR:   (a, b) => a | b,
+        NOT:  (a, _b) => a ? 0 : 1,
+        NAND: (a, b) => (a & b) ? 0 : 1,
+        NOR:  (a, b) => (a | b) ? 0 : 1,
+        XOR:  (a, b) => a ^ b,
+        XNOR: (a, b) => (a ^ b) ? 0 : 1
+    };
+
+    const gateFormulas = {
+        AND:  { text: 'A &middot; B', katex: 'Y = A \\cdot B' },
+        OR:   { text: 'A + B', katex: 'Y = A + B' },
+        NOT:  { text: '\\overline{A}', katex: 'Y = \\overline{A}' },
+        NAND: { text: '\\overline{A \\cdot B}', katex: 'Y = \\overline{A \\cdot B}' },
+        NOR:  { text: '\\overline{A + B}', katex: 'Y = \\overline{A + B}' },
+        XOR:  { text: 'A \\oplus B', katex: 'Y = A \\oplus B' },
+        XNOR: { text: '\\overline{A \\oplus B}', katex: 'Y = \\overline{A \\oplus B}' }
+    };
+
+    // ====== 时序数据生成 ======
+    // 定义4个时间段，覆盖真值表全部4种输入组合
+    const T_TOTAL = 4;  // 总时长 4ms
+    const POINTS_PER_SEG = 80;
+    const SEGMENT_DURATION = 1; // 每段 1ms
+
+    // 输入模式：每段对应一种 (A,B) 组合
+    const inputPattern = [
+        { a: 0, b: 0 },
+        { a: 0, b: 1 },
+        { a: 1, b: 0 },
+        { a: 1, b: 1 }
+    ];
+
+    function generateTimingData(gate) {
+        const times = [];
+        const dataA = [];
+        const dataB = [];
+        const dataY = [];
+        const fn = gateFunctions[gate];
+
+        for (let seg = 0; seg < 4; seg++) {
+            const { a, b } = inputPattern[seg];
+            const y = fn(a, b);
+            const tStart = seg * SEGMENT_DURATION;
+
+            for (let i = 0; i < POINTS_PER_SEG; i++) {
+                const t = tStart + (i / POINTS_PER_SEG) * SEGMENT_DURATION;
+                times.push(t);
+                dataA.push(a);
+                dataB.push(b);
+                dataY.push(y);
+            }
+        }
+        // 添加最后一个点
+        times.push(T_TOTAL);
+        dataA.push(dataA[dataA.length - 1]);
+        dataB.push(dataB[dataB.length - 1]);
+        dataY.push(dataY[dataY.length - 1]);
+
+        return { times, dataA, dataB, dataY };
+    }
+
+    // ====== Chart.js 构建 ======
+    function buildDatasets(gate) {
+        const { times, dataA, dataB, dataY } = generateTimingData(gate);
+
+        // Y轴偏移：A在y=4, B在y=2, Y在y=0（间距2，避免0/1状态重叠）
+        const OFFSET_A = 4;
+        const OFFSET_B = 2;
+        const OFFSET_Y = 0;
+
+        const pointsA = times.map((t, i) => ({ x: t, y: dataA[i] + OFFSET_A }));
+        const pointsB = times.map((t, i) => ({ x: t, y: dataB[i] + OFFSET_B }));
+        const pointsY = times.map((t, i) => ({ x: t, y: dataY[i] + OFFSET_Y }));
+
+        return { pointsA, pointsB, pointsY };
+    }
+
+    function initChart() {
+        if (chartInstance) return;
+        const { pointsA, pointsB, pointsY } = buildDatasets(currentGate);
+
+        const ctx = document.getElementById('timingChart').getContext('2d');
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                datasets: [
+                    {
+                        label: 'A',
+                        data: pointsA,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2.5,
+                        stepped: 'before',
+                        pointRadius: 0,
+                        tension: 0
+                    },
+                    {
+                        label: 'B',
+                        data: pointsB,
+                        borderColor: '#10b981',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2.5,
+                        stepped: 'before',
+                        pointRadius: 0,
+                        tension: 0
+                    },
+                    {
+                        label: 'Y',
+                        data: pointsY,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'transparent',
+                        borderWidth: 3,
+                        stepped: 'before',
+                        pointRadius: 0,
+                        tension: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                animation: false,
+                transitions: { active: { animation: { duration: 0 } } },
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const labels = ['Y', 'B', 'A'];
+                                const idx = context.datasetIndex;
+                                const rawY = context.raw.y;
+                                const offset = [0, 2, 4][idx];
+                                const val = Math.round(rawY - offset);
+                                return `${labels[idx]} = ${val}`;
+                            }
+                        },
+                        backgroundColor: 'rgba(0,0,0,0.7)'
+                    },
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        type: 'linear',
+                        title: { display: true, text: '时间 t (ms)', font: { weight: 'bold', size: 12 } },
+                        min: 0,
+                        max: T_TOTAL,
+                        ticks: {
+                            callback: val => val.toFixed(0) + ' ms',
+                            stepSize: 1
+                        },
+                        grid: { color: '#eef2ff' }
+                    },
+                    y: {
+                        min: -1,
+                        max: 6,
+                        ticks: {
+                            callback: function(val) {
+                                if (val === 0) return 'Y';
+                                if (val === 2) return 'B';
+                                if (val === 4) return 'A';
+                                return null;
+                            },
+                            stepSize: 1
+                        },
+                        grid: { color: '#eef2ff' }
+                    }
+                },
+                elements: { point: { radius: 0, hitRadius: 5 } }
+            }
+        });
+    }
+
+    // 自定义插件：绘制段分隔线和输入标签
+    const segmentLabelPlugin = {
+        id: 'segmentLabels',
+        afterDraw(chart) {
+            const { ctx, chartArea: { top, bottom }, scales } = chart;
+            if (!scales.x || !scales.y) return;
+
+            for (let seg = 1; seg < 4; seg++) {
+                const xPos = scales.x.getPixelForValue(seg);
+                ctx.save();
+                ctx.beginPath();
+                ctx.strokeStyle = '#cbd5e1';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([4, 4]);
+                ctx.moveTo(xPos, top);
+                ctx.lineTo(xPos, bottom);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.restore();
+            }
+
+            // 输入标签
+            ctx.save();
+            ctx.font = '11px monospace';
+            ctx.fillStyle = '#64748b';
+            ctx.textAlign = 'center';
+            for (let seg = 0; seg < 4; seg++) {
+                const { a, b } = inputPattern[seg];
+                const xPos = scales.x.getPixelForValue(seg + 0.5);
+                ctx.fillText(`A=${a} B=${b}`, xPos, bottom + 18);
+            }
+            ctx.restore();
+        }
+    };
+
+    function updateChart() {
+        if (!chartInstance) { initChart(); return; }
+
+        const { pointsA, pointsB, pointsY } = buildDatasets(currentGate);
+        chartInstance.data.datasets[0].data = pointsA;
+        chartInstance.data.datasets[1].data = pointsB;
+        chartInstance.data.datasets[2].data = pointsY;
+        chartInstance.update('none');
+    }
+
+    // ====== 真值表 ======
+    function updateTruthTable() {
+        const fn = gateFunctions[currentGate];
+        const rows = [
+            { a: 0, b: 0 },
+            { a: 0, b: 1 },
+            { a: 1, b: 0 },
+            { a: 1, b: 1 }
+        ];
+
+        const tbody = document.getElementById('truthTableBody');
+        tbody.innerHTML = '';
+
+        rows.forEach(({ a, b }) => {
+            const y = fn(a, b);
+            const isCurrent = (a === inputA && b === inputB);
+            const tr = document.createElement('tr');
+            tr.className = 'truth-cell ' + (isCurrent ? 'bg-blue-50 ring-2 ring-blue-300 rounded-lg' : 'hover:bg-slate-50');
+            tr.innerHTML = `
+                <td class="py-2.5 px-4 font-mono font-bold ${a ? 'text-blue-600' : 'text-slate-400'}">${a}</td>
+                <td class="py-2.5 px-4 font-mono font-bold ${b ? 'text-blue-600' : 'text-slate-400'}">${b}</td>
+                <td class="py-2.5 px-4 font-mono font-bold text-lg ${y ? 'text-emerald-600' : 'text-red-400'}">${y}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // ====== 输出显示 ======
+    function updateOutput() {
+        const fn = gateFunctions[currentGate];
+        const y = fn(inputA, inputB);
+        const display = document.getElementById('outputDisplay');
+        const label = document.getElementById('outputLabel');
+
+        display.textContent = y;
+        display.className = 'text-5xl font-bold py-3 ' + (y ? 'text-emerald-600' : 'text-red-500');
+        label.textContent = y ? '高电平' : '低电平';
+    }
+
+    // ====== 公式更新 ======
+    function updateFormula() {
+        const formula = gateFormulas[currentGate];
+        document.getElementById('formulaDisplay').innerHTML = formula.text;
+
+        const katexContainer = document.getElementById('booleanFormula');
+        katexContainer.innerHTML = '';
+        try {
+            katex.render(formula.katex, katexContainer, { throwOnError: false });
+        } catch (e) {
+            katexContainer.textContent = formula.katex;
+        }
+    }
+
+    // ====== 全局刷新 ======
+    function refreshAll() {
+        updateChart();
+        updateTruthTable();
+        updateOutput();
+        updateFormula();
+    }
+
+    // ====== 事件监听 ======
+    // 门选择
+    document.querySelectorAll('.gate-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.gate-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentGate = btn.dataset.gate;
+            refreshAll();
+        });
+    });
+
+    // 输入按钮
+    document.querySelectorAll('.input-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const input = btn.dataset.input;
+            const value = parseInt(btn.dataset.value);
+
+            if (input === 'A') inputA = value;
+            else inputB = value;
+
+            // 更新按钮样式
+            document.querySelectorAll(`.input-btn[data-input="${input}"]`).forEach(b => {
+                const v = parseInt(b.dataset.value);
+                if (v === value) {
+                    b.className = 'input-btn flex-1 rounded-lg px-4 py-3 text-lg font-bold border-2 border-blue-500 bg-blue-50 text-blue-700 cursor-pointer';
+                } else {
+                    b.className = 'input-btn flex-1 rounded-lg px-4 py-3 text-lg font-bold border-2 border-slate-200 bg-white hover:border-blue-400 cursor-pointer';
+                }
+            });
+
+            refreshAll();
+        });
+    });
+
+    // ====== 初始化 ======
+    // 先注册插件，再创建图表（避免destroy/recreate）
+    Chart.register(segmentLabelPlugin);
+    initChart();
+    refreshAll();
+
+    // KaTeX 渲染
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    { left: '\\[', right: '\\]', display: true },
+                    { left: '\\(', right: '\\)', display: false }
+                ],
+                throwOnError: false
+            });
+        }
+    });
+
+    // 窗口resize
+    window.addEventListener('resize', () => {
+        if (chartInstance) {
+            chartInstance.resize();
+            chartInstance.update();
+        }
+    });
+
+    console.log('基本逻辑门仿真已启动 | 7种逻辑门可选 | 时序图+真值表同步');
+</script>
+</body>
+</html>
