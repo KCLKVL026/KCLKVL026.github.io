@@ -223,6 +223,22 @@
         let inputChartInstance = null;
         let outputChartInstance = null;
 
+        // ==================== RAF THROTTLING ====================
+        let rafId = null;
+        let pendingUpdate = false;
+
+        function scheduleUpdate() {
+            pendingUpdate = true;
+            if (rafId !== null) return;
+            rafId = requestAnimationFrame(() => {
+                rafId = null;
+                if (pendingUpdate) {
+                    pendingUpdate = false;
+                    updateAll();
+                }
+            });
+        }
+
         // ==================== GET PARAMS ====================
         function getParams() {
             return {
@@ -372,119 +388,135 @@
             return datasets;
         }
 
-        // ==================== UPDATE CHARTS ====================
+        // ==================== UPDATE CHARTS (in-place, no destroy) ====================
+        const INPUT_CHART_CONFIG = {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'I_B vs V_BE',
+                    data: [],
+                    borderColor: '#6366f1',
+                    backgroundColor: '#6366f1',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    showLine: true,
+                    tension: 0.3,
+                    order: 1
+                }, {
+                    label: '工作点',
+                    data: [],
+                    borderColor: '#ef4444',
+                    backgroundColor: '#ef4444',
+                    pointRadius: 8,
+                    pointHoverRadius: 10,
+                    showLine: false,
+                    order: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                if (ctx.datasetIndex === 0) {
+                                    return `V_BE = ${ctx.parsed.x.toFixed(3)}V, I_B = ${ctx.parsed.y.toFixed(1)} μA`;
+                                }
+                                return `Q点: V_BE = ${ctx.parsed.x.toFixed(3)}V, I_B = ${ctx.parsed.y.toFixed(1)} μA`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'V_BE (V)', font: { size: 12 } },
+                        min: 0.30, max: 0.85,
+                        grid: { color: 'rgba(0,0,0,0.05)' }
+                    },
+                    y: {
+                        title: { display: true, text: 'I_B (μA)', font: { size: 12 } },
+                        min: 0,
+                        grid: { color: 'rgba(0,0,0,0.05)' }
+                    }
+                }
+            }
+        };
+
+        const OUTPUT_CHART_CONFIG = {
+            type: 'scatter',
+            data: { datasets: [] },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { boxWidth: 14, padding: 12, font: { size: 10 } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                const ds = ctx.dataset;
+                                if (ds.label === 'Q 点 (工作点)') {
+                                    return `Q点: V_CE = ${ctx.parsed.x.toFixed(2)}V, I_C = ${ctx.parsed.y.toFixed(2)} mA`;
+                                }
+                                if (ds.label === 'DC 负载线') {
+                                    return `负载线: V_CE = ${ctx.parsed.x.toFixed(1)}V, I_C = ${ctx.parsed.y.toFixed(2)} mA`;
+                                }
+                                return `${ds.label}: I_C = ${ctx.parsed.y.toFixed(2)} mA`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'V_CE (V)', font: { size: 12 } },
+                        min: 0, max: 22,
+                        grid: { color: 'rgba(0,0,0,0.05)' }
+                    },
+                    y: {
+                        title: { display: true, text: 'I_C (mA)', font: { size: 12 } },
+                        min: 0,
+                        grid: { color: 'rgba(0,0,0,0.05)' }
+                    }
+                }
+            }
+        };
+
         function updateInputChart(beta, I_B_q, beta_q) {
             const { data, qPoint } = buildInputDataset(beta, I_B_q, beta_q);
 
-            const config = {
-                type: 'scatter',
-                data: {
-                    datasets: [{
-                        label: 'I_B vs V_BE',
-                        data: data,
-                        borderColor: '#6366f1',
-                        backgroundColor: '#6366f1',
-                        borderWidth: 2,
-                        pointRadius: 0,
-                        showLine: true,
-                        tension: 0.3,
-                        order: 1
-                    }, {
-                        label: '工作点',
-                        data: [qPoint],
-                        borderColor: '#ef4444',
-                        backgroundColor: '#ef4444',
-                        pointRadius: 8,
-                        pointHoverRadius: 10,
-                        showLine: false,
-                        order: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: { duration: 150 },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(ctx) {
-                                    if (ctx.datasetIndex === 0) {
-                                        return `V_BE = ${ctx.parsed.x.toFixed(3)}V, I_B = ${ctx.parsed.y.toFixed(1)} μA`;
-                                    }
-                                    return `Q点: V_BE = ${ctx.parsed.x.toFixed(3)}V, I_B = ${ctx.parsed.y.toFixed(1)} μA`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            title: { display: true, text: 'V_BE (V)', font: { size: 12 } },
-                            min: 0.30, max: 0.85,
-                            grid: { color: 'rgba(0,0,0,0.05)' }
-                        },
-                        y: {
-                            title: { display: true, text: 'I_B (μA)', font: { size: 12 } },
-                            min: 0,
-                            grid: { color: 'rgba(0,0,0,0.05)' }
-                        }
-                    }
-                }
-            };
-
-            if (inputChartInstance) inputChartInstance.destroy();
-            const ctx = document.getElementById('inputChart').getContext('2d');
-            inputChartInstance = new Chart(ctx, config);
+            if (!inputChartInstance) {
+                const config = JSON.parse(JSON.stringify(INPUT_CHART_CONFIG));
+                config.data.datasets[0].data = data;
+                config.data.datasets[1].data = [qPoint];
+                const ctx = document.getElementById('inputChart').getContext('2d');
+                inputChartInstance = new Chart(ctx, config);
+            } else {
+                inputChartInstance.data.datasets[0].data = data;
+                inputChartInstance.data.datasets[1].data = [qPoint];
+                inputChartInstance.update('none');
+            }
         }
 
         function updateOutputChart(beta, V_A, V_CC, R_C, qIb, qVce) {
             const datasets = buildOutputDatasets(beta, V_A, V_CC, R_C, qIb, qVce);
 
-            const config = {
-                type: 'scatter',
-                data: { datasets },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: { duration: 150 },
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { boxWidth: 14, padding: 12, font: { size: 10 } }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(ctx) {
-                                    const ds = ctx.dataset;
-                                    if (ds.label === 'Q 点 (工作点)') {
-                                        return `Q点: V_CE = ${ctx.parsed.x.toFixed(2)}V, I_C = ${ctx.parsed.y.toFixed(2)} mA`;
-                                    }
-                                    if (ds.label === 'DC 负载线') {
-                                        return `负载线: V_CE = ${ctx.parsed.x.toFixed(1)}V, I_C = ${ctx.parsed.y.toFixed(2)} mA`;
-                                    }
-                                    return `${ds.label}: I_C = ${ctx.parsed.y.toFixed(2)} mA`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            title: { display: true, text: 'V_CE (V)', font: { size: 12 } },
-                            min: 0, max: Math.max(V_CC + 2, 22),
-                            grid: { color: 'rgba(0,0,0,0.05)' }
-                        },
-                        y: {
-                            title: { display: true, text: 'I_C (mA)', font: { size: 12 } },
-                            min: 0,
-                            grid: { color: 'rgba(0,0,0,0.05)' }
-                        }
-                    }
-                }
-            };
-
-            if (outputChartInstance) outputChartInstance.destroy();
-            const ctx = document.getElementById('outputChart').getContext('2d');
-            outputChartInstance = new Chart(ctx, config);
+            if (!outputChartInstance) {
+                const config = JSON.parse(JSON.stringify(OUTPUT_CHART_CONFIG));
+                config.data.datasets = datasets;
+                config.options.scales.x.max = Math.max(V_CC + 2, 22);
+                const ctx = document.getElementById('outputChart').getContext('2d');
+                outputChartInstance = new Chart(ctx, config);
+            } else {
+                outputChartInstance.data.datasets = datasets;
+                outputChartInstance.options.scales.x.max = Math.max(V_CC + 2, 22);
+                outputChartInstance.update('none');
+            }
         }
 
         // ==================== MAIN UPDATE ====================
@@ -520,9 +552,9 @@
             updateOutputChart(p.beta, p.V_A, p.V_CC, p.R_C, p.I_B, p.V_CE);
         }
 
-        // ==================== EVENT LISTENERS ====================
+        // ==================== EVENT LISTENERS (RAF-throttled) ====================
         [iBSlider, vceSlider, betaSlider, vaSlider, vccSlider, rcSlider].forEach(slider => {
-            slider.addEventListener('input', updateAll);
+            slider.addEventListener('input', scheduleUpdate);
         });
 
         // ==================== INIT ====================

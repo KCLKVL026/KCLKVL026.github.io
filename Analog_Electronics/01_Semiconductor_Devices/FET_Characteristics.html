@@ -79,6 +79,22 @@
     <script>
         let devType = 'JFET', transferChartInst = null, outputChartInst = null;
 
+        // ==================== RAF THROTTLING ====================
+        let rafId = null;
+        let pendingUpdate = false;
+
+        function scheduleUpdate() {
+            pendingUpdate = true;
+            if (rafId !== null) return;
+            rafId = requestAnimationFrame(() => {
+                rafId = null;
+                if (pendingUpdate) {
+                    pendingUpdate = false;
+                    updateAll();
+                }
+            });
+        }
+
         function getParams() {
             return {
                 V_GS: parseFloat(vgsSlider.value) / 10,
@@ -138,14 +154,41 @@
                 const vgs = gsMin + (gsMax - gsMin) * i / 200;
                 transferPts.push({ x: vgs, y: calcId(vgs, p) * 1000 });
             }
-            let cfg = { type:'scatter', data:{ datasets:[
-                { data:transferPts, borderColor:'#6366f1', borderWidth:2, pointRadius:0, showLine:true, tension:0.3, order:1 },
-                { data:[{ x:p.V_GS, y:I_DQ*1000 }], borderColor:'#ef4444', backgroundColor:'#ef4444', pointRadius:8, showLine:false, order:0 }
-            ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
-                plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx => ctx.datasetIndex===0 ? `V_GS=${ctx.parsed.x.toFixed(2)}V, I_D=${ctx.parsed.y.toFixed(2)}mA` : `Q: V_GS=${ctx.parsed.x.toFixed(2)}V` } } },
-                scales:{ x:{title:{display:true,text:'V_GS (V)'}}, y:{title:{display:true,text:'I_D (mA)'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
-            if (transferChartInst) transferChartInst.destroy();
-            transferChartInst = new Chart(document.getElementById('transferChart').getContext('2d'), cfg);
+            const qPt = { x: p.V_GS, y: I_DQ * 1000 };
+
+            if (!transferChartInst) {
+                const cfg = {
+                    type: 'scatter',
+                    data: {
+                        datasets: [
+                            { label: 'I_D vs V_GS', data: transferPts, borderColor: '#6366f1', borderWidth: 2, pointRadius: 0, showLine: true, tension: 0.3, order: 1 },
+                            { label: '工作点', data: [qPt], borderColor: '#ef4444', backgroundColor: '#ef4444', pointRadius: 8, showLine: false, order: 0 }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false, animation: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => ctx.datasetIndex === 0
+                                        ? `V_GS=${ctx.parsed.x.toFixed(2)}V, I_D=${ctx.parsed.y.toFixed(2)}mA`
+                                        : `Q: V_GS=${ctx.parsed.x.toFixed(2)}V`
+                                }
+                            }
+                        },
+                        scales: {
+                            x: { title: { display: true, text: 'V_GS (V)' } },
+                            y: { title: { display: true, text: 'I_D (mA)' }, grid: { color: 'rgba(0,0,0,0.05)' } }
+                        }
+                    }
+                };
+                transferChartInst = new Chart(document.getElementById('transferChart').getContext('2d'), cfg);
+            } else {
+                transferChartInst.data.datasets[0].data = transferPts;
+                transferChartInst.data.datasets[1].data = [qPt];
+                transferChartInst.update('none');
+            }
 
             // Output characteristic family
             const vgsValues = p.devType === 'JFET' ? [-4, -3, -2, -1, 0] : [1, 2, 3, 4, 5];
@@ -163,19 +206,34 @@
                     }
                     pts.push({ x: vds, y: id * 1000 });
                 }
-                return { label: `V_GS=${vgs}V`, data:pts, borderColor:colors[idx], borderWidth:1.5, pointRadius:0, showLine:true, order:2 };
+                return { label: `V_GS=${vgs}V`, data: pts, borderColor: colors[idx], borderWidth: 1.5, pointRadius: 0, showLine: true, order: 2 };
             });
             // Load line
-            const ll = [{ x:0, y:p.V_DD/p.R_D*1000 }, { x:p.V_DD, y:0 }];
-            datasets.push({ label:'DC负载线', data:ll, borderColor:'#f43f5e', borderWidth:2, borderDash:[6,3], pointRadius:0, showLine:true, order:1 });
+            const ll = [{ x: 0, y: p.V_DD / p.R_D * 1000 }, { x: p.V_DD, y: 0 }];
+            datasets.push({ label: 'DC负载线', data: ll, borderColor: '#f43f5e', borderWidth: 2, borderDash: [6, 3], pointRadius: 0, showLine: true, order: 1 });
             // Q point
-            datasets.push({ label:'Q点', data:[{ x:p.V_DS, y:I_DQ*1000 }], borderColor:'#ef4444', backgroundColor:'#ef4444', pointRadius:8, showLine:false, order:0 });
+            datasets.push({ label: 'Q点', data: [{ x: p.V_DS, y: I_DQ * 1000 }], borderColor: '#ef4444', backgroundColor: '#ef4444', pointRadius: 8, showLine: false, order: 0 });
 
-            cfg = { type:'scatter', data:{ datasets }, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
-                plugins:{ legend:{position:'bottom',labels:{boxWidth:14,font:{size:10}}} },
-                scales:{ x:{title:{display:true,text:'V_DS (V)'}, grid:{color:'rgba(0,0,0,0.05)'}}, y:{title:{display:true,text:'I_D (mA)'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
-            if (outputChartInst) outputChartInst.destroy();
-            outputChartInst = new Chart(document.getElementById('outputChart').getContext('2d'), cfg);
+            if (!outputChartInst) {
+                const cfg = {
+                    type: 'scatter',
+                    data: { datasets },
+                    options: {
+                        responsive: true, maintainAspectRatio: false, animation: false,
+                        plugins: {
+                            legend: { position: 'bottom', labels: { boxWidth: 14, font: { size: 10 } } }
+                        },
+                        scales: {
+                            x: { title: { display: true, text: 'V_DS (V)' }, grid: { color: 'rgba(0,0,0,0.05)' } },
+                            y: { title: { display: true, text: 'I_D (mA)' }, grid: { color: 'rgba(0,0,0,0.05)' } }
+                        }
+                    }
+                };
+                outputChartInst = new Chart(document.getElementById('outputChart').getContext('2d'), cfg);
+            } else {
+                outputChartInst.data.datasets = datasets;
+                outputChartInst.update('none');
+            }
         }
 
         function setDevice(type) {
@@ -187,13 +245,16 @@
             document.getElementById('param2Label').innerHTML = type === 'JFET' ? '\\(V_P\\)' : '\\(V_{TH}\\)';
             if (type === 'JFET') { vgsSlider.min = -60; vgsSlider.max = 0; vgsSlider.value = -20; param1Slider.value = 10; param2Slider.min = -6; param2Slider.max = -1; param2Slider.value = -4; }
             else { vgsSlider.min = 0; vgsSlider.max = 80; vgsSlider.value = 30; param1Slider.value = 2; param2Slider.min = 0.5; param2Slider.max = 4; param2Slider.value = 2; }
+            // Destroy chart instances on device switch so they reinitialize with new scales
+            if (transferChartInst) { transferChartInst.destroy(); transferChartInst = null; }
+            if (outputChartInst) { outputChartInst.destroy(); outputChartInst = null; }
             updateAll();
             setTimeout(() => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); }, 80);
         }
         document.getElementById('tabJFET').addEventListener('click', () => setDevice('JFET'));
         document.getElementById('tabMOS').addEventListener('click', () => setDevice('MOS'));
 
-        ['vgsSlider','vdsSlider','param1Slider','param2Slider','vddSlider','rdSlider'].forEach(id => document.getElementById(id).addEventListener('input', updateAll));
+        ['vgsSlider','vdsSlider','param1Slider','param2Slider','vddSlider','rdSlider'].forEach(id => document.getElementById(id).addEventListener('input', scheduleUpdate));
         updateAll();
         window.addEventListener('load', () => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); });
     </script>

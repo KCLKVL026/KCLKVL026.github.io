@@ -70,6 +70,22 @@
         const k_over_q = 8.617e-5;
         let viChartInst = null;
 
+        // ==================== RAF THROTTLING ====================
+        let rafId = null;
+        let pendingUpdate = false;
+
+        function scheduleUpdate() {
+            pendingUpdate = true;
+            if (rafId !== null) return;
+            rafId = requestAnimationFrame(() => {
+                rafId = null;
+                if (pendingUpdate) {
+                    pendingUpdate = false;
+                    updateAll();
+                }
+            });
+        }
+
         function getParams() {
             return {
                 V_D: parseFloat(vdSlider.value) / 10,
@@ -118,18 +134,44 @@
                 if (id < -p.I_S * 1.1) id = -p.I_S; // reverse leakage cap
                 viPts.push({ x: vd, y: id });
             }
+            const qPt = { x: p.V_D, y: r.I_D };
 
-            const cfg = { type:'scatter', data:{ datasets:[
-                { label:'I_D vs V_D', data:viPts, borderColor:'#6366f1', borderWidth:2, pointRadius:0, showLine:true, tension:0.3, order:1 },
-                { label:'工作点', data:[{ x:p.V_D, y:r.I_D }], borderColor:'#ef4444', backgroundColor:'#ef4444', pointRadius:8, showLine:false, order:0 }
-            ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
-                plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx => ctx.datasetIndex === 0 ? `V_D=${ctx.parsed.x.toFixed(3)}V, I_D=${ctx.parsed.y.toExponential(1)}A` : `Q点: V_D=${ctx.parsed.x.toFixed(3)}V, I_D=${ctx.parsed.y.toExponential(1)}A` } } },
-                scales:{ x:{title:{display:true,text:'V_D (V)'}, grid:{color:'rgba(0,0,0,0.05)'}}, y:{title:{display:true,text:'I_D (A)'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
-            if (viChartInst) viChartInst.destroy();
-            viChartInst = new Chart(document.getElementById('viChart').getContext('2d'), cfg);
+            if (!viChartInst) {
+                const cfg = {
+                    type: 'scatter',
+                    data: {
+                        datasets: [
+                            { label: 'I_D vs V_D', data: viPts, borderColor: '#6366f1', borderWidth: 2, pointRadius: 0, showLine: true, tension: 0.3, order: 1 },
+                            { label: '工作点', data: [qPt], borderColor: '#ef4444', backgroundColor: '#ef4444', pointRadius: 8, showLine: false, order: 0 }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false, animation: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => ctx.datasetIndex === 0
+                                        ? `V_D=${ctx.parsed.x.toFixed(3)}V, I_D=${ctx.parsed.y.toExponential(1)}A`
+                                        : `Q点: V_D=${ctx.parsed.x.toFixed(3)}V, I_D=${ctx.parsed.y.toExponential(1)}A`
+                                }
+                            }
+                        },
+                        scales: {
+                            x: { title: { display: true, text: 'V_D (V)' }, grid: { color: 'rgba(0,0,0,0.05)' } },
+                            y: { title: { display: true, text: 'I_D (A)' }, grid: { color: 'rgba(0,0,0,0.05)' } }
+                        }
+                    }
+                };
+                viChartInst = new Chart(document.getElementById('viChart').getContext('2d'), cfg);
+            } else {
+                viChartInst.data.datasets[0].data = viPts;
+                viChartInst.data.datasets[1].data = [qPt];
+                viChartInst.update('none');
+            }
         }
 
-        ['vdSlider','tSlider','nSlider','isSlider'].forEach(id => document.getElementById(id).addEventListener('input', updateAll));
+        ['vdSlider','tSlider','nSlider','isSlider'].forEach(id => document.getElementById(id).addEventListener('input', scheduleUpdate));
         updateAll();
         window.addEventListener('load', () => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); });
     </script>

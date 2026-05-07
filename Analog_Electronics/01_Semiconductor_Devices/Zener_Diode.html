@@ -69,6 +69,8 @@
     <script>
         const I_Z_MIN = 0.005;
         let regChartInst = null;
+        let rafId = null;
+        let pendingUpdate = false;
 
         function getParams() {
             return {
@@ -99,8 +101,20 @@
             return { Vout_noZener, V_out, I_Z, I_L, P_Z, regulated, V_threshold };
         }
 
-        function updateAll() {
-            const p = getParams(), r = compute(p);
+        function buildCurveData(p) {
+            const noZener = [], withZener = [];
+            for (let i = 0; i <= 200; i++) {
+                const vin = 20 * i / 200;
+                noZener.push({ x: vin, y: vin * p.R_L / (p.R_S + p.R_L) });
+                let vout;
+                if (vin > p.V_Z + I_Z_MIN * p.R_S) vout = p.V_Z;
+                else vout = vin * p.R_L / (p.R_S + p.R_L);
+                withZener.push({ x: vin, y: vout });
+            }
+            return { noZener, withZener };
+        }
+
+        function updateDisplays(p, r) {
             document.getElementById('vinValue').textContent = p.V_in.toFixed(1) + ' V';
             document.getElementById('vzValue').textContent = p.V_Z.toFixed(1) + ' V';
             document.getElementById('rsValue').textContent = p.R_S.toFixed(0) + ' Ω';
@@ -114,30 +128,52 @@
             if (r.regulated) { statusEl.textContent = '稳压正常'; statusEl.className = 'text-lg font-bold text-emerald-600'; }
             else if (p.V_in < p.V_Z) { statusEl.textContent = '输入电压不足'; statusEl.className = 'text-lg font-bold text-slate-500'; }
             else { statusEl.textContent = '未进入稳压区 (I_Z < 5mA)'; statusEl.className = 'text-lg font-bold text-amber-600'; }
+        }
 
-            // Build V_out vs V_in curves
-            const noZener = [], withZener = [];
-            for (let i = 0; i <= 200; i++) {
-                const vin = 20 * i / 200;
-                noZener.push({ x: vin, y: vin * p.R_L / (p.R_S + p.R_L) });
-                let vout;
-                if (vin > p.V_Z + I_Z_MIN * p.R_S) vout = p.V_Z;
-                else vout = vin * p.R_L / (p.R_S + p.R_L);
-                withZener.push({ x: vin, y: vout });
-            }
+        function updateChart(p, r) {
+            const { noZener, withZener } = buildCurveData(p);
+            if (!regChartInst) return;
+            regChartInst.data.datasets[0].data = noZener;
+            regChartInst.data.datasets[1].data = withZener;
+            regChartInst.data.datasets[2].data = [{ x: p.V_in, y: r.V_out }];
+            regChartInst.update('none'); // 'none' = no animation, instant redraw
+        }
+
+        function updateAll() {
+            const p = getParams(), r = compute(p);
+            updateDisplays(p, r);
+            updateChart(p, r);
+        }
+
+        function initChart() {
+            const p = getParams(), r = compute(p);
+            const { noZener, withZener } = buildCurveData(p);
             const cfg = { type:'scatter', data:{ datasets:[
                 { label:'无稳压(纯分压)', data:noZener, borderColor:'#f43f5e', borderWidth:1.5, borderDash:[4,3], pointRadius:0, showLine:true, order:2 },
                 { label:'有齐纳稳压', data:withZener, borderColor:'#6366f1', borderWidth:2, pointRadius:0, showLine:true, tension:0.1, order:1 },
                 { label:'工作点', data:[{ x:p.V_in, y:r.V_out }], borderColor:'#ef4444', backgroundColor:'#ef4444', pointRadius:8, showLine:false, order:0 }
-            ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
+            ]}, options:{ responsive:true, maintainAspectRatio:false, animation:false,
                 plugins:{ legend:{position:'bottom',labels:{boxWidth:14,font:{size:10}}}, tooltip:{ callbacks:{ label:ctx => `V_in=${ctx.parsed.x.toFixed(1)}V, V_out=${ctx.parsed.y.toFixed(2)}V` } } },
                 scales:{ x:{title:{display:true,text:'V_in (V)'}, grid:{color:'rgba(0,0,0,0.05)'}}, y:{title:{display:true,text:'V_out (V)'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
-            if (regChartInst) regChartInst.destroy();
             regChartInst = new Chart(document.getElementById('regChart').getContext('2d'), cfg);
         }
 
-        ['vinSlider','vzSlider','rsSlider','rlSlider'].forEach(id => document.getElementById(id).addEventListener('input', updateAll));
-        updateAll();
+        // Throttle via requestAnimationFrame: coalesce rapid slider events into one frame
+        function scheduleUpdate() {
+            pendingUpdate = true;
+            if (rafId !== null) return;
+            rafId = requestAnimationFrame(() => {
+                rafId = null;
+                if (pendingUpdate) {
+                    pendingUpdate = false;
+                    updateAll();
+                }
+            });
+        }
+
+        initChart();
+        updateDisplays(getParams(), compute(getParams()));
+        ['vinSlider','vzSlider','rsSlider','rlSlider'].forEach(id => document.getElementById(id).addEventListener('input', scheduleUpdate));
         window.addEventListener('load', () => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); });
     </script>
 </body>
