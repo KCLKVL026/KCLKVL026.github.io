@@ -73,6 +73,193 @@
             </p>
         </div>
 
+        <!-- ================= 1. 直流电路基础 (新增类别) ================= -->
+        <div class="mb-12">
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold text-slate-800 section-title">直流电路基础</h2>
+                <span class="text-sm text-slate-400 ml-2">欧姆定律 · 串并联 · KVL/KCL · 电桥</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7 auto-rows-fr">
+                <!-- 欧姆定律与功率 -->
+                <a href="./01_DC_Circuit_Basics/Ohms_Law.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 text-xl shadow-sm">
+                            ⚡
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-red-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-red-700 transition-colors">欧姆定律与功率</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            滑动电压/电阻，实时显示电流和功率。V-I特性曲线和P-R曲线，单位自动换算。
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-red-500 gap-1">
+                            <span>V=IR</span>
+                            <span class="text-slate-300">|</span>
+                            <span>功率计算</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- 电阻串并联 -->
+                <a href="./01_DC_Circuit_Basics/Series_Parallel_Resistors.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 text-xl shadow-sm">
+                            🔗
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-rose-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-rose-700 transition-colors">电阻串并联</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            可切换串联/并联模式，显示等效电阻、分压/分流比例，柱状图对比电压电流分配。
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-rose-500 gap-1">
+                            <span>等效电阻</span>
+                            <span class="text-slate-300">|</span>
+                            <span>分压分流</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- 基尔霍夫定律 -->
+                <a href="./01_DC_Circuit_Basics/KVL_KCL.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 text-xl shadow-sm">
+                            📐
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-pink-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-pink-700 transition-colors">基尔霍夫定律</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            多回路DC电路，改变任一电阻，观察KVL和KCL始终成立，电压电流实时分配。
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-pink-500 gap-1">
+                            <span>KVL</span>
+                            <span class="text-slate-300">|</span>
+                            <span>KCL</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- 惠斯通电桥 -->
+                <a href="./01_DC_Circuit_Basics/Wheatstone_Bridge.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-fuchsia-100 flex items-center justify-center text-fuchsia-600 text-xl shadow-sm">
+                            🌉
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-fuchsia-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-fuchsia-700 transition-colors">惠斯通电桥</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            经典桥式电路，调节桥臂电阻观察平衡条件，检流计电流方向和大小实时变化。
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-fuchsia-500 gap-1">
+                            <span>电桥平衡</span>
+                            <span class="text-slate-300">|</span>
+                            <span>检流计</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ================= 2. 电路定理 (新增类别) ================= -->
+        <div class="mb-12">
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold text-slate-800 section-title">电路定理</h2>
+                <span class="text-sm text-slate-400 ml-2">戴维南 · 诺顿 · 叠加 · 最大功率传输</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7 auto-rows-fr">
+                <!-- 戴维南与诺顿等效 -->
+                <a href="./02_Circuit_Theorems/Thevenin_Norton.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xl shadow-sm">
+                            🔄
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-blue-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-blue-700 transition-colors">戴维南与诺顿等效</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            含源二端网络简化，V_th+R_th等效电路与原网络驱动同一负载，验证完全等效。
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-blue-500 gap-1">
+                            <span>戴维南</span>
+                            <span class="text-slate-300">|</span>
+                            <span>诺顿</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- 叠加定理 -->
+                <a href="./02_Circuit_Theorems/Superposition.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xl shadow-sm">
+                            ➕
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-indigo-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-indigo-700 transition-colors">叠加定理</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            含2个独立源的线性电路，分别让各源单独作用，叠加等于总响应，动画逐步演示。
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-indigo-500 gap-1">
+                            <span>分步叠加</span>
+                            <span class="text-slate-300">|</span>
+                            <span>线性系统</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- 最大功率传输定理 -->
+                <a href="./02_Circuit_Theorems/Max_Power_Transfer.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center text-sky-600 text-xl shadow-sm">
+                            📈
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-sky-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-sky-700 transition-colors">最大功率传输定理</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            戴维南等效源驱动可变负载，功率-电阻抛物线曲线，标记最大功率匹配点。
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-sky-500 gap-1">
+                            <span>负载匹配</span>
+                            <span class="text-slate-300">|</span>
+                            <span>R_L=R_th</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
         <!-- ================= 3. 正弦特性与功率特性 ================= -->
         <div class="mb-12">
             <div class="flex items-center gap-3 mb-5">
@@ -84,7 +271,7 @@
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7 auto-rows-fr">
                 <!-- RLC正弦特性 -->
-                <a href="./Sinusoidal_Power/RLC_AC_V3.html" target="_blank" rel="noopener noreferrer" 
+                <a href="./03_Sinusoidal_Power/RLC_AC_V3.html" target="_blank" rel="noopener noreferrer" 
                    class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
                     <div class="flex items-start justify-between">
                         <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xl shadow-sm">
@@ -107,7 +294,7 @@
                     </div>
                 </a>
                 <!-- 电阻正弦特性 -->
-                <a href="./Sinusoidal_Power/R_component.html" target="_blank" rel="noopener noreferrer"
+                <a href="./03_Sinusoidal_Power/R_component.html" target="_blank" rel="noopener noreferrer"
                    class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
                     <div class="flex items-start justify-between">
                         <div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 text-xl shadow-sm">
@@ -130,7 +317,7 @@
                     </div>
                 </a>                
                 <!-- 电感正弦特性 -->
-                <a href="./Sinusoidal_Power/L_component.html" target="_blank" rel="noopener noreferrer"
+                <a href="./03_Sinusoidal_Power/L_component.html" target="_blank" rel="noopener noreferrer"
                    class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
                     <div class="flex items-start justify-between">
                         <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-xl shadow-sm">
@@ -153,7 +340,7 @@
                     </div>
                 </a>
                 <!-- 电容正弦特性 -->
-                <a href="./Sinusoidal_Power/C_component.html" target="_blank" rel="noopener noreferrer"
+                <a href="./03_Sinusoidal_Power/C_component.html" target="_blank" rel="noopener noreferrer"
                    class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
                     <div class="flex items-start justify-between">
                         <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 text-xl shadow-sm">
@@ -176,7 +363,7 @@
                     </div>
                 </a>
                 <!-- LC功率曲线 -->
-                <a href="./Sinusoidal_Power/LC_Power.html" target="_blank" rel="noopener noreferrer"
+                <a href="./03_Sinusoidal_Power/LC_Power.html" target="_blank" rel="noopener noreferrer"
                    class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
                     <div class="flex items-start justify-between">
                         <div class="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 text-xl shadow-sm">
@@ -212,7 +399,7 @@
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7 auto-rows-fr">
                 <!-- RC低通滤波器 -->
-                <a href="./Frequency_Response/RC_low_pass_filter.html" target="_blank" rel="noopener noreferrer"
+                <a href="./04_Frequency_Response/RC_low_pass_filter.html" target="_blank" rel="noopener noreferrer"
                    class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
                     <div class="flex items-start justify-between">
                         <div class="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center text-sky-600 text-xl shadow-sm">
@@ -235,7 +422,7 @@
                     </div>
                 </a>
                 <!-- RC高通滤波器 -->
-                <a href="./Frequency_Response/RC_high_pass_filter.html" target="_blank" rel="noopener noreferrer"
+                <a href="./04_Frequency_Response/RC_high_pass_filter.html" target="_blank" rel="noopener noreferrer"
                    class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
                     <div class="flex items-start justify-between">
                         <div class="w-10 h-10 rounded-full bg-cyan-100 flex items-center justify-center text-cyan-600 text-xl shadow-sm">
@@ -258,7 +445,7 @@
                     </div>
                 </a>
                 <!-- 带通滤波器 -->
-                <a href="./Frequency_Response/band_pass_filter.html" target="_blank" rel="noopener noreferrer"
+                <a href="./04_Frequency_Response/band_pass_filter.html" target="_blank" rel="noopener noreferrer"
                    class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
                     <div class="flex items-start justify-between">
                         <div class="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 text-xl shadow-sm">
@@ -281,7 +468,7 @@
                     </div>
                 </a>
                 <!-- 带阻滤波器 -->
-                <a href="./Frequency_Response/band_stop_filter.html" target="_blank" rel="noopener noreferrer"
+                <a href="./04_Frequency_Response/band_stop_filter.html" target="_blank" rel="noopener noreferrer"
                    class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
                     <div class="flex items-start justify-between">
                         <div class="w-10 h-10 rounded-full bg-fuchsia-100 flex items-center justify-center text-fuchsia-600 text-xl shadow-sm">
@@ -304,7 +491,7 @@
                     </div>
                 </a>
                 <!-- RLC串联谐振频率特性 -->
-                <a href="./Frequency_Response/Series_Resonance_V2.html" target="_blank" rel="noopener noreferrer"
+                <a href="./04_Frequency_Response/Series_Resonance_V2.html" target="_blank" rel="noopener noreferrer"
                    class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
                     <div class="flex items-start justify-between">
                         <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 text-xl shadow-sm">
@@ -327,7 +514,7 @@
                     </div>
                 </a>
                 <!-- RLC并联谐振频率特性 (新增，恒流源激励) -->
-                <a href="./Frequency_Response/Parallel_Resonance.html" target="_blank" rel="noopener noreferrer"
+                <a href="./04_Frequency_Response/Parallel_Resonance.html" target="_blank" rel="noopener noreferrer"
                    class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
                     <div class="flex items-start justify-between">
                         <div class="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 text-xl shadow-sm">
@@ -352,6 +539,65 @@
             </div>
         </div>
 
+        <!-- ================= 5. 互感与变压器 (新增类别) ================= -->
+        <div class="mb-12">
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold text-slate-800 section-title">互感与变压器</h2>
+                <span class="text-sm text-slate-400 ml-2">耦合电感 · 理想变压器 · 阻抗变换</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7 auto-rows-fr">
+                <!-- 互感耦合线圈 -->
+                <a href="./05_Mutual_Inductance_Transformers/Mutual_Inductance.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 text-xl shadow-sm">
+                            🧲
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-violet-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-violet-700 transition-colors">互感耦合线圈</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            两个耦合电感，调节耦合系数k，串联相助/相消等效电感变化，T型去耦等效。
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-violet-500 gap-1">
+                            <span>耦合系数</span>
+                            <span class="text-slate-300">|</span>
+                            <span>去耦等效</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- 理想变压器 -->
+                <a href="./05_Mutual_Inductance_Transformers/Ideal_Transformer.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 text-xl shadow-sm">
+                            ⚡
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-purple-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-purple-700 transition-colors">理想变压器</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            可调匝数比n，原副边电压电流波形对比，验证V₂/V₁=n、I₂/I₁=1/n，阻抗变换。
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-purple-500 gap-1">
+                            <span>匝数比</span>
+                            <span class="text-slate-300">|</span>
+                            <span>阻抗变换</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
         <!-- ================= 6. 瞬态分析 ================= -->
         <div class="mb-12">
             <div class="flex items-center gap-3 mb-5">
@@ -363,7 +609,7 @@
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7 auto-rows-fr">
                 <!-- 电容充放电特性 -->
-                <a href="./Transient_Analysis/Capacitor_Charging_Discharging.html" target="_blank" rel="noopener noreferrer"
+                <a href="./06_Transient_Analysis/Capacitor_Charging_Discharging.html" target="_blank" rel="noopener noreferrer"
                    class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
                     <div class="flex items-start justify-between">
                         <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-xl shadow-sm">
@@ -386,7 +632,7 @@
                     </div>
                 </a>
                 <!-- 电感充放电特性 -->
-                <a href="./Transient_Analysis/Inductor_Charging_Discharging.html" target="_blank" rel="noopener noreferrer"
+                <a href="./06_Transient_Analysis/Inductor_Charging_Discharging.html" target="_blank" rel="noopener noreferrer"
                    class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
                     <div class="flex items-start justify-between">
                         <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 text-xl shadow-sm">
@@ -408,6 +654,29 @@
                         </div>
                     </div>
                 </a>
+                <!-- RLC二阶瞬态响应 (新增) -->
+                <a href="./06_Transient_Analysis/RLC_Step_Response.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 text-xl shadow-sm">
+                            🔄
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-rose-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-rose-700 transition-colors">RLC二阶瞬态响应</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            串联RLC电路阶跃响应，欠阻尼/临界阻尼/过阻尼三种状态切换，s平面极点实时追踪。
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-rose-500 gap-1">
+                            <span>阻尼特性</span>
+                            <span class="text-slate-300">|</span>
+                            <span>极点分布</span>
+                        </div>
+                    </div>
+                </a>
             </div>
         </div>
 
@@ -422,7 +691,7 @@
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7 auto-rows-fr">
                 <!-- 方波的傅里叶级数展开 -->
-                <a href="./Fourier_Series/Square_Fourier_Series_V3.html" target="_blank" rel="noopener noreferrer"
+                <a href="./07_Fourier_Series/Square_Fourier_Series_V3.html" target="_blank" rel="noopener noreferrer"
                    class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
                     <div class="flex items-start justify-between">
                         <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xl shadow-sm">
@@ -445,7 +714,7 @@
                     </div>
                 </a>
                 <!-- 三角波的傅里叶级数展开 -->
-                <a href="./Fourier_Series/Triangle_Fourier_Series.html" target="_blank" rel="noopener noreferrer"
+                <a href="./07_Fourier_Series/Triangle_Fourier_Series.html" target="_blank" rel="noopener noreferrer"
                    class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
                     <div class="flex items-start justify-between">
                         <div class="w-10 h-10 rounded-full bg-lime-100 flex items-center justify-center text-lime-600 text-xl shadow-sm">
@@ -468,7 +737,7 @@
                     </div>
                 </a>
                 <!-- 锯齿波的傅里叶级数展开 (新增) -->
-                <a href="./Fourier_Series/Sawtooth_Fourier_Series.html" target="_blank" rel="noopener noreferrer"
+                <a href="./07_Fourier_Series/Sawtooth_Fourier_Series.html" target="_blank" rel="noopener noreferrer"
                    class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
                     <div class="flex items-start justify-between">
                         <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 text-xl shadow-sm">
@@ -491,7 +760,7 @@
                     </div>
                 </a>
                 <!-- 梯形波的傅里叶级数展开 -->
-                <a href="./Fourier_Series/Trapezoidal_Fourier_Series.html" target="_blank" rel="noopener noreferrer"
+                <a href="./07_Fourier_Series/Trapezoidal_Fourier_Series.html" target="_blank" rel="noopener noreferrer"
                    class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
                     <div class="flex items-start justify-between">
                         <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-xl shadow-sm">
@@ -527,7 +796,7 @@
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7 auto-rows-fr">
                 <!-- 三相对称电源电压曲线 -->
-                <a href="./Three_Phase_Circuits/Three_phase_AC.html" target="_blank" rel="noopener noreferrer"
+                <a href="./08_Three_Phase_Circuits/Three_phase_AC.html" target="_blank" rel="noopener noreferrer"
                    class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
                     <div class="flex items-start justify-between">
                         <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 text-xl shadow-sm">
@@ -549,8 +818,108 @@
                         </div>
                     </div>
                 </a>
+                <!-- 三相负载星三角连接 (新增) -->
+                <a href="./08_Three_Phase_Circuits/Three_Phase_Load_Connection.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 text-xl shadow-sm">
+                            🔺
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-amber-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-amber-700 transition-colors">三相负载星三角连接</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            同一三相电源分别以Y和Δ接法连接负载，并排显示相/线电压电流关系，验证√3比例。
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-amber-600 gap-1">
+                            <span>Y-Δ变换</span>
+                            <span class="text-slate-300">|</span>
+                            <span>√3关系</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- 三相不平衡负载 (新增) -->
+                <a href="./08_Three_Phase_Circuits/Three_Phase_Unbalanced.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-xl shadow-sm">
+                            ⚖️
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-orange-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-orange-700 transition-colors">三相不平衡负载</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            三相四线制中一相负载变化，展示中性点位移、中性线电流变化，相量图实时更新。
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-orange-600 gap-1">
+                            <span>中性点位移</span>
+                            <span class="text-slate-300">|</span>
+                            <span>相量图</span>
+                        </div>
+                    </div>
+                </a>
             </div>
         </div>
+
+
+        <!-- ================= 9. 运算放大器 (预留，留待模拟电子学讲解) ================= -->
+        <!--
+        <div class="mb-12">
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold text-slate-800 section-title">运算放大器</h2>
+                <span class="text-sm text-slate-400 ml-2">放大 · 求和 · 积分 · 微分</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7 auto-rows-fr">
+                <a href="./09_OpAmp/OpAmp_Basic.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 text-xl shadow-sm">🔺</div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-teal-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-teal-700 transition-colors">反相与同相放大器</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">并排显示两种基本拓扑，输入输出波形对比，增益实时计算，展示虚短虚断概念。</p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-teal-500 gap-1"><span>反相放大</span><span class="text-slate-300">|</span><span>同相放大</span></div>
+                    </div>
+                </a>
+                <a href="./09_OpAmp/OpAmp_Summing_Diff.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-cyan-100 flex items-center justify-center text-cyan-600 text-xl shadow-sm">➕</div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-cyan-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-cyan-700 transition-colors">求和与差分放大器</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">反相求和（3路输入可调）和差分放大器，展示叠加原理在运放中的应用。</p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-cyan-500 gap-1"><span>求和电路</span><span class="text-slate-300">|</span><span>差分放大</span></div>
+                    </div>
+                </a>
+                <a href="./09_OpAmp/OpAmp_Integ_Diff.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-xl shadow-sm">∫</div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-emerald-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-emerald-700 transition-colors">积分器与微分器</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">积分器：方波→三角波；微分器：三角波→方波。直观展示运放实现数学运算。</p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-emerald-500 gap-1"><span>积分运算</span><span class="text-slate-300">|</span><span>微分运算</span></div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        -->
+
+
 
         <!-- 教学辅助说明卡片 -->
         <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -576,14 +945,14 @@
 
         <!-- 页脚 -->
         <div class="mt-12 text-center text-xs text-slate-400 border-t border-slate-200/60 pt-6">
-            <p>电路分析基础辅助教学 · 动态仿真工具集 | 共33个交互模块，按知识体系分组</p>
+            <p>电路分析基础辅助教学 · 动态仿真工具集 | 共30个交互模块，按知识体系分组</p>
             <p class="mt-1">点击卡片将在新标签页打开交互界面，建议最大化窗口获取完整功能</p>
         </div>
     </div>
 
     <script>
         (function() {
-            console.log("电路分析基础辅助教学 | 全索引页已加载 | 包含正弦特性/频率特性/瞬态分析/傅里叶级数/三相电路/直流基础/电路定理/运放/互感变压器共33个仿真模块");
+            console.log("电路分析基础辅助教学 | 全索引页已加载 | 包含正弦特性/频率特性/瞬态分析/傅里叶级数/三相电路/直流基础/电路定理/互感变压器共30个仿真模块（运放部分留待模拟电子学）");
         })();
     </script>
 </body>

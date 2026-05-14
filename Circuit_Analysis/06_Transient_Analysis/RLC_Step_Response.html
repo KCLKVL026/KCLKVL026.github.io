@@ -150,11 +150,15 @@
                     </div>
                 </div>
 
-                <!-- 重置按钮 -->
-                <div class="mt-6 flex justify-center">
+                <!-- 重置 & 临界阻尼按钮 -->
+                <div class="mt-6 flex justify-center gap-3">
                     <button id="resetBtn" class="reset-btn bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-full shadow-md transition flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                         重置参数
+                    </button>
+                    <button id="criticalDampingBtn" class="reset-btn bg-emerald-500 hover:bg-emerald-600 text-white font-medium py-2 px-5 rounded-full shadow-md transition flex items-center gap-2 text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        临界阻尼
                     </button>
                 </div>
             </div>
@@ -185,27 +189,6 @@
                 </div>
             </div>
 
-            <!-- 电压数值显示卡片 -->
-            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
-                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-3">
-                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
-                    响应指标
-                </h3>
-                <div class="space-y-2 text-sm">
-                    <div class="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
-                        <span class="font-medium">峰值电压</span>
-                        <span class="font-mono text-red-500" id="peak_v_display">--</span>
-                    </div>
-                    <div class="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
-                        <span class="font-medium">超调量</span>
-                        <span class="font-mono text-orange-500" id="overshoot_display">--</span>
-                    </div>
-                    <div class="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
-                        <span class="font-medium">稳态建立时间(估)</span>
-                        <span class="font-mono text-blue-600" id="settling_display">--</span>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- 右侧波形区域 -->
@@ -227,18 +210,25 @@
                 </div>
             </div>
 
-            <!-- s-plane 极点图 -->
-            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-5">
+            <!-- 响应指标（单行） -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
                 <div class="flex items-center gap-2 mb-2">
-                    <div class="w-3 h-3 bg-red-500 rounded-full"></div>
-                    <h3 class="font-bold text-slate-800 text-lg">s-平面极点位置图</h3>
-                    <span class="phase-badge">阻尼特性可视化</span>
+                    <div class="w-3 h-3 bg-purple-500 rounded-full"></div>
+                    <h3 class="font-bold text-slate-800 text-lg">响应指标</h3>
                 </div>
-                <div class="relative">
-                    <canvas id="sPlaneChart" width="600" height="300" style="width:100%; height:auto; max-height:320px;"></canvas>
-                </div>
-                <div class="text-center text-xs text-slate-400 mt-1">
-                    红色圆点：系统极点位置 | 实轴左侧极点对应衰减速率，虚轴分量对应振荡频率
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="bg-red-50 rounded-xl p-3 text-center">
+                        <div class="text-xs text-red-600 font-semibold mb-1">峰值电压</div>
+                        <div class="font-mono font-bold text-red-500" id="peak_v_display">--</div>
+                    </div>
+                    <div class="bg-orange-50 rounded-xl p-3 text-center">
+                        <div class="text-xs text-orange-600 font-semibold mb-1">超调量</div>
+                        <div class="font-mono font-bold text-orange-500" id="overshoot_display">--</div>
+                    </div>
+                    <div class="bg-blue-50 rounded-xl p-3 text-center">
+                        <div class="text-xs text-blue-600 font-semibold mb-1">稳态建立时间(估)</div>
+                        <div class="font-mono font-bold text-blue-600" id="settling_display">--</div>
+                    </div>
                 </div>
             </div>
 
@@ -289,9 +279,8 @@
     const settlingDisplay = document.getElementById('settling_display');
 
     const mainCanvas = document.getElementById('mainChart');
-    const sPlaneCanvas = document.getElementById('sPlaneChart');
 
-    let mainChart, sPlaneChart;
+    let mainChart;
     let currentScaleI = 1;  // module-level for tooltip access
 
     // 默认值
@@ -323,11 +312,11 @@
         const zeta = (R / 2) * Math.sqrt(C / L); // 阻尼比
         let wd = 0;
         let dampingLabel, dampingColor;
-        if (zeta < 0.999) {
+        if (zeta < 0.995) {
             wd = w0 * Math.sqrt(1 - zeta * zeta);
             dampingLabel = '欠阻尼 (振荡衰减)';
             dampingColor = '#f59e0b';
-        } else if (zeta < 1.001) {
+        } else if (zeta < 1.005) {
             dampingLabel = '临界阻尼';
             dampingColor = '#10b981';
         } else {
@@ -547,7 +536,7 @@
                         },
                         y: {
                             title: { display: true, text: '电压 (V) / 电流(缩放)', font: { weight: 'bold', size: 11 } },
-                            min: -0.25,
+                            min: -1.0,
                             max: 1.4,
                             ticks: { callback: (v) => v.toFixed(2) },
                             grid: { color: '#eef2ff' }
@@ -557,147 +546,6 @@
                 }
             });
         }
-    }
-
-    // 更新 s-plane 极点图
-    function updateSPlaneChart(chars) {
-        const { zeta, w0, wd, alpha } = chars;
-
-        // 极点位置
-        let poles = [];
-        if (zeta < 0.999) {
-            poles = [
-                { x: -alpha, y: wd },
-                { x: -alpha, y: -wd }
-            ];
-        } else if (zeta < 1.001) {
-            poles = [
-                { x: -w0, y: 0 },
-                { x: -w0, y: 0 }
-            ];
-        } else {
-            const beta = w0 * Math.sqrt(zeta * zeta - 1);
-            poles = [
-                { x: -alpha + beta, y: 0 },
-                { x: -alpha - beta, y: 0 }
-            ];
-        }
-
-        // 坐标轴范围
-        const maxAbsReal = Math.max(Math.abs(poles[0].x), Math.abs(poles[1].x), 100) * 1.4;
-        const maxAbsImag = Math.max(Math.abs(poles[0].y), Math.abs(poles[1].y), 100) * 1.4;
-        const axisMax = Math.max(maxAbsReal, maxAbsImag, 200);
-
-        // 单位圆 (ω₀)
-        const circlePoints = [];
-        const n = 200;
-        for (let i = 0; i <= n; i++) {
-            const angle = (i / n) * 2 * Math.PI;
-            circlePoints.push({ x: w0 * Math.cos(angle), y: w0 * Math.sin(angle) });
-        }
-
-        // 恒定阻尼比线 (ζ射线)
-        let zetaLinePoints = [];
-        if (zeta < 10) {
-            const lineLen = axisMax;
-            const theta = zeta < 1 ? Math.acos(zeta) : 0;
-            const dx = -Math.cos(theta) * lineLen;
-            const dy = Math.sin(theta) * lineLen;
-            zetaLinePoints = [
-                { x: 0, y: 0 },
-                { x: dx, y: dy }
-            ];
-        }
-
-        const sPlaneData = {
-            datasets: [
-                {
-                    label: '极点位置',
-                    data: poles,
-                    borderColor: '#ef4444',
-                    backgroundColor: '#ef4444',
-                    pointRadius: 8,
-                    pointHoverRadius: 10,
-                    showLine: false,
-                    order: 1
-                },
-                {
-                    label: 'ω₀ (自然频率圆)',
-                    data: circlePoints,
-                    borderColor: '#94a3b8',
-                    backgroundColor: 'transparent',
-                    borderWidth: 1.5,
-                    borderDash: [5, 5],
-                    pointRadius: 0,
-                    showLine: true,
-                    fill: false,
-                    tension: 0.4,
-                    order: 2
-                }
-            ]
-        };
-
-        // 添加ζ射线（欠阻尼时）
-        if (zeta < 0.999) {
-            sPlaneData.datasets.push({
-                label: 'ζ = ' + zeta.toFixed(3) + ' (等阻尼比线)',
-                data: zetaLinePoints,
-                borderColor: '#f59e0b',
-                backgroundColor: 'transparent',
-                borderWidth: 1.5,
-                borderDash: [4, 4],
-                pointRadius: 0,
-                showLine: true,
-                fill: false,
-                tension: 0,
-                order: 3
-            });
-        }
-
-        // 销毁并重建（因数据集数量可能变化）
-        if (sPlaneChart) {
-            sPlaneChart.destroy();
-            sPlaneChart = null;
-        }
-
-        sPlaneChart = new Chart(sPlaneCanvas, {
-            type: 'scatter',
-            data: sPlaneData,
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(ctx) {
-                                if (ctx.dataset.label === '极点位置') {
-                                    return '极点: s = ' + ctx.raw.x.toFixed(1) + (ctx.raw.y >= 0 ? ' + j' : ' - j') + Math.abs(ctx.raw.y).toFixed(1);
-                                }
-                                return '';
-                            }
-                        },
-                        backgroundColor: 'rgba(0,0,0,0.7)'
-                    },
-                    legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8, font: { size: 10 } } }
-                },
-                scales: {
-                    x: {
-                        type: 'linear',
-                        title: { display: true, text: 'σ (实部)', font: { weight: 'bold', size: 11 } },
-                        min: -axisMax,
-                        max: axisMax,
-                        grid: { color: '#eef2ff' }
-                    },
-                    y: {
-                        type: 'linear',
-                        title: { display: true, text: 'jω (虚部)', font: { weight: 'bold', size: 11 } },
-                        min: -axisMax,
-                        max: axisMax,
-                        grid: { color: '#eef2ff' }
-                    }
-                }
-            }
-        });
     }
 
     // 更新所有图表和显示
@@ -711,7 +559,6 @@
         const data = simulateResponse(R, L, C, f);
         updateMetrics(data, chars);
         updateMainChart(data, params);
-        updateSPlaneChart(chars);
     }
 
     // 重置参数
@@ -730,9 +577,16 @@
         cSlider.addEventListener('input', () => updateAll());
         fSlider.addEventListener('input', () => updateAll());
         resetBtn.addEventListener('click', () => resetParams());
+        document.getElementById('criticalDampingBtn').addEventListener('click', () => {
+            const L = parseFloat(lSlider.value) * 1e-3;
+            const C = parseFloat(cSlider.value) * 1e-6;
+            // ζ = (R/2)√(C/L) = 1  →  R = 2√(L/C)
+            const R_crit = 2 * Math.sqrt(L / C);
+            rSlider.value = Math.round(Math.max(10, Math.min(500, R_crit)));
+            updateAll();
+        });
         window.addEventListener('resize', () => {
             if (mainChart) mainChart.resize();
-            if (sPlaneChart) sPlaneChart.resize();
         });
     }
 

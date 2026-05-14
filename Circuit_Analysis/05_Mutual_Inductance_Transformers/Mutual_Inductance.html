@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>互感耦合线圈仿真 | 互感系数与T型等效</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #2563eb;
+            transform: scale(1.15);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15);
+        }
+        .mode-btn {
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+        .mode-btn.active-aiding {
+            background: #f97316;
+            color: white;
+            border-color: #ea580c;
+        }
+        .mode-btn.active-opposing {
+            background: #ef4444;
+            color: white;
+            border-color: #dc2626;
+        }
+        .mode-btn:not(.active-aiding):not(.active-opposing) {
+            background: #f1f5f9;
+            color: #64748b;
+            border-color: #e2e8f0;
+        }
+        .mode-btn:not(.active-aiding):not(.active-opposing):hover {
+            background: #e2e8f0;
+        }
+        .t-equiv-box {
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- 返回主页按钮 -->
+    <div class="flex justify-start mb-4">
+        <a href="../index.html"
+           class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            返回主页
+        </a>
+    </div>
+
+    <!-- 标题区 -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            互感耦合线圈 · 互感系数与T型等效
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            两个耦合电感线圈 \(L_1, L_2\)，调节耦合系数 \(k\)（\(0 \to 1\)），展示串联相助/相消连接下等效电感的变化<br>
+            <span class="text-xs text-indigo-500">互感 \(M = k\sqrt{L_1 L_2}\) &nbsp;|&nbsp; 电压源 \(v(t) = V_m \sin(2\pi f t)\)，\(V_m = 10\text{V}\)</span>
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- 左侧控制面板 -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- 参数调节卡片 -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    线圈 & 信号参数
+                </h3>
+
+                <!-- 耦合系数 k -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>耦合系数 \(k\)</label>
+                        <span class="text-blue-600 font-mono" id="k_display">0.50</span>
+                    </div>
+                    <input type="range" id="k_slider" min="0" max="1" step="0.01" value="0.5" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>0 (无耦合)</span><span>1 (全耦合)</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">\(k=0\) 无互感；\(k=1\) 全耦合（理想情况）</p>
+                </div>
+
+                <!-- 电感 L1 -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>电感 \(L_1\)</label>
+                        <span class="text-blue-600 font-mono" id="l1_display">10 mH</span>
+                    </div>
+                    <input type="range" id="l1_slider" min="1" max="100" step="1" value="10" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>1 mH</span><span>100 mH</span>
+                    </div>
+                </div>
+
+                <!-- 电感 L2 -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>电感 \(L_2\)</label>
+                        <span class="text-blue-600 font-mono" id="l2_display">20 mH</span>
+                    </div>
+                    <input type="range" id="l2_slider" min="1" max="100" step="1" value="20" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>1 mH</span><span>100 mH</span>
+                    </div>
+                </div>
+
+                <!-- 频率 f -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>频率 \(f\)</label>
+                        <span class="text-blue-600 font-mono" id="f_display">50 Hz</span>
+                    </div>
+                    <input type="range" id="f_slider" min="10" max="500" step="10" value="50" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Hz</span><span>500 Hz</span>
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-100 my-4"></div>
+
+                <!-- 连接方式切换 -->
+                <div class="mb-4">
+                    <label class="text-sm font-medium block mb-2">连接方式</label>
+                    <div class="flex gap-2">
+                        <button id="btn_aiding" class="mode-btn active-aiding flex-1 py-2 px-3 rounded-lg text-sm font-medium cursor-pointer">串联相助</button>
+                        <button id="btn_opposing" class="mode-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium cursor-pointer">串联相消</button>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2" id="mode_desc">相助：两线圈磁通相互增强，\(L_{eq}=L_1+L_2+2M\)</p>
+                </div>
+
+                <!-- 重置按钮 -->
+                <div class="mt-6 flex justify-center">
+                    <button id="resetBtn" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-full shadow-md transition flex items-center gap-2" style="transition: all 0.2s;">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        重置参数
+                    </button>
+                </div>
+            </div>
+
+            <!-- 计算结果卡片 -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-purple-500 rounded-full"></span>
+                    等效参数计算
+                </h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-slate-50 p-2 rounded-lg">
+                        <div class="text-xs text-slate-500">互感 \(M\)</div>
+                        <div class="font-mono text-indigo-600 text-sm font-bold" id="m_val">— mH</div>
+                    </div>
+                    <div class="bg-slate-50 p-2 rounded-lg">
+                        <div class="text-xs text-slate-500">当前 \(L_{eq}\)</div>
+                        <div class="font-mono text-blue-600 text-sm font-bold" id="leq_current">— mH</div>
+                    </div>
+                    <div class="bg-slate-50 p-2 rounded-lg">
+                        <div class="text-xs text-slate-500">\(L_{eq}\) (相助)</div>
+                        <div class="font-mono text-orange-600 text-sm font-bold" id="leq_aiding">— mH</div>
+                    </div>
+                    <div class="bg-slate-50 p-2 rounded-lg">
+                        <div class="text-xs text-slate-500">\(L_{eq}\) (相消)</div>
+                        <div class="font-mono text-red-600 text-sm font-bold" id="leq_opposing">— mH</div>
+                    </div>
+                    <div class="bg-slate-50 p-2 rounded-lg col-span-2">
+                        <div class="text-xs text-slate-500">互感电压幅值 \(V_M\)</div>
+                        <div class="font-mono text-purple-600 text-sm font-bold" id="vm_val">— V</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- T型等效电路卡片 -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-cyan-500 rounded-full"></span>
+                    T型去耦等效电路
+                </h3>
+                <div id="t_equiv_display" class="t-equiv-box text-sm space-y-2">
+                    <!-- Filled by JS -->
+                </div>
+                <p class="text-xs text-slate-500 mt-3 text-center" id="t_equiv_note">
+                    同名端同向（相助）：中间臂为 \(+M\)；同名端反向（相消）：中间臂为 \(-M\)
+                </p>
+            </div>
+        </div>
+
+        <!-- 右侧波形区域 -->
+        <div class="lg:col-span-8 space-y-6">
+            <!-- 波形图卡片 -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="flex justify-between items-center flex-wrap mb-2">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <div class="w-3 h-3 bg-purple-500 rounded-full"></div>
+                        <h3 class="font-bold text-slate-800 text-lg">电压波形 · \(v_1(t)\), \(v_2(t)\), \(v_M(t)\)</h3>
+                    </div>
+                    <span class="text-xs text-slate-500 font-mono" id="mode_label">当前：串联相助</span>
+                </div>
+                <div class="relative">
+                    <canvas id="waveformChart" width="700" height="280" style="width:100%; height:auto; max-height:300px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-1">
+                    🔵 \(v_1(t)\)：\(L_1\) 两端电压 &nbsp;|&nbsp; 🟢 \(v_2(t)\)：\(L_2\) 两端电压 &nbsp;|&nbsp; 🟣 \(v_M(t)\)：互感电压（\(M \cdot di/dt\)）
+                </div>
+            </div>
+
+            <!-- 等效电感对比柱状图 -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="flex justify-between items-center flex-wrap mb-2">
+                    <h3 class="font-bold text-slate-800 text-lg">等效电感对比 · \(L_{eq}\) (相助) vs \(L_{eq}\) (相消)</h3>
+                </div>
+                <div class="relative">
+                    <canvas id="barChart" width="700" height="220" style="width:100%; height:auto; max-height:260px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-1">
+                    🟠 相助时等效电感更大（磁场增强）&nbsp;|&nbsp; 🔴 相消时等效电感更小（磁场削弱）
+                </div>
+            </div>
+
+            <!-- 理论与特性卡片 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">📐 互感耦合理论</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        \(M = k\sqrt{L_1 L_2}\)，\(0 \le k \le 1\)<br>
+                        串联相助：\(L_{eq} = L_1 + L_2 + 2M\)<br>
+                        串联相消：\(L_{eq} = L_1 + L_2 - 2M\)<br>
+                        互感电压：\(v_M(t) = M \cdot \frac{di}{dt}\)<br>
+                        同名端（dot convention）决定互感电压极性。
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">⚡ 特性与观察要点</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        • \(k\) 越大，相助与相消的等效电感差异越大。<br>
+                        • \(k=1\) 时，相消等效电感可能接近零（当 \(L_1=L_2\)）。<br>
+                        • T型等效电路中，相助时中间臂为 \(+M\)，相消时为 \(-M\)。<br>
+                        • 互感电压 \(V_M\) 随频率和耦合系数的增加而增大。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // DOM 元素绑定
+    const kSlider = document.getElementById('k_slider');
+    const l1Slider = document.getElementById('l1_slider');
+    const l2Slider = document.getElementById('l2_slider');
+    const fSlider = document.getElementById('f_slider');
+    const btnAiding = document.getElementById('btn_aiding');
+    const btnOpposing = document.getElementById('btn_opposing');
+    const resetBtn = document.getElementById('resetBtn');
+
+    const kDisplay = document.getElementById('k_display');
+    const l1Display = document.getElementById('l1_display');
+    const l2Display = document.getElementById('l2_display');
+    const fDisplay = document.getElementById('f_display');
+    const mVal = document.getElementById('m_val');
+    const leqCurrent = document.getElementById('leq_current');
+    const leqAiding = document.getElementById('leq_aiding');
+    const leqOpposing = document.getElementById('leq_opposing');
+    const vmVal = document.getElementById('vm_val');
+    const modeLabel = document.getElementById('mode_label');
+    const modeDesc = document.getElementById('mode_desc');
+    const tEquivDisplay = document.getElementById('t_equiv_display');
+    const tEquivNote = document.getElementById('t_equiv_note');
+
+    const waveformCanvas = document.getElementById('waveformChart');
+    const barCanvas = document.getElementById('barChart');
+
+    let waveformChart = null;
+    let barChart = null;
+
+    const PERIODS = 2.0;
+    const POINTS = 500;
+    const Vm = 10; // Fixed peak voltage
+
+    // 默认值
+    const DEFAULTS = {
+        k: 0.5,
+        L1_mH: 10,
+        L2_mH: 20,
+        f: 50,
+        mode: 'aiding'  // 'aiding' or 'opposing'
+    };
+
+    let currentMode = DEFAULTS.mode;
+
+    function getParams() {
+        const k = parseFloat(kSlider.value);
+        const L1_mH = parseFloat(l1Slider.value);
+        const L2_mH = parseFloat(l2Slider.value);
+        const f = parseFloat(fSlider.value);
+        const L1 = L1_mH * 1e-3;
+        const L2 = L2_mH * 1e-3;
+        const M = k * Math.sqrt(L1 * L2);
+        const Leq_aiding = L1 + L2 + 2 * M;
+        const Leq_opposing = L1 + L2 - 2 * M;
+        const Leq = (currentMode === 'aiding') ? Leq_aiding : Leq_opposing;
+        return { k, L1_mH, L2_mH, f, L1, L2, M, Leq_aiding, Leq_opposing, Leq };
+    }
+
+    function updateDisplays() {
+        const p = getParams();
+        kDisplay.innerText = p.k.toFixed(2);
+        l1Display.innerText = p.L1_mH + ' mH';
+        l2Display.innerText = p.L2_mH + ' mH';
+        fDisplay.innerText = p.f + ' Hz';
+        mVal.innerText = (p.M * 1000).toFixed(2) + ' mH';
+        leqAiding.innerText = (p.Leq_aiding * 1000).toFixed(2) + ' mH';
+        leqOpposing.innerText = Math.max(0, p.Leq_opposing * 1000).toFixed(2) + ' mH';
+        leqCurrent.innerText = (p.Leq * 1000).toFixed(2) + ' mH';
+    }
+
+    function generateTimeAxis(f) {
+        const T = 1 / f;
+        const tMax = PERIODS * T;
+        const dt = tMax / (POINTS - 1);
+        const times = [];
+        for (let i = 0; i < POINTS; i++) times.push(i * dt);
+        return times;
+    }
+
+    // 计算各电压波形
+    // i(t) = Im * sin(ωt),  Im = Vm / (ω * Leq)
+    // v1(t) = L1 * di/dt + M * di/dt (相助)  or  L1 * di/dt - M * di/dt (相消)
+    // v2(t) = L2 * di/dt + M * di/dt (相助)  or  L2 * di/dt - M * di/dt (相消)
+    // vM(t) = M * di/dt (互感电压幅值)
+    function computeWaveforms(times, params) {
+        const { L1, L2, M, Leq, f } = params;
+        const omega = 2 * Math.PI * f;
+        const Im = Vm / (omega * Leq);
+
+        const v1 = [];
+        const v2 = [];
+        const vM = [];
+        const v_total = [];
+
+        const sign = (currentMode === 'aiding') ? 1 : -1;
+
+        for (let t of times) {
+            const di_dt = Im * omega * Math.cos(omega * t);
+            const v1_val = L1 * di_dt + sign * M * di_dt;
+            const v2_val = L2 * di_dt + sign * M * di_dt;
+            const vM_val = M * di_dt;
+            v1.push(v1_val);
+            v2.push(v2_val);
+            vM.push(vM_val);
+            v_total.push(v1_val + v2_val);
+        }
+
+        return { v1, v2, vM, v_total, Im, omega };
+    }
+
+    function setMode(mode) {
+        currentMode = mode;
+        if (mode === 'aiding') {
+            btnAiding.className = 'mode-btn active-aiding flex-1 py-2 px-3 rounded-lg text-sm font-medium cursor-pointer';
+            btnOpposing.className = 'mode-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium cursor-pointer';
+            modeLabel.innerText = '当前：串联相助';
+            modeDesc.innerHTML = '相助：两线圈磁通相互增强，\\(L_{eq}=L_1+L_2+2M\\)';
+        } else {
+            btnAiding.className = 'mode-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium cursor-pointer';
+            btnOpposing.className = 'mode-btn active-opposing flex-1 py-2 px-3 rounded-lg text-sm font-medium cursor-pointer';
+            modeLabel.innerText = '当前：串联相消';
+            modeDesc.innerHTML = '相消：两线圈磁通相互削弱，\\(L_{eq}=L_1+L_2-2M\\)';
+        }
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(modeDesc, { delimiters: [{left: '\\(', right: '\\)', display: false}], throwOnError: false });
+        }
+        updateTEquiv();
+        updateAllCharts();
+    }
+
+    function updateTEquiv() {
+        const p = getParams();
+        const MmH = (p.M * 1000).toFixed(2);
+
+        if (currentMode === 'aiding') {
+            const leftArm = (p.L1 - p.M) * 1000;
+            const rightArm = (p.L2 - p.M) * 1000;
+            tEquivDisplay.innerHTML = `
+                <div class="flex items-center justify-center gap-1 text-xs">
+                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded font-bold">\\(L_1-M\\)<br>${leftArm.toFixed(2)} mH</span>
+                    <span>──</span>
+                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded font-bold">\\(M\\)<br>${MmH} mH</span>
+                    <span>──</span>
+                    <span class="bg-orange-100 text-orange-800 px-2 py-1 rounded font-bold">\\(L_2-M\\)<br>${rightArm.toFixed(2)} mH</span>
+                </div>
+                <div class="text-xs text-slate-500 mt-2">T型等效（相助）：中间臂 \\(+M\\)，两侧臂 \\(L_1-M\\)，\\(L_2-M\\)</div>
+            `;
+        } else {
+            const leftArm = (p.L1 + p.M) * 1000;
+            const rightArm = (p.L2 + p.M) * 1000;
+            tEquivDisplay.innerHTML = `
+                <div class="flex items-center justify-center gap-1 text-xs">
+                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded font-bold">\\(L_1+M\\)<br>${leftArm.toFixed(2)} mH</span>
+                    <span>──</span>
+                    <span class="bg-red-100 text-red-800 px-2 py-1 rounded font-bold">\\(-M\\)<br>-${MmH} mH</span>
+                    <span>──</span>
+                    <span class="bg-orange-100 text-orange-800 px-2 py-1 rounded font-bold">\\(L_2+M\\)<br>${rightArm.toFixed(2)} mH</span>
+                </div>
+                <div class="text-xs text-slate-500 mt-2">T型等效（相消）：中间臂 \\(-M\\)（负电感），两侧臂 \\(L_1+M\\)，\\(L_2+M\\)</div>
+            `;
+        }
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(tEquivDisplay, { delimiters: [{left: '\\(', right: '\\)', display: false}], throwOnError: false });
+        }
+    }
+
+    function updateAllCharts() {
+        const p = getParams();
+        updateDisplays();
+        updateTEquiv();
+
+        const times = generateTimeAxis(p.f);
+        const wf = computeWaveforms(times, p);
+
+        // 互感电压幅值
+        const Vm_amplitude = p.M * wf.Im * wf.omega;
+        vmVal.innerText = Vm_amplitude.toFixed(2) + ' V';
+
+        const xMax = times[times.length - 1];
+        const timePoints = times.map(t => t);
+        const v1Points = timePoints.map((t, i) => ({ x: t, y: wf.v1[i] }));
+        const v2Points = timePoints.map((t, i) => ({ x: t, y: wf.v2[i] }));
+        const vMPoints = timePoints.map((t, i) => ({ x: t, y: wf.vM[i] }));
+
+        // 计算 Y 轴范围
+        const allVals = [...wf.v1, ...wf.v2, ...wf.vM];
+        const absMax = Math.max(...allVals.map(v => Math.abs(v))) * 1.15;
+        const yMax = absMax === 0 ? 0.1 : absMax;
+        const yMin = -yMax;
+
+        // 波形图表
+        const waveOptions = {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.dataset.label || '';
+                            const val = context.raw.y;
+                            return `${label}: ${val.toFixed(3)} V @ t = ${context.raw.x.toFixed(4)} s`;
+                        }
+                    },
+                    backgroundColor: 'rgba(0,0,0,0.7)',
+                },
+                legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } } }
+            },
+            scales: {
+                x: {
+                    type: 'linear',
+                    title: { display: true, text: '时间 t (s)', font: { weight: 'bold', size: 11 } },
+                    ticks: { callback: (val) => val.toFixed(3) + 's', maxTicksLimit: 6 },
+                    min: 0,
+                    max: xMax,
+                    grid: { color: '#eef2ff' }
+                },
+                y: {
+                    title: { display: true, text: '电压 (V)', font: { weight: 'bold', size: 11 } },
+                    min: yMin,
+                    max: yMax,
+                    ticks: { callback: (val) => val.toFixed(2) },
+                    grid: { color: '#eef2ff' }
+                }
+            },
+            elements: { point: { radius: 0, hitRadius: 6, hoverRadius: 3 }, line: { tension: 0.2, borderWidth: 2.2 } }
+        };
+
+        const waveDatasets = [
+            { label: 'v₁(t) (V)', data: v1Points, borderColor: '#3b82f6', backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: 0, tension: 0.2 },
+            { label: 'v₂(t) (V)', data: v2Points, borderColor: '#22c55e', backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: 0, tension: 0.2 },
+            { label: 'v_M(t) (V)', data: vMPoints, borderColor: '#a855f7', backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: 0, tension: 0.2, borderDash: [6, 4] }
+        ];
+
+        if (waveformChart) {
+            waveformChart.data.datasets = waveDatasets;
+            waveformChart.options.scales.y.min = yMin;
+            waveformChart.options.scales.y.max = yMax;
+            waveformChart.options.scales.x.max = xMax;
+            waveformChart.update('none');
+        } else {
+            waveformChart = new Chart(waveformCanvas, { type: 'line', data: { datasets: waveDatasets }, options: waveOptions });
+        }
+
+        // 柱状图：相助 vs 相消
+        const LeqA_mH = p.Leq_aiding * 1000;
+        const LeqO_mH = Math.max(0, p.Leq_opposing * 1000);
+        const barMax = LeqA_mH * 1.2;
+
+        const barOptions = {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + context.raw.toFixed(2) + ' mH';
+                        }
+                    },
+                    backgroundColor: 'rgba(0,0,0,0.7)',
+                },
+                legend: { display: false }
+            },
+            scales: {
+                x: {
+                    title: { display: true, text: '连接方式', font: { weight: 'bold', size: 11 } },
+                    grid: { color: '#eef2ff' }
+                },
+                y: {
+                    title: { display: true, text: '等效电感 (mH)', font: { weight: 'bold', size: 11 } },
+                    min: 0,
+                    max: barMax,
+                    ticks: { callback: (val) => val.toFixed(1) },
+                    grid: { color: '#eef2ff' }
+                }
+            }
+        };
+
+        const barDatasets = [
+            {
+                label: '相助 L_eq',
+                data: [LeqA_mH, LeqO_mH],
+                backgroundColor: ['rgba(249, 115, 22, 0.7)', 'rgba(239, 68, 68, 0.7)'],
+                borderColor: ['#f97316', '#ef4444'],
+                borderWidth: 2,
+                borderRadius: 6
+            }
+        ];
+
+        if (barChart) {
+            barChart.data.datasets = barDatasets;
+            barChart.options.scales.y.max = barMax;
+            barChart.update('none');
+        } else {
+            barChart = new Chart(barCanvas, {
+                type: 'bar',
+                data: {
+                    labels: ['相助 (L₁+L₂+2M)', '相消 (L₁+L₂-2M)'],
+                    datasets: barDatasets
+                },
+                options: barOptions
+            });
+        }
+    }
+
+    function resetParams() {
+        kSlider.value = DEFAULTS.k;
+        l1Slider.value = DEFAULTS.L1_mH;
+        l2Slider.value = DEFAULTS.L2_mH;
+        fSlider.value = DEFAULTS.f;
+        setMode('aiding');
+    }
+
+    function bindEvents() {
+        kSlider.addEventListener('input', updateAllCharts);
+        l1Slider.addEventListener('input', updateAllCharts);
+        l2Slider.addEventListener('input', updateAllCharts);
+        fSlider.addEventListener('input', updateAllCharts);
+        btnAiding.addEventListener('click', () => setMode('aiding'));
+        btnOpposing.addEventListener('click', () => setMode('opposing'));
+        resetBtn.addEventListener('click', resetParams);
+        window.addEventListener('resize', () => {
+            if (waveformChart) waveformChart.resize();
+            if (barChart) barChart.resize();
+        });
+    }
+
+    function init() {
+        bindEvents();
+        setMode('aiding');
+        window.addEventListener('load', function() {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            } else {
+                console.warn('KaTeX 自动渲染未加载，公式将以文本显示');
+            }
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>

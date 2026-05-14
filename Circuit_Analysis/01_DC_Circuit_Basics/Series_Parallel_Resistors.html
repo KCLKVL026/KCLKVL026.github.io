@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>电阻串并联 · 等效电阻与分压分流</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- KaTeX 数学公式渲染 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #2563eb;
+            transform: scale(1.15);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15);
+        }
+        .mode-btn {
+            transition: all 0.2s ease;
+        }
+        .mode-btn.active-series {
+            background: #2563eb !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+        }
+        .mode-btn.active-parallel {
+            background: #7c3aed !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- 返回主页按钮 -->
+    <div class="flex justify-start mb-4">
+        <a href="../index.html"
+        class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            返回主页
+        </a>
+    </div>
+
+    <!-- 标题区 -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            电阻串并联 · 等效电阻与分压分流
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            可切换串联/并联模式，调整两个电阻值，显示等效电阻与分压/分流比例
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- ========= 左侧控制面板 ========= -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- 参数调节卡片 -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    电路参数调节
+                </h3>
+
+                <!-- 模式切换 -->
+                <div class="mb-5">
+                    <label class="text-sm font-medium text-slate-600 block mb-2">连接模式</label>
+                    <div class="flex gap-2">
+                        <button id="seriesBtn" class="mode-btn active-series flex-1 py-2.5 px-4 rounded-full text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 focus:outline-none">
+                            串联 Series
+                        </button>
+                        <button id="parallelBtn" class="mode-btn flex-1 py-2.5 px-4 rounded-full text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 focus:outline-none">
+                            并联 Parallel
+                        </button>
+                    </div>
+                    <p id="modeCircuitHint" class="text-xs text-slate-400 mt-2 text-center">R₁ 与 R₂ 串联，电流相同，电压按电阻比例分配</p>
+                </div>
+
+                <div class="border-t border-slate-100 my-3"></div>
+
+                <!-- 电阻 R1 -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>电阻 \(R_1\)</label>
+                        <span class="text-blue-600 font-mono" id="r1_display">1.00 kΩ</span>
+                    </div>
+                    <input type="range" id="r1_slider" min="0" max="45" step="1" value="27" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Ω</span><span>10 kΩ</span>
+                    </div>
+                </div>
+
+                <!-- 电阻 R2 -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>电阻 \(R_2\)</label>
+                        <span class="text-blue-600 font-mono" id="r2_display">2.00 kΩ</span>
+                    </div>
+                    <input type="range" id="r2_slider" min="0" max="45" step="1" value="31" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Ω</span><span>10 kΩ</span>
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-100 my-3"></div>
+
+                <!-- 输入电压 -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>输入电压 \(U_{in}\)</label>
+                        <span class="text-blue-600 font-mono" id="vin_display">12.0 V</span>
+                    </div>
+                    <input type="range" id="vin_slider" min="1" max="50" step="1" value="12" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>1 V</span><span>50 V</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 等效电阻公式卡片 -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-indigo-500 rounded-full"></span>
+                    等效电阻公式
+                </h3>
+                <div class="p-3 bg-indigo-50 rounded-xl text-center mb-3" id="formula_display">
+                    <span class="text-sm font-mono text-indigo-800">\(R_{eq} = R_1 + R_2\)</span>
+                </div>
+                <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                    <span class="text-slate-600 text-sm">等效电阻 \(R_{eq}\)</span>
+                    <span class="font-mono font-bold text-indigo-700" id="req_display">3.00 kΩ</span>
+                </div>
+            </div>
+
+            <!-- 分压/分流结果卡片 -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-emerald-500 rounded-full"></span>
+                    分压/分流计算结果
+                </h3>
+                <div class="grid grid-cols-2 gap-3 mb-3" id="division_cards">
+                    <!-- Series: V1, V2 --><!-- Parallel: I1, I2 --></div>
+                <div class="p-2 bg-slate-50 rounded-lg text-center">
+                    <span class="text-xs text-slate-500" id="ratio_display">\(U_1/U_2 = R_1/R_2 = \)</span><span class="text-xs text-slate-700 font-mono font-bold" id="ratio_value">0.50</span>
+                </div>
+                <div class="mt-2 text-xs text-slate-400 text-center">总电流 \(I_{total} = \)<span class="font-mono font-bold text-slate-600" id="total_value">4.00 mA</span></div>
+            </div>
+        </div>
+
+        <!-- ========= 右侧图表区 ========= -->
+        <div class="lg:col-span-8 space-y-5">
+            <!-- 柱状图 -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 transition-all">
+                <div class="flex flex-wrap justify-between items-center mb-2 px-2">
+                    <div class="flex items-center gap-3 text-sm">
+                        <span class="font-medium" id="chart_title">串联分压 · 各电阻电压</span>
+                    </div>
+                    <div class="text-xs text-slate-400" id="chart_subtitle">\(U_1\), \(U_2\) 对比</div>
+                </div>
+                <div class="relative">
+                    <canvas id="barChart" width="700" height="360" style="width:100%; height:auto; max-height:380px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-1" id="chart_hint">
+                    串联: 电压按电阻比例分配 | 电阻越大分压越高
+                </div>
+            </div>
+
+            <!-- 电路图卡片 -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 transition-all">
+                <div class="flex flex-wrap justify-between items-center mb-2 px-2">
+                    <span class="font-medium text-sm">电路图</span>
+                </div>
+                <div class="px-8 py-4">
+                    <img src="./img/Series_Parallel_Resistors.jpg" alt="电阻串并联电路图" class="w-full rounded-lg">
+                </div>
+            </div>
+
+            <!-- 底部说明卡片 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">📐 理论依据</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed" id="theory_text">
+                        <strong>串联分压:</strong> \(U_1 = U_{in} \cdot \dfrac{R_1}{R_1+R_2}\)，\(U_2 = U_{in} \cdot \dfrac{R_2}{R_1+R_2}\)。<br>
+                        电流相同: \(I = U_{in} / (R_1+R_2)\)。<br>
+                        电压比等于电阻比: \(U_1/U_2 = R_1/R_2\)。
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">⚡ 特性解读</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed" id="char_text">
+                        • 当 \(R_1 = R_2\) 时，电压（串联）或电流（并联）均分。<br>
+                        • 串联: \(R_1 \gg R_2\) 时 \(U_1 \approx U_{in}\)，\(R_2\) 分压极低。<br>
+                        • 并联: \(R_1 \gg R_2\) 时 \(I_2 \gg I_1\)，大部分电流走小电阻。<br>
+                        • 等效电阻: 串联 \(R_{eq} \approx \max(R_1, R_2)\)，并联 \(R_{eq} \approx \min(R_1, R_2)\)。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ===== 电阻步进数组 =====
+    const RESISTOR_STEPS = [];
+    for (let r = 10; r <= 100; r += 10) RESISTOR_STEPS.push(r);
+    for (let r = 150; r <= 1000; r += 50) RESISTOR_STEPS.push(r);
+    for (let r = 1500; r <= 10000; r += 500) RESISTOR_STEPS.push(r);
+
+    const DEFAULT_R1_INDEX = 27; // 1000 Ω
+    const DEFAULT_R2_INDEX = 31; // 2000 Ω
+    const DEFAULT_VIN = 12;
+
+    // ===== DOM 元素 =====
+    const seriesBtn = document.getElementById('seriesBtn');
+    const parallelBtn = document.getElementById('parallelBtn');
+    const r1Slider = document.getElementById('r1_slider');
+    const r2Slider = document.getElementById('r2_slider');
+    const vinSlider = document.getElementById('vin_slider');
+
+    const r1Display = document.getElementById('r1_display');
+    const r2Display = document.getElementById('r2_display');
+    const vinDisplay = document.getElementById('vin_display');
+    const reqDisplay = document.getElementById('req_display');
+    const formulaDisplay = document.getElementById('formula_display');
+    const divisionCards = document.getElementById('division_cards');
+    const ratioDisplay = document.getElementById('ratio_display');
+    const ratioValue = document.getElementById('ratio_value');
+    const totalValue = document.getElementById('total_value');
+    const modeCircuitHint = document.getElementById('modeCircuitHint');
+    const chartTitle = document.getElementById('chart_title');
+    const chartSubtitle = document.getElementById('chart_subtitle');
+    const chartHint = document.getElementById('chart_hint');
+    const theoryText = document.getElementById('theory_text');
+    const charText = document.getElementById('char_text');
+
+    const barCanvas = document.getElementById('barChart');
+
+    // ===== 状态 =====
+    let isSeries = true; // true = series, false = parallel
+
+    let barChart = null;
+
+    // ===== 工具函数 =====
+    function getR1R2() {
+        const idx1 = Math.min(parseInt(r1Slider.value), RESISTOR_STEPS.length - 1);
+        const idx2 = Math.min(parseInt(r2Slider.value), RESISTOR_STEPS.length - 1);
+        return {
+            R1: RESISTOR_STEPS[idx1],
+            R2: RESISTOR_STEPS[idx2],
+            Vin: parseFloat(vinSlider.value)
+        };
+    }
+
+    function formatResistance(R) {
+        if (R >= 1000) return (R / 1000).toFixed(2) + ' kΩ';
+        return R.toFixed(0) + ' Ω';
+    }
+
+    function formatCurrent(I) {
+        if (I < 0.1) return (I * 1000).toFixed(2) + ' mA';
+        return I.toFixed(3) + ' A';
+    }
+
+    function formatVoltage(V) {
+        return V.toFixed(2) + ' V';
+    }
+
+    // ===== 模式切换 =====
+    function setSeriesMode() {
+        isSeries = true;
+        seriesBtn.className = 'mode-btn active-series flex-1 py-2.5 px-4 rounded-full text-sm font-semibold focus:outline-none';
+        parallelBtn.className = 'mode-btn flex-1 py-2.5 px-4 rounded-full text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 focus:outline-none';
+        updateFullUI();
+        updateBarChart();
+    }
+
+    function setParallelMode() {
+        isSeries = false;
+        seriesBtn.className = 'mode-btn flex-1 py-2.5 px-4 rounded-full text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 focus:outline-none';
+        parallelBtn.className = 'mode-btn active-parallel flex-1 py-2.5 px-4 rounded-full text-sm font-semibold focus:outline-none';
+        updateFullUI();
+        updateBarChart();
+    }
+
+    seriesBtn.addEventListener('click', setSeriesMode);
+    parallelBtn.addEventListener('click', setParallelMode);
+
+    // ===== 计算 =====
+    function computeResults() {
+        const { R1, R2, Vin } = getR1R2();
+        let Req, V1, V2, I1, I2, I_total;
+
+        if (isSeries) {
+            Req = R1 + R2;
+            I_total = Vin / Req;
+            V1 = Vin * R1 / Req;
+            V2 = Vin * R2 / Req;
+            I1 = I_total;
+            I2 = I_total;
+        } else {
+            Req = (R1 * R2) / (R1 + R2);
+            I1 = Vin / R1;
+            I2 = Vin / R2;
+            I_total = I1 + I2;
+            V1 = Vin;
+            V2 = Vin;
+        }
+
+        return { Req, V1, V2, I1, I2, I_total, R1, R2, Vin };
+    }
+
+    // KaTeX 渲染配置
+    const KATEX_DELIMITERS = [
+        {left: '\\[', right: '\\]', display: true},
+        {left: '\\(', right: '\\)', display: false}
+    ];
+    function renderKaTeX(el) {
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(el, { delimiters: KATEX_DELIMITERS, throwOnError: false });
+        }
+    }
+
+    // ===== 更新UI（仅模式切换时调用） =====
+    function updateFullUI() {
+        const res = computeResults();
+        const { R1, R2, Vin, Req, I_total } = res;
+
+        r1Display.innerText = formatResistance(R1);
+        r2Display.innerText = formatResistance(R2);
+        vinDisplay.innerText = formatVoltage(Vin);
+        reqDisplay.innerText = formatResistance(Req);
+
+        // 公式（仅模式切换时更新）
+        if (isSeries) {
+            formulaDisplay.innerHTML = '<span class="text-sm font-mono text-indigo-800">\\(R_{eq} = R_1 + R_2\\)</span>';
+            modeCircuitHint.innerText = 'R₁ 与 R₂ 串联，电流相同，电压按电阻比例分配';
+            ratioDisplay.innerHTML = '\\(U_1/U_2 = R_1/R_2 = \\)';
+        } else {
+            formulaDisplay.innerHTML = '<span class="text-sm font-mono text-indigo-800">\\(R_{eq} = R_1 \\parallel R_2 = \\dfrac{R_1 \\cdot R_2}{R_1 + R_2}\\)</span>';
+            modeCircuitHint.innerText = 'R₁ 与 R₂ 并联，电压相同，电流按电阻反比例分配';
+            ratioDisplay.innerHTML = '\\(I_1/I_2 = R_2/R_1 = \\)';
+        }
+        ratioValue.innerText = (R1 / R2).toFixed(3);
+
+        updateDivisionCards(res);
+
+        // 模式相关的文本（仅模式切换时更新）
+        if (isSeries) {
+            chartTitle.innerText = '串联分压 · 各电阻电压';
+            chartSubtitle.innerHTML = '\\(U_1\\), \\(U_2\\) 对比';
+            chartHint.innerText = '串联: 电压按电阻比例分配 | 电阻越大分压越高';
+            theoryText.innerHTML = `<strong>串联分压:</strong> \\(U_1 = U_{in} \\cdot \\dfrac{R_1}{R_1+R_2}\\)，\\(U_2 = U_{in} \\cdot \\dfrac{R_2}{R_1+R_2}\\)。<br>电流相同: \\(I = U_{in} / (R_1+R_2)\\)。<br>电压比等于电阻比: \\(U_1/U_2 = R_1/R_2\\)。`;
+            charText.innerHTML = `• 当 \\(R_1 = R_2\\) 时，电压均分（各 \\(U_{in}/2\\)）。<br>• \\(R_1 \\gg R_2\\) 时 \\(U_1 \\approx U_{in}\\)，\\(R_2\\) 分压极低。<br>• \\(R_1 \\ll R_2\\) 时 \\(U_2 \\approx U_{in}\\)，\\(R_1\\) 分压极低。<br>• 等效电阻 \\(R_{eq}\\) 接近较大电阻值。`;
+        } else {
+            chartTitle.innerText = '并联分流 · 各电阻电流';
+            chartSubtitle.innerHTML = '\\(I_1\\), \\(I_2\\) 对比';
+            chartHint.innerText = '并联: 电流按电阻反比例分配 | 电阻越小电流越大';
+            theoryText.innerHTML = `<strong>并联分流:</strong> \\(I_1 = U_{in} / R_1\\)，\\(I_2 = U_{in} / R_2\\)。<br>总电流: \\(I_{total} = I_1 + I_2 = U_{in} \\cdot \\left(\\frac{1}{R_1}+\\frac{1}{R_2}\\right)\\)。<br>电流比等于电阻反比: \\(I_1/I_2 = R_2/R_1\\)。`;
+            charText.innerHTML = `• 当 \\(R_1 = R_2\\) 时，电流均分。<br>• \\(R_1 \\gg R_2\\) 时 \\(I_2 \\gg I_1\\)，大部分电流走 \\(R_2\\)。<br>• \\(R_1 \\ll R_2\\) 时 \\(I_1 \\gg I_2\\)，大部分电流走 \\(R_1\\)。<br>• 等效电阻 \\(R_{eq}\\) 接近较小电阻值。`;
+        }
+
+        setTimeout(() => {
+            renderKaTeX(formulaDisplay);
+            renderKaTeX(divisionCards);
+            renderKaTeX(ratioDisplay);
+            renderKaTeX(chartSubtitle);
+            renderKaTeX(theoryText);
+            renderKaTeX(charText);
+        }, 10);
+    }
+
+    // 更新分压/分流卡片（共用）
+    function updateDivisionCards(res) {
+        const { V1, V2, I1, I2, I_total } = res;
+        if (isSeries) {
+            divisionCards.innerHTML = `
+                <div class="bg-blue-50 p-3 rounded-xl text-center">
+                    <div class="text-xs text-blue-700 font-semibold">U₁ (R₁)</div>
+                    <div class="text-lg font-bold text-blue-600 font-mono">${formatVoltage(V1)}</div>
+                </div>
+                <div class="bg-green-50 p-3 rounded-xl text-center">
+                    <div class="text-xs text-green-700 font-semibold">U₂ (R₂)</div>
+                    <div class="text-lg font-bold text-green-600 font-mono">${formatVoltage(V2)}</div>
+                </div>
+            `;
+        } else {
+            divisionCards.innerHTML = `
+                <div class="bg-orange-50 p-3 rounded-xl text-center">
+                    <div class="text-xs text-orange-700 font-semibold">I₁ (R₁)</div>
+                    <div class="text-lg font-bold text-orange-600 font-mono">${formatCurrent(I1)}</div>
+                </div>
+                <div class="bg-purple-50 p-3 rounded-xl text-center">
+                    <div class="text-xs text-purple-700 font-semibold">I₂ (R₂)</div>
+                    <div class="text-lg font-bold text-purple-600 font-mono">${formatCurrent(I2)}</div>
+                </div>
+            `;
+        }
+        totalValue.innerText = formatCurrent(I_total);
+    }
+
+    // ===== 轻量刷新（仅滑块变化时调用） =====
+    function updateValues() {
+        const res = computeResults();
+        const { R1, R2, Vin, Req } = res;
+
+        // 只更新数值文本，不动公式和说明文字
+        r1Display.innerText = formatResistance(R1);
+        r2Display.innerText = formatResistance(R2);
+        vinDisplay.innerText = formatVoltage(Vin);
+        reqDisplay.innerText = formatResistance(Req);
+        ratioValue.innerText = (R1 / R2).toFixed(3);
+
+        updateDivisionCards(res);
+
+        // 仅对含 KaTeX 的卡片做轻量渲染
+        setTimeout(() => {
+            renderKaTeX(divisionCards);
+        }, 10);
+    }
+
+    // ===== 更新柱状图 =====
+    function updateBarChart() {
+        const res = computeResults();
+        const { V1, V2, I1, I2, Vin, R1, R2 } = res;
+
+        let labels, data1, data2, label1, label2, color1, color2, yLabel;
+
+        if (isSeries) {
+            labels = ['R₁', 'R₂'];
+            data1 = V1;
+            data2 = V2;
+            label1 = '电压 U₁ (V)';
+            label2 = '电压 U₂ (V)';
+            color1 = '#3b82f6';
+            color2 = '#22c55e';
+            yLabel = '电压 (V)';
+        } else {
+            labels = ['R₁', 'R₂'];
+            data1 = I1;
+            data2 = I2;
+            label1 = '电流 I₁ (A)';
+            label2 = '电流 I₂ (A)';
+            color1 = '#f97316';
+            color2 = '#a855f7';
+            yLabel = '电流 (A)';
+        }
+
+        const datasets = [
+            {
+                label: label1 + ' / ' + label2,
+                data: [data1, data2],
+                backgroundColor: [color1 + 'CC', color2 + 'CC'],
+                borderColor: [color1, color2],
+                borderWidth: 1.5,
+                borderRadius: 6,
+                barPercentage: 0.54
+            }
+        ];
+
+        let yMax;
+        if (isSeries) {
+            yMax = Vin * 1.15;
+        } else {
+            yMax = Math.max(data1, data2) * 1.3;
+        }
+
+        const options = {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            const val = ctx.raw;
+                            if (val === null) return '';
+                            const itemLabel = ctx.dataIndex === 0 ? label1 : label2;
+                            if (isSeries) return `${itemLabel}: ${val.toFixed(2)} V`;
+                            return `${itemLabel}: ${formatCurrent(val)}`;
+                        }
+                    },
+                    backgroundColor: 'rgba(0,0,0,0.7)'
+                },
+                legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8, font: { size: 12 } } }
+            },
+            scales: {
+                x: {
+                    title: { display: true, text: '电阻元件', font: { weight: 'bold', size: 12 } },
+                    grid: { color: '#eef2ff' }
+                },
+                y: {
+                    title: { display: true, text: yLabel, font: { weight: 'bold', size: 12 } },
+                    min: 0,
+                    max: yMax,
+                    ticks: {
+                        callback: function(v) {
+                            if (isSeries) return v.toFixed(1) + ' V';
+                            return formatCurrent(v);
+                        }
+                    },
+                    grid: { color: '#eef2ff' }
+                }
+            }
+        };
+
+        if (barChart) {
+            const ds = barChart.data.datasets[0];
+            ds.label = label1 + ' / ' + label2;
+            ds.data = [data1, data2];
+            ds.backgroundColor = [color1 + 'CC', color2 + 'CC'];
+            ds.borderColor = [color1, color2];
+            barChart.data.labels = labels;
+            barChart.options.scales.y.max = yMax;
+            barChart.options.scales.y.title.text = yLabel;
+            barChart.options.scales.y.ticks.callback = function(v) {
+                if (isSeries) return v.toFixed(1) + ' V';
+                return formatCurrent(v);
+            };
+            barChart.options.plugins.tooltip.callbacks.label = function(ctx) {
+                const val = ctx.raw;
+                if (val === null) return '';
+                const itemLabel = ctx.dataIndex === 0 ? label1 : label2;
+                if (isSeries) return `${itemLabel}: ${val.toFixed(2)} V`;
+                return `${itemLabel}: ${formatCurrent(val)}`;
+            };
+            barChart.update('none');
+        } else {
+            barChart = new Chart(barCanvas, {
+                type: 'bar',
+                data: { labels, datasets },
+                options: options
+            });
+        }
+    }
+
+    // ===== 全刷新 =====
+    function refreshAll() {
+        updateValues();
+        updateBarChart();
+    }
+
+    // ===== 事件绑定 =====
+    r1Slider.addEventListener('input', refreshAll);
+    r2Slider.addEventListener('input', refreshAll);
+    vinSlider.addEventListener('input', refreshAll);
+    window.addEventListener('resize', () => {
+        if (barChart) barChart.resize();
+    });
+
+    // ===== 初始化 =====
+    r1Slider.value = DEFAULT_R1_INDEX;
+    r2Slider.value = DEFAULT_R2_INDEX;
+    vinSlider.value = DEFAULT_VIN;
+    updateFullUI();
+    updateBarChart();
+
+    // KaTeX 渲染
+    window.addEventListener('load', function() {
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(document.body, {
+                delimiters: KATEX_DELIMITERS,
+                throwOnError: false
+            });
+        }
+    });
+
+    console.log('电阻串并联仿真已启动 | 串联/并联模式切换 | 分压分流实时计算');
+</script>
+</body>
+</html>
