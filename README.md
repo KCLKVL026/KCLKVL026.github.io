@@ -12,9 +12,7 @@
 
 [电路分析基础辅助教学主页本地css版](https://kclkvl026.github.io/Circuit_Analysis_localcss/)
 
-[模拟电子技术辅助教学主页](https://kclkvl026.github.io/Analog_Electronics/)
 
-[数字电子技术辅助教学主页](https://kclkvl026.github.io/Digital_Electronics/)
 
 每个模块均为独立 HTML 页面，使用现代 Web 技术（Chart.js、TailwindCSS、KaTeX 等），在电脑或平板上均可流畅运行。
 
