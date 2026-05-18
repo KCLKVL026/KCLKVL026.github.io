@@ -740,7 +740,7 @@
       <li><strong>定义</strong>：用复数来表示正弦量的振幅（或有效值）和初相位</li>
       <li><strong>振幅相量</strong>：$\dot{I}_m = I_m e^{j\varphi} = I_m\angle\varphi$</li>
       <li><strong>有效值相量</strong>：$\dot{I} = I e^{j\varphi} = I\angle\varphi$（工程中更常用）</li>
-      <li><strong>对应关系</strong>：$i(t) = I_m \cos(\omega t + \varphi) \leftrightarrow \dot{I}_m = I_m\angle\varphi$</li>
+      <li><strong>对应关系</strong>：$i(t) = I_m \sin(\omega t + \varphi) \leftrightarrow \dot{I}_m = I_m\angle\varphi$</li>
       <li><strong>注意</strong>：相量只能表示同频率的正弦量；不同频率的正弦量不能用同一相量表示</li>
     </ul>
 
@@ -807,13 +807,13 @@
         <span class="detail-title">5.4.1 阻抗的概念</span>
       </div>
       <div class="formula-block">
-        $$Z = \frac{\dot{U}}{\dot{I}} = R + jX = |Z|\angle\varphi$$
+        $$Z = \frac{\dot{U}}{\dot{I}} = R + jX = |Z|\angle\varphi_z$$
       </div>
       <ul class="meaning-list">
-        <li>电阻部分（实部）：$R = |Z|\cos\varphi$</li>
-        <li>电抗部分（虚部）：$X = |Z|\sin\varphi$</li>
+        <li>电阻部分（实部）：$R = |Z|\cos\varphi_z$</li>
+        <li>电抗部分（虚部）：$X = |Z|\sin\varphi_z$</li>
         <li>阻抗模：$|Z| = \sqrt{R^2 + X^2}$</li>
-        <li>阻抗角：$\varphi = \arctan(X/R)$（即电压超前电流的角度）</li>
+        <li>阻抗角：$\varphi_z = \arctan(X/R)$（即电压超前电流的角度）</li>
       </ul>
       <div class="cond-row">
         <span class="cond-pill z-accent">导纳：$Y = 1/Z = G + jB$</span>
@@ -884,7 +884,7 @@
     <h4>5.6.1 瞬时功率</h4>
     <ul>
       <li><strong>定义</strong>：$p(t) = u(t) \cdot i(t)$</li>
-      <li><strong>表达式</strong>：$p(t) = UI\cos\varphi + UI\cos(2\omega t + \varphi_u + \varphi_i)$
+      <li><strong>表达式</strong>：$p(t) = UI\cos\varphi_z - UI\cos(2\omega t + \varphi_u + \varphi_i)$
         <ul>
           <li>恒定分量（平均功率）+ 两倍频波动分量</li>
         </ul>
@@ -901,9 +901,9 @@
         <span class="badge">有功功率</span>
         <div class="card-title">平均功率 P</div>
         <div class="desc">电路实际消耗的功率，单位：瓦特（W）</div>
-        <div class="formula-mini">$P = UI\cos\varphi$</div>
+        <div class="formula-mini">$P = UI\cos\varphi_z$</div>
         <div class="conditions">
-          <span class="cond-chip">$\lambda = \cos\varphi$</span>
+          <span class="cond-chip">$\lambda = \cos\varphi_z$</span>
           <span class="cond-chip">反映电能利用率</span>
         </div>
       </div>
@@ -911,7 +911,7 @@
         <span class="badge">无功功率</span>
         <div class="card-title">无功功率 Q</div>
         <div class="desc">反映电场与磁场之间能量交换的规模，单位：乏（var）</div>
-        <div class="formula-mini">$Q = UI\sin\varphi$</div>
+        <div class="formula-mini">$Q = UI\sin\varphi_z$</div>
         <div class="conditions">
           <span class="cond-chip">$Q > 0$：感性</span>
           <span class="cond-chip">$Q < 0$：容性</span>
