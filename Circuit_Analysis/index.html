@@ -868,58 +868,113 @@
         </div>
 
 
-        <!-- ================= 9. 运算放大器 (预留，留待模拟电子学讲解) ================= -->
-        <!--
+
+
+
+        <!-- ================= 9. 知识点小结 ================= -->
         <div class="mb-12">
             <div class="flex items-center gap-3 mb-5">
                 <div class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-600">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                 </div>
-                <h2 class="text-2xl md:text-3xl font-bold text-slate-800 section-title">运算放大器</h2>
-                <span class="text-sm text-slate-400 ml-2">放大 · 求和 · 积分 · 微分</span>
+                <h2 class="text-2xl md:text-3xl font-bold text-slate-800 section-title">知识点小结</h2>
+                <span class="text-sm text-slate-400 ml-2">系统梳理 · 公式速查 · 复习提纲</span>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7 auto-rows-fr">
-                <a href="./09_OpAmp/OpAmp_Basic.html" target="_blank" rel="noopener noreferrer"
+                <!-- 直流纯电阻电路 -->
+                <a href="./09_Summary/01_直流纯电阻电路.html" target="_blank" rel="noopener noreferrer"
                    class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
                     <div class="flex items-start justify-between">
-                        <div class="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 text-xl shadow-sm">🔺</div>
-                        <svg class="w-5 h-5 text-slate-400 group-hover:text-teal-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        <div class="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 text-xl shadow-sm">
+                            📘
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-teal-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
                     </div>
                     <div class="mt-4">
-                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-teal-700 transition-colors">反相与同相放大器</h3>
-                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">并排显示两种基本拓扑，输入输出波形对比，增益实时计算，展示虚短虚断概念。</p>
-                        <div class="mt-3 flex items-center text-xs font-medium text-teal-500 gap-1"><span>反相放大</span><span class="text-slate-300">|</span><span>同相放大</span></div>
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-teal-700 transition-colors">直流纯电阻电路</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            覆盖电路基本概念、基尔霍夫定律、等效变换、系统分析方法及电路定理（叠加、戴维南、诺顿、最大功率传输）。
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-teal-500 gap-1">
+                            <span>第1-4章</span>
+                            <span class="text-slate-300">|</span>
+                            <span>支路/网孔/节点法</span>
+                        </div>
                     </div>
                 </a>
-                <a href="./09_OpAmp/OpAmp_Summing_Diff.html" target="_blank" rel="noopener noreferrer"
+                <!-- 正弦稳态分析 -->
+                <a href="./09_Summary/02_正弦稳态分析.html" target="_blank" rel="noopener noreferrer"
                    class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
                     <div class="flex items-start justify-between">
-                        <div class="w-10 h-10 rounded-full bg-cyan-100 flex items-center justify-center text-cyan-600 text-xl shadow-sm">➕</div>
-                        <svg class="w-5 h-5 text-slate-400 group-hover:text-cyan-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        <div class="w-10 h-10 rounded-full bg-cyan-100 flex items-center justify-center text-cyan-600 text-xl shadow-sm">
+                            📗
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-cyan-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
                     </div>
                     <div class="mt-4">
-                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-cyan-700 transition-colors">求和与差分放大器</h3>
-                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">反相求和（3路输入可调）和差分放大器，展示叠加原理在运放中的应用。</p>
-                        <div class="mt-3 flex items-center text-xs font-medium text-cyan-500 gap-1"><span>求和电路</span><span class="text-slate-300">|</span><span>差分放大</span></div>
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-cyan-700 transition-colors">正弦稳态分析</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            相量法分析正弦稳态电路，阻抗与导纳、四种功率、功率因数提高、谐振电路、耦合电感与理想变压器。
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-cyan-500 gap-1">
+                            <span>第5-6章</span>
+                            <span class="text-slate-300">|</span>
+                            <span>相量法·谐振·变压器</span>
+                        </div>
                     </div>
                 </a>
-                <a href="./09_OpAmp/OpAmp_Integ_Diff.html" target="_blank" rel="noopener noreferrer"
+                <!-- 动态电路时域分析 -->
+                <a href="./09_Summary/03_动态电路时域分析.html" target="_blank" rel="noopener noreferrer"
                    class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
                     <div class="flex items-start justify-between">
-                        <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-xl shadow-sm">∫</div>
-                        <svg class="w-5 h-5 text-slate-400 group-hover:text-emerald-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-xl shadow-sm">
+                            📙
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-orange-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
                     </div>
                     <div class="mt-4">
-                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-emerald-700 transition-colors">积分器与微分器</h3>
-                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">积分器：方波→三角波；微分器：三角波→方波。直观展示运放实现数学运算。</p>
-                        <div class="mt-3 flex items-center text-xs font-medium text-emerald-500 gap-1"><span>积分运算</span><span class="text-slate-300">|</span><span>微分运算</span></div>
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-orange-700 transition-colors">动态电路时域分析</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            换路定则、一阶电路零输入/零状态/全响应、三要素法、阶跃与冲激响应、二阶电路阻尼分类。
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-orange-500 gap-1">
+                            <span>第7章</span>
+                            <span class="text-slate-300">|</span>
+                            <span>暂态·三要素法</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- 双口网络 -->
+                <a href="./09_Summary/04_双口网络.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 text-xl shadow-sm">
+                            📕
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-violet-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-violet-700 transition-colors">双口网络</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Z/Y/T/H四种参数方程、互易与对称条件、级联/并联/串联等效、网络连接分析方法。
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-violet-500 gap-1">
+                            <span>第8章</span>
+                            <span class="text-slate-300">|</span>
+                            <span>参数方程·网络连接</span>
+                        </div>
                     </div>
                 </a>
             </div>
         </div>
-        -->
-
-
 
         <!-- 教学辅助说明卡片 -->
         <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-5">

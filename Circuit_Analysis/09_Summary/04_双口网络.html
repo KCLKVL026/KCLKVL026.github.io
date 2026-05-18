@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>单元04：双口网络 - 电路分析基础</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<style>
+  :root {
+    --font-body: 'Noto Sans SC', 'Inter', -apple-system, sans-serif;
+    --font-mono: 'SF Mono', 'Fira Code', Consolas, monospace;
+    --c-bg: #fefcfa;
+    --c-surface: #ffffff;
+    --c-sidebar: rgba(255,255,255,0.85);
+    --c-text: #3d3d3d;
+    --c-text-dim: #8a8a8a;
+    --c-text-head: #2c2c2c;
+    --c-border: #ede8e3;
+    --c-lavender: #e8e0f0;
+    --c-lavender-deep: #9b8ec4;
+    --c-peach: #fde8d8;
+    --c-peach-deep: #e8956a;
+    --c-sky: #dce8f8;
+    --c-sky-deep: #6a9fd8;
+    --c-mint: #daf0e8;
+    --c-mint-deep: #5aaf8a;
+    --c-rose: #f8dce0;
+    --c-rose-deep: #d87088;
+    --c-amber: #f8ecd0;
+    --c-amber-deep: #c89a40;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --sidebar-w: 260px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --c-bg: #1a1a24;
+      --c-surface: #24243a;
+      --c-sidebar: rgba(26,26,36,0.92);
+      --c-text: #d4d4d4;
+      --c-text-dim: #7a7a8e;
+      --c-text-head: #eee;
+      --c-border: #3a3a52;
+      --c-lavender: #2e2840;
+      --c-lavender-deep: #b8a8e0;
+      --c-peach: #3a2820;
+      --c-peach-deep: #f0a878;
+      --c-sky: #1e2838;
+      --c-sky-deep: #88b8f0;
+      --c-mint: #1e3028;
+      --c-mint-deep: #70d0a0;
+      --c-rose: #382028;
+      --c-rose-deep: #f08898;
+      --c-amber: #302818;
+      --c-amber-deep: #e8c060;
+    }
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-body);
+    color: var(--c-text);
+    background: var(--c-bg);
+    background-image:
+      radial-gradient(ellipse 600px 400px at 10% 20%, rgba(232,224,240,0.5) 0%, transparent 70%),
+      radial-gradient(ellipse 500px 500px at 90% 70%, rgba(253,232,216,0.4) 0%, transparent 70%),
+      radial-gradient(ellipse 400px 300px at 50% 90%, rgba(220,232,248,0.3) 0%, transparent 70%);
+    font-size: 15.5px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    position: fixed;
+    top: 1.5rem; left: 1.5rem; bottom: 1.5rem;
+    width: var(--sidebar-w);
+    background: var(--c-sidebar);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.75rem 1.25rem;
+    overflow-y: auto;
+    z-index: 100;
+    transition: transform 0.35s cubic-bezier(.4,0,.2,1);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+  }
+  .sidebar-brand {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--c-lavender-deep);
+    margin-bottom: 0.5rem;
+  }
+  .sidebar-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--c-border);
+  }
+  .sidebar nav a {
+    display: block;
+    padding: 0.4rem 0.7rem;
+    color: var(--c-text-dim);
+    text-decoration: none;
+    font-size: 0.83rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 2px;
+    transition: all 0.2s;
+  }
+  .sidebar nav a:hover {
+    color: var(--c-text-head);
+    background: var(--c-lavender);
+  }
+  .sidebar nav a.active {
+    color: var(--c-lavender-deep);
+    background: var(--c-lavender);
+    font-weight: 600;
+  }
+  .sidebar nav a.l2 { padding-left: 1.4rem; font-size: 0.78rem; }
+  .sidebar nav a.l3 { padding-left: 2.2rem; font-size: 0.75rem; }
+
+  /* ── Main ── */
+  .main {
+    margin-left: calc(var(--sidebar-w) + 3rem);
+    padding: 2.5rem 0;
+    max-width: 780px;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    position: relative;
+    background: linear-gradient(135deg, var(--c-lavender) 0%, var(--c-sky) 50%, var(--c-peach) 100%);
+    border-radius: var(--radius);
+    padding: 3rem 2.5rem 2.5rem;
+    margin-bottom: 3rem;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 50%;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -30px; left: 30%;
+    width: 100px; height: 100px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 50%;
+  }
+  .hero h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    position: relative;
+    z-index: 1;
+  }
+  .hero .sub {
+    color: var(--c-text-dim);
+    font-size: 0.95rem;
+    margin-top: 0.4rem;
+    position: relative;
+    z-index: 1;
+  }
+  .hero .tags {
+    margin-top: 1rem;
+    position: relative;
+    z-index: 1;
+  }
+  .tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.6);
+    backdrop-filter: blur(8px);
+    padding: 0.2rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.73rem;
+    font-weight: 600;
+    color: var(--c-text);
+    margin-right: 0.4rem;
+    border: 1px solid rgba(255,255,255,0.5);
+  }
+
+  /* ── Tree Card ── */
+  .tree-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.75rem 2rem;
+    margin-bottom: 3rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+  }
+  .tree-card h2 {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--c-lavender-deep);
+    margin-bottom: 1rem;
+  }
+  .tree-card pre {
+    font-family: var(--font-mono);
+    font-size: 0.83rem;
+    line-height: 1.9;
+    color: var(--c-text-dim);
+    overflow-x: auto;
+  }
+
+  /* ── Section ── */
+  section { margin-bottom: 2.5rem; }
+
+  .section-label {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    margin-bottom: 0.6rem;
+  }
+  .section-label.ch8 { background: var(--c-lavender); color: var(--c-lavender-deep); }
+
+  h2.sec-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    margin-bottom: 1.25rem;
+  }
+  h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--c-text-head);
+    margin: 1.75rem 0 0.75rem;
+  }
+  h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--c-text);
+    margin: 1.25rem 0 0.5rem;
+  }
+  p { margin-bottom: 0.7rem; }
+  ul, ol { margin: 0.4rem 0 1rem 1.2rem; }
+  li { margin-bottom: 0.3rem; }
+  li ul, li ol { margin-top: 0.25rem; margin-bottom: 0; }
+  strong { font-weight: 600; }
+
+  /* ── Param Cards ── */
+  .param-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.25rem 0;
+  }
+  .param-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  }
+  .param-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  }
+  .param-card .badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .param-card.z-card .badge { background: var(--c-lavender); color: var(--c-lavender-deep); }
+  .param-card.y-card .badge { background: var(--c-sky); color: var(--c-sky-deep); }
+  .param-card.t-card .badge { background: var(--c-peach); color: var(--c-peach-deep); }
+  .param-card.h-card .badge { background: var(--c-mint); color: var(--c-mint-deep); }
+
+  .param-card .card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    margin-bottom: 0.6rem;
+  }
+  .param-card .desc {
+    font-size: 0.83rem;
+    color: var(--c-text-dim);
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
+  }
+  .param-card .formula-mini {
+    background: var(--c-bg);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.88rem;
+    overflow-x: auto;
+  }
+  .param-card .conditions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .param-card .cond-chip {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    background: var(--c-bg);
+    border: 1px solid var(--c-border);
+    color: var(--c-text-dim);
+  }
+
+  /* ── Full-width param detail ── */
+  .param-detail {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.75rem 2rem;
+    margin: 1.25rem 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  }
+  .param-detail .detail-head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  .param-detail .detail-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    flex-shrink: 0;
+  }
+  .param-detail .detail-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+  }
+  .param-detail .formula-block {
+    background: var(--c-bg);
+    border-radius: var(--radius-sm);
+    padding: 1.25rem 1.5rem;
+    margin: 0.75rem 0;
+    overflow-x: auto;
+    border-left: 3px solid var(--c-border);
+  }
+  .param-detail .meaning-list {
+    list-style: none;
+    margin: 0.75rem 0 0 0;
+    padding: 0;
+  }
+  .param-detail .meaning-list li {
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+  }
+  .param-detail .meaning-list li:nth-child(odd) { background: var(--c-bg); }
+  .param-detail .cond-row {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+  .param-detail .cond-pill {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.35rem 0.8rem;
+    border-radius: 20px;
+    border: 1px solid var(--c-border);
+  }
+  .z-accent { background: var(--c-lavender); color: var(--c-lavender-deep); border-color: var(--c-lavender) !important; }
+  .y-accent { background: var(--c-sky); color: var(--c-sky-deep); border-color: var(--c-sky) !important; }
+  .t-accent { background: var(--c-peach); color: var(--c-peach-deep); border-color: var(--c-peach) !important; }
+  .h-accent { background: var(--c-mint); color: var(--c-mint-deep); border-color: var(--c-mint) !important; }
+
+  /* ── Comparison Grid ── */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+  .compare-cell {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    text-align: center;
+    transition: transform 0.2s;
+  }
+  .compare-cell:hover { transform: translateY(-2px); }
+  .compare-cell .cell-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+  }
+  .compare-cell:nth-child(1) .cell-label { color: var(--c-lavender-deep); }
+  .compare-cell:nth-child(2) .cell-label { color: var(--c-sky-deep); }
+  .compare-cell:nth-child(3) .cell-label { color: var(--c-peach-deep); }
+  .compare-cell:nth-child(4) .cell-label { color: var(--c-mint-deep); }
+  .compare-cell .cell-letter {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+  .compare-cell:nth-child(1) { border-top: 3px solid var(--c-lavender-deep); }
+  .compare-cell:nth-child(2) { border-top: 3px solid var(--c-sky-deep); }
+  .compare-cell:nth-child(3) { border-top: 3px solid var(--c-peach-deep); }
+  .compare-cell:nth-child(4) { border-top: 3px solid var(--c-mint-deep); }
+  .compare-cell .cell-row {
+    font-size: 0.78rem;
+    color: var(--c-text-dim);
+    margin: 0.2rem 0;
+  }
+  .compare-cell .cell-row strong { color: var(--c-text); }
+
+  /* ── Connection cards ── */
+  .connect-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+  .connect-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.25rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+  }
+  .connect-card .cc-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+    color: var(--c-text-head);
+  }
+  .connect-card .cc-desc {
+    font-size: 0.8rem;
+    color: var(--c-text-dim);
+    margin-bottom: 0.4rem;
+  }
+  .connect-card .cc-formula {
+    font-size: 0.85rem;
+  }
+  .connect-card.full { grid-column: 1 / -1; }
+
+  /* ── Steps ── */
+  .step-flow {
+    display: flex;
+    gap: 0;
+    margin: 1.25rem 0;
+    align-items: stretch;
+  }
+  .step-item {
+    flex: 1;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    padding: 1.25rem 1rem;
+    text-align: center;
+    position: relative;
+    font-size: 0.85rem;
+  }
+  .step-item:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+  .step-item:last-child { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+  .step-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: -0.55rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0; height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-left: 8px solid var(--c-border);
+    z-index: 2;
+  }
+  .step-num {
+    width: 2rem; height: 2rem;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.5rem;
+  }
+  .step-item:nth-child(1) .step-num { background: var(--c-lavender-deep); }
+  .step-item:nth-child(2) .step-num { background: var(--c-sky-deep); }
+  .step-item:nth-child(3) .step-num { background: var(--c-peach-deep); }
+  .step-item:nth-child(4) .step-num { background: var(--c-mint-deep); }
+
+  /* ── Mobile ── */
+  .menu-btn {
+    display: none;
+    position: fixed;
+    top: 1rem; left: 1rem;
+    z-index: 200;
+    width: 44px; height: 44px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: 12px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    color: var(--c-text);
+  }
+  @media (max-width: 960px) {
+    .sidebar { transform: translateX(-110%); }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; padding: 1.5rem; padding-top: 4.5rem; }
+    .menu-btn { display: flex; align-items: center; justify-content: center; }
+    .param-grid, .connect-grid { grid-template-columns: 1fr; }
+    .compare-grid { grid-template-columns: 1fr 1fr; }
+    .step-flow { flex-direction: column; }
+    .step-item { border-radius: var(--radius-sm) !important; }
+    .step-item:not(:last-child)::after { display: none; }
+    .hero { padding: 2rem 1.5rem; }
+    .hero h1 { font-size: 1.5rem; }
+  }
+  @media print {
+    .sidebar, .menu-btn { display: none; }
+    .main { margin-left: 0; padding: 1rem; }
+    .hero { background: #f0f0f0 !important; }
+    .param-card:hover { transform: none; }
+  }
+  a:focus-visible, button:focus-visible {
+    outline: 3px solid var(--c-lavender-deep);
+    outline-offset: 2px;
+  }
+</style>
+</head>
+<body>
+
+<button class="menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('open')" aria-label="Toggle nav">&#9776;</button>
+
+<aside class="sidebar">
+  <div class="sidebar-brand">电路分析基础</div>
+  <div class="sidebar-title">单元04：双口网络</div>
+  <nav>
+    <a href="#overview">知识结构总览</a>
+    <a href="#concept" class="l2">8.1 基本概念</a>
+    <a href="#params" class="l2">8.2 参数方程</a>
+    <a href="#z-detail" class="l3">Z 参数</a>
+    <a href="#y-detail" class="l3">Y 参数</a>
+    <a href="#t-detail" class="l3">T 参数</a>
+    <a href="#h-detail" class="l3">H 参数</a>
+    <a href="#compare" class="l2">参数对比</a>
+    <a href="#analysis" class="l2">8.3 电路分析</a>
+    <a href="#connections" class="l3">网络连接</a>
+    <a href="#solve-steps" class="l3">求解步骤</a>
+  </nav>
+</aside>
+
+<main class="main">
+
+  <!-- 返回主页按钮 -->
+  <div class="flex justify-start mb-4">
+    <a href="../index.html"
+    class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+      </svg>
+      返回主页
+    </a>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>单元04：双口网络</h1>
+    <p class="sub">电路分析基础（2026）&middot; 第8章</p>
+    <div class="tags">
+      <span class="tag">双口网络</span>
+      <span class="tag">Z / Y / T / H 参数</span>
+      <span class="tag">网络连接</span>
+    </div>
+  </div>
+
+  <!-- Tree -->
+  <div class="tree-card" id="overview">
+    <h2>知识结构总览</h2>
+    <pre>
+双口网络
+&#9492;&#9472; 8. 双口网络
+    &#9500;&#9472; 8.1 双口网络的基本概念
+    &#9500;&#9472; 8.2 双口网络的参数方程
+    &#9474;   &#9500;&#9472; 8.2.1 阻抗方程和Z参数
+    &#9474;   &#9500;&#9472; 8.2.2 导纳方程和Y参数
+    &#9474;   &#9500;&#9472; 8.2.3 传输方程和T参数
+    &#9474;   &#9492;&#9472; 8.2.4 混合方程和H参数
+    &#9492;&#9472; 8.3 含双口网络的电路分析
+        &#9492;&#9472; 8.3.1 双口网络的连接</pre>
+  </div>
+
+  <!-- 8.1 概念 -->
+  <section id="concept">
+    <span class="section-label ch8">Chapter 8</span>
+    <h2 class="sec-title">8.1 双口网络的基本概念</h2>
+    <ul>
+      <li><strong>定义</strong>：具有两个端口（每个端口由一对端子组成）的网络</li>
+      <li><strong>端口条件</strong>：每个端口的一对端子中，流入一个端子的电流等于从另一个端子流出的电流</li>
+      <li><strong>与四端网络的区别</strong>：四端网络的四个端子电流不一定满足端口条件</li>
+      <li><strong>端口变量</strong>：
+        <ul>
+          <li>输入端口（端口1）：电压 $\dot{U}_1$，电流 $\dot{I}_1$</li>
+          <li>输出端口（端口2）：电压 $\dot{U}_2$，电流 $\dot{I}_2$</li>
+        </ul>
+      </li>
+      <li><strong>参考方向</strong>：通常规定电流从端口的正极性端子流入</li>
+      <li><strong>线性双口网络</strong>：内部不含独立源，元件为线性</li>
+      <li><strong>对称双口网络</strong>：两个端口的电气特性完全相同</li>
+      <li><strong>倒易双口网络</strong>：满足互易定理，$z_{12} = z_{21}$（或 $y_{12} = y_{21}$）</li>
+    </ul>
+  </section>
+
+  <!-- 8.2 参数卡片概览 -->
+  <section id="params">
+    <span class="section-label ch8">Chapter 8</span>
+    <h2 class="sec-title">8.2 四种参数方程一览</h2>
+    <div class="param-grid">
+      <div class="param-card z-card">
+        <span class="badge">Z 参数</span>
+        <div class="card-title">阻抗方程</div>
+        <div class="desc">以电流为自变量，用电压表示。开路条件下测量。</div>
+        <div class="formula-mini">$\dot{U} = \mathbf{Z}\dot{I}$</div>
+        <div class="conditions">
+          <span class="cond-chip">互易: $z_{12}=z_{21}$</span>
+          <span class="cond-chip">对称: $z_{11}=z_{22}$</span>
+        </div>
+      </div>
+      <div class="param-card y-card">
+        <span class="badge">Y 参数</span>
+        <div class="card-title">导纳方程</div>
+        <div class="desc">以电压为自变量，用电流表示。短路条件下测量。$\mathbf{Y}=\mathbf{Z}^{-1}$</div>
+        <div class="formula-mini">$\dot{I} = \mathbf{Y}\dot{U}$</div>
+        <div class="conditions">
+          <span class="cond-chip">互易: $y_{12}=y_{21}$</span>
+          <span class="cond-chip">对称: $y_{11}=y_{22}$</span>
+        </div>
+      </div>
+      <div class="param-card t-card">
+        <span class="badge">T 参数</span>
+        <div class="card-title">传输方程</div>
+        <div class="desc">描述输入到输出的信号传输过程，适合级联分析。</div>
+        <div class="formula-mini">$\begin{bmatrix}\dot{U}_1\\\dot{I}_1\end{bmatrix} = \mathbf{T}\begin{bmatrix}\dot{U}_2\\-\dot{I}_2\end{bmatrix}$</div>
+        <div class="conditions">
+          <span class="cond-chip">互易: $AD-BC=1$</span>
+          <span class="cond-chip">对称: $A=D$</span>
+        </div>
+      </div>
+      <div class="param-card h-card">
+        <span class="badge">H 参数</span>
+        <div class="card-title">混合方程</div>
+        <div class="desc">混合使用电压和电流作自变量。晶体管等效电路常用。</div>
+        <div class="formula-mini">$\begin{bmatrix}\dot{U}_1\\\dot{I}_2\end{bmatrix} = \mathbf{H}\begin{bmatrix}\dot{I}_1\\\dot{U}_2\end{bmatrix}$</div>
+        <div class="conditions">
+          <span class="cond-chip">互易: $h_{12}=-h_{21}$</span>
+          <span class="cond-chip">对称: $h_{11}h_{22}-h_{12}h_{21}=1$</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Z 参数详情 -->
+  <div class="param-detail" id="z-detail">
+    <div class="detail-head">
+      <span class="detail-badge z-accent">Z 参数</span>
+      <span class="detail-title">阻抗方程详解</span>
+    </div>
+    <div class="formula-block">
+      $$\dot{U}_1 = z_{11}\dot{I}_1 + z_{12}\dot{I}_2 \qquad \dot{U}_2 = z_{21}\dot{I}_1 + z_{22}\dot{I}_2$$
+      $$\begin{bmatrix}\dot{U}_1\\\dot{U}_2\end{bmatrix} = \mathbf{Z}\begin{bmatrix}\dot{I}_1\\\dot{I}_2\end{bmatrix}$$
+    </div>
+    <p><strong>参数物理意义</strong>（开路参数）：</p>
+    <ul class="meaning-list">
+      <li>$z_{11} = \dfrac{\dot{U}_1}{\dot{I}_1}\bigg|_{\dot{I}_2=0}$ &mdash; 端口2开路时端口1的输入阻抗</li>
+      <li>$z_{12} = \dfrac{\dot{U}_1}{\dot{I}_2}\bigg|_{\dot{I}_1=0}$ &mdash; 端口1开路时的转移阻抗</li>
+      <li>$z_{21} = \dfrac{\dot{U}_2}{\dot{I}_1}\bigg|_{\dot{I}_2=0}$ &mdash; 端口2开路时的转移阻抗</li>
+      <li>$z_{22} = \dfrac{\dot{U}_2}{\dot{I}_2}\bigg|_{\dot{I}_1=0}$ &mdash; 端口1开路时端口2的输入阻抗</li>
+    </ul>
+    <p><strong>测量方法</strong>：分别将端口1或端口2开路，测量电压和电流。</p>
+    <div class="cond-row">
+      <span class="cond-pill z-accent">互易条件：$z_{12} = z_{21}$</span>
+      <span class="cond-pill z-accent">对称条件：$z_{11} = z_{22}$</span>
+    </div>
+  </div>
+
+  <!-- Y 参数详情 -->
+  <div class="param-detail" id="y-detail">
+    <div class="detail-head">
+      <span class="detail-badge y-accent">Y 参数</span>
+      <span class="detail-title">导纳方程详解</span>
+    </div>
+    <div class="formula-block">
+      $$\dot{I}_1 = y_{11}\dot{U}_1 + y_{12}\dot{U}_2 \qquad \dot{I}_2 = y_{21}\dot{U}_1 + y_{22}\dot{U}_2$$
+      $$\begin{bmatrix}\dot{I}_1\\\dot{I}_2\end{bmatrix} = \mathbf{Y}\begin{bmatrix}\dot{U}_1\\\dot{U}_2\end{bmatrix}$$
+    </div>
+    <p><strong>参数物理意义</strong>（短路参数）：</p>
+    <ul class="meaning-list">
+      <li>$y_{11} = \dfrac{\dot{I}_1}{\dot{U}_1}\bigg|_{\dot{U}_2=0}$ &mdash; 端口2短路时端口1的输入导纳</li>
+      <li>$y_{12} = \dfrac{\dot{I}_1}{\dot{U}_2}\bigg|_{\dot{U}_1=0}$ &mdash; 端口1短路时的转移导纳</li>
+      <li>$y_{21} = \dfrac{\dot{I}_2}{\dot{U}_1}\bigg|_{\dot{U}_2=0}$ &mdash; 端口2短路时的转移导纳</li>
+      <li>$y_{22} = \dfrac{\dot{I}_2}{\dot{U}_2}\bigg|_{\dot{U}_1=0}$ &mdash; 端口1短路时端口2的输入导纳</li>
+    </ul>
+    <div class="cond-row">
+      <span class="cond-pill y-accent">与Z参数关系：$\mathbf{Y} = \mathbf{Z}^{-1}$</span>
+      <span class="cond-pill y-accent">互易：$y_{12}=y_{21}$</span>
+      <span class="cond-pill y-accent">对称：$y_{11}=y_{22}$</span>
+    </div>
+  </div>
+
+  <!-- T 参数详情 -->
+  <div class="param-detail" id="t-detail">
+    <div class="detail-head">
+      <span class="detail-badge t-accent">T 参数</span>
+      <span class="detail-title">传输方程详解</span>
+    </div>
+    <div class="formula-block">
+      $$\dot{U}_1 = A\dot{U}_2 - B\dot{I}_2 \qquad \dot{I}_1 = C\dot{U}_2 - D\dot{I}_2$$
+      $$\begin{bmatrix}\dot{U}_1\\\dot{I}_1\end{bmatrix} = \mathbf{T}\begin{bmatrix}\dot{U}_2\\-\dot{I}_2\end{bmatrix}$$
+    </div>
+    <p><strong>参数物理意义</strong>：</p>
+    <ul class="meaning-list">
+      <li>$A = \dfrac{\dot{U}_1}{\dot{U}_2}\bigg|_{\dot{I}_2=0}$ &mdash; 开路电压传输比</li>
+      <li>$B = -\dfrac{\dot{U}_1}{\dot{I}_2}\bigg|_{\dot{U}_2=0}$ &mdash; 短路转移阻抗</li>
+      <li>$C = \dfrac{\dot{I}_1}{\dot{U}_2}\bigg|_{\dot{I}_2=0}$ &mdash; 开路转移导纳</li>
+      <li>$D = -\dfrac{\dot{I}_1}{\dot{I}_2}\bigg|_{\dot{U}_2=0}$ &mdash; 短路电流传输比</li>
+    </ul>
+    <p><strong>特点</strong>：T参数适合描述信号从输入到输出的传输过程。</p>
+    <div class="cond-row">
+      <span class="cond-pill t-accent">互易条件：$AD - BC = 1$</span>
+      <span class="cond-pill t-accent">对称条件：$A = D$</span>
+    </div>
+  </div>
+
+  <!-- H 参数详情 -->
+  <div class="param-detail" id="h-detail">
+    <div class="detail-head">
+      <span class="detail-badge h-accent">H 参数</span>
+      <span class="detail-title">混合方程详解</span>
+    </div>
+    <div class="formula-block">
+      $$\dot{U}_1 = h_{11}\dot{I}_1 + h_{12}\dot{U}_2 \qquad \dot{I}_2 = h_{21}\dot{I}_1 + h_{22}\dot{U}_2$$
+      $$\begin{bmatrix}\dot{U}_1\\\dot{I}_2\end{bmatrix} = \mathbf{H}\begin{bmatrix}\dot{I}_1\\\dot{U}_2\end{bmatrix}$$
+    </div>
+    <p><strong>参数物理意义</strong>：</p>
+    <ul class="meaning-list">
+      <li>$h_{11} = \dfrac{\dot{U}_1}{\dot{I}_1}\bigg|_{\dot{U}_2=0}$ &mdash; 端口2短路时的输入阻抗</li>
+      <li>$h_{12} = \dfrac{\dot{U}_1}{\dot{U}_2}\bigg|_{\dot{I}_1=0}$ &mdash; 端口1开路时的反向电压传输比</li>
+      <li>$h_{21} = \dfrac{\dot{I}_2}{\dot{I}_1}\bigg|_{\dot{U}_2=0}$ &mdash; 端口2短路时的正向电流传输比</li>
+      <li>$h_{22} = \dfrac{\dot{I}_2}{\dot{U}_2}\bigg|_{\dot{I}_1=0}$ &mdash; 端口1开路时的输出导纳</li>
+    </ul>
+    <p><strong>特点</strong>：H参数在晶体管等效电路中广泛使用。</p>
+    <div class="cond-row">
+      <span class="cond-pill h-accent">互易条件：$h_{12} = -h_{21}$</span>
+      <span class="cond-pill h-accent">对称条件：$h_{11}h_{22} - h_{12}h_{21} = 1$</span>
+    </div>
+  </div>
+
+  <!-- 参数对比 -->
+  <section id="compare">
+    <span class="section-label ch8">Summary</span>
+    <h2 class="sec-title">四种参数对比</h2>
+    <div class="compare-grid">
+      <div class="compare-cell">
+        <div class="cell-label">Z 参数</div>
+        <div class="cell-letter">Z</div>
+        <div class="cell-row">阻抗方程</div>
+        <div class="cell-row">测量：<strong>开路</strong></div>
+        <div class="cell-row">互易：$z_{12}=z_{21}$</div>
+        <div class="cell-row">对称：$z_{11}=z_{22}$</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">Y 参数</div>
+        <div class="cell-letter">Y</div>
+        <div class="cell-row">导纳方程</div>
+        <div class="cell-row">测量：<strong>短路</strong></div>
+        <div class="cell-row">互易：$y_{12}=y_{21}$</div>
+        <div class="cell-row">对称：$y_{11}=y_{22}$</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">T 参数</div>
+        <div class="cell-letter">T</div>
+        <div class="cell-row">传输方程</div>
+        <div class="cell-row">测量：<strong>开路/短路</strong></div>
+        <div class="cell-row">互易：$AD-BC=1$</div>
+        <div class="cell-row">对称：$A=D$</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">H 参数</div>
+        <div class="cell-letter">H</div>
+        <div class="cell-row">混合方程</div>
+        <div class="cell-row">测量：<strong>混合</strong></div>
+        <div class="cell-row">互易：$h_{12}=-h_{21}$</div>
+        <div class="cell-row">对称：$det(\mathbf{H})=1$</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8.3 电路分析 -->
+  <section id="analysis">
+    <span class="section-label ch8">Chapter 8</span>
+    <h2 class="sec-title">8.3 含双口网络的电路分析</h2>
+
+    <h3 id="connections">双口网络的连接</h3>
+    <div class="connect-grid">
+      <div class="connect-card">
+        <div class="cc-name">级联</div>
+        <div class="cc-desc">前一个输出接后一个输入</div>
+        <div class="cc-formula">$\mathbf{T} = \mathbf{T}_1 \cdot \mathbf{T}_2 \cdots \mathbf{T}_n$</div>
+      </div>
+      <div class="connect-card">
+        <div class="cc-name">并联-并联</div>
+        <div class="cc-desc">对应端子并联</div>
+        <div class="cc-formula">$\mathbf{Y} = \mathbf{Y}_1 + \mathbf{Y}_2$</div>
+      </div>
+      <div class="connect-card">
+        <div class="cc-name">串联-串联</div>
+        <div class="cc-desc">输入输出均串联</div>
+        <div class="cc-formula">$\mathbf{Z} = \mathbf{Z}_1 + \mathbf{Z}_2$</div>
+      </div>
+      <div class="connect-card">
+        <div class="cc-name">串并联</div>
+        <div class="cc-desc">输入串联，输出并联</div>
+        <div class="cc-formula">$\mathbf{H} = \mathbf{H}_1 + \mathbf{H}_2$</div>
+      </div>
+      <div class="connect-card full">
+        <div class="cc-name">并串联</div>
+        <div class="cc-desc">输入并联，输出串联</div>
+        <div class="cc-formula">$\mathbf{G} = \mathbf{G}_1 + \mathbf{G}_2$</div>
+      </div>
+    </div>
+
+    <h3 id="solve-steps">求解步骤</h3>
+    <div class="step-flow">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div>选择合适的<br>参数类型</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div>计算双口网络<br>参数</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div>参数方程与外部<br>电路方程联立</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div>求解电压<br>和电流</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+const sections = document.querySelectorAll('[id]');
+const navLinks = document.querySelectorAll('.sidebar nav a');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(a => a.classList.remove('active'));
+      const link = document.querySelector(`.sidebar nav a[href="#${entry.target.id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-15% 0px -75% 0px' });
+sections.forEach(s => { if (s.closest('.main')) observer.observe(s); });
+navLinks.forEach(a => a.addEventListener('click', () => {
+  document.querySelector('.sidebar').classList.remove('open');
+}));
+</script>
+
+</body>
+</html>
