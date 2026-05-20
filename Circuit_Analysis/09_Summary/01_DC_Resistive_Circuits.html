@@ -919,13 +919,13 @@
         <span class="detail-title">电阻的并联等效</span>
       </div>
       <div class="formula-block">
-        $$\frac{1}{R_{eq}} = \frac{1}{R_1} + \frac{1}{R_2} + \cdots + \frac{1}{R_n}$$
-        <br>
-        两个电阻并联：$R_{eq} = \dfrac{R_1 R_2}{R_1 + R_2}$
+        $$G_{eq} = G_1 + G_2 + \cdots + G_n$$
+         <!-- $$\frac{1}{R_{eq}} = \frac{1}{R_1} + \frac{1}{R_2} + \cdots + \frac{1}{R_n}$$-->
       </div>
       <ul class="meaning-list">
         <li><strong>特点</strong>：各电阻两端电压相同</li>
-        <li><strong>分流公式</strong>：$i_k = \dfrac{R_{eq}}{R_k} \cdot i$</li>
+        <li><strong>两个电阻并联：$R_{eq} = \dfrac{R_1 R_2}{R_1 + R_2}$ 或者 $G_{eq} = G_1 + G_2 $</li>
+        <li><strong>分流公式</strong>：$i_k = \dfrac{G_k}{G_{eq}} \cdot i$</li>
       </ul>
     </div>
 
@@ -935,21 +935,23 @@
         <div class="cc-name">&Delta;&rarr;Y 变换</div>
         <div class="cc-desc">已知三角形连接的三个电阻，求等效星形连接</div>
         <div class="cc-formula">
-          $R_1 = \dfrac{R_{12}R_{13}}{R_{12}+R_{23}+R_{13}}$<br>
-          $R_2 = \dfrac{R_{12}R_{23}}{R_{12}+R_{23}+R_{13}}$<br>
-          $R_3 = \dfrac{R_{13}R_{23}}{R_{12}+R_{23}+R_{13}}$
+          $R_1 = \dfrac{R_{12}R_{31}}{R_{12}+R_{23}+R_{31}}$<br>
+          $R_2 = \dfrac{R_{12}R_{23}}{R_{12}+R_{23}+R_{31}}$<br>
+          $R_3 = \dfrac{R_{31}R_{23}}{R_{12}+R_{23}+R_{31}}$
         </div>
       </div>
       <div class="connect-card">
         <div class="cc-name">Y&rarr;&Delta; 变换</div>
         <div class="cc-desc">已知星形连接的三个电阻，求等效三角形连接</div>
         <div class="cc-formula">
-          $R_{12} = \dfrac{R_1R_2+R_2R_3+R_3R_1}{R_3}$
+          $R_{12} = \dfrac{R_1R_2+R_2R_3+R_3R_1}{R_3}$<br>
+          $R_{23} = \dfrac{R_1R_2+R_2R_3+R_3R_1}{R_1}$<br>
+          $R_{31} = \dfrac{R_1R_2+R_2R_3+R_3R_1}{R_2}$
         </div>
       </div>
       <div class="connect-card full">
         <div class="cc-name">对称情况</div>
-        <div class="cc-desc">当 $R_{12}=R_{23}=R_{13}=R_\Delta$ 时</div>
+        <div class="cc-desc">当 $R_{12}=R_{23}=R_{31}=R_\Delta$ 时</div>
         <div class="cc-formula">$R_Y = R_\Delta/3$</div>
       </div>
     </div>
