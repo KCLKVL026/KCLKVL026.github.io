@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>单元01：直流纯电阻电路 - 电路分析基础</title>
+<link rel="stylesheet" href="./css/back-button.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<style>
+  :root {
+    --font-body: 'Noto Sans SC', 'Inter', -apple-system, sans-serif;
+    --font-mono: 'SF Mono', 'Fira Code', Consolas, monospace;
+    --c-bg: #fefcfa;
+    --c-surface: #ffffff;
+    --c-sidebar: rgba(255,255,255,0.85);
+    --c-text: #3d3d3d;
+    --c-text-dim: #8a8a8a;
+    --c-text-head: #2c2c2c;
+    --c-border: #ede8e3;
+    --c-lavender: #e8e0f0;
+    --c-lavender-deep: #9b8ec4;
+    --c-peach: #fde8d8;
+    --c-peach-deep: #e8956a;
+    --c-sky: #dce8f8;
+    --c-sky-deep: #6a9fd8;
+    --c-mint: #daf0e8;
+    --c-mint-deep: #5aaf8a;
+    --c-rose: #f8dce0;
+    --c-rose-deep: #d87088;
+    --c-amber: #f8ecd0;
+    --c-amber-deep: #c89a40;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --sidebar-w: 260px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --c-bg: #1a1a24;
+      --c-surface: #24243a;
+      --c-sidebar: rgba(26,26,36,0.92);
+      --c-text: #d4d4d4;
+      --c-text-dim: #7a7a8e;
+      --c-text-head: #eee;
+      --c-border: #3a3a52;
+      --c-lavender: #2e2840;
+      --c-lavender-deep: #b8a8e0;
+      --c-peach: #3a2820;
+      --c-peach-deep: #f0a878;
+      --c-sky: #1e2838;
+      --c-sky-deep: #88b8f0;
+      --c-mint: #1e3028;
+      --c-mint-deep: #70d0a0;
+      --c-rose: #382028;
+      --c-rose-deep: #f08898;
+      --c-amber: #302818;
+      --c-amber-deep: #e8c060;
+    }
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-body);
+    color: var(--c-text);
+    background: var(--c-bg);
+    background-image:
+      radial-gradient(ellipse 600px 400px at 10% 20%, rgba(232,224,240,0.5) 0%, transparent 70%),
+      radial-gradient(ellipse 500px 500px at 90% 70%, rgba(253,232,216,0.4) 0%, transparent 70%),
+      radial-gradient(ellipse 400px 300px at 50% 90%, rgba(220,232,248,0.3) 0%, transparent 70%);
+    font-size: 15.5px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    position: fixed;
+    top: 1.5rem; left: 1.5rem; bottom: 1.5rem;
+    width: var(--sidebar-w);
+    background: var(--c-sidebar);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.75rem 1.25rem;
+    overflow-y: auto;
+    z-index: 100;
+    transition: transform 0.35s cubic-bezier(.4,0,.2,1);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+  }
+  .sidebar-brand {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--c-lavender-deep);
+    margin-bottom: 0.5rem;
+  }
+  .sidebar-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--c-border);
+  }
+  .sidebar nav a {
+    display: block;
+    padding: 0.4rem 0.7rem;
+    color: var(--c-text-dim);
+    text-decoration: none;
+    font-size: 0.83rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 2px;
+    transition: all 0.2s;
+  }
+  .sidebar nav a:hover {
+    color: var(--c-text-head);
+    background: var(--c-lavender);
+  }
+  .sidebar nav a.active {
+    color: var(--c-lavender-deep);
+    background: var(--c-lavender);
+    font-weight: 600;
+  }
+  .sidebar nav a.l2 { padding-left: 1.4rem; font-size: 0.78rem; }
+  .sidebar nav a.l3 { padding-left: 2.2rem; font-size: 0.75rem; }
+
+  /* ── Main ── */
+  .main {
+    margin-left: calc(var(--sidebar-w) + 3rem);
+    padding: 2.5rem 0;
+    max-width: 780px;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    position: relative;
+    background: linear-gradient(135deg, var(--c-lavender) 0%, var(--c-sky) 50%, var(--c-peach) 100%);
+    border-radius: var(--radius);
+    padding: 3rem 2.5rem 2.5rem;
+    margin-bottom: 3rem;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 50%;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -30px; left: 30%;
+    width: 100px; height: 100px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 50%;
+  }
+  .hero h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    position: relative;
+    z-index: 1;
+  }
+  .hero .sub {
+    color: var(--c-text-dim);
+    font-size: 0.95rem;
+    margin-top: 0.4rem;
+    position: relative;
+    z-index: 1;
+  }
+  .hero .tags {
+    margin-top: 1rem;
+    position: relative;
+    z-index: 1;
+  }
+  .tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.6);
+    backdrop-filter: blur(8px);
+    padding: 0.2rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.73rem;
+    font-weight: 600;
+    color: var(--c-text);
+    margin-right: 0.4rem;
+    border: 1px solid rgba(255,255,255,0.5);
+  }
+
+  /* ── Tree Card ── */
+  .tree-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.75rem 2rem;
+    margin-bottom: 3rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+  }
+  .tree-card h2 {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--c-lavender-deep);
+    margin-bottom: 1rem;
+  }
+  .tree-card pre {
+    font-family: var(--font-mono);
+    font-size: 0.83rem;
+    line-height: 1.9;
+    color: var(--c-text-dim);
+    overflow-x: auto;
+  }
+
+  /* ── Section ── */
+  section { margin-bottom: 2.5rem; }
+
+  .section-label {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    margin-bottom: 0.6rem;
+  }
+  .section-label.ch1 { background: var(--c-lavender); color: var(--c-lavender-deep); }
+  .section-label.ch2 { background: var(--c-peach); color: var(--c-peach-deep); }
+  .section-label.ch3 { background: var(--c-sky); color: var(--c-sky-deep); }
+  .section-label.ch4 { background: var(--c-mint); color: var(--c-mint-deep); }
+
+  h2.sec-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    margin-bottom: 1.25rem;
+  }
+  h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--c-text-head);
+    margin: 1.75rem 0 0.75rem;
+  }
+  h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--c-text);
+    margin: 1.25rem 0 0.5rem;
+  }
+  p { margin-bottom: 0.7rem; }
+  ul, ol { margin: 0.4rem 0 1rem 1.2rem; }
+  li { margin-bottom: 0.3rem; }
+  li ul, li ol { margin-top: 0.25rem; margin-bottom: 0; }
+  strong { font-weight: 600; }
+
+  /* ── Param Cards ── */
+  .param-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.25rem 0;
+  }
+  .param-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  }
+  .param-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  }
+  .param-card .badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .param-card.z-card .badge { background: var(--c-lavender); color: var(--c-lavender-deep); }
+  .param-card.y-card .badge { background: var(--c-sky); color: var(--c-sky-deep); }
+  .param-card.t-card .badge { background: var(--c-peach); color: var(--c-peach-deep); }
+  .param-card.h-card .badge { background: var(--c-mint); color: var(--c-mint-deep); }
+
+  .param-card .card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    margin-bottom: 0.6rem;
+  }
+  .param-card .desc {
+    font-size: 0.83rem;
+    color: var(--c-text-dim);
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
+  }
+  .param-card .formula-mini {
+    background: var(--c-bg);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.88rem;
+    overflow-x: auto;
+  }
+  .param-card .conditions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .param-card .cond-chip {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    background: var(--c-bg);
+    border: 1px solid var(--c-border);
+    color: var(--c-text-dim);
+  }
+
+  /* ── Full-width param detail ── */
+  .param-detail {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.75rem 2rem;
+    margin: 1.25rem 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  }
+  .param-detail .detail-head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  .param-detail .detail-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    flex-shrink: 0;
+  }
+  .param-detail .detail-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+  }
+  .param-detail .formula-block {
+    background: var(--c-bg);
+    border-radius: var(--radius-sm);
+    padding: 1.25rem 1.5rem;
+    margin: 0.75rem 0;
+    overflow-x: auto;
+    border-left: 3px solid var(--c-border);
+  }
+  .param-detail .meaning-list {
+    list-style: none;
+    margin: 0.75rem 0 0 0;
+    padding: 0;
+  }
+  .param-detail .meaning-list li {
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+  }
+  .param-detail .meaning-list li:nth-child(odd) { background: var(--c-bg); }
+  .param-detail .cond-row {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+  .param-detail .cond-pill {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.35rem 0.8rem;
+    border-radius: 20px;
+    border: 1px solid var(--c-border);
+  }
+  .z-accent { background: var(--c-lavender); color: var(--c-lavender-deep); border-color: var(--c-lavender) !important; }
+  .y-accent { background: var(--c-sky); color: var(--c-sky-deep); border-color: var(--c-sky) !important; }
+  .t-accent { background: var(--c-peach); color: var(--c-peach-deep); border-color: var(--c-peach) !important; }
+  .h-accent { background: var(--c-mint); color: var(--c-mint-deep); border-color: var(--c-mint) !important; }
+
+  /* ── Comparison Grid ── */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+  .compare-cell {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    text-align: center;
+    transition: transform 0.2s;
+  }
+  .compare-cell:hover { transform: translateY(-2px); }
+  .compare-cell .cell-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+  }
+  .compare-cell:nth-child(1) .cell-label { color: var(--c-lavender-deep); }
+  .compare-cell:nth-child(2) .cell-label { color: var(--c-sky-deep); }
+  .compare-cell:nth-child(3) .cell-label { color: var(--c-peach-deep); }
+  .compare-cell:nth-child(4) .cell-label { color: var(--c-mint-deep); }
+  .compare-cell .cell-letter {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+  .compare-cell:nth-child(1) { border-top: 3px solid var(--c-lavender-deep); }
+  .compare-cell:nth-child(2) { border-top: 3px solid var(--c-sky-deep); }
+  .compare-cell:nth-child(3) { border-top: 3px solid var(--c-peach-deep); }
+  .compare-cell:nth-child(4) { border-top: 3px solid var(--c-mint-deep); }
+  .compare-cell .cell-row {
+    font-size: 0.78rem;
+    color: var(--c-text-dim);
+    margin: 0.2rem 0;
+  }
+  .compare-cell .cell-row strong { color: var(--c-text); }
+
+  /* ── Connection cards ── */
+  .connect-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+  .connect-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.25rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+  }
+  .connect-card .cc-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+    color: var(--c-text-head);
+  }
+  .connect-card .cc-desc {
+    font-size: 0.8rem;
+    color: var(--c-text-dim);
+    margin-bottom: 0.4rem;
+  }
+  .connect-card .cc-formula {
+    font-size: 0.85rem;
+  }
+  .connect-card .cc-formula .katex {
+    display: block;
+    margin: 0.4em 0;
+  }
+  .connect-card.full { grid-column: 1 / -1; }
+
+  /* ── Steps ── */
+  .step-flow {
+    display: flex;
+    gap: 0;
+    margin: 1.25rem 0;
+    align-items: stretch;
+  }
+  .step-item {
+    flex: 1;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    padding: 1.25rem 1rem;
+    text-align: center;
+    position: relative;
+    font-size: 0.85rem;
+  }
+  .step-item:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+  .step-item:last-child { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+  .step-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: -0.55rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0; height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-left: 8px solid var(--c-border);
+    z-index: 2;
+  }
+  .step-num {
+    width: 2rem; height: 2rem;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.5rem;
+  }
+  .step-item:nth-child(1) .step-num { background: var(--c-lavender-deep); }
+  .step-item:nth-child(2) .step-num { background: var(--c-sky-deep); }
+  .step-item:nth-child(3) .step-num { background: var(--c-peach-deep); }
+  .step-item:nth-child(4) .step-num { background: var(--c-mint-deep); }
+  .step-item:nth-child(5) .step-num { background: var(--c-rose-deep); }
+
+  /* ── Mobile ── */
+  .menu-btn {
+    display: none;
+    position: fixed;
+    top: 1rem; left: 1rem;
+    z-index: 200;
+    width: 44px; height: 44px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: 12px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    color: var(--c-text);
+  }
+  @media (max-width: 960px) {
+    .sidebar { transform: translateX(-110%); }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; padding: 1.5rem; padding-top: 4.5rem; }
+    .menu-btn { display: flex; align-items: center; justify-content: center; }
+    .param-grid, .connect-grid { grid-template-columns: 1fr; }
+    .compare-grid { grid-template-columns: 1fr 1fr; }
+    .step-flow { flex-direction: column; }
+    .step-item { border-radius: var(--radius-sm) !important; }
+    .step-item:not(:last-child)::after { display: none; }
+    .hero { padding: 2rem 1.5rem; }
+    .hero h1 { font-size: 1.5rem; }
+  }
+  @media print {
+    .sidebar, .menu-btn { display: none; }
+    .main { margin-left: 0; padding: 1rem; }
+    .hero { background: #f0f0f0 !important; }
+    .param-card:hover { transform: none; }
+  }
+  a:focus-visible, button:focus-visible {
+    outline: 3px solid var(--c-lavender-deep);
+    outline-offset: 2px;
+  }
+</style>
+</head>
+<body>
+
+<button class="menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('open')" aria-label="Toggle nav">&#9776;</button>
+
+<aside class="sidebar">
+  <div class="sidebar-brand">电路分析基础</div>
+  <div class="sidebar-title">单元01：直流纯电阻电路</div>
+  <nav>
+    <a href="#overview">知识结构总览</a>
+    <a href="#ch1" class="l2">1.1 电路基本概念</a>
+    <a href="#ch1-quantities" class="l3">基本物理量</a>
+    <a href="#ch1-kirchhoff" class="l3">基尔霍夫定律</a>
+    <a href="#ch1-passive" class="l3">无源元件</a>
+    <a href="#ch1-active" class="l3">有源元件</a>
+    <a href="#ch2" class="l2">1.2 等效变换</a>
+    <a href="#ch2-resistor" class="l3">电阻等效变换</a>
+    <a href="#ch2-source" class="l3">电源等效变换</a>
+    <a href="#ch2-equiv" class="l3">等效电阻与电桥</a>
+    <a href="#ch3" class="l2">1.3 系统分析方法</a>
+    <a href="#ch3-branch" class="l3">支路电流法</a>
+    <a href="#ch3-mesh" class="l3">网孔电流法</a>
+    <a href="#ch3-node" class="l3">节点电压法</a>
+    <a href="#ch4" class="l2">1.4 电路定理</a>
+    <a href="#ch4-superposition" class="l3">叠加定理</a>
+    <a href="#ch4-substitution" class="l3">替代定理</a>
+    <a href="#ch4-equivalent" class="l3">等效电源定理</a>
+    <a href="#ch4-maxpower" class="l3">最大功率传输</a>
+  </nav>
+</aside>
+
+<main class="main">
+
+  <!-- 返回主页按钮 -->
+  <div class="back-btn-wrap">
+    <a href="../index.html" class="back-btn">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+      </svg>
+      返回主页
+    </a>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>单元01：直流纯电阻电路</h1>
+    <p class="sub">电路分析基础（2026）&middot; 第1-4章</p>
+    <div class="tags">
+      <span class="tag">直流电路</span>
+      <span class="tag">基尔霍夫定律</span>
+      <span class="tag">等效变换</span>
+      <span class="tag">电路定理</span>
+    </div>
+  </div>
+
+  <!-- Tree -->
+  <div class="tree-card" id="overview">
+    <h2>知识结构总览</h2>
+    <pre>
+直流纯电阻电路
+&#9500;&#9472; 1. 电路基本概念与基本定律
+&#9474;   &#9500;&#9472; 1.1 实际电路与电路模型
+&#9474;   &#9500;&#9472; 1.2 电路的基本物理量
+&#9474;   &#9500;&#9472; 1.3 基尔霍夫定律
+&#9474;   &#9500;&#9472; 1.4 无源元件
+&#9474;   &#9492;&#9472; 1.5 有源元件
+&#9500;&#9472; 2. 电路的等效变换
+&#9474;   &#9500;&#9472; 2.1 二端网络的等效
+&#9474;   &#9500;&#9472; 2.2 电阻的等效变换
+&#9474;   &#9500;&#9472; 2.3 电源的等效变换
+&#9474;   &#9500;&#9472; 2.4 无源二端网络的等效电阻
+&#9474;   &#9492;&#9472; 2.5 电桥电路
+&#9500;&#9472; 3. 电路的系统分析方法
+&#9474;   &#9500;&#9472; 3.1 支路电流法
+&#9474;   &#9500;&#9472; 3.2 网孔电流法与回路电流法
+&#9474;   &#9492;&#9472; 3.3 节点电压法
+&#9492;&#9472; 4. 电路定理
+    &#9500;&#9472; 4.1 叠加定理
+    &#9500;&#9472; 4.2 替代定理
+    &#9500;&#9472; 4.3 等效电源定理
+    &#9492;&#9472; 4.4 最大功率传输定理</pre>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- Chapter 1: 电路基本概念与基本定律 -->
+  <!-- ═══════════════════════════════════════════════════ -->
+
+  <section id="ch1">
+    <span class="section-label ch1">Chapter 1</span>
+    <h2 class="sec-title">1.1 实际电路与电路模型</h2>
+
+    <h4>1.1.1 实际电路</h4>
+    <ul>
+      <li><strong>定义</strong>：由电气设备和器件按一定方式连接而成的电流通路</li>
+      <li><strong>组成</strong>：电源（提供电能）、中间环节（传输和分配电能）、负载（消耗电能）</li>
+      <li><strong>功能</strong>：实现能量的传输与转换，或实现信号的传递与处理</li>
+    </ul>
+
+    <h4>1.1.2 电路模型</h4>
+    <ul>
+      <li><strong>定义</strong>：用理想电路元件来近似描述实际电路的数学模型</li>
+      <li><strong>理想电路元件</strong>：具有精确数学关系的理想化模型（电阻R、电容C、电感L、电压源、电流源）</li>
+      <li><strong>建模原则</strong>：在一定条件下，用理想元件的组合来反映实际器件的主要电磁性质</li>
+      <li><strong>集中参数电路</strong>：电路尺寸远小于信号波长时，可用集中参数元件描述</li>
+    </ul>
+  </section>
+
+  <!-- 1.2 基本物理量 -->
+  <section id="ch1-quantities">
+    <span class="section-label ch1">Chapter 1</span>
+    <h2 class="sec-title">1.2 电路的基本物理量</h2>
+
+    <div class="param-grid">
+      <div class="param-card z-card">
+        <span class="badge">电流</span>
+        <div class="card-title">Current</div>
+        <div class="desc">单位时间内通过导体横截面的电荷量。</div>
+        <div class="formula-mini">$i = dq/dt$</div>
+        <div class="conditions">
+          <span class="cond-chip">单位：安培 (A)</span>
+        </div>
+      </div>
+      <div class="param-card y-card">
+        <span class="badge">电压</span>
+        <div class="card-title">Voltage</div>
+        <div class="desc">单位正电荷从a点移动到b点时电场力所做的功。</div>
+        <div class="formula-mini">$u_{ab} = dw/dq$</div>
+        <div class="conditions">
+          <span class="cond-chip">单位：伏特 (V)</span>
+        </div>
+      </div>
+      <div class="param-card t-card">
+        <span class="badge">功率</span>
+        <div class="card-title">Power</div>
+        <div class="desc">单位时间内电场力所做的功（能量转换速率）。</div>
+        <div class="formula-mini">$p = dw/dt = ui$</div>
+        <div class="conditions">
+          <span class="cond-chip">单位：瓦特 (W)</span>
+        </div>
+      </div>
+      <div class="param-card h-card">
+        <span class="badge">电位</span>
+        <div class="card-title">Electric Potential</div>
+        <div class="desc">某点相对参考点的电压。</div>
+        <div class="formula-mini">$V_a = u_{a0}$</div>
+        <div class="conditions">
+          <span class="cond-chip">参考点：接地</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge z-accent">参考方向</span>
+        <span class="detail-title">电流与电压的参考方向</span>
+      </div>
+      <ul class="meaning-list">
+        <li><strong>电流参考方向</strong>：人为假定的正电荷运动方向。实际方向与参考方向一致时电流为正值，相反为负值</li>
+        <li><strong>电压参考方向</strong>：人为假定的电压降方向（正极到负极）</li>
+        <li><strong>关联参考方向</strong>：电流从电压正极流入，负极流出</li>
+        <li><strong>功率正负</strong>：$p > 0$ 元件吸收（消耗）功率；$p < 0$ 元件发出（提供）功率</li>
+        <li><strong>功率平衡</strong>：任一电路中，所有元件吸收功率之和等于零（能量守恒）</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 1.3 基尔霍夫定律 -->
+  <section id="ch1-kirchhoff">
+    <span class="section-label ch1">Chapter 1</span>
+    <h2 class="sec-title">1.3 基尔霍夫定律</h2>
+
+    <div class="connect-grid">
+      <div class="connect-card">
+        <div class="cc-name">KVL &mdash; 基尔霍夫电压定律</div>
+        <div class="cc-desc">沿任一回路，各支路电压的代数和为零</div>
+        <div class="cc-formula">$\sum u = 0$</div>
+      </div>
+      <div class="connect-card">
+        <div class="cc-name">KCL &mdash; 基尔霍夫电流定律</div>
+        <div class="cc-desc">流入任一节点的电流之和等于流出该节点的电流之和</div>
+        <div class="cc-formula">$\sum i_{入} = \sum i_{出}$</div>
+      </div>
+    </div>
+
+    <h3>1.3.1 基尔霍夫电压定律（KVL）</h3>
+    <ul>
+      <li><strong>内容</strong>：沿任一回路，各支路电压的代数和为零，$\sum u = 0$</li>
+      <li><strong>推论</strong>：回路中各支路电压降的代数和等于电压升的代数和</li>
+    </ul>
+
+    <h4>KVL 列写步骤</h4>
+    <div class="step-flow">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div>选定回路的<br>绕行方向</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div>确定各支路电压<br>的参考方向</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div>一致取正<br>相反取负</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div>列写方程<br>$\sum u = 0$</div>
+      </div>
+    </div>
+
+    <h3>1.3.2 基尔霍夫电流定律（KCL）</h3>
+    <ul>
+      <li><strong>内容</strong>：任一时刻，流入任一节点的电流之和等于流出该节点的电流之和，$\sum i_{入} = \sum i_{出}$</li>
+      <li><strong>等价形式</strong>：$\sum i = 0$（流入为正，流出为负）</li>
+      <li><strong>推广</strong>：KCL适用于任意封闭面（广义节点）</li>
+    </ul>
+  </section>
+
+  <!-- 1.4 无源元件 -->
+  <section id="ch1-passive">
+    <span class="section-label ch1">Chapter 1</span>
+    <h2 class="sec-title">1.4 无源元件</h2>
+
+    <div class="param-grid">
+      <div class="param-card z-card">
+        <span class="badge">电阻</span>
+        <div class="card-title">Resistor</div>
+        <div class="desc">电压与电流成正比的二端元件。线性电阻伏安特性为过原点的直线。</div>
+        <div class="formula-mini">$u = Ri$</div>
+        <div class="conditions">
+          <span class="cond-chip">单位：欧姆 (&Omega;)</span>
+          <span class="cond-chip">$p = i^2R = u^2/R$</span>
+        </div>
+      </div>
+      <div class="param-card y-card">
+        <span class="badge">电容</span>
+        <div class="card-title">Capacitor</div>
+        <div class="desc">存储电场能量的二端元件。电容电压不能突变（记忆性）。直流稳态下相当于开路。</div>
+        <div class="formula-mini">$i = C(du/dt)$</div>
+        <div class="conditions">
+          <span class="cond-chip">单位：法拉 (F)</span>
+          <span class="cond-chip">$W_C = \frac{1}{2}Cu^2$</span>
+        </div>
+      </div>
+      <div class="param-card t-card full">
+        <span class="badge">电感</span>
+        <div class="card-title">Inductor</div>
+        <div class="desc">存储磁场能量的二端元件。电感电流不能突变（记忆性）。直流稳态下相当于短路。</div>
+        <div class="formula-mini">$u = L(di/dt)$</div>
+        <div class="conditions">
+          <span class="cond-chip">单位：亨利 (H)</span>
+          <span class="cond-chip">$W_L = \frac{1}{2}Li^2$</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 1.5 有源元件 -->
+  <section id="ch1-active">
+    <span class="section-label ch1">Chapter 1</span>
+    <h2 class="sec-title">1.5 有源元件</h2>
+
+    <h3>1.5.1 独立电源</h3>
+    <div class="connect-grid">
+      <div class="connect-card">
+        <div class="cc-name">理想电压源</div>
+        <div class="cc-desc">端电压恒定，与外电路无关。内阻为零。</div>
+        <div class="cc-formula">伏安特性：平行于电流轴的直线</div>
+      </div>
+      <div class="connect-card">
+        <div class="cc-name">理想电流源</div>
+        <div class="cc-desc">输出电流恒定，与外电路无关。内阻无穷大。</div>
+        <div class="cc-formula">伏安特性：平行于电压轴的直线</div>
+      </div>
+    </div>
+
+    <h3>1.5.2 受控源</h3>
+    <p><strong>定义</strong>：电压或电流受电路中其他支路电压或电流控制的电源。</p>
+    <div class="compare-grid">
+      <div class="compare-cell">
+        <div class="cell-label">VCVS</div>
+        <div class="cell-letter">&mu;</div>
+        <div class="cell-row">电压控制电压源</div>
+        <div class="cell-row">$u_2 = \mu u_1$</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">VCCS</div>
+        <div class="cell-letter">$g_m$</div>
+        <div class="cell-row">电压控制电流源</div>
+        <div class="cell-row">$i_2 = g_m u_1$</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">CCVS</div>
+        <div class="cell-letter">$r_m$</div>
+        <div class="cell-row">电流控制电压源</div>
+        <div class="cell-row">$u_2 = r_m i_1$</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">CCCS</div>
+        <div class="cell-letter">&beta;</div>
+        <div class="cell-row">电流控制电流源</div>
+        <div class="cell-row">$i_2 = \beta i_1$</div>
+      </div>
+    </div>
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge z-accent">注意</span>
+        <span class="detail-title">受控源的特殊性质</span>
+      </div>
+      <ul class="meaning-list">
+        <li>受控源不是独立激励，不能单独作用</li>
+        <li>在叠加定理中不能像独立源一样单独置零</li>
+        <li>受控源需始终保留在电路中</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- Chapter 2: 电路的等效变换 -->
+  <!-- ═══════════════════════════════════════════════════ -->
+
+  <section id="ch2">
+    <span class="section-label ch2">Chapter 2</span>
+    <h2 class="sec-title">2.1 二端网络的等效</h2>
+    <ul>
+      <li><strong>定义</strong>：两个二端网络，若端口的伏安关系（VCR）完全相同，则互为等效</li>
+      <li><strong>等效变换的目的</strong>：简化电路分析，减少未知量数目</li>
+      <li><strong>注意</strong>：等效是对外部电路而言的，内部结构可以不同</li>
+    </ul>
+  </section>
+
+  <!-- 2.2 电阻等效变换 -->
+  <section id="ch2-resistor">
+    <span class="section-label ch2">Chapter 2</span>
+    <h2 class="sec-title">2.2 电阻的等效变换</h2>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge t-accent">串联</span>
+        <span class="detail-title">电阻的串联等效</span>
+      </div>
+      <div class="formula-block">
+        $$R_{eq} = R_1 + R_2 + \cdots + R_n$$
+      </div>
+      <ul class="meaning-list">
+        <li><strong>特点</strong>：流过各电阻的电流相同</li>
+        <li><strong>分压公式</strong>：$u_k = \dfrac{R_k}{R_1+R_2+\cdots+R_n} \cdot u$</li>
+      </ul>
+    </div>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge y-accent">并联</span>
+        <span class="detail-title">电阻的并联等效</span>
+      </div>
+      <div class="formula-block">
+        $$G_{eq} = G_1 + G_2 + \cdots + G_n$$
+         <!-- $$\frac{1}{R_{eq}} = \frac{1}{R_1} + \frac{1}{R_2} + \cdots + \frac{1}{R_n}$$-->
+      </div>
+      <ul class="meaning-list">
+        <li><strong>特点</strong>：各电阻两端电压相同</li>
+        <li><strong>两个电阻并联：$R_{eq} = \dfrac{R_1 R_2}{R_1 + R_2}$ 或者 $G_{eq} = G_1 + G_2 $</li>
+        <li><strong>分流公式</strong>：$i_k = \dfrac{G_k}{G_{eq}} \cdot i$</li>
+      </ul>
+    </div>
+
+    <h3>2.2.2 电阻的Y-&Delta;等效变换</h3>
+    <div class="connect-grid">
+      <div class="connect-card">
+        <div class="cc-name">&Delta;&rarr;Y 变换</div>
+        <div class="cc-desc">已知三角形连接的三个电阻，求等效星形连接</div>
+        <div class="cc-formula">
+          $R_1 = \dfrac{R_{12}R_{31}}{R_{12}+R_{23}+R_{31}}$<br>
+          $R_2 = \dfrac{R_{12}R_{23}}{R_{12}+R_{23}+R_{31}}$<br>
+          $R_3 = \dfrac{R_{31}R_{23}}{R_{12}+R_{23}+R_{31}}$
+        </div>
+      </div>
+      <div class="connect-card">
+        <div class="cc-name">Y&rarr;&Delta; 变换</div>
+        <div class="cc-desc">已知星形连接的三个电阻，求等效三角形连接</div>
+        <div class="cc-formula">
+          $R_{12} = \dfrac{R_1R_2+R_2R_3+R_3R_1}{R_3}$<br>
+          $R_{23} = \dfrac{R_1R_2+R_2R_3+R_3R_1}{R_1}$<br>
+          $R_{31} = \dfrac{R_1R_2+R_2R_3+R_3R_1}{R_2}$
+        </div>
+      </div>
+      <div class="connect-card full">
+        <div class="cc-name">对称情况</div>
+        <div class="cc-desc">当 $R_{12}=R_{23}=R_{31}=R_\Delta$ 时</div>
+        <div class="cc-formula">$R_Y = R_\Delta/3$</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2.3 电源等效变换 -->
+  <section id="ch2-source">
+    <span class="section-label ch2">Chapter 2</span>
+    <h2 class="sec-title">2.3 电源的等效变换</h2>
+
+    <h3>2.3.1 实际电源模型与等效变换</h3>
+    <div class="connect-grid">
+      <div class="connect-card">
+        <div class="cc-name">电压源模型</div>
+        <div class="cc-desc">理想电压源 $U_s$ 串联内阻 $R_0$</div>
+      </div>
+      <div class="connect-card">
+        <div class="cc-name">电流源模型</div>
+        <div class="cc-desc">理想电流源 $I_s$ 并联内阻 $R_0$</div>
+      </div>
+      <div class="connect-card full">
+        <div class="cc-name">等效变换关系</div>
+        <div class="cc-desc">内阻 $R_0$ 不变，仅对外部电路等效</div>
+        <div class="cc-formula">$U_s = I_s \cdot R_0 \qquad I_s = U_s / R_0$</div>
+      </div>
+    </div>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge t-accent">注意</span>
+        <span class="detail-title">等效变换注意事项</span>
+      </div>
+      <ul class="meaning-list">
+        <li>等效变换时内阻 $R_0$ 不变</li>
+        <li>变换仅对外部电路等效，内部不等效</li>
+        <li>理想电压源与理想电流源之间不能直接变换</li>
+      </ul>
+    </div>
+
+    <h3>2.3.2 理想电源的串并联等效</h3>
+    <div class="compare-grid">
+      <div class="compare-cell">
+        <div class="cell-label">电压源串联</div>
+        <div class="cell-letter">&Sigma;</div>
+        <div class="cell-row">$U_s = U_{s1} + U_{s2}$</div>
+        <div class="cell-row">同向相加</div>
+        <div class="cell-row">反向相减</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">电压源并联</div>
+        <div class="cell-letter">=</div>
+        <div class="cell-row">要求各电压源</div>
+        <div class="cell-row">电压相等</div>
+        <div class="cell-row">否则违反KVL</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">电流源串联</div>
+        <div class="cell-letter">=</div>
+        <div class="cell-row">要求各电流源</div>
+        <div class="cell-row">电流相等</div>
+        <div class="cell-row">否则违反KCL</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">电流源并联</div>
+        <div class="cell-letter">&Sigma;</div>
+        <div class="cell-row">$I_s = I_{s1} + I_{s2}$</div>
+        <div class="cell-row">同向相加</div>
+        <div class="cell-row">反向相减</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2.4 & 2.5 等效电阻与电桥 -->
+  <section id="ch2-equiv">
+    <span class="section-label ch2">Chapter 2</span>
+    <h2 class="sec-title">2.4 无源二端网络的等效电阻</h2>
+    <p><strong>定义</strong>：将网络内所有独立源置零（电压源短路，电流源开路）后，端口的等效电阻。</p>
+    <h4>求解方法</h4>
+    <div class="param-grid">
+      <div class="param-card z-card">
+        <span class="badge">方法一</span>
+        <div class="card-title">串并联化简法</div>
+        <div class="desc">利用电阻串并联公式逐步化简。</div>
+      </div>
+      <div class="param-card y-card">
+        <span class="badge">方法二</span>
+        <div class="card-title">外加电源法</div>
+        <div class="desc">加压求流或加流求压，计算端口等效电阻。</div>
+      </div>
+      <div class="param-card t-card">
+        <span class="badge">方法三</span>
+        <div class="card-title">Y-&Delta;变换法</div>
+        <div class="desc">将Y形或&Delta;形连接变换后再化简。</div>
+      </div>
+      <div class="param-card h-card">
+        <span class="badge">方法四</span>
+        <div class="card-title">对称性分析法</div>
+        <div class="desc">利用电路对称性简化计算。</div>
+      </div>
+    </div>
+
+    <h3>2.5 电桥电路</h3>
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge h-accent">电桥</span>
+        <span class="detail-title">电桥电路</span>
+      </div>
+      <div class="formula-block">
+        <strong>电桥平衡条件</strong>：对臂电阻乘积相等<br>
+        $$R_1 R_3 = R_2 R_4$$
+      </div>
+      <ul class="meaning-list">
+        <li><strong>平衡时特点</strong>：桥臂中间无电流，可视为开路或短路</li>
+        <li><strong>不平衡电桥</strong>：需用Y-&Delta;变换或其他方法求解</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- Chapter 3: 电路的系统分析方法 -->
+  <!-- ═══════════════════════════════════════════════════ -->
+
+  <section id="ch3">
+    <span class="section-label ch3">Chapter 3</span>
+    <h2 class="sec-title">3. 电路的系统分析方法</h2>
+
+    <div class="param-grid">
+      <div class="param-card z-card">
+        <span class="badge">方法一</span>
+        <div class="card-title">支路电流法</div>
+        <div class="desc">以各支路电流为未知量，列写KCL和KVL方程联立求解。</div>
+        <div class="conditions">
+          <span class="cond-chip">方程数 = b</span>
+          <span class="cond-chip">直观但方程多</span>
+        </div>
+      </div>
+      <div class="param-card y-card">
+        <span class="badge">方法二</span>
+        <div class="card-title">网孔电流法</div>
+        <div class="desc">假设沿每个网孔边界流动的环形电流为未知量。</div>
+        <div class="conditions">
+          <span class="cond-chip">方程数 = 网孔数</span>
+          <span class="cond-chip">仅适用平面电路</span>
+        </div>
+      </div>
+      <div class="param-card t-card full">
+        <span class="badge">方法三</span>
+        <div class="card-title">节点电压法</div>
+        <div class="desc">以各节点相对于参考节点的电压为未知量。</div>
+        <div class="conditions">
+          <span class="cond-chip">方程数 = n-1</span>
+          <span class="cond-chip">适用范围广</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3.1 支路电流法 -->
+  <section id="ch3-branch">
+    <span class="section-label ch3">Chapter 3</span>
+    <h2 class="sec-title">3.1 支路电流法</h2>
+
+    <h3>3.1.1 两类约束与电路方程</h3>
+    <div class="connect-grid">
+      <div class="connect-card">
+        <div class="cc-name">KCL 约束</div>
+        <div class="cc-desc">对n个节点的电路</div>
+        <div class="cc-formula">独立KCL方程数 = n-1</div>
+      </div>
+      <div class="connect-card">
+        <div class="cc-name">KVL 约束</div>
+        <div class="cc-desc">对b条支路、n个节点的平面电路</div>
+        <div class="cc-formula">独立KVL方程数 = b-(n-1)</div>
+      </div>
+      <div class="connect-card full">
+        <div class="cc-name">元件约束（VCR）</div>
+        <div class="cc-desc">每条支路的电压电流关系</div>
+      </div>
+    </div>
+
+    <h3>3.1.2 支路电流方程的列写</h3>
+    <div class="step-flow">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div>设定各支路电流<br>的参考方向</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div>对n-1个节点<br>列写KCL方程</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div>对独立回路<br>列写KVL方程</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div>用支路电流表示<br>各支路电压（VCR）</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">5</div>
+        <div>联立求解<br>共b个方程</div>
+      </div>
+    </div>
+
+    <h3>3.1.3 电路拓扑结构（图论基础）</h3>
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge y-accent">图论</span>
+        <span class="detail-title">电路拓扑基本概念</span>
+      </div>
+      <ul class="meaning-list">
+        <li><strong>图（Graph）</strong>：节点和支路的集合</li>
+        <li><strong>连通图</strong>：任意两个节点之间都有通路</li>
+        <li><strong>树（Tree）</strong>：连通图中包含所有节点但不含回路的子图</li>
+        <li><strong>树支</strong>：属于树的支路，数目 = n-1</li>
+        <li><strong>连支</strong>：不属于树的支路，数目 = b-(n-1)</li>
+        <li><strong>基本回路</strong>：由一条连支和若干树支构成的回路</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 3.2 网孔电流法 -->
+  <section id="ch3-mesh">
+    <span class="section-label ch3">Chapter 3</span>
+    <h2 class="sec-title">3.2 网孔电流法与回路电流法</h2>
+
+    <h3>3.2.1 网孔电流方程的标准形式</h3>
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge y-accent">标准形式</span>
+        <span class="detail-title">网孔电流方程</span>
+      </div>
+      <div class="formula-block">
+        $$R_{kk} i_{mk} + \sum_{j \neq k} R_{kj} i_{mj} = \sum u_{sk}$$
+      </div>
+      <ul class="meaning-list">
+        <li>$R_{kk}$：第k个网孔的<strong>自电阻</strong>（该网孔所有电阻之和，恒正）</li>
+        <li>$R_{kj}$：第k个网孔与第j个网孔的<strong>互电阻</strong>（公共支路电阻，方向相同取负，相反取正）</li>
+        <li>$u_{sk}$：第k个网孔中所有<strong>电压源的代数和</strong>（电压升为正）</li>
+        <li><strong>方程数目</strong>：等于网孔数（b-(n-1)），少于支路电流法</li>
+      </ul>
+    </div>
+
+    <h3>3.2.2 含电流源的网孔电流方程</h3>
+    <div class="connect-grid">
+      <div class="connect-card">
+        <div class="cc-name">电流源在边界支路</div>
+        <div class="cc-desc">该网孔电流已知，直接写方程</div>
+      </div>
+      <div class="connect-card">
+        <div class="cc-name">电流源在公共支路</div>
+        <div class="cc-desc">引入电流源两端电压作为附加未知量，增加一个方程</div>
+      </div>
+    </div>
+
+    <h3>3.2.3 含受控源的网孔电流方程</h3>
+    <div class="step-flow">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div>先将受控源<br>视为独立源列方程</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div>将受控源的控制量<br>用网孔电流表示</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div>代入方程<br>整理</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3.3 节点电压法 -->
+  <section id="ch3-node">
+    <span class="section-label ch3">Chapter 3</span>
+    <h2 class="sec-title">3.3 节点电压法</h2>
+
+    <h3>3.3.1 节点电压方程的标准形式</h3>
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge y-accent">标准形式</span>
+        <span class="detail-title">节点电压方程</span>
+      </div>
+      <div class="formula-block">
+        $$G_{kk} u_{nk} + \sum_{j \neq k} G_{kj} u_{nj} = \sum i_{sk}$$
+      </div>
+      <ul class="meaning-list">
+        <li>$G_{kk}$：第k个节点的<strong>自电导</strong>（连接该节点的所有电导之和，恒正）</li>
+        <li>$G_{kj}$：第k个节点与第j个节点的<strong>互电导</strong>（公共支路电导，恒负）</li>
+        <li>$i_{sk}$：流入第k个节点的所有<strong>电流源电流的代数和</strong></li>
+        <li><strong>方程数目</strong>：等于独立节点数（n-1）</li>
+      </ul>
+    </div>
+
+    <h3>3.3.2 含理想电压源支路的节点电压方程</h3>
+    <div class="connect-grid">
+      <div class="connect-card">
+        <div class="cc-name">电压源接在节点与参考点之间</div>
+        <div class="cc-desc">该节点电压已知，少写一个方程</div>
+      </div>
+      <div class="connect-card">
+        <div class="cc-name">电压源接在两个非参考节点之间</div>
+        <div class="cc-desc">引入流过电压源的电流作为附加未知量，增加一个方程</div>
+      </div>
+    </div>
+
+    <h3>3.3.3 含受控源的节点电压方程</h3>
+    <p>处理方法：与网孔法类似，先将受控源视为独立源，再用节点电压表示控制量代入。</p>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- Chapter 4: 电路定理 -->
+  <!-- ═══════════════════════════════════════════════════ -->
+
+  <section id="ch4">
+    <span class="section-label ch4">Chapter 4</span>
+    <h2 class="sec-title">4. 电路定理</h2>
+
+    <div class="param-grid">
+      <div class="param-card z-card">
+        <span class="badge">定理一</span>
+        <div class="card-title">叠加定理</div>
+        <div class="desc">线性电路中，任一支路的电流（或电压）等于各独立源单独作用时产生的代数和。</div>
+        <div class="conditions">
+          <span class="cond-chip">仅适用线性电路</span>
+        </div>
+      </div>
+      <div class="param-card y-card">
+        <span class="badge">定理二</span>
+        <div class="card-title">替代定理</div>
+        <div class="desc">已知某支路电压u或电流i，可用理想电压源或电流源替代该支路。</div>
+        <div class="conditions">
+          <span class="cond-chip">线性或非线性</span>
+        </div>
+      </div>
+      <div class="param-card t-card">
+        <span class="badge">定理三</span>
+        <div class="card-title">等效电源定理</div>
+        <div class="desc">含源线性二端网络可用戴维南或诺顿等效电路替代。</div>
+        <div class="conditions">
+          <span class="cond-chip">戴维南 + 诺顿</span>
+        </div>
+      </div>
+      <div class="param-card h-card">
+        <span class="badge">定理四</span>
+        <div class="card-title">最大功率传输</div>
+        <div class="desc">当 $R_L = R_{eq}$ 时，负载获得最大功率。</div>
+        <div class="conditions">
+          <span class="cond-chip">效率 50%</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4.1 叠加定理 -->
+  <section id="ch4-superposition">
+    <span class="section-label ch4">Chapter 4</span>
+    <h2 class="sec-title">4.1 叠加定理</h2>
+    <p><strong>内容</strong>：在线性电路中，任一支路的电流（或电压）等于各独立源单独作用时在该支路产生的电流（或电压）的代数和。</p>
+
+    <h4>应用步骤</h4>
+    <div class="step-flow">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div>每次只保留一个<br>独立源</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div>其余独立源置零<br>（电压源短路，电流源开路）</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div>分别计算各独立源<br>单独作用时的响应</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div>将各响应<br>代数相加</div>
+      </div>
+    </div>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge z-accent">注意</span>
+        <span class="detail-title">叠加定理使用限制</span>
+      </div>
+      <ul class="meaning-list">
+        <li>仅适用于线性电路</li>
+        <li>功率不能用叠加定理直接计算（功率是电压或电流的二次函数）</li>
+        <li>受控源不能单独置零，需始终保留在电路中</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 4.2 替代定理 -->
+  <section id="ch4-substitution">
+    <span class="section-label ch4">Chapter 4</span>
+    <h2 class="sec-title">4.2 替代定理</h2>
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge y-accent">定理</span>
+        <span class="detail-title">替代定理</span>
+      </div>
+      <ul class="meaning-list">
+        <li><strong>内容</strong>：在线性或非线性电路中，若已知某支路的电压u（或电流i），则可用一个电压等于u的理想电压源（或电流等于i的理想电流源）替代该支路，而不改变电路中其余部分的电压和电流</li>
+        <li><strong>意义</strong>：可以将复杂问题分解为简单问题</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 4.3 等效电源定理 -->
+  <section id="ch4-equivalent">
+    <span class="section-label ch4">Chapter 4</span>
+    <h2 class="sec-title">4.3 等效电源定理</h2>
+
+    <h3>4.3.1 戴维南定理（Th&eacute;venin's Theorem）</h3>
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge h-accent">戴维南</span>
+        <span class="detail-title">Th&eacute;venin's Theorem</span>
+      </div>
+      <div class="formula-block">
+        $$\text{含源线性二端网络} \equiv U_{oc} \text{（开路电压）串联 } R_{eq}$$
+      </div>
+      <p><strong>求解步骤：</strong></p>
+      <div class="step-flow">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div>求开路电压 $U_{oc}$<br>断开待求支路</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div>求等效电阻 $R_{eq}$<br>独立源置零</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div>画出等效电路<br>接入待求支路</div>
+        </div>
+      </div>
+      <p><strong>$R_{eq}$ 的求法：</strong></p>
+      <ul class="meaning-list">
+        <li>方法一：独立源置零后直接计算</li>
+        <li>方法二：$R_{eq} = U_{oc} / I_{sc}$（开路电压除以短路电流）</li>
+        <li>方法三：外加电源法</li>
+      </ul>
+    </div>
+
+    <h3>4.3.2 诺顿定理（Norton's Theorem）</h3>
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge h-accent">诺顿</span>
+        <span class="detail-title">Norton's Theorem</span>
+      </div>
+      <div class="formula-block">
+        $$\text{含源线性二端网络} \equiv I_{sc} \text{（短路电流）并联 } R_{eq}$$
+      </div>
+      <p><strong>与戴维南定理的关系：</strong></p>
+      <div class="formula-block">
+        $$U_{oc} = I_{sc} \cdot R_{eq}$$
+        即诺顿电路与戴维南电路可互相等效变换
+      </div>
+    </div>
+  </section>
+
+  <!-- 4.4 最大功率传输定理 -->
+  <section id="ch4-maxpower">
+    <span class="section-label ch4">Chapter 4</span>
+    <h2 class="sec-title">4.4 最大功率传输定理</h2>
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge h-accent">定理</span>
+        <span class="detail-title">最大功率传输定理</span>
+      </div>
+      <div class="formula-block">
+        <strong>条件</strong>：当负载电阻 $R_L$ 等于含源二端网络的戴维南等效电阻 $R_{eq}$ 时，负载获得最大功率。
+        <br><br>
+        $$P_{max} = \frac{U_{oc}^2}{4R_{eq}}$$
+      </div>
+      <div class="cond-row">
+        <span class="cond-pill h-accent">匹配条件：$R_L = R_{eq}$</span>
+        <span class="cond-pill h-accent">传输效率：50%</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+const sections = document.querySelectorAll('[id]');
+const navLinks = document.querySelectorAll('.sidebar nav a');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(a => a.classList.remove('active'));
+      const link = document.querySelector(`.sidebar nav a[href="#${entry.target.id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-15% 0px -75% 0px' });
+sections.forEach(s => { if (s.closest('.main')) observer.observe(s); });
+navLinks.forEach(a => a.addEventListener('click', () => {
+  document.querySelector('.sidebar').classList.remove('open');
+}));
+</script>
+
+</body>
+</html>

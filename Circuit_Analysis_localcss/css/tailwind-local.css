@@ -55,6 +55,7 @@ button,
    4. Flexbox & Grid
    =================================================================== */
 .flex-col       { flex-direction: column; }
+.flex-1         { flex: 1 1 0%; }
 .flex-wrap      { flex-wrap: wrap; }
 .items-center   { align-items: center; }
 .items-start    { align-items: flex-start; }
@@ -219,6 +220,7 @@ button,
 .text-green-500 { color: #22c55e; }
 .text-green-600 { color: #16a34a; }
 .text-green-700 { color: #15803d; }
+.text-green-800 { color: #166534; }
 
 .text-purple-400 { color: #c084fc; }
 .text-purple-500 { color: #a855f7; }
@@ -229,6 +231,7 @@ button,
 .text-amber-600 { color: #d97706; }
 .text-amber-700 { color: #b45309; }
 
+.text-orange-300 { color: #fdba74; }
 .text-orange-500 { color: #f97316; }
 .text-orange-600 { color: #ea580c; }
 .text-orange-700 { color: #c2410c; }
@@ -306,7 +309,9 @@ button,
 .bg-blue-50   { background-color: #eff6ff; }
 .bg-blue-100  { background-color: #dbeafe; }
 .bg-blue-400  { background-color: #60a5fa; }
+.bg-blue-400  { background-color: #60a5fa; }
 .bg-blue-500  { background-color: #3b82f6; }
+.bg-blue-600  { background-color: #2563eb; }
 
 .bg-indigo-50  { background-color: #eef2ff; }
 .bg-indigo-100 { background-color: #e0e7ff; }
@@ -320,11 +325,13 @@ button,
 .bg-green-100 { background-color: #dcfce7; }
 .bg-green-400 { background-color: #4ade80; }
 .bg-green-500 { background-color: #22c55e; }
+.bg-green-600 { background-color: #16a34a; }
 
 .bg-purple-50  { background-color: #faf5ff; }
 .bg-purple-100 { background-color: #f3e8ff; }
 .bg-purple-400 { background-color: #c084fc; }
 .bg-purple-500 { background-color: #a855f7; }
+.bg-purple-600 { background-color: #9333ea; }
 
 .bg-amber-50  { background-color: #fffbeb; }
 .bg-amber-100 { background-color: #fef3c7; }
@@ -332,6 +339,7 @@ button,
 
 .bg-orange-50  { background-color: #fff7ed; }
 .bg-orange-100 { background-color: #ffedd5; }
+.bg-orange-300 { background-color: #fdba74; }
 .bg-orange-400 { background-color: #fb923c; }
 .bg-orange-500 { background-color: #f97316; }
 
@@ -339,6 +347,7 @@ button,
 .bg-emerald-100 { background-color: #d1fae5; }
 .bg-emerald-500 { background-color: #10b981; }
 
+.bg-rose-50  { background-color: #fff1f2; }
 .bg-rose-100 { background-color: #ffe4e6; }
 .bg-pink-100 { background-color: #fce7f3; }
 .bg-cyan-100 { background-color: #cffafe; }
@@ -347,6 +356,7 @@ button,
 .bg-teal-100 { background-color: #ccfbf1; }
 .bg-violet-100 { background-color: #ede9fe; }
 .bg-fuchsia-100 { background-color: #fae8ff; }
+.bg-fuchsia-500 { background-color: #d946ef; }
 .bg-lime-100 { background-color: #ecfccb; }
 .bg-lime-500 { background-color: #84cc16; }
 .bg-yellow-100 { background-color: #fef9c3; }
@@ -384,11 +394,20 @@ button,
   --tw-gradient-to: transparent;
   --tw-gradient-stops: var(--tw-gradient-from), #2563eb, var(--tw-gradient-to);
 }
+.via-indigo-600 {
+  --tw-gradient-to: transparent;
+  --tw-gradient-stops: var(--tw-gradient-from), #4f46e5, var(--tw-gradient-to);
+}
 .to-slate-100 {
   --tw-gradient-to: #f1f5f9;
 }
 .to-blue-600 {
   --tw-gradient-to: #2563eb;
+}
+.from-cyan-600 {
+  --tw-gradient-from: #0891b2;
+  --tw-gradient-to: transparent;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 .to-cyan-600 {
   --tw-gradient-to: #0891b2;
@@ -526,6 +545,10 @@ button,
 .focus\:ring-green-300:focus { box-shadow: 0 0 0 3px rgba(134,239,172,0.5); }
 .focus\:ring-emerald-300:focus { box-shadow: 0 0 0 3px rgba(110,231,183,0.5); }
 
+/* Active state */
+.active\:bg-blue-600:active { background-color: #2563eb; }
+.active\:bg-green-600:active { background-color: #16a34a; }
+
 /* ===================================================================
    16. Responsive Breakpoints
    =================================================================== */
@@ -549,6 +572,7 @@ button,
 @media (min-width: 1024px) {
   .lg\:grid-cols-2  { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .lg\:grid-cols-3  { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .lg\:grid-cols-4  { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .lg\:grid-cols-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
   .lg\:col-span-3   { grid-column: span 3 / span 3; }
   .lg\:col-span-4   { grid-column: span 4 / span 4; }

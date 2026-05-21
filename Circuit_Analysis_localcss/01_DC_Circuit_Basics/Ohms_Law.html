@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>欧姆定律与功率 · U-I特性与P-R曲线</title>
+    <link rel="stylesheet" href="../css/tailwind-local.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- KaTeX 数学公式渲染 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #2563eb;
+            transform: scale(1.15);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- 返回主页按钮 -->
+    <div class="flex justify-start mb-4">
+        <a href="../index.html"
+        class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            返回主页
+        </a>
+    </div>
+
+    <!-- 标题区 -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            欧姆定律与功率 · U-I特性与P-R曲线
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            简单电阻电路，滑动电压 \(U\) 与电阻 \(R\)，实时显示电流 \(I\) 和功率 \(P\)
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- ========= 左侧控制面板 ========= -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- 参数调节卡片 -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    电路参数调节
+                </h3>
+
+                <!-- 电压 U -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>电压 \(U\)</label>
+                        <span class="text-blue-600 font-mono" id="v_display">10.0 V</span>
+                    </div>
+                    <input type="range" id="v_slider" min="1" max="50" step="0.5" value="10" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>1 V</span><span>50 V</span>
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-100 my-3"></div>
+
+                <!-- 电阻 R (线性步进) -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>电阻 \(R\)</label>
+                        <span class="text-blue-600 font-mono" id="r_display">20 Ω</span>
+                    </div>
+                    <input type="range" id="r_slider" min="10" max="100" step="1" value="20" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Ω</span><span>100 Ω</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1">线性步进：10–100 Ω，步长 1 Ω</p>
+                </div>
+
+                <!-- 计算结果卡片 -->
+                <div class="border-t border-slate-100 my-3"></div>
+                <h3 class="text-md font-bold text-slate-700 flex items-center gap-2 mb-3">
+                    <span class="w-1 h-5 bg-emerald-500 rounded-full"></span>
+                    计算结果
+                </h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-blue-50 p-3 rounded-xl text-center">
+                        <div class="text-xs text-blue-700 font-semibold">电流 \(I = U/R\)</div>
+                        <div class="text-xl font-bold text-blue-600 font-mono" id="i_display">10.00 mA</div>
+                        <div class="text-[10px] text-blue-500 mt-1">自动换算 mA / A</div>
+                    </div>
+                    <div class="bg-amber-50 p-3 rounded-xl text-center">
+                        <div class="text-xs text-amber-700 font-semibold">功率 \(P = U^2/R\)</div>
+                        <div class="text-xl font-bold text-amber-600 font-mono" id="p_display">0.10 W</div>
+                        <div class="text-[10px] text-amber-500 mt-1">自动换算 mW / W</div>
+                    </div>
+                </div>
+                <div class="mt-3 text-center text-xs text-slate-500 bg-slate-50 rounded-lg p-2">
+                    欧姆定律: \(U = IR\) &emsp; 功率: \(P = UI = I^2 R = U^2/R\)
+                </div>
+            </div>
+
+            <!-- 电路图卡片 -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-indigo-500 rounded-full"></span>
+                    电路图
+                </h3>
+                <img src="./img/Ohms_Law.jpg" alt="欧姆定律电路图" class="w-full rounded-lg">
+            </div>
+
+            <!-- 理论说明卡片 -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-indigo-500 rounded-full"></span>
+                    曲线解读
+                </h3>
+                <div class="space-y-2 text-sm">
+                    <div class="p-2 bg-slate-50 rounded-lg">
+                        <span class="font-medium text-blue-600">U-I 特性曲线</span>
+                        <p class="text-xs text-slate-500 mt-1">过原点的直线，斜率 = \(1/R\)。电阻固定时电流与电压成正比。</p>
+                    </div>
+                    <div class="p-2 bg-slate-50 rounded-lg">
+                        <span class="font-medium text-orange-500">P-R 功率曲线</span>
+                        <p class="text-xs text-slate-500 mt-1">\(P = U^2/R\)，反比双曲线。电阻越小功率越大。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========= 右侧图表区 ========= -->
+        <div class="lg:col-span-8 space-y-5">
+            <!-- U-I 特性曲线 -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 transition-all">
+                <div class="flex flex-wrap justify-between items-center mb-2 px-2">
+                    <div class="flex items-center gap-3 text-sm">
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-blue-500 rounded-full"></div><span class="font-medium">U-I 特性曲线</span></div>
+                    </div>
+                    <div class="text-xs text-slate-400">线性关系 \(I = U/R\)</div>
+                </div>
+                <div class="relative">
+                    <canvas id="viChart" width="700" height="320" style="width:100%; height:auto; max-height:340px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-1">
+                    ● 红色圆点标记当前工作点 (\(U\), \(I\))
+                </div>
+            </div>
+
+            <!-- P-R 曲线 -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 transition-all">
+                <div class="flex flex-wrap justify-between items-center mb-2 px-2">
+                    <div class="flex items-center gap-3 text-sm">
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-orange-500 rounded-full"></div><span class="font-medium">P-R 功率曲线</span></div>
+                    </div>
+                    <div class="text-xs text-slate-400">双曲线 \(P = U^2/R\)</div>
+                </div>
+                <div class="relative">
+                    <canvas id="prChart" width="700" height="320" style="width:100%; height:auto; max-height:340px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-1">
+                    ● 红色圆点标记当前工作点 (\(R\), \(P\)) | 横轴对数坐标
+                </div>
+            </div>
+
+            <!-- 底部说明卡片 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">📐 理论依据</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        欧姆定律: \(U = IR\)，电流与电压成正比，与电阻成反比。<br>
+                        焦耳定律: \(P = UI = I^2R = U^2/R\)，功率与电流平方成正比。<br>
+                        U-I 曲线为过原点的直线，斜率 \(1/R\)；P-R 曲线为双曲线 \(U^2/R\)。
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">⚡ 单位换算说明</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        • 电流: 若 \(I < 0.1\) A，显示为 mA (×1000)；否则显示 A。<br>
+                        • 功率: 若 \(P < 0.1\) W，显示为 mW (×1000)；否则显示 W。<br>
+                        • 电阻: 自动换算 Ω / kΩ (1 kΩ = 1000 Ω)。<br>
+                        • 注意: 大电压 + 小电阻 = 大电流大功率。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ===== DOM 元素 =====
+    const vSlider = document.getElementById('v_slider');
+    const rSlider = document.getElementById('r_slider');
+    const vDisplay = document.getElementById('v_display');
+    const rDisplay = document.getElementById('r_display');
+    const iDisplay = document.getElementById('i_display');
+    const pDisplay = document.getElementById('p_display');
+
+    const viCanvas = document.getElementById('viChart');
+    const prCanvas = document.getElementById('prChart');
+
+    let viChart = null;
+    let prChart = null;
+
+    const DEFAULT_V = 10;
+    const DEFAULT_R = 20; // 默认电阻 20 Ω
+
+    // ===== 获取当前参数 =====
+    function getParams() {
+        const V = parseFloat(vSlider.value);
+        const R = parseInt(rSlider.value);
+        return { V, R };
+    }
+
+    // ===== 单位换算函数 =====
+    function formatCurrent(I) {
+        if (I < 0.1) return (I * 1000).toFixed(2) + ' mA';
+        return I.toFixed(3) + ' A';
+    }
+
+    function formatPower(P) {
+        if (P < 0.1) return (P * 1000).toFixed(2) + ' mW';
+        return P.toFixed(3) + ' W';
+    }
+
+    function formatResistance(R) {
+        if (R >= 1000) return (R / 1000).toFixed(2) + ' kΩ';
+        return R.toFixed(0) + ' Ω';
+    }
+
+    // ===== 更新显示 =====
+    function updateDisplays() {
+        const { V, R } = getParams();
+        const I = V / R;
+        const P = V * V / R;
+
+        vDisplay.innerText = V.toFixed(1) + ' V';
+        rDisplay.innerText = formatResistance(R);
+        iDisplay.innerText = formatCurrent(I);
+        pDisplay.innerText = formatPower(P);
+    }
+
+    // ===== U-I 曲线数据 =====
+    function buildVIData(V_max, R) {
+        const N = 200;
+        const points = [];
+        for (let i = 0; i <= N; i++) {
+            const V_i = (i / N) * V_max;
+            const I_i = V_i / R;
+            points.push({ x: V_i, y: I_i });
+        }
+        return points;
+    }
+
+    // ===== P-R 曲线数据 (对数分布) =====
+    function buildPRData(V) {
+        const N = 300;
+        const R_min = 10;
+        const R_max = 10000;
+        const logMin = Math.log10(R_min);
+        const logMax = Math.log10(R_max);
+        const points = [];
+        for (let i = 0; i <= N; i++) {
+            const logR = logMin + (i / N) * (logMax - logMin);
+            const R_i = Math.pow(10, logR);
+            const P_i = (V * V) / R_i;
+            points.push({ x: R_i, y: P_i });
+        }
+        return points;
+    }
+
+    // ===== 更新 U-I 图表 =====
+    function updateVIChart() {
+        const { V, R } = getParams();
+        const V_max = 50;
+        const curveData = buildVIData(V_max, R);
+        const I_op = V / R; // operating point current
+
+        let yMax = V_max / Math.min(R, 10);
+        yMax = yMax * 1.1;
+
+        const datasets = [
+            {
+                label: 'U-I 特性 (I = U/R)',
+                data: curveData,
+                borderColor: '#3b82f6',
+                backgroundColor: 'transparent',
+                borderWidth: 2.5,
+                pointRadius: 0,
+                tension: 0,
+                fill: false
+            },
+            {
+                label: '工作点',
+                data: [{ x: V, y: I_op }],
+                borderColor: '#ef4444',
+                backgroundColor: '#ef4444',
+                pointRadius: 7,
+                pointHoverRadius: 9,
+                pointStyle: 'circle',
+                showLine: false
+            }
+        ];
+
+        const options = {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            if (ctx.dataset.label === '工作点') {
+                                return `工作点: U=${ctx.raw.x.toFixed(1)}V, I=${formatCurrent(ctx.raw.y)}`;
+                            }
+                            return `U=${ctx.raw.x.toFixed(1)}V, I=${formatCurrent(ctx.raw.y)}`;
+                        }
+                    },
+                    backgroundColor: 'rgba(0,0,0,0.7)'
+                },
+                legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } } }
+            },
+            scales: {
+                x: {
+                    type: 'linear',
+                    title: { display: true, text: '电压 U (V)', font: { weight: 'bold', size: 12 } },
+                    min: 0,
+                    max: V_max,
+                    ticks: { stepSize: 5, callback: (v) => v + ' V' },
+                    grid: { color: '#eef2ff' }
+                },
+                y: {
+                    type: 'linear',
+                    title: { display: true, text: '电流 I (A)', font: { weight: 'bold', size: 12 } },
+                    min: 0,
+                    max: yMax,
+                    ticks: { callback: (v) => formatCurrent(v) },
+                    grid: { color: '#eef2ff' }
+                }
+            }
+        };
+
+        if (viChart) {
+            viChart.data.datasets[0].data = curveData;
+            viChart.data.datasets[1].data = [{ x: V, y: I_op }];
+            viChart.options.scales.y.max = yMax;
+            viChart.update();
+        } else {
+            viChart = new Chart(viCanvas, {
+                type: 'line',
+                data: { datasets },
+                options: options
+            });
+        }
+    }
+
+    // ===== 更新 P-R 图表 =====
+    function updatePRChart() {
+        const { V, R } = getParams();
+        const curveData = buildPRData(V);
+        const P_op = (V * V) / R;
+
+        const datasets = [
+            {
+                label: 'P-R 曲线 (P = U²/R)',
+                data: curveData,
+                borderColor: '#f97316',
+                backgroundColor: 'transparent',
+                borderWidth: 2.5,
+                pointRadius: 0,
+                tension: 0.2,
+                fill: false
+            },
+            {
+                label: '工作点',
+                data: [{ x: R, y: P_op }],
+                borderColor: '#ef4444',
+                backgroundColor: '#ef4444',
+                pointRadius: 7,
+                pointHoverRadius: 9,
+                pointStyle: 'circle',
+                showLine: false
+            }
+        ];
+
+        const options = {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            if (ctx.dataset.label === '工作点') {
+                                return `工作点: R=${formatResistance(ctx.raw.x)}, P=${formatPower(ctx.raw.y)}`;
+                            }
+                            return `R=${formatResistance(ctx.raw.x)}, P=${formatPower(ctx.raw.y)}`;
+                        }
+                    },
+                    backgroundColor: 'rgba(0,0,0,0.7)'
+                },
+                legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } } }
+            },
+            scales: {
+                x: {
+                    type: 'logarithmic',
+                    title: { display: true, text: '电阻 R (Ω)', font: { weight: 'bold', size: 12 } },
+                    min: 10,
+                    max: 10000,
+                    ticks: {
+                        callback: function(val) {
+                            if (val >= 1000) return (val/1000).toFixed(0) + ' k';
+                            return val;
+                        },
+                        maxTicksLimit: 8
+                    },
+                    grid: { color: '#eef2ff' }
+                },
+                y: {
+                    type: 'linear',
+                    title: { display: true, text: '功率 P (W)', font: { weight: 'bold', size: 12 } },
+                    min: 0,
+                    ticks: { callback: (v) => formatPower(v) },
+                    grid: { color: '#eef2ff' }
+                }
+            }
+        };
+
+        if (prChart) {
+            prChart.data.datasets[0].data = curveData;
+            prChart.data.datasets[1].data = [{ x: R, y: P_op }];
+            prChart.update();
+        } else {
+            prChart = new Chart(prCanvas, {
+                type: 'line',
+                data: { datasets },
+                options: options
+            });
+        }
+    }
+
+    // ===== 全刷新 =====
+    function refreshAll() {
+        updateDisplays();
+        updateVIChart();
+        updatePRChart();
+    }
+
+    // ===== 事件绑定 =====
+    vSlider.addEventListener('input', refreshAll);
+    rSlider.addEventListener('input', refreshAll);
+    window.addEventListener('resize', () => {
+        if (viChart) viChart.resize();
+        if (prChart) prChart.resize();
+    });
+
+    // ===== 初始化 =====
+    vSlider.value = DEFAULT_V;
+    rSlider.value = DEFAULT_R;
+    refreshAll();
+
+    // KaTeX 渲染
+    window.addEventListener('load', function() {
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '\\(', right: '\\)', display: false}
+                ],
+                throwOnError: false
+            });
+        }
+    });
+
+    console.log('欧姆定律与功率仿真已启动 | U-I特性 + P-R曲线 | 工作点实时标记');
+</script>
+</body>
+</html>

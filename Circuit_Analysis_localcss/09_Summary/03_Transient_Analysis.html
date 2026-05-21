@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>单元03：动态电路时域分析 - 电路分析基础</title>
+<link rel="stylesheet" href="./css/back-button.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<style>
+  :root {
+    --font-body: 'Noto Sans SC', 'Inter', -apple-system, sans-serif;
+    --font-mono: 'SF Mono', 'Fira Code', Consolas, monospace;
+    --c-bg: #fefcfa;
+    --c-surface: #ffffff;
+    --c-sidebar: rgba(255,255,255,0.85);
+    --c-text: #3d3d3d;
+    --c-text-dim: #8a8a8a;
+    --c-text-head: #2c2c2c;
+    --c-border: #ede8e3;
+    --c-lavender: #e8e0f0;
+    --c-lavender-deep: #9b8ec4;
+    --c-peach: #fde8d8;
+    --c-peach-deep: #e8956a;
+    --c-sky: #dce8f8;
+    --c-sky-deep: #6a9fd8;
+    --c-mint: #daf0e8;
+    --c-mint-deep: #5aaf8a;
+    --c-rose: #f8dce0;
+    --c-rose-deep: #d87088;
+    --c-amber: #f8ecd0;
+    --c-amber-deep: #c89a40;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --sidebar-w: 260px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --c-bg: #1a1a24;
+      --c-surface: #24243a;
+      --c-sidebar: rgba(26,26,36,0.92);
+      --c-text: #d4d4d4;
+      --c-text-dim: #7a7a8e;
+      --c-text-head: #eee;
+      --c-border: #3a3a52;
+      --c-lavender: #2e2840;
+      --c-lavender-deep: #b8a8e0;
+      --c-peach: #3a2820;
+      --c-peach-deep: #f0a878;
+      --c-sky: #1e2838;
+      --c-sky-deep: #88b8f0;
+      --c-mint: #1e3028;
+      --c-mint-deep: #70d0a0;
+      --c-rose: #382028;
+      --c-rose-deep: #f08898;
+      --c-amber: #302818;
+      --c-amber-deep: #e8c060;
+    }
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-body);
+    color: var(--c-text);
+    background: var(--c-bg);
+    background-image:
+      radial-gradient(ellipse 600px 400px at 10% 20%, rgba(232,224,240,0.5) 0%, transparent 70%),
+      radial-gradient(ellipse 500px 500px at 90% 70%, rgba(253,232,216,0.4) 0%, transparent 70%),
+      radial-gradient(ellipse 400px 300px at 50% 90%, rgba(220,232,248,0.3) 0%, transparent 70%);
+    font-size: 15.5px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    position: fixed;
+    top: 1.5rem; left: 1.5rem; bottom: 1.5rem;
+    width: var(--sidebar-w);
+    background: var(--c-sidebar);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.75rem 1.25rem;
+    overflow-y: auto;
+    z-index: 100;
+    transition: transform 0.35s cubic-bezier(.4,0,.2,1);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+  }
+  .sidebar-brand {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--c-lavender-deep);
+    margin-bottom: 0.5rem;
+  }
+  .sidebar-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--c-border);
+  }
+  .sidebar nav a {
+    display: block;
+    padding: 0.4rem 0.7rem;
+    color: var(--c-text-dim);
+    text-decoration: none;
+    font-size: 0.83rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 2px;
+    transition: all 0.2s;
+  }
+  .sidebar nav a:hover {
+    color: var(--c-text-head);
+    background: var(--c-lavender);
+  }
+  .sidebar nav a.active {
+    color: var(--c-lavender-deep);
+    background: var(--c-lavender);
+    font-weight: 600;
+  }
+  .sidebar nav a.l2 { padding-left: 1.4rem; font-size: 0.78rem; }
+  .sidebar nav a.l3 { padding-left: 2.2rem; font-size: 0.75rem; }
+
+  /* ── Main ── */
+  .main {
+    margin-left: calc(var(--sidebar-w) + 3rem);
+    padding: 2.5rem 0;
+    max-width: 780px;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    position: relative;
+    background: linear-gradient(135deg, var(--c-lavender) 0%, var(--c-sky) 50%, var(--c-peach) 100%);
+    border-radius: var(--radius);
+    padding: 3rem 2.5rem 2.5rem;
+    margin-bottom: 3rem;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 50%;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -30px; left: 30%;
+    width: 100px; height: 100px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 50%;
+  }
+  .hero h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    position: relative;
+    z-index: 1;
+  }
+  .hero .sub {
+    color: var(--c-text-dim);
+    font-size: 0.95rem;
+    margin-top: 0.4rem;
+    position: relative;
+    z-index: 1;
+  }
+  .hero .tags {
+    margin-top: 1rem;
+    position: relative;
+    z-index: 1;
+  }
+  .tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.6);
+    backdrop-filter: blur(8px);
+    padding: 0.2rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.73rem;
+    font-weight: 600;
+    color: var(--c-text);
+    margin-right: 0.4rem;
+    border: 1px solid rgba(255,255,255,0.5);
+  }
+
+  /* ── Tree Card ── */
+  .tree-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.75rem 2rem;
+    margin-bottom: 3rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+  }
+  .tree-card h2 {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--c-lavender-deep);
+    margin-bottom: 1rem;
+  }
+  .tree-card pre {
+    font-family: var(--font-mono);
+    font-size: 0.83rem;
+    line-height: 1.9;
+    color: var(--c-text-dim);
+    overflow-x: auto;
+  }
+
+  /* ── Section ── */
+  section { margin-bottom: 2.5rem; }
+
+  .section-label {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    margin-bottom: 0.6rem;
+  }
+  .section-label.ch7 { background: var(--c-lavender); color: var(--c-lavender-deep); }
+
+  h2.sec-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    margin-bottom: 1.25rem;
+  }
+  h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--c-text-head);
+    margin: 1.75rem 0 0.75rem;
+  }
+  h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--c-text);
+    margin: 1.25rem 0 0.5rem;
+  }
+  p { margin-bottom: 0.7rem; }
+  ul, ol { margin: 0.4rem 0 1rem 1.2rem; }
+  li { margin-bottom: 0.3rem; }
+  li ul, li ol { margin-top: 0.25rem; margin-bottom: 0; }
+  strong { font-weight: 600; }
+
+  /* ── Param Cards ── */
+  .param-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.25rem 0;
+  }
+  .param-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  }
+  .param-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  }
+  .param-card .badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .param-card.z-card .badge { background: var(--c-lavender); color: var(--c-lavender-deep); }
+  .param-card.y-card .badge { background: var(--c-sky); color: var(--c-sky-deep); }
+  .param-card.t-card .badge { background: var(--c-peach); color: var(--c-peach-deep); }
+  .param-card.h-card .badge { background: var(--c-mint); color: var(--c-mint-deep); }
+
+  .param-card .card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    margin-bottom: 0.6rem;
+  }
+  .param-card .desc {
+    font-size: 0.83rem;
+    color: var(--c-text-dim);
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
+  }
+  .param-card .formula-mini {
+    background: var(--c-bg);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.88rem;
+    overflow-x: auto;
+  }
+  .param-card .conditions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .param-card .cond-chip {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    background: var(--c-bg);
+    border: 1px solid var(--c-border);
+    color: var(--c-text-dim);
+  }
+
+  /* ── Full-width param detail ── */
+  .param-detail {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.75rem 2rem;
+    margin: 1.25rem 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  }
+  .param-detail .detail-head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  .param-detail .detail-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    flex-shrink: 0;
+  }
+  .param-detail .detail-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+  }
+  .param-detail .formula-block {
+    background: var(--c-bg);
+    border-radius: var(--radius-sm);
+    padding: 1.25rem 1.5rem;
+    margin: 0.75rem 0;
+    overflow-x: auto;
+    border-left: 3px solid var(--c-border);
+  }
+  .param-detail .meaning-list {
+    list-style: none;
+    margin: 0.75rem 0 0 0;
+    padding: 0;
+  }
+  .param-detail .meaning-list li {
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+  }
+  .param-detail .meaning-list li:nth-child(odd) { background: var(--c-bg); }
+  .param-detail .cond-row {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+  .param-detail .cond-pill {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.35rem 0.8rem;
+    border-radius: 20px;
+    border: 1px solid var(--c-border);
+  }
+  .z-accent { background: var(--c-lavender); color: var(--c-lavender-deep); border-color: var(--c-lavender) !important; }
+  .y-accent { background: var(--c-sky); color: var(--c-sky-deep); border-color: var(--c-sky) !important; }
+  .t-accent { background: var(--c-peach); color: var(--c-peach-deep); border-color: var(--c-peach) !important; }
+  .h-accent { background: var(--c-mint); color: var(--c-mint-deep); border-color: var(--c-mint) !important; }
+
+  /* ── Comparison Grid ── */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+  .compare-cell {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    text-align: center;
+    transition: transform 0.2s;
+  }
+  .compare-cell:hover { transform: translateY(-2px); }
+  .compare-cell .cell-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+  }
+  .compare-cell:nth-child(1) .cell-label { color: var(--c-lavender-deep); }
+  .compare-cell:nth-child(2) .cell-label { color: var(--c-sky-deep); }
+  .compare-cell:nth-child(3) .cell-label { color: var(--c-peach-deep); }
+  .compare-cell:nth-child(4) .cell-label { color: var(--c-mint-deep); }
+  .compare-cell .cell-letter {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+  .compare-cell:nth-child(1) { border-top: 3px solid var(--c-lavender-deep); }
+  .compare-cell:nth-child(2) { border-top: 3px solid var(--c-sky-deep); }
+  .compare-cell:nth-child(3) { border-top: 3px solid var(--c-peach-deep); }
+  .compare-cell:nth-child(4) { border-top: 3px solid var(--c-mint-deep); }
+  .compare-cell .cell-row {
+    font-size: 0.78rem;
+    color: var(--c-text-dim);
+    margin: 0.2rem 0;
+  }
+  .compare-cell .cell-row strong { color: var(--c-text); }
+
+  /* ── Connection cards ── */
+  .connect-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+  .connect-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.25rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+  }
+  .connect-card .cc-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+    color: var(--c-text-head);
+  }
+  .connect-card .cc-desc {
+    font-size: 0.8rem;
+    color: var(--c-text-dim);
+    margin-bottom: 0.4rem;
+  }
+  .connect-card .cc-formula {
+    font-size: 0.85rem;
+  }
+  .connect-card.full { grid-column: 1 / -1; }
+
+  /* ── Steps ── */
+  .step-flow {
+    display: flex;
+    gap: 0;
+    margin: 1.25rem 0;
+    align-items: stretch;
+  }
+  .step-item {
+    flex: 1;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    padding: 1.25rem 1rem;
+    text-align: center;
+    position: relative;
+    font-size: 0.85rem;
+  }
+  .step-item:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+  .step-item:last-child { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+  .step-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: -0.55rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0; height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-left: 8px solid var(--c-border);
+    z-index: 2;
+  }
+  .step-num {
+    width: 2rem; height: 2rem;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.5rem;
+  }
+  .step-item:nth-child(1) .step-num { background: var(--c-lavender-deep); }
+  .step-item:nth-child(2) .step-num { background: var(--c-sky-deep); }
+  .step-item:nth-child(3) .step-num { background: var(--c-peach-deep); }
+  .step-item:nth-child(4) .step-num { background: var(--c-mint-deep); }
+
+  /* ── Mobile ── */
+  .menu-btn {
+    display: none;
+    position: fixed;
+    top: 1rem; left: 1rem;
+    z-index: 200;
+    width: 44px; height: 44px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: 12px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    color: var(--c-text);
+  }
+  @media (max-width: 960px) {
+    .sidebar { transform: translateX(-110%); }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; padding: 1.5rem; padding-top: 4.5rem; }
+    .menu-btn { display: flex; align-items: center; justify-content: center; }
+    .param-grid, .connect-grid { grid-template-columns: 1fr; }
+    .compare-grid { grid-template-columns: 1fr 1fr; }
+    .step-flow { flex-direction: column; }
+    .step-item { border-radius: var(--radius-sm) !important; }
+    .step-item:not(:last-child)::after { display: none; }
+    .hero { padding: 2rem 1.5rem; }
+    .hero h1 { font-size: 1.5rem; }
+  }
+  @media print {
+    .sidebar, .menu-btn { display: none; }
+    .main { margin-left: 0; padding: 1rem; }
+    .hero { background: #f0f0f0 !important; }
+    .param-card:hover { transform: none; }
+  }
+  a:focus-visible, button:focus-visible {
+    outline: 3px solid var(--c-lavender-deep);
+    outline-offset: 2px;
+  }
+</style>
+</head>
+<body>
+
+<button class="menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('open')" aria-label="Toggle nav">&#9776;</button>
+
+<aside class="sidebar">
+  <div class="sidebar-brand">电路分析基础</div>
+  <div class="sidebar-title">单元03：动态电路时域分析</div>
+  <nav>
+    <a href="#overview">知识结构总览</a>
+    <a href="#sec-7-1" class="l2">7.1 暂态过程及换路定则</a>
+    <a href="#sec-7-1-1" class="l3">基本概念</a>
+    <a href="#sec-7-1-2" class="l3">换路定则</a>
+    <a href="#sec-7-2" class="l2">7.2 零输入响应</a>
+    <a href="#sec-7-2-1" class="l3">RC 零输入</a>
+    <a href="#sec-7-2-2" class="l3">RL 零输入</a>
+    <a href="#sec-7-3" class="l2">7.3 零状态响应</a>
+    <a href="#sec-7-3-1" class="l3">RC 零状态</a>
+    <a href="#sec-7-3-2" class="l3">RL 零状态</a>
+    <a href="#sec-7-4" class="l2">7.4 全响应与三要素法</a>
+    <a href="#sec-7-4-1" class="l3">全响应</a>
+    <a href="#sec-7-4-2" class="l3">三要素法</a>
+    <a href="#sec-7-5" class="l2">7.5 阶跃函数与响应</a>
+    <a href="#sec-7-6" class="l2">7.6 冲激函数与响应</a>
+    <a href="#sec-7-7" class="l2">7.7 二阶电路零输入</a>
+    <a href="#compare-rc-rl" class="l3">RC vs RL 对比</a>
+    <a href="#compare-response" class="l3">四种响应类型</a>
+  </nav>
+</aside>
+
+<main class="main">
+
+  <!-- 返回主页按钮 -->
+  <div class="back-btn-wrap">
+    <a href="../index.html" class="back-btn">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+      </svg>
+      返回主页
+    </a>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>单元03：动态电路时域分析</h1>
+    <p class="sub">电路分析基础（2026）&middot; 第7章</p>
+    <div class="tags">
+      <span class="tag">暂态过程</span>
+      <span class="tag">一阶电路</span>
+      <span class="tag">三要素法</span>
+      <span class="tag">阶跃响应</span>
+      <span class="tag">冲激响应</span>
+      <span class="tag">二阶电路</span>
+    </div>
+  </div>
+
+  <!-- Tree -->
+  <div class="tree-card" id="overview">
+    <h2>知识结构总览</h2>
+    <pre>
+动态电路时域分析
+&#9492;&#9472; 7. 动态电路的时域分析
+    &#9500;&#9472; 7.1 动态电路的暂态过程及换路定则
+    &#9474;   &#9500;&#9472; 7.1.1 动态电路的基本概念
+    &#9474;   &#9492;&#9472; 7.1.2 换路定则
+    &#9500;&#9472; 7.2 一阶电路的零输入响应
+    &#9474;   &#9500;&#9472; 7.2.1 一阶RC电路的零输入响应
+    &#9474;   &#9492;&#9472; 7.2.2 一阶RL电路的零输入响应
+    &#9500;&#9472; 7.3 一阶电路的零状态响应
+    &#9474;   &#9500;&#9472; 7.3.1 一阶RC电路的零状态响应
+    &#9474;   &#9492;&#9472; 7.3.2 一阶RL电路的零状态响应
+    &#9500;&#9472; 7.4 一阶电路的全响应和三要素法
+    &#9474;   &#9500;&#9472; 7.4.1 一阶电路的全响应
+    &#9474;   &#9492;&#9472; 7.4.2 一阶电路的三要素法
+    &#9500;&#9472; 7.5 阶跃函数和阶跃响应
+    &#9474;   &#9500;&#9472; 7.5.1 阶跃函数
+    &#9474;   &#9492;&#9472; 7.5.2 阶跃响应
+    &#9500;&#9472; 7.6 冲激函数和冲激响应
+    &#9474;   &#9500;&#9472; 7.6.1 冲激函数
+    &#9474;   &#9492;&#9472; 7.6.2 冲激响应
+    &#9492;&#9472; 7.7 二阶电路的零输入响应</pre>
+  </div>
+
+  <!-- 7.1 -->
+  <section id="sec-7-1">
+    <span class="section-label ch7">Chapter 7</span>
+    <h2 class="sec-title">7.1 动态电路的暂态过程及换路定则</h2>
+
+    <h3 id="sec-7-1-1">7.1.1 动态电路的基本概念</h3>
+    <ul>
+      <li><strong>动态电路</strong>：含有电容或电感等储能元件的电路</li>
+      <li><strong>暂态过程（过渡过程）</strong>：电路从一个稳态过渡到另一个稳态的中间过程</li>
+      <li><strong>产生原因</strong>：储能元件的能量不能突变（能量的积累和释放需要时间）</li>
+      <li><strong>稳态</strong>：电路中各物理量达到稳定的状态（直流稳态或交流稳态）</li>
+      <li><strong>换路</strong>：电路结构或参数突然发生变化（开关动作、参数突变等）</li>
+    </ul>
+
+    <h3 id="sec-7-1-2">7.1.2 换路定则</h3>
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge z-accent">核心定理</span>
+        <span class="detail-title">换路定则</span>
+      </div>
+      <p><strong>内容</strong>：在换路瞬间（$t = 0$），电容电压和电感电流不能突变</p>
+      <div class="formula-block">
+        $$u_C(0^+) = u_C(0^-) \qquad i_L(0^+) = i_L(0^-)$$
+      </div>
+      <p><strong>物理本质</strong>：能量不能突变（$W_C = \frac{1}{2}Cu_C^2$，$W_L = \frac{1}{2}Li_L^2$）</p>
+      <p><strong>推论</strong>：</p>
+      <ul>
+        <li>电容电流可以突变</li>
+        <li>电感电压可以突变</li>
+        <li>电阻的电压和电流都可以突变</li>
+      </ul>
+    </div>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge y-accent">Procedure</span>
+        <span class="detail-title">初始值的确定步骤</span>
+      </div>
+      <div class="step-flow">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div>求 $t = 0^-$ 时的<br>$u_C(0^-)$ 和 $i_L(0^-)$<br>（稳态分析）</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div>由换路定则得<br>$u_C(0^+)$ 和 $i_L(0^+)$</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div>画 $t = 0^+$ 时的<br>等效电路（电容用电压源替代，电感用电流源替代）</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <div>求其他物理量<br>的初始值</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7.2 -->
+  <section id="sec-7-2">
+    <span class="section-label ch7">Chapter 7</span>
+    <h2 class="sec-title">7.2 一阶电路的零输入响应</h2>
+
+    <div class="param-grid">
+      <div class="param-detail" id="sec-7-2-1">
+        <div class="detail-head">
+          <span class="detail-badge z-accent">RC 电路</span>
+          <span class="detail-title">一阶RC电路的零输入响应</span>
+        </div>
+        <p><strong>电路结构</strong>：已充电的电容C通过电阻R放电</p>
+        <div class="formula-block">
+          $$RC\frac{du_C}{dt} + u_C = 0$$
+          $$u_C(t) = u_C(0^+)e^{-t/\tau}$$
+        </div>
+        <ul class="meaning-list">
+          <li><strong>时间常数</strong>：$\tau = RC$（单位：秒）</li>
+          <li>电容电压按指数规律衰减到零</li>
+          <li>$\tau$ 越大，衰减越慢</li>
+          <li>经过 $3\tau \sim 5\tau$ 后，可认为暂态过程基本结束</li>
+        </ul>
+        <div class="formula-block">
+          $$i(t) = -\frac{u_C(0^+)}{R}e^{-t/\tau}$$
+        </div>
+        <p><strong>放电电流</strong>：初始最大，最终为零</p>
+      </div>
+
+      <div class="param-detail" id="sec-7-2-2">
+        <div class="detail-head">
+          <span class="detail-badge y-accent">RL 电路</span>
+          <span class="detail-title">一阶RL电路的零输入响应</span>
+        </div>
+        <p><strong>电路结构</strong>：已通电的电感L通过电阻R释放能量</p>
+        <div class="formula-block">
+          $$L\frac{di_L}{dt} + Ri_L = 0$$
+          $$i_L(t) = i_L(0^+)e^{-t/\tau}$$
+        </div>
+        <ul class="meaning-list">
+          <li><strong>时间常数</strong>：$\tau = L/R$（单位：秒）</li>
+          <li>电感电流按指数规律衰减到零</li>
+          <li>电感电压 $u_L(t) = -Ri_L(0^+)e^{-t/\tau}$（突变）</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7.3 -->
+  <section id="sec-7-3">
+    <span class="section-label ch7">Chapter 7</span>
+    <h2 class="sec-title">7.3 一阶电路的零状态响应</h2>
+
+    <div class="param-grid">
+      <div class="param-detail" id="sec-7-3-1">
+        <div class="detail-head">
+          <span class="detail-badge z-accent">RC 电路</span>
+          <span class="detail-title">一阶RC电路的零状态响应</span>
+        </div>
+        <p><strong>电路结构</strong>：未充电的电容C接入直流电压源 $U_s$</p>
+        <div class="formula-block">
+          $$RC\frac{du_C}{dt} + u_C = U_s$$
+          $$u_C(t) = U_s(1 - e^{-t/\tau}), \quad \tau = RC$$
+        </div>
+        <ul class="meaning-list">
+          <li>电容电压从零按指数规律上升到 $U_s$</li>
+          <li>充电电流 $i(t) = \frac{U_s}{R}e^{-t/\tau}$，初始最大，最终为零</li>
+          <li>电容相当于开路（直流稳态）</li>
+        </ul>
+      </div>
+
+      <div class="param-detail" id="sec-7-3-2">
+        <div class="detail-head">
+          <span class="detail-badge y-accent">RL 电路</span>
+          <span class="detail-title">一阶RL电路的零状态响应</span>
+        </div>
+        <p><strong>电路结构</strong>：电流为零的电感L接入直流电压源 $U_s$（串联电阻R）</p>
+        <div class="formula-block">
+          $$L\frac{di_L}{dt} + Ri_L = U_s$$
+          $$i_L(t) = \frac{U_s}{R}(1 - e^{-t/\tau}), \quad \tau = L/R$$
+        </div>
+        <ul class="meaning-list">
+          <li>电感电流从零按指数规律上升到 $U_s/R$</li>
+          <li>电感电压 $u_L(t) = U_s e^{-t/\tau}$，初始最大，最终为零</li>
+          <li>电感相当于短路（直流稳态）</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7.4 -->
+  <section id="sec-7-4">
+    <span class="section-label ch7">Chapter 7</span>
+    <h2 class="sec-title">7.4 一阶电路的全响应和三要素法</h2>
+
+    <h3 id="sec-7-4-1">7.4.1 一阶电路的全响应</h3>
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge t-accent">Definition</span>
+        <span class="detail-title">全响应</span>
+      </div>
+      <p><strong>定义</strong>：零输入响应与零状态响应之和</p>
+      <div class="formula-block">
+        $$\text{全响应} = \text{零输入响应} + \text{零状态响应}$$
+      </div>
+      <p><strong>分解方式二</strong>：稳态分量 + 暂态分量</p>
+      <div class="formula-block">
+        $$\text{全响应} = \text{稳态分量} + \text{暂态分量}$$
+      </div>
+      <p><strong>RC电路全响应</strong>：</p>
+      <div class="formula-block">
+        $$u_C(t) = U_s + [u_C(0^+) - U_s]e^{-t/\tau}$$
+      </div>
+      <ul class="meaning-list">
+        <li>$U_s$：稳态分量（终值）</li>
+        <li>$[u_C(0^+) - U_s]e^{-t/\tau}$：暂态分量（衰减项）</li>
+        <li><strong>物理意义</strong>：全响应反映了电路从初始状态到稳态的完整变化过程</li>
+      </ul>
+    </div>
+
+    <h3 id="sec-7-4-2">7.4.2 一阶电路的三要素法</h3>
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge h-accent">Key Method</span>
+        <span class="detail-title">三要素法</span>
+      </div>
+      <p><strong>三要素</strong>：</p>
+      <ul class="meaning-list">
+        <li><strong>初始值</strong> $f(0^+)$：换路后瞬间的值</li>
+        <li><strong>稳态值</strong> $f(\infty)$：$t \to \infty$ 时的稳态值</li>
+        <li><strong>时间常数</strong> $\tau$：决定暂态过程的快慢</li>
+      </ul>
+      <p><strong>通用公式</strong>：</p>
+      <div class="formula-block">
+        $$f(t) = f(\infty) + [f(0^+) - f(\infty)]e^{-t/\tau}$$
+      </div>
+      <p><strong>适用范围</strong>：任何一阶线性电路的全响应</p>
+      <div class="cond-row">
+        <span class="cond-pill z-accent">适用：一阶线性电路</span>
+        <span class="cond-pill y-accent">$\tau = R_{eq}C$ 或 $\tau = L/R_{eq}$</span>
+      </div>
+    </div>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge t-accent">Procedure</span>
+        <span class="detail-title">三要素法求解步骤</span>
+      </div>
+      <div class="step-flow">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div>求 $f(0^+)$<br>用换路定则和<br>$t=0^+$ 等效电路</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div>求 $f(\infty)$<br>电容开路、电感短路<br>求直流稳态解</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div>求 $\tau$<br>独立源置零，求<br>$R_{eq}$</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <div>代入公式<br>$f(t) = f(\infty) + [f(0^+) - f(\infty)]e^{-t/\tau}$</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7.5 -->
+  <section id="sec-7-5">
+    <span class="section-label ch7">Chapter 7</span>
+    <h2 class="sec-title">7.5 阶跃函数和阶跃响应</h2>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge z-accent">7.5.1</span>
+        <span class="detail-title">阶跃函数</span>
+      </div>
+      <div class="formula-block">
+        $$\varepsilon(t) = \begin{cases} 0, & t < 0 \\ 1, & t > 0 \end{cases}$$
+      </div>
+      <ul class="meaning-list">
+        <li><strong>延迟阶跃</strong>：$\varepsilon(t - t_0)$ 在 $t = t_0$ 时刻跳变</li>
+        <li><strong>幅值阶跃</strong>：$K\varepsilon(t)$ 幅值为K</li>
+        <li><strong>物理意义</strong>：表示开关在 $t=0$ 时刻闭合（或断开）的动作</li>
+      </ul>
+    </div>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge y-accent">7.5.2</span>
+        <span class="detail-title">阶跃响应</span>
+      </div>
+      <p><strong>定义</strong>：一阶电路在阶跃输入下的零状态响应</p>
+      <div class="connect-grid">
+        <div class="connect-card">
+          <div class="cc-name">RC电路阶跃响应</div>
+          <div class="cc-formula">$u_C(t) = U_s(1-e^{-t/\tau})\varepsilon(t)$</div>
+        </div>
+        <div class="connect-card">
+          <div class="cc-name">RL电路阶跃响应</div>
+          <div class="cc-formula">$i_L(t) = \frac{U_s}{R}(1-e^{-t/\tau})\varepsilon(t)$</div>
+        </div>
+      </div>
+      <p><strong>意义</strong>：阶跃响应是分析更复杂输入的基础</p>
+    </div>
+  </section>
+
+  <!-- 7.6 -->
+  <section id="sec-7-6">
+    <span class="section-label ch7">Chapter 7</span>
+    <h2 class="sec-title">7.6 冲激函数和冲激响应</h2>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge z-accent">7.6.1</span>
+        <span class="detail-title">冲激函数</span>
+      </div>
+      <div class="formula-block">
+        $$\delta(t) = \begin{cases} 0, & t \neq 0 \\ \infty, & t = 0 \end{cases}, \quad \int_{-\infty}^{+\infty}\delta(t)dt = 1$$
+      </div>
+      <ul class="meaning-list">
+        <li><strong>筛选性质</strong>：$\int_{-\infty}^{+\infty}f(t)\delta(t)dt = f(0)$</li>
+        <li><strong>物理意义</strong>：表示极短时间内作用的极大力（如锤击、雷击）</li>
+        <li><strong>与阶跃函数的关系</strong>：$\delta(t) = d\varepsilon(t)/dt$</li>
+      </ul>
+    </div>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge h-accent">7.6.2</span>
+        <span class="detail-title">冲激响应</span>
+      </div>
+      <p><strong>定义</strong>：电路在单位冲激函数 $\delta(t)$ 作用下的零状态响应</p>
+      <p><strong>求法</strong>：</p>
+      <ul>
+        <li>方法一：直接求解微分方程</li>
+        <li>方法二：利用阶跃响应求导（对一阶电路）</li>
+      </ul>
+      <div class="formula-block">
+        $$h(t) = \frac{1}{RC}e^{-t/RC}\varepsilon(t)$$
+      </div>
+      <p><strong>RC电路冲激响应</strong></p>
+      <div class="cond-row">
+        <span class="cond-pill z-accent">冲激响应 = 阶跃响应的导数</span>
+        <span class="cond-pill y-accent">与频率响应互为傅里叶变换对</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7.7 -->
+  <section id="sec-7-7">
+    <span class="section-label ch7">Chapter 7</span>
+    <h2 class="sec-title">7.7 二阶电路的零输入响应</h2>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge t-accent">Overview</span>
+        <span class="detail-title">二阶电路基本方程</span>
+      </div>
+      <p><strong>电路结构</strong>：含有两个储能元件（如RLC串联或并联电路）</p>
+      <p><strong>微分方程</strong>：二阶常系数线性微分方程（RLC串联为例）</p>
+      <div class="formula-block">
+        $$LC\frac{d^2u_C}{dt^2} + RC\frac{du_C}{dt} + u_C = 0$$
+      </div>
+      <p><strong>特征方程</strong>：</p>
+      <div class="formula-block">
+        $$s^2 + \frac{R}{L}s + \frac{1}{LC} = 0$$
+      </div>
+      <p><strong>特征根</strong>：</p>
+      <div class="formula-block">
+        $$s_{1,2} = -\alpha \pm \sqrt{\alpha^2 - \omega_0^2}$$
+      </div>
+      <ul class="meaning-list">
+        <li>$\alpha = R/(2L)$：衰减系数</li>
+        <li>$\omega_0 = 1/\sqrt{LC}$：固有角频率</li>
+      </ul>
+    </div>
+
+    <h3 id="compare-response">四种响应类型</h3>
+    <div class="compare-grid">
+      <div class="compare-cell">
+        <div class="cell-label">过阻尼</div>
+        <div class="cell-letter">&alpha; &gt; &omega;&#8320;</div>
+        <div class="cell-row">两个<strong>不等实根</strong></div>
+        <div class="cell-row">非振荡衰减</div>
+        <div class="cell-row">衰减最慢</div>
+        <div class="cell-row">&nbsp;</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">临界阻尼</div>
+        <div class="cell-letter">&alpha; = &omega;&#8320;</div>
+        <div class="cell-row">两个<strong>相等实根</strong></div>
+        <div class="cell-row">非振荡衰减</div>
+        <div class="cell-row">最快无振荡</div>
+        <div class="cell-row">&nbsp;</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">欠阻尼</div>
+        <div class="cell-letter">&alpha; &lt; &omega;&#8320;</div>
+        <div class="cell-row"><strong>共轭复根</strong></div>
+        <div class="cell-row">振荡衰减</div>
+        <div class="cell-row">$\omega_d = \sqrt{\omega_0^2 - \alpha^2}$</div>
+        <div class="cell-row">振荡角频率</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">无阻尼</div>
+        <div class="cell-letter">&alpha; = 0</div>
+        <div class="cell-row"><strong>纯虚根</strong></div>
+        <div class="cell-row">等幅振荡</div>
+        <div class="cell-row">理想情况</div>
+        <div class="cell-row">&nbsp;</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RC vs RL 对比 -->
+  <section id="compare-rc-rl">
+    <span class="section-label ch7">Summary</span>
+    <h2 class="sec-title">RC 与 RL 一阶电路对比</h2>
+    <div class="compare-grid">
+      <div class="compare-cell">
+        <div class="cell-label">RC 零输入</div>
+        <div class="cell-letter">RC</div>
+        <div class="cell-row">$\tau = RC$</div>
+        <div class="cell-row">$u_C(t) = u_C(0^+)e^{-t/\tau}$</div>
+        <div class="cell-row">电容放电</div>
+        <div class="cell-row">指数衰减到零</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">RL 零输入</div>
+        <div class="cell-letter">RL</div>
+        <div class="cell-row">$\tau = L/R$</div>
+        <div class="cell-row">$i_L(t) = i_L(0^+)e^{-t/\tau}$</div>
+        <div class="cell-row">电感释放能量</div>
+        <div class="cell-row">指数衰减到零</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">RC 零状态</div>
+        <div class="cell-letter">RC</div>
+        <div class="cell-row">$\tau = RC$</div>
+        <div class="cell-row">$u_C(t) = U_s(1-e^{-t/\tau})$</div>
+        <div class="cell-row">电容充电</div>
+        <div class="cell-row">指数上升到 $U_s$</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">RL 零状态</div>
+        <div class="cell-letter">RL</div>
+        <div class="cell-row">$\tau = L/R$</div>
+        <div class="cell-row">$i_L(t) = \frac{U_s}{R}(1-e^{-t/\tau})$</div>
+        <div class="cell-row">电感建立电流</div>
+        <div class="cell-row">指数上升到 $U_s/R$</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+const sections = document.querySelectorAll('[id]');
+const navLinks = document.querySelectorAll('.sidebar nav a');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(a => a.classList.remove('active'));
+      const link = document.querySelector(`.sidebar nav a[href="#${entry.target.id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-15% 0px -75% 0px' });
+sections.forEach(s => { if (s.closest('.main')) observer.observe(s); });
+navLinks.forEach(a => a.addEventListener('click', () => {
+  document.querySelector('.sidebar').classList.remove('open');
+}));
+</script>
+
+</body>
+</html>

@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>惠斯通电桥 · 平衡条件与灵敏度 | 交互式电路仿真</title>
+    <link rel="stylesheet" href="../css/tailwind-local.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #2563eb;
+            transform: scale(1.15);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15);
+        }
+        .reset-btn {
+            transition: all 0.2s;
+        }
+        .reset-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        @keyframes balancePulse {
+            0%, 100% { box-shadow: 0 0 8px rgba(34,197,94,0.4); }
+            50% { box-shadow: 0 0 20px rgba(34,197,94,0.8); }
+        }
+        .balanced-glow {
+            animation: balancePulse 1.5s ease-in-out infinite;
+            border-color: #22c55e !important;
+        }
+        @keyframes arrowBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .galvanometer-arrow {
+            transition: transform 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- 返回主页按钮 -->
+    <div class="flex justify-start mb-4">
+        <a href="../index.html"
+        class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            返回主页
+        </a>
+    </div>
+
+    <!-- 标题区 -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            惠斯通电桥 · 平衡条件与灵敏度
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            经典桥式电路 &nbsp;|&nbsp; 调节桥臂电阻，观察检流计电流 &nbsp;|&nbsp; 平衡条件 \(R_1/R_2 = R_3/R_x\)
+            <br><span class="text-xs text-indigo-500">\(U_{in} = 10\text{V}\)（固定） &nbsp;|&nbsp; 检流计内阻 \(R_G = 100\,\Omega\)</span>
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- 左侧控制面板 -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- 参数调节卡片 -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    桥臂电阻设置
+                </h3>
+
+                <!-- R1 -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>电阻 \(R_1\)（左上臂）</label>
+                        <span class="text-blue-600 font-mono" id="r1_display">1000 Ω</span>
+                    </div>
+                    <input type="range" id="r1_slider" min="10" max="10000" step="10" value="1000" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Ω</span><span>10 kΩ</span>
+                    </div>
+                </div>
+
+                <!-- R2 -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>电阻 \(R_2\)（右上臂）</label>
+                        <span class="text-blue-600 font-mono" id="r2_display">1000 Ω</span>
+                    </div>
+                    <input type="range" id="r2_slider" min="10" max="10000" step="10" value="1000" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Ω</span><span>10 kΩ</span>
+                    </div>
+                </div>
+
+                <!-- R3 -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>电阻 \(R_3\)（左下臂）</label>
+                        <span class="text-blue-600 font-mono" id="r3_display">1000 Ω</span>
+                    </div>
+                    <input type="range" id="r3_slider" min="10" max="10000" step="10" value="1000" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Ω</span><span>10 kΩ</span>
+                    </div>
+                </div>
+
+                <!-- Rx (unknown) -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>电阻 \(R_x\)（右下臂，待测）</label>
+                        <span class="text-blue-600 font-mono" id="rx_display">1000 Ω</span>
+                    </div>
+                    <input type="range" id="rx_slider" min="10" max="10000" step="10" value="1000" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Ω</span><span>10 kΩ</span>
+                    </div>
+                </div>
+
+                <!-- Vin (fixed) -->
+                <div class="border-t border-slate-100 my-3"></div>
+                <div class="mb-3">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>输入电压 \(U_{in}\)</label>
+                        <span class="text-blue-600 font-mono font-bold">10.00 V</span>
+                    </div>
+                    <p class="text-xs text-slate-400">固定直流电压源</p>
+                </div>
+
+                <!-- 重置按钮 -->
+                <div class="mt-6 flex justify-center">
+                    <button id="resetBtn" class="reset-btn bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-full shadow-md transition flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        重置参数
+                    </button>
+                </div>
+
+                <!-- 快速平衡按钮 -->
+                <div class="mt-3 flex justify-center">
+                    <button id="balanceBtn" class="reset-btn bg-emerald-500 hover:bg-emerald-600 text-white font-medium py-2 px-5 rounded-full shadow-md transition flex items-center gap-2 text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        自动平衡（设置 Rx = R2*R3/R1）
+                    </button>
+                </div>
+            </div>
+
+            <!-- 桥式电路拓扑示意 -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-blue-500 rounded-full"></span>
+                    惠斯通电桥拓扑
+                </h3>
+                <div class="bg-indigo-50 p-3 rounded-lg">
+                    <div class="text-center mb-2 text-sm text-slate-700 font-bold">桥式电路结构</div>
+                    <img src="./img/Wheatstone_Bridge.jpg" alt="惠斯通电桥拓扑" class="w-full rounded-lg">
+                    <div class="mt-2 text-xs text-slate-500">
+                        \(U_a = U_{in}\frac{R_2}{R_1+R_2}\) &nbsp; \(U_b = U_{in}\frac{R_x}{R_3+R_x}\)<br>
+                        \(U_G = U_a - U_b\) &nbsp; \(I_G = U_G / R_G\)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧图表与结果区域 -->
+        <div class="lg:col-span-8 space-y-6">
+            <!-- 桥臂中点电压柱状图 -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="flex justify-between items-center flex-wrap mb-2">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                        <div class="w-3 h-3 bg-orange-500 rounded-full"></div>
+                        <h3 class="font-bold text-slate-800 text-lg">桥臂中点电压 \(U_a\) 与 \(U_b\)</h3>
+                    </div>
+                    <span class="text-xs text-slate-400">平衡时两柱等高</span>
+                </div>
+                <div class="relative">
+                    <canvas id="midpointChart" width="700" height="320" style="width:100%; height:auto; max-height:350px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-1">
+                    蓝色 = \(U_a\)（左分压器中点） &nbsp;|&nbsp; 橙色 = \(U_b\)（右分压器中点）
+                </div>
+            </div>
+
+            <!-- 检流计电流指示器 -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="flex justify-between items-center flex-wrap mb-2">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-purple-500 rounded-full"></div>
+                        <h3 class="font-bold text-slate-800 text-lg">检流计指示器 · 电流 \(I_G\)</h3>
+                    </div>
+                    <span class="text-xs text-slate-400" id="ig_unit_label">方向与大小</span>
+                </div>
+                <div class="relative bg-slate-50 rounded-xl p-4">
+                    <!-- Visual galvanometer indicator -->
+                    <div class="flex items-center gap-4 mb-3">
+                        <span class="text-xs font-medium text-blue-500 w-10 text-right">← 向左</span>
+                        <div class="flex-1 h-6 bg-gradient-to-r from-blue-200 via-gray-300 to-red-200 rounded-full relative overflow-hidden border border-slate-300">
+                            <div id="ig_needle" class="absolute top-0 h-full w-2 bg-slate-600 rounded-full transition-all duration-300" style="left: calc(50% - 4px);"></div>
+                            <div class="absolute top-0 left-1/2 h-full w-0.5 bg-slate-400" style="transform: translateX(-50%);"></div>
+                        </div>
+                        <span class="text-xs font-medium text-red-500 w-10">向右 →</span>
+                    </div>
+                    <div class="text-center">
+                        <span class="text-lg font-bold font-mono" id="ig_value_display">I_G = 0.000 μA</span>
+                        <span class="text-xs text-slate-500 ml-2" id="ig_direction">(零)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数值结果显示卡片 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- 桥臂电压 & 检流计 -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-2">桥臂电压与检流计</h4>
+                    <div class="space-y-1.5 text-xs">
+                        <div class="flex justify-between py-1 border-b border-slate-100">
+                            <span class="font-medium">\(U_a\)（上中点 a）</span>
+                            <span class="font-mono text-blue-600" id="va_val">— V</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-slate-100">
+                            <span class="font-medium">\(U_b\)（下中点 b）</span>
+                            <span class="font-mono text-orange-500" id="vb_val">— V</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-slate-100">
+                            <span class="font-medium">\(U_G = U_a - U_b\)</span>
+                            <span class="font-mono" id="vg_val">— V</span>
+                        </div>
+                        <div class="flex justify-between py-1">
+                            <span class="font-medium">\(I_G = U_G / R_G\)</span>
+                            <span class="font-mono" id="ig_val">— μA</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 平衡状态 & 平衡条件 -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4" id="balanceCard">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-2">平衡状态</h4>
+                    <div class="space-y-2 text-xs">
+                        <div id="balanceStatus" class="p-3 rounded-lg text-center font-bold text-base transition-all duration-300">
+                            未平衡 ✗
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-slate-100">
+                            <span class="font-medium">\(R_1 / R_2\)</span>
+                            <span class="font-mono" id="ratio_left">—</span>
+                        </div>
+                        <div class="flex justify-between py-1">
+                            <span class="font-medium">\(R_3 / R_x\)</span>
+                            <span class="font-mono" id="ratio_right">—</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 惠斯通电桥平衡原理 -->
+                <div class="bg-white/70 backdrop-blur-sm rounded-xl shadow-md border border-slate-200 p-5">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-2">惠斯通电桥平衡原理</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        当桥臂电阻满足 \(R_1/R_2 = R_3/R_x\)（即 \(R_1 R_x = R_2 R_3\)）时，检流计两端电压 \(U_G = 0\)，电桥平衡。
+                        此时 \(U_a = U_b\)，检流计中无电流通过。本仿真允许独立调节四个桥臂电阻，直观演示平衡条件的建立与偏离。
+                        平衡时 \(R_x = R_2 R_3 / R_1\)，可用于精确测量未知电阻。
+                    </p>
+                </div>
+
+                <!-- 灵敏度与检流计 -->
+                <div class="bg-white/70 backdrop-blur-sm rounded-xl shadow-md border border-slate-200 p-5">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-2">灵敏度与检流计</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        检流计内阻 \(R_G = 100\,\Omega\)，用于检测微小的不平衡电流。电桥灵敏度取决于检流计的电流检测能力和桥臂电阻值。
+                        当 \(U_G\) 接近零时，检流计指针居中；偏离平衡时，电流方向指示 \(U_a\) 与 \(U_b\) 的相对大小。
+                        点击"自动平衡"按钮可使 \(R_x\) 自动调整至平衡值。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // DOM 元素绑定
+    const r1Slider = document.getElementById('r1_slider');
+    const r2Slider = document.getElementById('r2_slider');
+    const r3Slider = document.getElementById('r3_slider');
+    const rxSlider = document.getElementById('rx_slider');
+    const resetBtn = document.getElementById('resetBtn');
+    const balanceBtn = document.getElementById('balanceBtn');
+
+    const r1Display = document.getElementById('r1_display');
+    const r2Display = document.getElementById('r2_display');
+    const r3Display = document.getElementById('r3_display');
+    const rxDisplay = document.getElementById('rx_display');
+
+    const vaVal = document.getElementById('va_val');
+    const vbVal = document.getElementById('vb_val');
+    const vgVal = document.getElementById('vg_val');
+    const igVal = document.getElementById('ig_val');
+    const igValueDisplay = document.getElementById('ig_value_display');
+    const igDirection = document.getElementById('ig_direction');
+    const igNeedle = document.getElementById('ig_needle');
+    const igUnitLabel = document.getElementById('ig_unit_label');
+    const balanceStatus = document.getElementById('balanceStatus');
+    const balanceCard = document.getElementById('balanceCard');
+    const ratioLeft = document.getElementById('ratio_left');
+    const ratioRight = document.getElementById('ratio_right');
+
+    const midpointCanvas = document.getElementById('midpointChart');
+    let midpointChart = null;
+
+    const DEFAULTS = {
+        R1: 1000,
+        R2: 1000,
+        R3: 1000,
+        Rx: 1000
+    };
+    const V_IN = 10.0;
+    const R_G = 100;          // galvanometer internal resistance (Ω)
+    const BALANCE_THRESHOLD = 0.01;  // V
+
+    function getParams() {
+        return {
+            R1: parseFloat(r1Slider.value),
+            R2: parseFloat(r2Slider.value),
+            R3: parseFloat(r3Slider.value),
+            Rx: parseFloat(rxSlider.value)
+        };
+    }
+
+    function updateDisplays(R1, R2, R3, Rx) {
+        r1Display.innerText = (R1 >= 1000 ? (R1/1000).toFixed(2) + ' kΩ' : R1 + ' Ω');
+        r2Display.innerText = (R2 >= 1000 ? (R2/1000).toFixed(2) + ' kΩ' : R2 + ' Ω');
+        r3Display.innerText = (R3 >= 1000 ? (R3/1000).toFixed(2) + ' kΩ' : R3 + ' Ω');
+        rxDisplay.innerText = (Rx >= 1000 ? (Rx/1000).toFixed(2) + ' kΩ' : Rx + ' Ω');
+    }
+
+    function computeBridge(R1, R2, R3, Rx) {
+        const Va = V_IN * R2 / (R1 + R2);
+        const Vb = V_IN * Rx / (R3 + Rx);
+        const VG = Va - Vb;
+        const IG = VG / R_G;
+        const ratio1 = R1 / R2;
+        const ratio2 = R3 / Rx;
+        const isBalanced = Math.abs(VG) < BALANCE_THRESHOLD;
+        return { Va, Vb, VG, IG, ratio1, ratio2, isBalanced };
+    }
+
+    function updateResultDisplays(res) {
+        vaVal.innerText = res.Va.toFixed(4) + ' V';
+        vbVal.innerText = res.Vb.toFixed(4) + ' V';
+        vgVal.innerText = res.VG.toFixed(4) + ' V';
+        const igUA = res.IG * 1e6;
+        igVal.innerText = igUA.toFixed(3) + ' μA';
+        igValueDisplay.innerText = 'I_G = ' + igUA.toFixed(3) + ' μA';
+
+        // Galvanometer needle position (0% to 100% of bar width)
+        const maxIGforDisplay = 500e-6; // 500 μA max for full deflection
+        let needlePos = 50; // center
+        const clampedIG = Math.max(-maxIGforDisplay, Math.min(maxIGforDisplay, res.IG));
+        needlePos = 50 + (clampedIG / maxIGforDisplay) * 48; // 2% to 98%
+        igNeedle.style.left = 'calc(' + needlePos + '% - 4px)';
+
+        // Direction text and color
+        if (res.isBalanced) {
+            igDirection.innerText = '(零)';
+            igDirection.className = 'text-xs text-slate-500 ml-2';
+            igNeedle.style.backgroundColor = '#64748b';
+            igValueDisplay.className = 'text-lg font-bold font-mono text-slate-600';
+        } else if (res.IG > 0) {
+            igDirection.innerText = '(向右 → Ua > Ub)';
+            igDirection.className = 'text-xs text-red-500 ml-2';
+            igNeedle.style.backgroundColor = '#ef4444';
+            igValueDisplay.className = 'text-lg font-bold font-mono text-red-600';
+        } else {
+            igDirection.innerText = '(← 向左 Ua < Ub)';
+            igDirection.className = 'text-xs text-blue-500 ml-2';
+            igNeedle.style.backgroundColor = '#3b82f6';
+            igValueDisplay.className = 'text-lg font-bold font-mono text-blue-600';
+        }
+
+        // Balance status display
+        ratioLeft.innerText = res.ratio1.toFixed(4);
+        ratioRight.innerText = res.ratio2.toFixed(4);
+
+        if (res.isBalanced) {
+            balanceStatus.innerText = '已平衡 ✓';
+            balanceStatus.className = 'p-3 rounded-lg text-center font-bold text-base transition-all duration-300 bg-green-100 text-green-700 balanced-glow';
+            balanceCard.className = 'bg-white rounded-xl shadow-sm border-2 border-green-400 p-4 balanced-glow transition-all duration-300';
+        } else {
+            balanceStatus.innerText = '未平衡 ✗';
+            balanceStatus.className = 'p-3 rounded-lg text-center font-bold text-base transition-all duration-300 bg-red-50 text-red-600';
+            balanceCard.className = 'bg-white rounded-xl shadow-sm border border-slate-200 p-4 transition-all duration-300';
+        }
+
+        // Highlight ratio comparison
+        const ratioDiff = Math.abs(res.ratio1 - res.ratio2);
+        if (ratioDiff < 0.001) {
+            ratioLeft.className = 'font-mono text-green-600 font-bold';
+            ratioRight.className = 'font-mono text-green-600 font-bold';
+        } else {
+            ratioLeft.className = 'font-mono text-slate-700';
+            ratioRight.className = 'font-mono text-slate-700';
+        }
+    }
+
+    function updateAllCharts() {
+        const { R1, R2, R3, Rx } = getParams();
+        updateDisplays(R1, R2, R3, Rx);
+        const res = computeBridge(R1, R2, R3, Rx);
+        updateResultDisplays(res);
+
+        // --- Midpoint voltage bar chart ---
+        const barLabels = ['Ua (左中点)', 'Ub (右中点)'];
+        const barData = [res.Va, res.Vb];
+        const barMax = Math.max(res.Va, res.Vb, 0.5) * 1.15;
+        const barColors = ['rgba(59,130,246,0.75)', 'rgba(249,115,22,0.75)'];
+        const barBorders = ['#2563eb', '#ea580c'];
+
+        // Check near-equality for highlight
+        if (res.isBalanced) {
+            barColors[0] = 'rgba(34,197,94,0.7)';
+            barColors[1] = 'rgba(34,197,94,0.7)';
+            barBorders[0] = '#16a34a';
+            barBorders[1] = '#16a34a';
+        }
+
+        if (midpointChart) {
+            midpointChart.data.labels = barLabels;
+            midpointChart.data.datasets[0].data = barData;
+            midpointChart.data.datasets[0].backgroundColor = barColors;
+            midpointChart.data.datasets[0].borderColor = barBorders;
+            midpointChart.options.scales.y.max = barMax;
+            midpointChart.update();
+        } else {
+            midpointChart = new Chart(midpointCanvas, {
+                type: 'bar',
+                data: {
+                    labels: barLabels,
+                    datasets: [{
+                        label: '中点电压 (V)',
+                        data: barData,
+                        backgroundColor: barColors,
+                        borderColor: barBorders,
+                        borderWidth: 1.5,
+                        borderRadius: 6,
+                        barPercentage: 0.45
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    return ctx.label + ': ' + ctx.raw.toFixed(4) + ' V';
+                                }
+                            },
+                            backgroundColor: 'rgba(0,0,0,0.7)'
+                        },
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            title: { display: true, text: '电压 (V)', font: { weight: 'bold', size: 11 } },
+                            min: 0,
+                            max: barMax,
+                            ticks: { callback: v => v.toFixed(2) + ' V' },
+                            grid: { color: '#eef2ff' }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    function autoBalance() {
+        const { R1, R2, R3 } = getParams();
+        const balancedRx = R2 * R3 / R1;
+        const clampedRx = Math.max(10, Math.min(10000, Math.round(balancedRx / 10) * 10));
+        rxSlider.value = clampedRx;
+        updateAllCharts();
+    }
+
+    function resetParams() {
+        r1Slider.value = DEFAULTS.R1;
+        r2Slider.value = DEFAULTS.R2;
+        r3Slider.value = DEFAULTS.R3;
+        rxSlider.value = DEFAULTS.Rx;
+        updateAllCharts();
+    }
+
+    function bindEvents() {
+        r1Slider.addEventListener('input', updateAllCharts);
+        r2Slider.addEventListener('input', updateAllCharts);
+        r3Slider.addEventListener('input', updateAllCharts);
+        rxSlider.addEventListener('input', updateAllCharts);
+        resetBtn.addEventListener('click', resetParams);
+        balanceBtn.addEventListener('click', autoBalance);
+        window.addEventListener('resize', () => {
+            if (midpointChart) midpointChart.resize();
+        });
+    }
+
+    function init() {
+        bindEvents();
+        updateAllCharts();
+        window.addEventListener('load', function() {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            } else {
+                console.warn('KaTeX auto-render 未加载，公式以文本显示');
+            }
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>

@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>单元02：正弦稳态分析 - 电路分析基础</title>
+<link rel="stylesheet" href="./css/back-button.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<style>
+  :root {
+    --font-body: 'Noto Sans SC', 'Inter', -apple-system, sans-serif;
+    --font-mono: 'SF Mono', 'Fira Code', Consolas, monospace;
+    --c-bg: #fefcfa;
+    --c-surface: #ffffff;
+    --c-sidebar: rgba(255,255,255,0.85);
+    --c-text: #3d3d3d;
+    --c-text-dim: #8a8a8a;
+    --c-text-head: #2c2c2c;
+    --c-border: #ede8e3;
+    --c-lavender: #e8e0f0;
+    --c-lavender-deep: #9b8ec4;
+    --c-peach: #fde8d8;
+    --c-peach-deep: #e8956a;
+    --c-sky: #dce8f8;
+    --c-sky-deep: #6a9fd8;
+    --c-mint: #daf0e8;
+    --c-mint-deep: #5aaf8a;
+    --c-rose: #f8dce0;
+    --c-rose-deep: #d87088;
+    --c-amber: #f8ecd0;
+    --c-amber-deep: #c89a40;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --sidebar-w: 260px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --c-bg: #1a1a24;
+      --c-surface: #24243a;
+      --c-sidebar: rgba(26,26,36,0.92);
+      --c-text: #d4d4d4;
+      --c-text-dim: #7a7a8e;
+      --c-text-head: #eee;
+      --c-border: #3a3a52;
+      --c-lavender: #2e2840;
+      --c-lavender-deep: #b8a8e0;
+      --c-peach: #3a2820;
+      --c-peach-deep: #f0a878;
+      --c-sky: #1e2838;
+      --c-sky-deep: #88b8f0;
+      --c-mint: #1e3028;
+      --c-mint-deep: #70d0a0;
+      --c-rose: #382028;
+      --c-rose-deep: #f08898;
+      --c-amber: #302818;
+      --c-amber-deep: #e8c060;
+    }
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-body);
+    color: var(--c-text);
+    background: var(--c-bg);
+    background-image:
+      radial-gradient(ellipse 600px 400px at 10% 20%, rgba(232,224,240,0.5) 0%, transparent 70%),
+      radial-gradient(ellipse 500px 500px at 90% 70%, rgba(253,232,216,0.4) 0%, transparent 70%),
+      radial-gradient(ellipse 400px 300px at 50% 90%, rgba(220,232,248,0.3) 0%, transparent 70%);
+    font-size: 15.5px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    position: fixed;
+    top: 1.5rem; left: 1.5rem; bottom: 1.5rem;
+    width: var(--sidebar-w);
+    background: var(--c-sidebar);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.75rem 1.25rem;
+    overflow-y: auto;
+    z-index: 100;
+    transition: transform 0.35s cubic-bezier(.4,0,.2,1);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+  }
+  .sidebar-brand {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--c-lavender-deep);
+    margin-bottom: 0.5rem;
+  }
+  .sidebar-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--c-border);
+  }
+  .sidebar nav a {
+    display: block;
+    padding: 0.4rem 0.7rem;
+    color: var(--c-text-dim);
+    text-decoration: none;
+    font-size: 0.83rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 2px;
+    transition: all 0.2s;
+  }
+  .sidebar nav a:hover {
+    color: var(--c-text-head);
+    background: var(--c-lavender);
+  }
+  .sidebar nav a.active {
+    color: var(--c-lavender-deep);
+    background: var(--c-lavender);
+    font-weight: 600;
+  }
+  .sidebar nav a.l2 { padding-left: 1.4rem; font-size: 0.78rem; }
+  .sidebar nav a.l3 { padding-left: 2.2rem; font-size: 0.75rem; }
+
+  /* ── Main ── */
+  .main {
+    margin-left: calc(var(--sidebar-w) + 3rem);
+    padding: 2.5rem 0;
+    max-width: 780px;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    position: relative;
+    background: linear-gradient(135deg, var(--c-lavender) 0%, var(--c-sky) 50%, var(--c-peach) 100%);
+    border-radius: var(--radius);
+    padding: 3rem 2.5rem 2.5rem;
+    margin-bottom: 3rem;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 50%;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -30px; left: 30%;
+    width: 100px; height: 100px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 50%;
+  }
+  .hero h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    position: relative;
+    z-index: 1;
+  }
+  .hero .sub {
+    color: var(--c-text-dim);
+    font-size: 0.95rem;
+    margin-top: 0.4rem;
+    position: relative;
+    z-index: 1;
+  }
+  .hero .tags {
+    margin-top: 1rem;
+    position: relative;
+    z-index: 1;
+  }
+  .tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.6);
+    backdrop-filter: blur(8px);
+    padding: 0.2rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.73rem;
+    font-weight: 600;
+    color: var(--c-text);
+    margin-right: 0.4rem;
+    border: 1px solid rgba(255,255,255,0.5);
+  }
+
+  /* ── Tree Card ── */
+  .tree-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.75rem 2rem;
+    margin-bottom: 3rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+  }
+  .tree-card h2 {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--c-lavender-deep);
+    margin-bottom: 1rem;
+  }
+  .tree-card pre {
+    font-family: var(--font-mono);
+    font-size: 0.83rem;
+    line-height: 1.9;
+    color: var(--c-text-dim);
+    overflow-x: auto;
+  }
+
+  /* ── Section ── */
+  section { margin-bottom: 2.5rem; }
+
+  .section-label {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    margin-bottom: 0.6rem;
+  }
+  .section-label.ch5 { background: var(--c-lavender); color: var(--c-lavender-deep); }
+  .section-label.ch6 { background: var(--c-peach); color: var(--c-peach-deep); }
+
+  h2.sec-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    margin-bottom: 1.25rem;
+  }
+  h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--c-text-head);
+    margin: 1.75rem 0 0.75rem;
+  }
+  h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--c-text);
+    margin: 1.25rem 0 0.5rem;
+  }
+  p { margin-bottom: 0.7rem; }
+  ul, ol { margin: 0.4rem 0 1rem 1.2rem; }
+  li { margin-bottom: 0.3rem; }
+  li ul, li ol { margin-top: 0.25rem; margin-bottom: 0; }
+  strong { font-weight: 600; }
+
+  /* ── Param Cards ── */
+  .param-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.25rem 0;
+  }
+  .param-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  }
+  .param-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  }
+  .param-card .badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .param-card.z-card .badge { background: var(--c-lavender); color: var(--c-lavender-deep); }
+  .param-card.y-card .badge { background: var(--c-sky); color: var(--c-sky-deep); }
+  .param-card.t-card .badge { background: var(--c-peach); color: var(--c-peach-deep); }
+  .param-card.h-card .badge { background: var(--c-mint); color: var(--c-mint-deep); }
+  .param-card.p-card .badge { background: var(--c-rose); color: var(--c-rose-deep); }
+  .param-card.a-card .badge { background: var(--c-amber); color: var(--c-amber-deep); }
+
+  .param-card .card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    margin-bottom: 0.6rem;
+  }
+  .param-card .desc {
+    font-size: 0.83rem;
+    color: var(--c-text-dim);
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
+  }
+  .param-card .formula-mini {
+    background: var(--c-bg);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.88rem;
+    overflow-x: auto;
+  }
+  .param-card .conditions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .param-card .cond-chip {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    background: var(--c-bg);
+    border: 1px solid var(--c-border);
+    color: var(--c-text-dim);
+  }
+
+  /* ── Full-width param detail ── */
+  .param-detail {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.75rem 2rem;
+    margin: 1.25rem 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  }
+  .param-detail .detail-head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  .param-detail .detail-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    flex-shrink: 0;
+  }
+  .param-detail .detail-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+  }
+  .param-detail .formula-block {
+    background: var(--c-bg);
+    border-radius: var(--radius-sm);
+    padding: 1.25rem 1.5rem;
+    margin: 0.75rem 0;
+    overflow-x: auto;
+    border-left: 3px solid var(--c-border);
+  }
+  .param-detail .meaning-list {
+    list-style: none;
+    margin: 0.75rem 0 0 0;
+    padding: 0;
+  }
+  .param-detail .meaning-list li {
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+  }
+  .param-detail .meaning-list li:nth-child(odd) { background: var(--c-bg); }
+  .param-detail .cond-row {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+  .param-detail .cond-pill {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.35rem 0.8rem;
+    border-radius: 20px;
+    border: 1px solid var(--c-border);
+  }
+  .z-accent { background: var(--c-lavender); color: var(--c-lavender-deep); border-color: var(--c-lavender) !important; }
+  .y-accent { background: var(--c-sky); color: var(--c-sky-deep); border-color: var(--c-sky) !important; }
+  .t-accent { background: var(--c-peach); color: var(--c-peach-deep); border-color: var(--c-peach) !important; }
+  .h-accent { background: var(--c-mint); color: var(--c-mint-deep); border-color: var(--c-mint) !important; }
+  .p-accent { background: var(--c-rose); color: var(--c-rose-deep); border-color: var(--c-rose) !important; }
+  .a-accent { background: var(--c-amber); color: var(--c-amber-deep); border-color: var(--c-amber) !important; }
+
+  /* ── Comparison Grid ── */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+  .compare-grid.compare-2col {
+    grid-template-columns: 1fr 1fr;
+  }
+  .compare-cell {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    text-align: center;
+    transition: transform 0.2s;
+  }
+  .compare-cell:hover { transform: translateY(-2px); }
+  .compare-cell .cell-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+  }
+  .compare-cell:nth-child(1) .cell-label { color: var(--c-lavender-deep); }
+  .compare-cell:nth-child(2) .cell-label { color: var(--c-sky-deep); }
+  .compare-cell:nth-child(3) .cell-label { color: var(--c-peach-deep); }
+  .compare-cell:nth-child(4) .cell-label { color: var(--c-mint-deep); }
+  .compare-cell .cell-letter {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+  .compare-cell:nth-child(1) { border-top: 3px solid var(--c-lavender-deep); }
+  .compare-cell:nth-child(2) { border-top: 3px solid var(--c-sky-deep); }
+  .compare-cell:nth-child(3) { border-top: 3px solid var(--c-peach-deep); }
+  .compare-cell:nth-child(4) { border-top: 3px solid var(--c-mint-deep); }
+  .compare-cell .cell-row {
+    font-size: 0.78rem;
+    color: var(--c-text-dim);
+    margin: 0.2rem 0;
+  }
+  .compare-cell .cell-row strong { color: var(--c-text); }
+
+  /* ── Connection cards ── */
+  .connect-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+  .connect-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.25rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+  }
+  .connect-card .cc-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+    color: var(--c-text-head);
+  }
+  .connect-card .cc-desc {
+    font-size: 0.8rem;
+    color: var(--c-text-dim);
+    margin-bottom: 0.4rem;
+  }
+  .connect-card .cc-formula {
+    font-size: 0.85rem;
+  }
+  .connect-card.full { grid-column: 1 / -1; }
+
+  /* ── Steps ── */
+  .step-flow {
+    display: flex;
+    gap: 0;
+    margin: 1.25rem 0;
+    align-items: stretch;
+  }
+  .step-item {
+    flex: 1;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    padding: 1.25rem 1rem;
+    text-align: center;
+    position: relative;
+    font-size: 0.85rem;
+  }
+  .step-item:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+  .step-item:last-child { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+  .step-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: -0.55rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0; height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-left: 8px solid var(--c-border);
+    z-index: 2;
+  }
+  .step-num {
+    width: 2rem; height: 2rem;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.5rem;
+  }
+  .step-item:nth-child(1) .step-num { background: var(--c-lavender-deep); }
+  .step-item:nth-child(2) .step-num { background: var(--c-sky-deep); }
+  .step-item:nth-child(3) .step-num { background: var(--c-peach-deep); }
+  .step-item:nth-child(4) .step-num { background: var(--c-mint-deep); }
+  .step-item:nth-child(5) .step-num { background: var(--c-rose-deep); }
+
+  /* ── Mobile ── */
+  .menu-btn {
+    display: none;
+    position: fixed;
+    top: 1rem; left: 1rem;
+    z-index: 200;
+    width: 44px; height: 44px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: 12px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    color: var(--c-text);
+  }
+  @media (max-width: 960px) {
+    .sidebar { transform: translateX(-110%); }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; padding: 1.5rem; padding-top: 4.5rem; }
+    .menu-btn { display: flex; align-items: center; justify-content: center; }
+    .param-grid, .connect-grid { grid-template-columns: 1fr; }
+    .compare-grid { grid-template-columns: 1fr 1fr; }
+    .step-flow { flex-direction: column; }
+    .step-item { border-radius: var(--radius-sm) !important; }
+    .step-item:not(:last-child)::after { display: none; }
+    .hero { padding: 2rem 1.5rem; }
+    .hero h1 { font-size: 1.5rem; }
+  }
+  @media print {
+    .sidebar, .menu-btn { display: none; }
+    .main { margin-left: 0; padding: 1rem; }
+    .hero { background: #f0f0f0 !important; }
+    .param-card:hover { transform: none; }
+  }
+  a:focus-visible, button:focus-visible {
+    outline: 3px solid var(--c-lavender-deep);
+    outline-offset: 2px;
+  }
+</style>
+</head>
+<body>
+
+<button class="menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('open')" aria-label="Toggle nav">&#9776;</button>
+
+<aside class="sidebar">
+  <div class="sidebar-brand">电路分析基础</div>
+  <div class="sidebar-title">单元02：正弦稳态分析</div>
+  <nav>
+    <a href="#overview">知识结构总览</a>
+    <a href="#ch5-1" class="l2">5.1 正弦量的基本概念</a>
+    <a href="#ch5-2" class="l2">5.2 相量表示法</a>
+    <a href="#ch5-3" class="l2">5.3 两类约束的相量形式</a>
+    <a href="#ch5-4" class="l2">5.4 阻抗与导纳</a>
+    <a href="#ch5-5" class="l2">5.5 相量法分析</a>
+    <a href="#ch5-6" class="l2">5.6 正弦电路的功率</a>
+    <a href="#power-cards" class="l3">四种功率</a>
+    <a href="#power-factor" class="l3">功率因数提高</a>
+    <a href="#max-power" class="l3">最大功率传输</a>
+    <a href="#ch5-7" class="l2">5.7 频率响应</a>
+    <a href="#ch5-8" class="l2">5.8 谐振电路</a>
+    <a href="#resonance-compare" class="l3">串并联谐振对比</a>
+    <a href="#ch6-1" class="l2">6.1 耦合电感</a>
+    <a href="#ch6-2" class="l2">6.2 含耦合电感电路</a>
+    <a href="#ch6-3" class="l2">6.3 空心变压器</a>
+    <a href="#ch6-4" class="l2">6.4 理想变压器</a>
+  </nav>
+</aside>
+
+<main class="main">
+
+  <!-- 返回主页按钮 -->
+  <div class="back-btn-wrap">
+    <a href="../index.html" class="back-btn">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+      </svg>
+      返回主页
+    </a>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>单元02：正弦稳态分析</h1>
+    <p class="sub">电路分析基础（2026）&middot; 第5-6章</p>
+    <div class="tags">
+      <span class="tag">正弦稳态</span>
+      <span class="tag">相量法</span>
+      <span class="tag">功率</span>
+      <span class="tag">谐振</span>
+      <span class="tag">耦合电感</span>
+      <span class="tag">变压器</span>
+    </div>
+  </div>
+
+  <!-- Tree -->
+  <div class="tree-card" id="overview">
+    <h2>知识结构总览</h2>
+    <pre>
+正弦稳态分析
+&#9500;&#9472; 5. 正弦稳态电路的分析
+&#9474;   &#9500;&#9472; 5.1 正弦量的基本概念
+&#9474;   &#9474;   &#9500;&#9472; 5.1.1 频率与周期
+&#9474;   &#9474;   &#9500;&#9472; 5.1.2 振幅与有效值
+&#9474;   &#9474;   &#9492;&#9472; 5.1.3 初相位
+&#9474;   &#9500;&#9472; 5.2 正弦量的相量表示法
+&#9474;   &#9474;   &#9500;&#9472; 5.2.1 复数及其运算
+&#9474;   &#9474;   &#9500;&#9472; 5.2.2 相量的概念
+&#9474;   &#9474;   &#9500;&#9472; 5.2.3 相量图
+&#9474;   &#9474;   &#9492;&#9472; 5.2.4 相量的运算性质
+&#9474;   &#9500;&#9472; 5.3 两类约束的相量形式
+&#9474;   &#9474;   &#9500;&#9472; 5.3.1 基尔霍夫定律的相量形式
+&#9474;   &#9474;   &#9492;&#9472; 5.3.2 元件伏安关系的相量形式
+&#9474;   &#9500;&#9472; 5.4 无源单口网络的阻抗
+&#9474;   &#9474;   &#9500;&#9472; 5.4.1 阻抗的概念
+&#9474;   &#9474;   &#9500;&#9472; 5.4.2 阻抗的串联与并联
+&#9474;   &#9474;   &#9492;&#9472; 5.4.3 电路的相量模型
+&#9474;   &#9500;&#9472; 5.5 正弦稳态电路的相量法分析
+&#9474;   &#9474;   &#9500;&#9472; 5.5.1 简单交流电路的分析
+&#9474;   &#9474;   &#9492;&#9472; 5.5.2 网孔法与节点法
+&#9474;   &#9500;&#9472; 5.6 正弦交流电路的功率
+&#9474;   &#9474;   &#9500;&#9472; 5.6.1 ~ 5.6.5 四种功率
+&#9474;   &#9474;   &#9500;&#9472; 5.6.6 功率因数的提高
+&#9474;   &#9474;   &#9492;&#9472; 5.6.7 最大功率传输
+&#9474;   &#9500;&#9472; 5.7 电路的频率响应
+&#9474;   &#9474;   &#9500;&#9472; 5.7.1 网络函数与频率特性
+&#9474;   &#9474;   &#9500;&#9472; 5.7.2 RC低通滤波电路
+&#9474;   &#9474;   &#9492;&#9472; 5.7.3 RC高通滤波电路
+&#9474;   &#9492;&#9472; 5.8 谐振电路
+&#9474;       &#9500;&#9472; 5.8.1 串联谐振
+&#9474;       &#9492;&#9472; 5.8.2 并联谐振
+&#9492;&#9472; 6. 耦合电感和理想变压器
+    &#9500;&#9472; 6.1 耦合电感
+    &#9474;   &#9500;&#9472; 6.1.1 互感
+    &#9474;   &#9500;&#9472; 6.1.2 耦合电感的伏安关系
+    &#9474;   &#9500;&#9472; 6.1.3 同名端
+    &#9474;   &#9492;&#9472; 6.1.4 等效电路模型
+    &#9500;&#9472; 6.2 含耦合电感的正弦稳态电路的分析
+    &#9474;   &#9500;&#9472; 6.2.1 直接列写方程法
+    &#9474;   &#9492;&#9472; 6.2.2 去耦等效分析法
+    &#9500;&#9472; 6.3 空心变压器
+    &#9492;&#9472; 6.4 理想变压器
+        &#9500;&#9472; 6.4.1 主要性能
+        &#9492;&#9472; 6.4.2 含理想变压器的电路分析</pre>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- 第5章 正弦稳态电路的分析 -->
+  <!-- ═══════════════════════════════════════════════════ -->
+
+  <!-- 5.1 正弦量的基本概念 -->
+  <section id="ch5-1">
+    <span class="section-label ch5">Chapter 5</span>
+    <h2 class="sec-title">5.1 正弦量的基本概念</h2>
+
+    <h4>5.1.1 频率与周期</h4>
+    <ul>
+      <li><strong>周期 T</strong>：正弦量完成一次周期性变化所需的时间，单位：秒（s）</li>
+      <li><strong>频率 f</strong>：单位时间内正弦量完成周期性变化的次数，$f = 1/T$，单位：赫兹（Hz）</li>
+      <li><strong>角频率 &omega;</strong>：正弦量相位变化的速度，$\omega = 2\pi f = 2\pi/T$，单位：弧度/秒（rad/s）</li>
+      <li><strong>工频</strong>：我国电力系统标准频率为50Hz，即 $\omega = 100\pi \approx 314$ rad/s</li>
+    </ul>
+
+    <h4>5.1.2 振幅与有效值</h4>
+    <ul>
+      <li><strong>瞬时值</strong>：$i(t) = I_m \sin(\omega t + \varphi)$</li>
+      <li><strong>振幅（最大值）</strong> $I_m$：正弦量的最大值</li>
+      <li><strong>有效值（RMS值）</strong>：与正弦量产生相同热效应的直流值
+        $$I = \frac{I_m}{\sqrt{2}} \approx 0.707 I_m$$</li>
+      <li><strong>有效值的意义</strong>：交流电表的读数通常为有效值；电气设备的额定值也用有效值表示</li>
+    </ul>
+
+    <h4>5.1.3 初相位</h4>
+    <ul>
+      <li><strong>相位</strong>：$\omega t + \varphi$，表示正弦量在某一时刻的状态</li>
+      <li><strong>初相位</strong> $\varphi$：$t=0$ 时刻的相位角，$|\varphi| \leq \pi$</li>
+      <li><strong>物理意义</strong>：反映正弦量在计时起点时的状态</li>
+      <li><strong>相位差</strong>：两个同频率正弦量的初相位之差，$\varphi = \varphi_1 - \varphi_2$
+        <ul>
+          <li>$\varphi > 0$：u 超前 i（或 i 滞后 u）</li>
+          <li>$\varphi < 0$：u 滞后 i（或 i 超前 u）</li>
+          <li>$\varphi = 0$：u 与 i 同相</li>
+          <li>$\varphi = \pi$：u 与 i 反相</li>
+        </ul>
+      </li>
+    </ul>
+  </section>
+
+  <!-- 5.2 正弦量的相量表示法 -->
+  <section id="ch5-2">
+    <span class="section-label ch5">Chapter 5</span>
+    <h2 class="sec-title">5.2 正弦量的相量表示法</h2>
+
+    <h4>5.2.1 复数及其运算</h4>
+    <ul>
+      <li><strong>复数表示</strong>：
+        <ul>
+          <li>代数形式：$A = a + jb$（$j^2 = -1$）</li>
+          <li>指数形式：$A = |A|e^{j\theta}$</li>
+          <li>极坐标形式：$A = |A|\angle\theta$</li>
+        </ul>
+      </li>
+      <li><strong>基本运算</strong>：
+        <ul>
+          <li>加减法：实部与实部相加减，虚部与虚部相加减</li>
+          <li>乘除法：模相乘除，辐角相加减</li>
+          <li>共轭复数：$\bar{A} = a - jb = |A|\angle(-\theta)$</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h4>5.2.2 相量的概念</h4>
+    <ul>
+      <li><strong>定义</strong>：用复数来表示正弦量的振幅（或有效值）和初相位</li>
+      <li><strong>振幅相量</strong>：$\dot{I}_m = I_m e^{j\varphi} = I_m\angle\varphi$</li>
+      <li><strong>有效值相量</strong>：$\dot{I} = I e^{j\varphi} = I\angle\varphi$（工程中更常用）</li>
+      <li><strong>对应关系</strong>：$i(t) = I_m \sin(\omega t + \varphi) \leftrightarrow \dot{I}_m = I_m\angle\varphi$</li>
+      <li><strong>注意</strong>：相量只能表示同频率的正弦量；不同频率的正弦量不能用同一相量表示</li>
+    </ul>
+
+    <h4>5.2.3 相量图</h4>
+    <ul>
+      <li><strong>定义</strong>：在复平面上用有向线段表示相量的图形</li>
+      <li><strong>画法</strong>：以坐标原点为起点，长度表示有效值（或振幅），角度表示初相位</li>
+      <li><strong>用途</strong>：直观表示各正弦量之间的相位关系；辅助进行相量的加减运算</li>
+    </ul>
+
+    <h4>5.2.4 相量的运算性质</h4>
+    <ul>
+      <li><strong>时域微分对应相量乘法</strong>：$\frac{d}{dt} \rightarrow j\omega$</li>
+      <li><strong>时域积分对应相量除法</strong>：$\int dt \rightarrow \frac{1}{j\omega}$</li>
+      <li><strong>同频率正弦量的线性运算</strong>：可用相量直接进行加减</li>
+    </ul>
+  </section>
+
+  <!-- 5.3 两类约束的相量形式 -->
+  <section id="ch5-3">
+    <span class="section-label ch5">Chapter 5</span>
+    <h2 class="sec-title">5.3 两类约束的相量形式</h2>
+
+    <h4>5.3.1 基尔霍夫定律的相量形式</h4>
+    <ul>
+      <li><strong>KCL的相量形式</strong>：$\sum \dot{I} = 0$（流入节点的相量电流之和为零）</li>
+      <li><strong>KVL的相量形式</strong>：$\sum \dot{U} = 0$（沿回路的相量电压之和为零）</li>
+      <li><strong>说明</strong>：相量形式的KCL和KVL与直流电路形式完全相同，但运算对象是复数</li>
+    </ul>
+
+    <h4>5.3.2 电路元件伏安关系的相量形式</h4>
+    <div class="compare-grid">
+      <div class="compare-cell">
+        <div class="cell-label">电阻 R</div>
+        <div class="cell-letter">R</div>
+        <div class="cell-row">$\dot{U}_R = R\dot{I}_R$</div>
+        <div class="cell-row"><strong>电压与电流同相</strong></div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">电感 L</div>
+        <div class="cell-letter">L</div>
+        <div class="cell-row">$\dot{U}_L = j\omega L \cdot \dot{I}_L$</div>
+        <div class="cell-row"><strong>电压超前电流90&deg;</strong></div>
+        <div class="cell-row">感抗 $X_L = \omega L$</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">电容 C</div>
+        <div class="cell-letter">C</div>
+        <div class="cell-row">$\dot{U}_C = \frac{1}{j\omega C}\dot{I}_C$</div>
+        <div class="cell-row"><strong>电压滞后电流90&deg;</strong></div>
+        <div class="cell-row">容抗 $X_C = \frac{1}{\omega C}$</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5.4 无源单口网络的阻抗 -->
+  <section id="ch5-4">
+    <span class="section-label ch5">Chapter 5</span>
+    <h2 class="sec-title">5.4 无源单口网络的阻抗</h2>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge z-accent">阻抗</span>
+        <span class="detail-title">5.4.1 阻抗的概念</span>
+      </div>
+      <div class="formula-block">
+        $$Z = \frac{\dot{U}}{\dot{I}} = R + jX = |Z|\angle\varphi_z$$
+      </div>
+      <ul class="meaning-list">
+        <li>电阻部分（实部）：$R = |Z|\cos\varphi_z$</li>
+        <li>电抗部分（虚部）：$X = |Z|\sin\varphi_z$</li>
+        <li>阻抗模：$|Z| = \sqrt{R^2 + X^2}$</li>
+        <li>阻抗角：$\varphi_z = \arctan(X/R)$（即电压超前电流的角度）</li>
+      </ul>
+      <div class="cond-row">
+        <span class="cond-pill z-accent">导纳：$Y = 1/Z = G + jB$</span>
+      </div>
+    </div>
+
+    <h4>5.4.2 阻抗的串联与并联</h4>
+    <ul>
+      <li><strong>串联</strong>：$Z_{eq} = Z_1 + Z_2 + \cdots + Z_n$</li>
+      <li><strong>并联</strong>：$\frac{1}{Z_{eq}} = \frac{1}{Z_1} + \frac{1}{Z_2} + \cdots + \frac{1}{Z_n}$</li>
+      <li><strong>分压公式</strong>：$\dot{U}_k = \frac{Z_k}{Z_1+Z_2+\cdots+Z_n} \cdot \dot{U}$</li>
+      <li><strong>分流公式</strong>：$\dot{I}_k = \frac{Z_{eq}}{Z_k} \cdot \dot{I}$</li>
+    </ul>
+
+    <h4>5.4.3 电路的相量模型</h4>
+    <ul>
+      <li><strong>建立方法</strong>：将电路中各元件用其相量模型替换
+        <ul>
+          <li>电阻 &rarr; $R$</li>
+          <li>电感 &rarr; $j\omega L$</li>
+          <li>电容 &rarr; $1/(j\omega C)$</li>
+          <li>电压源 &rarr; $\dot{U}_s$，电流源 &rarr; $\dot{I}_s$</li>
+        </ul>
+      </li>
+      <li><strong>特点</strong>：相量模型中各量都是复数，分析方法与直流电阻电路相同</li>
+    </ul>
+  </section>
+
+  <!-- 5.5 正弦稳态电路的相量法分析 -->
+  <section id="ch5-5">
+    <span class="section-label ch5">Chapter 5</span>
+    <h2 class="sec-title">5.5 正弦稳态电路的相量法分析</h2>
+
+    <h4>5.5.1 简单交流电路的分析</h4>
+    <div class="step-flow">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div>将时域电路转化为<br>相量模型</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div>利用阻抗串并联<br>化简电路</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div>利用KCL、KVL和<br>欧姆定律列方程</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div>求解相量并转化<br>回时域</div>
+      </div>
+    </div>
+
+    <h4>5.5.2 交流电路中的网孔法与节点法</h4>
+    <ul>
+      <li><strong>网孔法</strong>：与直流电路形式相同，只是阻抗为复数
+        $$Z_{11}\dot{I}_{m1} + Z_{12}\dot{I}_{m2} + \cdots = \dot{U}_{s11}$$</li>
+      <li><strong>节点法</strong>：与直流电路形式相同，只是导纳为复数
+        $$Y_{11}\dot{U}_{n1} + Y_{12}\dot{U}_{n2} + \cdots = \dot{I}_{s11}$$</li>
+    </ul>
+  </section>
+
+  <!-- 5.6 正弦交流电路的功率 -->
+  <section id="ch5-6">
+    <span class="section-label ch5">Chapter 5</span>
+    <h2 class="sec-title">5.6 正弦交流电路的功率</h2>
+
+    <h4>5.6.1 瞬时功率</h4>
+    <ul>
+      <li><strong>定义</strong>：$p(t) = u(t) \cdot i(t)$</li>
+      <li><strong>表达式</strong>：$p(t) = UI\cos\varphi_z - UI\cos(2\omega t + \varphi_u + \varphi_i)$
+        <ul>
+          <li>恒定分量（平均功率）+ 两倍频波动分量</li>
+        </ul>
+      </li>
+    </ul>
+  </section>
+
+  <!-- 四种功率卡片概览 -->
+  <section id="power-cards">
+    <span class="section-label ch5">Chapter 5</span>
+    <h2 class="sec-title">5.6 四种功率一览</h2>
+    <div class="param-grid">
+      <div class="param-card z-card">
+        <span class="badge">有功功率</span>
+        <div class="card-title">平均功率 P</div>
+        <div class="desc">电路实际消耗的功率，单位：瓦特（W）</div>
+        <div class="formula-mini">$P = UI\cos\varphi_z$</div>
+        <div class="conditions">
+          <span class="cond-chip">$\lambda = \cos\varphi_z$</span>
+          <span class="cond-chip">反映电能利用率</span>
+        </div>
+      </div>
+      <div class="param-card y-card">
+        <span class="badge">无功功率</span>
+        <div class="card-title">无功功率 Q</div>
+        <div class="desc">反映电场与磁场之间能量交换的规模，单位：乏（var）</div>
+        <div class="formula-mini">$Q = UI\sin\varphi_z$</div>
+        <div class="conditions">
+          <span class="cond-chip">$Q > 0$：感性</span>
+          <span class="cond-chip">$Q < 0$：容性</span>
+        </div>
+      </div>
+      <div class="param-card t-card">
+        <span class="badge">视在功率</span>
+        <div class="card-title">视在功率 S</div>
+        <div class="desc">电压与电流有效值的乘积，单位：伏安（VA）</div>
+        <div class="formula-mini">$S = UI = \sqrt{P^2 + Q^2}$</div>
+        <div class="conditions">
+          <span class="cond-chip">设备额定容量</span>
+        </div>
+      </div>
+      <div class="param-card h-card">
+        <span class="badge">复功率</span>
+        <div class="card-title">复功率 $\tilde{S}$</div>
+        <div class="desc">统一表示有功和无功功率，复功率守恒</div>
+        <div class="formula-mini">$\tilde{S} = \dot{U}\dot{I}^* = P + jQ$</div>
+        <div class="conditions">
+          <span class="cond-chip">$\sum \tilde{S} = 0$</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 功率因数提高 -->
+  <section id="power-factor">
+    <span class="section-label ch5">Chapter 5</span>
+    <h2 class="sec-title">5.6.6 电路功率因数的提高</h2>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge p-accent">功率因数</span>
+        <span class="detail-title">并联电容补偿</span>
+      </div>
+      <p><strong>意义</strong>：减小线路电流，降低传输损耗，提高设备利用率</p>
+      <p><strong>方法</strong>：并联适当的电容（补偿感性负载的无功功率）</p>
+      <div class="formula-block">
+        $$C = \frac{P(\tan\varphi_1 - \tan\varphi_2)}{\omega U^2}$$
+      </div>
+      <ul class="meaning-list">
+        <li>$\varphi_1$：补偿前的功率因数角</li>
+        <li>$\varphi_2$：补偿后的目标功率因数角</li>
+        <li>$P$：负载有功功率</li>
+        <li>$U$：电源电压有效值</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 最大功率传输 -->
+  <section id="max-power">
+    <span class="section-label ch5">Chapter 5</span>
+    <h2 class="sec-title">5.6.7 最大功率传输</h2>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge a-accent">最大功率</span>
+        <span class="detail-title">共轭匹配条件</span>
+      </div>
+      <div class="formula-block">
+        $$Z_L = Z_s^* \quad \Rightarrow \quad R_L = R_s, \; X_L = -X_s$$
+        $$P_{max} = \frac{|U_s|^2}{8R_s}$$
+      </div>
+      <ul class="meaning-list">
+        <li><strong>条件</strong>：负载阻抗等于电源内阻抗的共轭（共轭匹配）</li>
+        <li><strong>最大功率</strong>：$P_{max} = \dfrac{|U_s|^2}{8R_s}$</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 5.7 电路的频率响应 -->
+  <section id="ch5-7">
+    <span class="section-label ch5">Chapter 5</span>
+    <h2 class="sec-title">5.7 电路的频率响应</h2>
+
+    <h4>5.7.1 网络函数与频率特性</h4>
+    <ul>
+      <li><strong>网络函数</strong>：$H(j\omega) = \dfrac{\dot{Y}(j\omega)}{\dot{X}(j\omega)}$（输出相量与输入相量之比）</li>
+      <li><strong>幅频特性</strong>：$|H(j\omega)|$ 随频率变化的关系</li>
+      <li><strong>相频特性</strong>：$\arg H(j\omega)$ 随频率变化的关系</li>
+    </ul>
+
+    <div class="connect-grid">
+      <div class="connect-card">
+        <div class="cc-name">RC低通滤波电路</div>
+        <div class="cc-desc">R串联，C并联输出</div>
+        <div class="cc-formula">$H(j\omega) = \dfrac{1}{1+j\omega RC}$</div>
+        <div class="cc-desc">截止角频率：$\omega_c = 1/(RC)$</div>
+        <div class="cc-desc">低频通过，高频衰减</div>
+      </div>
+      <div class="connect-card">
+        <div class="cc-name">RC高通滤波电路</div>
+        <div class="cc-desc">C串联，R并联输出</div>
+        <div class="cc-formula">$H(j\omega) = \dfrac{j\omega RC}{1+j\omega RC}$</div>
+        <div class="cc-desc">截止角频率：$\omega_c = 1/(RC)$</div>
+        <div class="cc-desc">高频通过，低频衰减</div>
+      </div>
+    </div>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge y-accent">频率特性</span>
+        <span class="detail-title">RC低通滤波电路分析</span>
+      </div>
+      <ul class="meaning-list">
+        <li>$\omega \ll \omega_c$：$|H| \approx 1$，信号通过</li>
+        <li>$\omega = \omega_c$：$|H| = 1/\sqrt{2}$（-3dB点）</li>
+        <li>$\omega \gg \omega_c$：$|H| \to 0$，信号被抑制</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 5.8 谐振电路 -->
+  <section id="ch5-8">
+    <span class="section-label ch5">Chapter 5</span>
+    <h2 class="sec-title">5.8 谐振电路</h2>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge z-accent">串联谐振</span>
+        <span class="detail-title">5.8.1 串联谐振</span>
+      </div>
+      <p><strong>定义</strong>：R-L-C串联电路中，当感抗等于容抗时发生的谐振</p>
+      <div class="formula-block">
+        $$\omega_0 L = \frac{1}{\omega_0 C} \quad \Rightarrow \quad \omega_0 = \frac{1}{\sqrt{LC}}$$
+      </div>
+      <ul class="meaning-list">
+        <li>阻抗最小：$Z = R$（纯电阻）</li>
+        <li>电流最大：$I = U/R$</li>
+        <li>电压与电流同相（功率因数 = 1）</li>
+        <li>电感电压与电容电压大小相等、方向相反，可能远大于电源电压</li>
+        <li>品质因数：$Q = \dfrac{\omega_0 L}{R} = \dfrac{1}{\omega_0 CR}$</li>
+        <li>Q越大，谐振曲线越尖锐，选择性越好</li>
+      </ul>
+    </div>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge t-accent">并联谐振</span>
+        <span class="detail-title">5.8.2 并联谐振</span>
+      </div>
+      <p><strong>定义</strong>：R-L-C并联电路中发生的谐振</p>
+      <div class="formula-block">
+        $$\omega_0 = \frac{1}{\sqrt{LC}}$$
+      </div>
+      <ul class="meaning-list">
+        <li>导纳最小（阻抗最大）</li>
+        <li>总电流最小</li>
+        <li>各支路电流可能远大于总电流</li>
+        <li>电路呈纯电阻性</li>
+        <li>品质因数：$Q = R\sqrt{\dfrac{C}{L}} = \dfrac{R}{\omega_0 L} = \omega_0 RC$</li>
+      </ul>
+    </div>
+
+    <!-- 串并联谐振对比 -->
+    <h3 id="resonance-compare">串联谐振 vs 并联谐振</h3>
+    <div class="compare-grid compare-2col">
+      <div class="compare-cell">
+        <div class="cell-label">串联谐振</div>
+        <div class="cell-letter">串联</div>
+        <div class="cell-row">阻抗：<strong>最小</strong>（$Z=R$）</div>
+        <div class="cell-row">电流：<strong>最大</strong></div>
+        <div class="cell-row">$Q = \dfrac{\omega_0 L}{R}$</div>
+        <div class="cell-row">Q与R成<strong>反比</strong></div>
+        <div class="cell-row">R越小，损耗越小，Q越大</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">并联谐振</div>
+        <div class="cell-letter">并联</div>
+        <div class="cell-row">阻抗：<strong>最大</strong></div>
+        <div class="cell-row">总电流：<strong>最小</strong></div>
+        <div class="cell-row">$Q = \omega_0 RC$</div>
+        <div class="cell-row">Q与R成<strong>正比</strong></div>
+        <div class="cell-row">R越大，分流越小，Q越大</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- 第6章 耦合电感和理想变压器 -->
+  <!-- ═══════════════════════════════════════════════════ -->
+
+  <!-- 6.1 耦合电感 -->
+  <section id="ch6-1">
+    <span class="section-label ch6">Chapter 6</span>
+    <h2 class="sec-title">6.1 耦合电感</h2>
+
+    <h4>6.1.1 互感</h4>
+    <ul>
+      <li><strong>定义</strong>：当一个线圈中的电流变化时，不仅在本线圈中产生感应电压，还在相邻线圈中产生感应电压的现象</li>
+      <li><strong>互感系数 M</strong>：$M_{12} = M_{21} = M$</li>
+      <li><strong>耦合系数</strong>：$k = M/\sqrt{L_1 L_2}$，$0 \leq k \leq 1$
+        <ul>
+          <li>$k = 0$：无耦合</li>
+          <li>$k = 1$：全耦合（理想情况）</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h4>6.1.2 耦合电感的伏安关系</h4>
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge t-accent">伏安关系</span>
+        <span class="detail-title">时域与相量形式</span>
+      </div>
+      <p><strong>电压方程</strong>：</p>
+      <div class="formula-block">
+        $$u_1 = L_1\frac{di_1}{dt} \pm M\frac{di_2}{dt}$$
+        $$u_2 = L_2\frac{di_2}{dt} \pm M\frac{di_1}{dt}$$
+      </div>
+      <p>M前的正负号取决于电流方向与同名端的关系（同侧取正，异侧取负）</p>
+      <p><strong>相量形式</strong>：</p>
+      <div class="formula-block">
+        $$\dot{U}_1 = j\omega L_1\dot{I}_1 \pm j\omega M\dot{I}_2$$
+        $$\dot{U}_2 = j\omega L_2\dot{I}_2 \pm j\omega M\dot{I}_1$$
+      </div>
+    </div>
+
+    <h4>6.1.3 耦合电感的同名端</h4>
+    <ul>
+      <li><strong>定义</strong>：当两线圈电流同时从同名端流入（或流出）时，互感磁通与自感磁通方向相同</li>
+      <li><strong>判断方法</strong>：
+        <ul>
+          <li>标记法：用"&bull;"或"*"标记同名端</li>
+          <li>右手螺旋法则：根据绕向判断</li>
+        </ul>
+      </li>
+      <li><strong>作用</strong>：确定互感电压的正负号</li>
+    </ul>
+
+    <h4>6.1.4 耦合电感的等效电路模型</h4>
+    <ul>
+      <li><strong>去耦等效</strong>：将耦合电感用无互感的等效电路替代</li>
+      <li><strong>T型等效</strong>（同名端相连时）：等效电感分别为 $L_1-M$、$L_2-M$、$M$</li>
+      <li><strong>应用</strong>：将含互感的电路转化为无互感电路，便于分析</li>
+    </ul>
+  </section>
+
+  <!-- 6.2 含耦合电感的正弦稳态电路的分析 -->
+  <section id="ch6-2">
+    <span class="section-label ch6">Chapter 6</span>
+    <h2 class="sec-title">6.2 含耦合电感的正弦稳态电路的分析</h2>
+
+    <div class="connect-grid">
+      <div class="connect-card">
+        <div class="cc-name">6.2.1 直接列写方程法</div>
+        <div class="cc-desc">步骤：</div>
+        <div class="cc-desc">1. 设定各支路电流的参考方向</div>
+        <div class="cc-desc">2. 根据同名端确定互感电压的正负</div>
+        <div class="cc-desc">3. 列写KVL方程（注意互感电压项）</div>
+        <div class="cc-desc">4. 联立求解</div>
+      </div>
+      <div class="connect-card">
+        <div class="cc-name">6.2.2 去耦等效分析法</div>
+        <div class="cc-desc">步骤：</div>
+        <div class="cc-desc">1. 根据同名端位置，画出去耦等效电路</div>
+        <div class="cc-desc">2. 在等效电路中不含互感，可按常规方法分析</div>
+        <div class="cc-desc">3. 求解等效电路后再回到原电路</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6.3 空心变压器 -->
+  <section id="ch6-3">
+    <span class="section-label ch6">Chapter 6</span>
+    <h2 class="sec-title">6.3 空心变压器</h2>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge a-accent">空心变压器</span>
+        <span class="detail-title">电路模型与反映阻抗</span>
+      </div>
+      <p><strong>结构</strong>：两个耦合线圈绕在同一非铁磁材料骨架上</p>
+      <ul class="meaning-list">
+        <li><strong>原边</strong>：电压源 $\dot{U}_s$、电阻 $R_1$、电感 $L_1$</li>
+        <li><strong>副边</strong>：电阻 $R_2$、电感 $L_2$，互感 $M$</li>
+        <li><strong>反映阻抗</strong>：副边对原边的影响可用一个反映阻抗 $Z_r = (\omega M)^2/Z_{22}$ 表示</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 6.4 理想变压器 -->
+  <section id="ch6-4">
+    <span class="section-label ch6">Chapter 6</span>
+    <h2 class="sec-title">6.4 理想变压器</h2>
+
+    <h4>6.4.1 理想变压器的主要性能</h4>
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge h-accent">理想变压器</span>
+        <span class="detail-title">主要性能参数</span>
+      </div>
+      <p><strong>理想化条件</strong>：$k = 1$（全耦合），$L_1, L_2 \to \infty$，无损耗</p>
+      <div class="formula-block">
+        $$n = \frac{N_1}{N_2} \quad \text{（变比：匝数比）}$$
+      </div>
+      <ul class="meaning-list">
+        <li><strong>电压关系</strong>：$u_1/u_2 = n$</li>
+        <li><strong>电流关系</strong>：$i_1/i_2 = -1/n$（负号表示电流方向相反）</li>
+        <li><strong>阻抗变换</strong>：$Z_{in} = n^2 Z_L$（副边阻抗 $Z_L$ 折算到原边为 $n^2 Z_L$）</li>
+        <li><strong>功率关系</strong>：输入功率等于输出功率，$u_1 i_1 + u_2 i_2 = 0$</li>
+      </ul>
+    </div>
+
+    <h4>6.4.2 含理想变压器的电路分析</h4>
+    <div class="step-flow">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div>确定变比 n<br>和同名端</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div>列写电压电流<br>关系方程</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div>阻抗变换法：<br>副边折算到原边</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div>结合KCL/KVL<br>联立求解</div>
+      </div>
+    </div>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge t-accent">分析方法</span>
+        <span class="detail-title">两种分析方法</span>
+      </div>
+      <ul class="meaning-list">
+        <li><strong>方法一</strong>：利用电压电流关系和KCL、KVL列方程</li>
+        <li><strong>方法二</strong>：阻抗变换法（将副边阻抗折算到原边）</li>
+      </ul>
+      <div class="cond-row">
+        <span class="cond-pill t-accent">注意同名端影响电压和电流的方向关系</span>
+        <span class="cond-pill t-accent">阻抗变换时要注意同名端的位置</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+const sections = document.querySelectorAll('[id]');
+const navLinks = document.querySelectorAll('.sidebar nav a');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(a => a.classList.remove('active'));
+      const link = document.querySelector(`.sidebar nav a[href="#${entry.target.id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-15% 0px -75% 0px' });
+sections.forEach(s => { if (s.closest('.main')) observer.observe(s); });
+navLinks.forEach(a => a.addEventListener('click', () => {
+  document.querySelector('.sidebar').classList.remove('open');
+}));
+</script>
+
+</body>
+</html>

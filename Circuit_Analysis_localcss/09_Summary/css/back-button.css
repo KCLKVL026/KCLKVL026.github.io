@@ -1,0 +1,37 @@
+/* ── 返回主页按钮（替代 Tailwind 工具类） ── */
+
+/* 容器 */
+.back-btn-wrap {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 1rem;
+}
+
+/* 按钮链接 */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  color: #2563eb;
+  background-color: #eff6ff;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  text-decoration: none;
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s;
+}
+
+.back-btn:hover {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+/* SVG 图标 */
+.back-btn svg {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
