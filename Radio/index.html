@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Circuit Analysis Radio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #1a1a2e; }
+    ::-webkit-scrollbar-thumb { background: #4a4a6a; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #6a6a8a; }
+
+    /* Progress bar styling */
+    .progress-bar {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      border-radius: 2px;
+      background: #2a2a4a;
+      outline: none;
+      cursor: pointer;
+    }
+    .progress-bar::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #818cf8;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .progress-bar:hover::-webkit-slider-thumb { opacity: 1; }
+    .progress-bar::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #818cf8;
+      cursor: pointer;
+      border: none;
+    }
+
+    /* Volume slider */
+    .volume-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 80px;
+      height: 4px;
+      border-radius: 2px;
+      background: #2a2a4a;
+      outline: none;
+      cursor: pointer;
+    }
+    .volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #818cf8;
+      cursor: pointer;
+    }
+    .volume-slider::-moz-range-thumb {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #818cf8;
+      cursor: pointer;
+      border: none;
+    }
+
+    /* Playlist item hover effect */
+    .playlist-item { transition: all 0.15s ease; }
+    .playlist-item:hover { background: rgba(129, 140, 248, 0.1); }
+    .playlist-item.active { background: rgba(129, 140, 248, 0.15); border-left: 3px solid #818cf8; }
+
+    /* Button hover */
+    .ctrl-btn { transition: all 0.15s ease; }
+    .ctrl-btn:hover { color: #818cf8; transform: scale(1.1); }
+    .ctrl-btn:active { transform: scale(0.95); }
+
+    /* Loading spinner */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { animation: spin 0.8s linear infinite; }
+
+    /* Fade in animation */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeIn 0.3s ease forwards; }
+
+    /* Equalizer animation for playing indicator */
+    .eq-bar { display: inline-block; width: 2px; margin: 0 1px; background: #818cf8; border-radius: 1px; }
+    @keyframes eq { 0%, 100% { height: 4px; } 50% { height: 14px; } }
+    .eq-bar:nth-child(1) { animation: eq 0.6s ease infinite 0s; }
+    .eq-bar:nth-child(2) { animation: eq 0.6s ease infinite 0.15s; }
+    .eq-bar:nth-child(3) { animation: eq 0.6s ease infinite 0.3s; }
+  </style>
+</head>
+<body class="bg-[#0f0f1a] text-gray-200 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="px-6 py-4 border-b border-white/5">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center">
+          <svg class="w-4 h-4 text-indigo-400" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z"/>
+          </svg>
+        </div>
+        <h1 class="text-lg font-semibold">Circuit Analysis Radio</h1>
+      </div>
+      <span id="trackCount" class="text-xs text-gray-500"></span>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-4xl mx-auto w-full px-4 py-6 flex flex-col gap-6">
+
+    <!-- Player Card -->
+    <div class="bg-[#1a1a2e] rounded-2xl p-6 shadow-lg border border-white/5">
+      <!-- Now Playing -->
+      <div class="flex items-center gap-4 mb-5">
+        <div id="albumArt" class="w-16 h-16 rounded-xl bg-gradient-to-br from-indigo-500/30 to-purple-500/30 flex items-center justify-center flex-shrink-0">
+          <svg id="albumIcon" class="w-7 h-7 text-indigo-400" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z"/>
+          </svg>
+          <div id="eqIndicator" class="hidden items-end gap-px ml-2">
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+          </div>
+        </div>
+        <div class="min-w-0 flex-1">
+          <p id="nowPlayingLabel" class="text-xs text-gray-500 mb-1">Now Playing</p>
+          <p id="trackTitle" class="text-base font-medium truncate">No track selected</p>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="mb-4">
+        <input type="range" id="progressBar" class="progress-bar" min="0" max="100" value="0" step="0.1">
+        <div class="flex justify-between text-xs text-gray-500 mt-1">
+          <span id="currentTime">0:00</span>
+          <span id="duration">0:00</span>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-1">
+          <!-- Play Mode -->
+          <button id="modeBtn" class="ctrl-btn text-gray-400 p-2 rounded-lg" title="顺序播放">
+            <svg id="modeSequential" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path d="M17 2l4 4-4 4M3 11V9a4 4 0 014-4h14M7 22l-4-4 4-4M21 13v2a4 4 0 01-4 4H3"/>
+            </svg>
+            <svg id="modeSingleLoop" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path d="M17 2l4 4-4 4M3 11V9a4 4 0 014-4h14M7 22l-4-4 4-4M21 13v2a4 4 0 01-4 4H3"/>
+              <text x="12" y="15" font-size="7" fill="currentColor" stroke="none" text-anchor="middle" font-weight="bold">1</text>
+            </svg>
+            <svg id="modeListLoop" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path d="M17 2l4 4-4 4M3 11V9a4 4 0 014-4h14M7 22l-4-4 4-4M21 13v2a4 4 0 01-4 4H3"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <!-- Previous -->
+          <button id="prevBtn" class="ctrl-btn text-gray-300 p-1">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+            </svg>
+          </button>
+          <!-- Play/Pause -->
+          <button id="playBtn" class="ctrl-btn text-white w-12 h-12 rounded-full bg-indigo-500 hover:bg-indigo-400 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+            <svg id="playIcon" class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+            </svg>
+            <svg id="pauseIcon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M5.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75A.75.75 0 007.25 3h-1.5zM12.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75a.75.75 0 00-.75-.75h-1.5z"/>
+            </svg>
+          </button>
+          <!-- Next -->
+          <button id="nextBtn" class="ctrl-btn text-gray-300 p-1">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M13.7 2.841A1.5 1.5 0 0116 4.11v11.78a1.5 1.5 0 01-2.3 1.269L4.356 11.22a1.5 1.5 0 010-2.538l9.344-5.89z"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <!-- Volume icon -->
+          <button id="muteBtn" class="ctrl-btn text-gray-400 p-2">
+            <svg id="volumeOnIcon" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z"/>
+            </svg>
+            <svg id="volumeOffIcon" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM12.293 7.293a1 1 0 011.414 0L15 8.586l1.293-1.293a1 1 0 111.414 1.414L16.414 10l1.293 1.293a1 1 0 01-1.414 1.414L15 11.414l-1.293 1.293a1 1 0 01-1.414-1.414L13.586 10l-1.293-1.293a1 1 0 010-1.414z"/>
+            </svg>
+          </button>
+          <input type="range" id="volumeSlider" class="volume-slider" min="0" max="1" step="0.01" value="0.8">
+        </div>
+      </div>
+    </div>
+
+    <!-- Playlist -->
+    <div class="bg-[#1a1a2e] rounded-2xl border border-white/5 overflow-hidden flex-1 flex flex-col">
+      <div class="px-5 py-3 border-b border-white/5 flex items-center justify-between">
+        <h2 class="text-sm font-medium text-gray-400">Playlist</h2>
+        <button id="refreshBtn" class="text-xs text-gray-500 hover:text-indigo-400 transition-colors flex items-center gap-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+      <div id="playlistContainer" class="flex-1 overflow-y-auto max-h-[50vh]">
+        <!-- Loading state -->
+        <div id="loadingState" class="flex flex-col items-center justify-center py-12 text-gray-500">
+          <svg class="w-6 h-6 spinner mb-3 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          <span class="text-sm">Loading playlist...</span>
+        </div>
+        <!-- Error state -->
+        <div id="errorState" class="hidden flex flex-col items-center justify-center py-12 text-gray-500">
+          <svg class="w-8 h-8 mb-3 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+          </svg>
+          <p class="text-sm mb-2">Failed to load playlist</p>
+          <p id="errorMsg" class="text-xs text-gray-600 mb-3"></p>
+          <button onclick="loadPlaylist()" class="text-xs text-indigo-400 hover:text-indigo-300">Retry</button>
+        </div>
+        <!-- Empty state -->
+        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-12 text-gray-500">
+          <svg class="w-8 h-8 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z"/>
+          </svg>
+          <p class="text-sm">No audio files found</p>
+        </div>
+        <!-- Playlist items -->
+        <ul id="playlist" class="hidden"></ul>
+      </div>
+    </div>
+  </main>
+
+  <!-- Audio element -->
+  <audio id="audioPlayer" preload="auto"></audio>
+
+
+  <script>
+    // ==================== Config ====================
+    const GITHUB_OWNER = 'KCLKVL026';
+    const GITHUB_REPO = 'KCLKVL026.github.io';
+    const AUDIO_DIR = 'Radio/Circuit_Analysis';
+    const AUDIO_EXTS = ['.m4a', '.mp3', '.wav', '.ogg', '.flac', '.aac'];
+
+    // ==================== State ====================
+    let playlist = [];
+    let currentIndex = -1;
+    let isPlaying = false;
+    let playMode = 'sequential'; // sequential | singleLoop | listLoop
+
+    // ==================== DOM Elements ====================
+    const audio = document.getElementById('audioPlayer');
+    const playBtn = document.getElementById('playBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const modeBtn = document.getElementById('modeBtn');
+    const muteBtn = document.getElementById('muteBtn');
+    const progressBar = document.getElementById('progressBar');
+    const volumeSlider = document.getElementById('volumeSlider');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const trackTitle = document.getElementById('trackTitle');
+    const trackCount = document.getElementById('trackCount');
+    const currentTimeEl = document.getElementById('currentTime');
+    const durationEl = document.getElementById('duration');
+    const eqIndicator = document.getElementById('eqIndicator');
+    const playlistEl = document.getElementById('playlist');
+    const loadingState = document.getElementById('loadingState');
+    const errorState = document.getElementById('errorState');
+    const errorMsg = document.getElementById('errorMsg');
+    const emptyState = document.getElementById('emptyState');
+
+    // ==================== Playlist Loading ====================
+    async function loadPlaylist() {
+      loadingState.classList.remove('hidden');
+      errorState.classList.add('hidden');
+      emptyState.classList.add('hidden');
+      playlistEl.classList.add('hidden');
+      playlistEl.innerHTML = '';
+
+      try {
+        const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${AUDIO_DIR}`;
+        const response = await fetch(apiUrl);
+
+        if (!response.ok) {
+          throw new Error(`GitHub API returned ${response.status}: ${response.statusText}`);
+        }
+
+        const files = await response.json();
+        const audioFiles = files
+          .filter(f => f.type === 'file' && AUDIO_EXTS.some(ext => f.name.toLowerCase().endsWith(ext)))
+          .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+
+        loadingState.classList.add('hidden');
+
+        if (audioFiles.length === 0) {
+          emptyState.classList.remove('hidden');
+          trackCount.textContent = '0 tracks';
+          return;
+        }
+
+        playlist = audioFiles.map(f => ({
+          name: f.name,
+          displayName: f.name.replace(/\.[^.]+$/, ''),
+          url: f.download_url
+        }));
+
+        trackCount.textContent = `${playlist.length} track${playlist.length > 1 ? 's' : ''}`;
+        renderPlaylist();
+      } catch (err) {
+        loadingState.classList.add('hidden');
+        errorState.classList.remove('hidden');
+        errorMsg.textContent = err.message;
+      }
+    }
+
+    function renderPlaylist() {
+      playlistEl.innerHTML = '';
+      playlist.forEach((track, i) => {
+        const li = document.createElement('li');
+        li.className = `playlist-item flex items-center gap-3 px-5 py-3 cursor-pointer border-l-3 border-transparent ${i === currentIndex ? 'active' : ''}`;
+        li.dataset.index = i;
+        li.innerHTML = `
+          <span class="w-6 text-center text-xs ${i === currentIndex ? 'text-indigo-400 font-medium' : 'text-gray-600'}">${i + 1}</span>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm truncate ${i === currentIndex ? 'text-indigo-300' : 'text-gray-300'}">${track.displayName}</p>
+          </div>
+          ${i === currentIndex && isPlaying ? '<div class="flex items-end gap-px"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div>' : ''}
+        `;
+        li.addEventListener('click', () => playTrack(i));
+        playlistEl.appendChild(li);
+      });
+      playlistEl.classList.remove('hidden');
+    }
+
+    // ==================== Playback ====================
+    function playTrack(index) {
+      if (index < 0 || index >= playlist.length) return;
+      currentIndex = index;
+      const track = playlist[index];
+
+      audio.src = track.url;
+      audio.load();
+      audio.play().then(() => {
+        isPlaying = true;
+        updateUI();
+      }).catch(() => {});
+    }
+
+    function togglePlay() {
+      if (currentIndex === -1 && playlist.length > 0) {
+        playTrack(0);
+        return;
+      }
+      if (isPlaying) {
+        audio.pause();
+        isPlaying = false;
+      } else {
+        audio.play().then(() => { isPlaying = true; }).catch(() => {});
+      }
+      updateUI();
+    }
+
+    function playPrev() {
+      if (playlist.length === 0) return;
+      if (audio.currentTime > 3) {
+        audio.currentTime = 0;
+        return;
+      }
+      const idx = currentIndex <= 0 ? playlist.length - 1 : currentIndex - 1;
+      playTrack(idx);
+    }
+
+    function playNext() {
+      if (playlist.length === 0) return;
+      let idx;
+      if (playMode === 'singleLoop') {
+        idx = currentIndex;
+      } else if (playMode === 'listLoop') {
+        idx = (currentIndex + 1) % playlist.length;
+      } else {
+        idx = currentIndex + 1;
+        if (idx >= playlist.length) {
+          audio.pause();
+          isPlaying = false;
+          updateUI();
+          return;
+        }
+      }
+      playTrack(idx);
+    }
+
+    function cycleMode() {
+      const modes = ['sequential', 'singleLoop', 'listLoop'];
+      const modeNames = ['顺序播放', '单曲循环', '列表循环'];
+      const nextIdx = (modes.indexOf(playMode) + 1) % modes.length;
+      playMode = modes[nextIdx];
+
+      document.getElementById('modeSequential').classList.toggle('hidden', playMode !== 'sequential');
+      document.getElementById('modeSingleLoop').classList.toggle('hidden', playMode !== 'singleLoop');
+      document.getElementById('modeListLoop').classList.toggle('hidden', playMode !== 'listLoop');
+      modeBtn.title = modeNames[nextIdx];
+    }
+
+    // ==================== UI Updates ====================
+    function formatTime(s) {
+      if (isNaN(s) || !isFinite(s)) return '0:00';
+      const m = Math.floor(s / 60);
+      const sec = Math.floor(s % 60);
+      return `${m}:${sec.toString().padStart(2, '0')}`;
+    }
+
+    function updateUI() {
+      // Play/pause icons
+      document.getElementById('playIcon').classList.toggle('hidden', isPlaying);
+      document.getElementById('pauseIcon').classList.toggle('hidden', !isPlaying);
+
+      // EQ indicator
+      eqIndicator.classList.toggle('hidden', !isPlaying);
+      eqIndicator.classList.toggle('flex', isPlaying);
+
+      // Track title
+      if (currentIndex >= 0) {
+        trackTitle.textContent = playlist[currentIndex].displayName;
+      }
+
+      // Playlist active state
+      renderPlaylist();
+    }
+
+    // ==================== Event Listeners ====================
+    playBtn.addEventListener('click', togglePlay);
+    prevBtn.addEventListener('click', playPrev);
+    nextBtn.addEventListener('click', playNext);
+    modeBtn.addEventListener('click', cycleMode);
+    refreshBtn.addEventListener('click', loadPlaylist);
+
+    // Progress
+    audio.addEventListener('timeupdate', () => {
+      if (audio.duration) {
+        progressBar.value = (audio.currentTime / audio.duration) * 100;
+        currentTimeEl.textContent = formatTime(audio.currentTime);
+        durationEl.textContent = formatTime(audio.duration);
+      }
+    });
+
+    audio.addEventListener('ended', playNext);
+
+    audio.addEventListener('loadedmetadata', () => {
+      durationEl.textContent = formatTime(audio.duration);
+    });
+
+    progressBar.addEventListener('input', () => {
+      if (audio.duration) {
+        audio.currentTime = (progressBar.value / 100) * audio.duration;
+      }
+    });
+
+    // Volume
+    volumeSlider.addEventListener('input', () => {
+      audio.volume = volumeSlider.value;
+      document.getElementById('volumeOnIcon').classList.toggle('hidden', audio.volume === 0);
+      document.getElementById('volumeOffIcon').classList.toggle('hidden', audio.volume > 0);
+    });
+
+    muteBtn.addEventListener('click', () => {
+      if (audio.volume > 0) {
+        audio._prevVolume = audio.volume;
+        audio.volume = 0;
+        volumeSlider.value = 0;
+      } else {
+        audio.volume = audio._prevVolume || 0.8;
+        volumeSlider.value = audio.volume;
+      }
+      document.getElementById('volumeOnIcon').classList.toggle('hidden', audio.volume === 0);
+      document.getElementById('volumeOffIcon').classList.toggle('hidden', audio.volume > 0);
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
+      if (e.code === 'ArrowLeft') { e.preventDefault(); playPrev(); }
+      if (e.code === 'ArrowRight') { e.preventDefault(); playNext(); }
+      if (e.code === 'ArrowUp') { e.preventDefault(); audio.volume = Math.min(1, audio.volume + 0.05); volumeSlider.value = audio.volume; }
+      if (e.code === 'ArrowDown') { e.preventDefault(); audio.volume = Math.max(0, audio.volume - 0.05); volumeSlider.value = audio.volume; }
+    });
+
+    // ==================== Init ====================
+    audio.volume = 0.8;
+    loadPlaylist();
+  </script>
+</body>
+</html>

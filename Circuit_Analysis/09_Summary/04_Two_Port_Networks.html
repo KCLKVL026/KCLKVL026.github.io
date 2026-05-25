@@ -110,15 +110,31 @@
     padding-bottom: 1rem;
     border-bottom: 1px solid var(--c-border);
   }
+  /* ── Sidebar Tree Nav ── */
+  .sidebar nav {
+    font-size: 0.82rem;
+  }
+  .sidebar nav ul {
+    list-style: none;
+    margin: 0; padding: 0;
+  }
+  .sidebar nav ul ul {
+    padding-left: 0;
+    margin-left: 0.6rem;
+    border-left: 1px dashed var(--c-border);
+  }
+  .sidebar nav li {
+    position: relative;
+    margin-bottom: 1px;
+  }
   .sidebar nav a {
     display: block;
-    padding: 0.4rem 0.7rem;
+    padding: 0.3rem 0.55rem;
     color: var(--c-text-dim);
     text-decoration: none;
-    font-size: 0.83rem;
     border-radius: var(--radius-sm);
-    margin-bottom: 2px;
     transition: all 0.2s;
+    line-height: 1.55;
   }
   .sidebar nav a:hover {
     color: var(--c-text-head);
@@ -129,8 +145,42 @@
     background: var(--c-lavender);
     font-weight: 600;
   }
-  .sidebar nav a.l2 { padding-left: 1.4rem; font-size: 0.78rem; }
-  .sidebar nav a.l3 { padding-left: 2.2rem; font-size: 0.75rem; }
+  .sidebar nav .nav-chapter {
+    font-weight: 600;
+    color: var(--c-text-head);
+    font-size: 0.83rem;
+    padding: 0.35rem 0.55rem;
+    margin-top: 0.3rem;
+    cursor: pointer;
+    position: relative;
+    padding-right: 1.6rem;
+  }
+  .sidebar nav .nav-chapter::after {
+    content: '▾';
+    position: absolute;
+    right: 0.55rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.7rem;
+    color: var(--c-text-dim);
+    transition: transform 0.25s ease;
+  }
+  .sidebar nav li.collapsed > .nav-chapter::after {
+    transform: translateY(-50%) rotate(-90deg);
+  }
+  .sidebar nav li.collapsed > ul {
+    display: none;
+  }
+  .sidebar nav .nav-chapter:first-child { margin-top: 0; }
+  .sidebar nav .nav-section {
+    font-size: 0.78rem;
+    padding-left: 0.55rem;
+  }
+  .sidebar nav .nav-sub {
+    font-size: 0.75rem;
+    padding-left: 0.35rem;
+    color: var(--c-text-dim);
+  }
 
   /* ── Main ── */
   .main {
@@ -563,17 +613,32 @@
   <div class="sidebar-brand">电路分析基础</div>
   <div class="sidebar-title">单元04：双口网络</div>
   <nav>
-    <a href="#overview">知识结构总览</a>
-    <a href="#concept" class="l2">8.1 基本概念</a>
-    <a href="#params" class="l2">8.2 参数方程</a>
-    <a href="#z-detail" class="l3">Z 参数</a>
-    <a href="#y-detail" class="l3">Y 参数</a>
-    <a href="#t-detail" class="l3">T 参数</a>
-    <a href="#h-detail" class="l3">H 参数</a>
-    <a href="#compare" class="l2">参数对比</a>
-    <a href="#analysis" class="l2">8.3 电路分析</a>
-    <a href="#connections" class="l3">网络连接</a>
-    <a href="#solve-steps" class="l3">求解步骤</a>
+    <ul>
+      <li><a href="#overview">知识结构总览</a></li>
+      <li>
+        <a href="#concept" class="nav-chapter">8. 双口网络</a>
+        <ul>
+          <li><a href="#concept" class="nav-section">8.1 基本概念</a></li>
+          <li>
+            <a href="#params" class="nav-section">8.2 参数方程</a>
+            <ul>
+              <li><a href="#z-detail" class="nav-sub">Z 参数</a></li>
+              <li><a href="#y-detail" class="nav-sub">Y 参数</a></li>
+              <li><a href="#t-detail" class="nav-sub">T 参数</a></li>
+              <li><a href="#h-detail" class="nav-sub">H 参数</a></li>
+            </ul>
+          </li>
+          <li><a href="#compare" class="nav-section">参数对比</a></li>
+          <li>
+            <a href="#analysis" class="nav-section">8.3 电路分析</a>
+            <ul>
+              <li><a href="#connections" class="nav-sub">网络连接</a></li>
+              <li><a href="#solve-steps" class="nav-sub">求解步骤</a></li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
   </nav>
 </aside>
 
@@ -894,6 +959,15 @@ sections.forEach(s => { if (s.closest('.main')) observer.observe(s); });
 navLinks.forEach(a => a.addEventListener('click', () => {
   document.querySelector('.sidebar').classList.remove('open');
 }));
+
+// 章节折叠/展开
+document.querySelectorAll('.sidebar .nav-chapter').forEach(ch => {
+  ch.addEventListener('click', e => {
+    e.preventDefault();
+    const li = ch.parentElement;
+    li.classList.toggle('collapsed');
+  });
+});
 </script>
 
 </body>
