@@ -1,4 +1,4 @@
-# Welcome to My GitHub Pages Homepage
+# Welcome to My GitHub Pages
 
 Hi! I'm **kclkvl026**. This site showcases my open-source projects in circuit theory, signal analysis, and interactive simulation-based teaching.
 
