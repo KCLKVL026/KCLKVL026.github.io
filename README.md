@@ -1,36 +1,36 @@
-# 欢迎访问我的 GitHub Pages 主页
+# Welcome to My GitHub Pages Homepage
 
-你好！我是 **kclkvl026**，这里主要展示我在电路理论、信号分析与交互式仿真教学方面的开源项目。
+Hi! I'm **kclkvl026**. This site showcases my open-source projects in circuit theory, signal analysis, and interactive simulation-based teaching.
 
-## 🔌 电路分析基础辅助教学
+## 🔌 Circuit Analysis Fundamentals — Interactive Teaching
 
-我用Claude code 开发了一套面向电气、电子、自动化等相关专业的**交互式仿真教学工具**，旨在通过动态可视化帮助理解电路核心概念。所有模块均支持参数实时调节、波形/曲线即时更新，适合课堂演示与学生自主探索。
+I developed a set of **interactive simulation teaching tools** for electrical, electronics, and automation students using Claude Code. The goal is to help understand core circuit concepts through dynamic visualization. All modules support real-time parameter adjustment and instant waveform/curve updates, making them suitable for classroom demonstrations and independent student exploration.
 
-👉 **立即体验**：
+👉 **Try it now**:
 
-[电路分析基础辅助教学主页](https://kclkvl026.github.io/Circuit_Analysis/) 
+[Circuit Analysis Fundamentals Homepage](https://kclkvl026.github.io/Circuit_Analysis/)
 
-[电路分析基础辅助教学主页本地css版](https://kclkvl026.github.io/Circuit_Analysis_localcss/)
+[Circuit Analysis Fundamentals (Local CSS Version)](https://kclkvl026.github.io/Circuit_Analysis_localcss/)
 
-[Radio 电台](https://kclkvl026.github.io/Radio/)
+[Radio](https://kclkvl026.github.io/Radio/)
 
+[Analog Electronics](https://kclkvl026.github.io/Analog_Electronics/)
 
+[Digital Electronics](https://kclkvl026.github.io/Digital_Electronics/)
 
-每个模块均为独立 HTML 页面，使用现代 Web 技术（Chart.js、TailwindCSS、KaTeX 等），在电脑或平板上均可流畅运行。
+Each module is a standalone HTML page built with modern web technologies (Chart.js, TailwindCSS, KaTeX, etc.), running smoothly on both desktop and tablet.
 
-## 🛠️ 技术栈
+## 🛠️ Tech Stack
 
 - HTML5 / CSS3 / JavaScript (ES6)
-- TailwindCSS (样式框架)
-- Chart.js (图表绘制)
-- KaTeX (数学公式渲染)
+- TailwindCSS (CSS framework)
+- Chart.js (chart plotting)
+- KaTeX (math formula rendering)
 
-## 📫 联系与反馈
+## 📫 Contact & Feedback
 
-欢迎通过 GitHub Issues 提出建议或报告问题。如果你对电路、模电仿真教学感兴趣，也欢迎一起交流！
-
-
+Feel free to share suggestions or report issues via GitHub Issues. If you're interested in circuit and analog electronics simulation-based teaching, you're welcome to connect!
 
 ---
 
-*更多项目将陆续更新，敬请期待。*
+*More projects will be added soon — stay tuned.*
