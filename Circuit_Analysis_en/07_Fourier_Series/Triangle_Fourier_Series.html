@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Fourier Series · Triangle Wave Decomposition and Harmonic Superposition | 1,3,5,7,11,33,55th Harmonic Synthesis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- KaTeX math rendering -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] { height: 5px; -webkit-appearance: none; background: #e2e8f0; border-radius: 5px; outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #3b82f6; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb:hover { background: #2563eb; transform: scale(1.15); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .card-hover { transition: all 0.2s ease; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15); }
+        .phase-badge { background: #eff6ff; border-radius: 20px; padding: 0.2rem 0.7rem; font-size: 0.7rem; font-weight: 500; color: #1e40af; }
+        .wave-card { transition: all 0.2s; }
+        canvas { max-height: 280px; width: 100%; }
+        .two-columns { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+        @media (max-width: 768px) { .two-columns { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <div class="flex justify-start mb-4">
+        <a href="../index.html"
+        class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Home
+        </a>
+    </div>
+
+    <!-- Title area -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            Fourier Series · Triangle Wave Decomposition and Harmonic Superposition
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            A triangle wave can be decomposed into the superposition of odd sine harmonics (coefficients decay as \(n^2\)):<br>
+            \(f(t) = \frac{8}{\pi^2}\left(\sin\omega t - \frac{1}{9}\sin 3\omega t + \frac{1}{25}\sin 5\omega t - \frac{1}{49}\sin 7\omega t + \cdots\right)\)<br>
+            The charts below show the fundamental wave, and the process of progressively adding 3rd, 5th, 7th, 11th, 33rd, and 55th harmonics to approximate a triangle wave.
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left auxiliary info card: Fourier theory -->
+        <div class="lg:col-span-3 space-y-6">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    Fourier Series (Triangle Wave)
+                </h3>
+                <div class="text-xs text-slate-600 space-y-2">
+                    <p>Fourier series of a periodic triangle wave (amplitude \(\pm1\), peak-to-peak 2, angular frequency \(\omega=2\pi f\)):</p>
+                    <div class="bg-slate-50 p-2 rounded-md font-mono text-center">
+                        \[
+                        f(t) = \frac{8}{\pi^2} \sum_{n=1,3,5,\ldots}^{\infty} \frac{(-1)^{\frac{n-1}{2}}}{n^2} \sin(n\omega t)
+                        \]
+                    </div>
+                    <p class="mt-2">• Fundamental component: \(\frac{8}{\pi^2}\sin(\omega t)\) ≈ \(0.8106\sin(\omega t)\)<br>
+                    • 3rd harmonic: \(-\frac{8}{9\pi^2}\sin(3\omega t)\) ≈ \(-0.09007\sin(3\omega t)\)<br>
+                    • 5th harmonic: \(\frac{8}{25\pi^2}\sin(5\omega t)\) ≈ \(0.03242\sin(5\omega t)\)<br>
+                    • 7th harmonic: \(-\frac{8}{49\pi^2}\sin(7\omega t)\) ≈ \(-0.01654\sin(7\omega t)\)<br>
+                    As harmonics increase, the synthesized waveform approaches the ideal triangle wave. Since coefficients decay as \(1/n^2\), convergence is faster than for the square wave, and the Gibbs phenomenon is less pronounced.</p>
+                </div>
+                <div class="mt-3 text-xs text-blue-600 bg-indigo-50 p-2 rounded-lg">
+                    📌 Horizontal axis is time \(t\) (seconds), fundamental frequency \(f = 1\,\text{Hz}\), showing two complete periods.
+                </div>
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-2 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-blue-500 rounded-full"></span>
+                    Key Observations
+                </h3>
+                <ul class="text-xs text-slate-600 space-y-1 list-disc pl-4">
+                    <li>The fundamental is a sine wave with amplitude ~0.81, same frequency as the original triangle wave.</li>
+                    <li>Adding the 3rd harmonic, the waveform begins to show a "triangle wave" outline with curved top.</li>
+                    <li>Continuing to add 5th and 7th harmonics, the waveform approaches linear rising/falling segments, top becomes flatter.</li>
+                    <li>Adding 11th, 33rd, and 55th harmonics, the waveform edges become steeper, top linearity improves, and Gibbs overshoot is extremely small.</li>
+                    <li>Higher harmonics yield more precise synthesis, with convergence much faster than for the square wave.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Right 8 waveform cards, two per row -->
+        <div class="lg:col-span-9">
+            <div class="two-columns">
+                <!-- 1. Ideal triangle wave (reference) -->
+                <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 wave-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-indigo-700 text-base">① Ideal Triangle Wave (Reference)</h4>
+                        <span class="phase-badge text-xs">Amplitude ±1 V</span>
+                    </div>
+                    <div class="relative" style="height: 260px;">
+                        <canvas id="triangleWaveChart" width="500" height="260" style="width:100%; height:100%;"></canvas>
+                    </div>
+                    <p class="text-center text-xs text-slate-500 mt-2">Ideal triangle wave, symmetric linear rise/fall, peak-to-peak 2V</p>
+                </div>
+
+                <!-- 2. Fundamental (1st harmonic) -->
+                <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 wave-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-emerald-700 text-base">② Fundamental Component (1st Harmonic)</h4>
+                        <span class="phase-badge text-xs">Amplitude 8/π² ≈ 0.8106</span>
+                    </div>
+                    <div class="relative" style="height: 260px;">
+                        <canvas id="fundamentalChart" width="500" height="260" style="width:100%; height:100%;"></canvas>
+                    </div>
+                    <p class="text-center text-xs text-slate-500 mt-2">\(f_1(t)=\frac{8}{\pi^2}\sin(\omega t)\), a single sine wave</p>
+                </div>
+
+                <!-- 3. Fundamental + 3rd harmonic -->
+                <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 wave-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-amber-700 text-base">③ Fundamental + 3rd Harmonic</h4>
+                        <span class="phase-badge text-xs">1st + 3rd</span>
+                    </div>
+                    <div class="relative" style="height: 260px;">
+                        <canvas id="fund3Chart" width="500" height="260" style="width:100%; height:100%;"></canvas>
+                    </div>
+                    <p class="text-center text-xs text-slate-500 mt-2">Top begins to flatten, rise/fall segments curve</p>
+                </div>
+
+                <!-- 4. Fundamental + 3rd + 5th harmonics -->
+                <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 wave-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-orange-700 text-base">④ Fundamental + 3rd + 5th Harmonics</h4>
+                        <span class="phase-badge text-xs">1+3+5th</span>
+                    </div>
+                    <div class="relative" style="height: 260px;">
+                        <canvas id="fund35Chart" width="500" height="260" style="width:100%; height:100%;"></canvas>
+                    </div>
+                    <p class="text-center text-xs text-slate-500 mt-2">Closer to triangle wave, straight segments approach linearity</p>
+                </div>
+
+                <!-- 5. Fundamental + 3rd + 5th + 7th harmonics -->
+                <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 wave-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-red-700 text-base">⑤ Fundamental + 3rd + 5th + 7th Harmonics</h4>
+                        <span class="phase-badge text-xs">1+3+5+7th</span>
+                    </div>
+                    <div class="relative" style="height: 260px;">
+                        <canvas id="fund357Chart" width="500" height="260" style="width:100%; height:100%;"></canvas>
+                    </div>
+                    <p class="text-center text-xs text-slate-500 mt-2">Further approximation, flat top, improved linearity of rising edge</p>
+                </div>
+
+                <!-- 6. Fundamental + 3+5+7+9+11th harmonics (1~11 odd) -->
+                <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 wave-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-purple-700 text-base">⑥ Fundamental + 3+5+7+9+11th Harmonics</h4>
+                        <span class="phase-badge text-xs">1+3+5+7+9+11th</span>
+                    </div>
+                    <div class="relative" style="height: 260px;">
+                        <canvas id="fund11Chart" width="500" height="260" style="width:100%; height:100%;"></canvas>
+                    </div>
+                    <p class="text-center text-xs text-slate-500 mt-2">Rising edge straighter, top ripple extremely fine</p>
+                </div>
+
+                <!-- 7. Fundamental ~ 33rd harmonic (odd harmonics up to 33rd) -->
+                <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 wave-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-pink-700 text-base">⑦ Fundamental ~ 33rd Harmonic (Odd)</h4>
+                        <span class="phase-badge text-xs">1+3+5+...+33rd</span>
+                    </div>
+                    <div class="relative" style="height: 260px;">
+                        <canvas id="fund33Chart" width="500" height="260" style="width:100%; height:100%;"></canvas>
+                    </div>
+                    <p class="text-center text-xs text-slate-500 mt-2">Nearly perfect triangle wave, high-order harmonics contribute minimally</p>
+                </div>
+
+                <!-- 8. Fundamental ~ 55th harmonic (odd harmonics up to 55th) -->
+                <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 wave-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-rose-700 text-base">⑧ Fundamental ~ 55th Harmonic (Odd)</h4>
+                        <span class="phase-badge text-xs">1+3+5+...+55th</span>
+                    </div>
+                    <div class="relative" style="height: 260px;">
+                        <canvas id="fund55Chart" width="500" height="260" style="width:100%; height:100%;"></canvas>
+                    </div>
+                    <p class="text-center text-xs text-slate-500 mt-2">Extremely high-order harmonics, waveform nearly coincides with ideal triangle wave</p>
+                </div>
+            </div>
+            <div class="mt-4 text-center text-xs text-slate-400 bg-white/60 rounded-lg p-2">
+                💡 The triangle wave Fourier series decays as \(1/n^2\), converging much faster than the square wave (\(1/n\)). Therefore, the finite-term synthesis waveform is much closer to the original waveform, and the Gibbs phenomenon is nearly invisible.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Fourier series parameters: fundamental frequency 1 Hz, display two complete periods (0 ~ 2 seconds)
+    const f0 = 1;               // Fundamental frequency 1 Hz
+    const omega = 2 * Math.PI * f0;   // Angular frequency 2π rad/s
+    const T = 1 / f0;          // Period 1 second
+    const duration = 2 * T;     // Display 2 periods, 2 seconds total
+    const points = 1200;        // Sample points for smoothness
+
+    // Generate time axis
+    const times = [];
+    const dt = duration / (points - 1);
+    for (let i = 0; i < points; i++) {
+        times.push(i * dt);
+    }
+
+    // Ideal triangle wave (amplitude ±1, symmetric linear variation)
+    function idealTriangle(t) {
+        const phase = (t % T) / T;   // 0~1
+        if (phase < 0.25) {
+            return 4 * phase;            // 0 -> 1
+        } else if (phase < 0.75) {
+            return 2 - 4 * phase;        // 1 -> -1
+        } else {
+            return 4 * phase - 4;        // -1 -> 0
+        }
+    }
+
+    // Triangle wave Fourier series: odd harmonics, alternating signs, coefficient 8/(n²π²) * (-1)^((n-1)/2)
+    function sumOddHarmonicsTriangle(t, maxN) {
+        let sum = 0;
+        for (let n = 1; n <= maxN; n += 2) {
+            const sign = ( (n-1)/2 % 2 === 0 ) ? 1 : -1;   // (-1)^((n-1)/2)
+            const coeff = (8 / (Math.PI * Math.PI)) * sign / (n * n);
+            sum += coeff * Math.sin(n * omega * t);
+        }
+        return sum;
+    }
+
+    // Precompute waveform arrays
+    const triangleData = times.map(t => idealTriangle(t));
+    const fundData = times.map(t => sumOddHarmonicsTriangle(t, 1));          // Fundamental only
+    const fund3Data = times.map(t => sumOddHarmonicsTriangle(t, 3));         // 1+3
+    const fund35Data = times.map(t => sumOddHarmonicsTriangle(t, 5));        // 1+3+5
+    const fund357Data = times.map(t => sumOddHarmonicsTriangle(t, 7));       // 1+3+5+7
+    const fund11Data = times.map(t => sumOddHarmonicsTriangle(t, 11));       // 1+3+5+7+9+11
+    const fund33Data = times.map(t => sumOddHarmonicsTriangle(t, 33));       // 1+3+...+33
+    const fund55Data = times.map(t => sumOddHarmonicsTriangle(t, 55));       // 1+3+...+55
+
+    // Build {x, y} point sets
+    const trianglePoints = times.map((t, idx) => ({ x: t, y: triangleData[idx] }));
+    const fundPoints = times.map((t, idx) => ({ x: t, y: fundData[idx] }));
+    const fund3Points = times.map((t, idx) => ({ x: t, y: fund3Data[idx] }));
+    const fund35Points = times.map((t, idx) => ({ x: t, y: fund35Data[idx] }));
+    const fund357Points = times.map((t, idx) => ({ x: t, y: fund357Data[idx] }));
+    const fund11Points = times.map((t, idx) => ({ x: t, y: fund11Data[idx] }));
+    const fund33Points = times.map((t, idx) => ({ x: t, y: fund33Data[idx] }));
+    const fund55Points = times.map((t, idx) => ({ x: t, y: fund55Data[idx] }));
+
+    // Triangle wave amplitude range -1 ~ 1, synthesis also in this range, y-axis range -1.2 ~ 1.2 with margin
+    const yMin = -1.2;
+    const yMax = 1.2;
+
+    const commonOptions = (yMinVal, yMaxVal, yLabel = 'Voltage (V)') => ({
+        responsive: true,
+        maintainAspectRatio: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return `${context.dataset.label || 'Waveform'}: ${context.raw.y.toFixed(3)} V @ t = ${context.raw.x.toFixed(3)} s`;
+                    }
+                },
+                backgroundColor: 'rgba(0,0,0,0.7)',
+            },
+            legend: {
+                position: 'top',
+                labels: { font: { size: 10 }, boxWidth: 8, usePointStyle: true }
+            }
+        },
+        scales: {
+            x: {
+                type: 'linear',
+                title: { display: true, text: 'Time t (s)', font: { size: 10, weight: 'bold' } },
+                ticks: { callback: (val) => val.toFixed(1) + 's', maxTicksLimit: 5 },
+                min: 0,
+                max: duration,
+                grid: { color: '#eef2ff' }
+            },
+            y: {
+                title: { display: true, text: yLabel, font: { size: 10, weight: 'bold' } },
+                min: yMinVal,
+                max: yMaxVal,
+                ticks: { callback: (val) => val.toFixed(1) },
+                grid: { color: '#eef2ff' }
+            }
+        },
+        elements: {
+            point: { radius: 0, hitRadius: 5, hoverRadius: 2 },
+            line: { tension: 0.2, borderWidth: 2 }
+        }
+    });
+
+    // Initialize all charts
+    let triangleChart, fundChart, fund3Chart, fund35Chart, fund357Chart, fund11Chart, fund33Chart, fund55Chart;
+
+    const ctxTriangle = document.getElementById('triangleWaveChart').getContext('2d');
+    triangleChart = new Chart(ctxTriangle, {
+        type: 'line',
+        data: { datasets: [{ label: 'Ideal Triangle Wave (Reference)', data: trianglePoints, borderColor: '#3b82f6', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.2 }] },
+        options: commonOptions(yMin, yMax, 'Amplitude (V)')
+    });
+
+    const ctxFund = document.getElementById('fundamentalChart').getContext('2d');
+    fundChart = new Chart(ctxFund, {
+        type: 'line',
+        data: { datasets: [{ label: 'Fundamental (1st Harmonic)', data: fundPoints, borderColor: '#10b981', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.2 }] },
+        options: commonOptions(yMin, yMax, 'Amplitude (V)')
+    });
+
+    const ctxFund3 = document.getElementById('fund3Chart').getContext('2d');
+    fund3Chart = new Chart(ctxFund3, {
+        type: 'line',
+        data: { datasets: [{ label: 'Fundamental + 3rd Harmonic', data: fund3Points, borderColor: '#f59e0b', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.2 }] },
+        options: commonOptions(yMin, yMax, 'Amplitude (V)')
+    });
+
+    const ctxFund35 = document.getElementById('fund35Chart').getContext('2d');
+    fund35Chart = new Chart(ctxFund35, {
+        type: 'line',
+        data: { datasets: [{ label: 'Fundamental + 3rd + 5th Harmonic', data: fund35Points, borderColor: '#ea580c', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.2 }] },
+        options: commonOptions(yMin, yMax, 'Amplitude (V)')
+    });
+
+    const ctxFund357 = document.getElementById('fund357Chart').getContext('2d');
+    fund357Chart = new Chart(ctxFund357, {
+        type: 'line',
+        data: { datasets: [{ label: 'Fundamental + 3+5+7th Harmonic', data: fund357Points, borderColor: '#dc2626', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.2 }] },
+        options: commonOptions(yMin, yMax, 'Amplitude (V)')
+    });
+
+    const ctxFund11 = document.getElementById('fund11Chart').getContext('2d');
+    fund11Chart = new Chart(ctxFund11, {
+        type: 'line',
+        data: { datasets: [{ label: 'Fundamental + 3+5+7+9+11th Harmonic', data: fund11Points, borderColor: '#8b5cf6', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.2 }] },
+        options: commonOptions(yMin, yMax, 'Amplitude (V)')
+    });
+
+    const ctxFund33 = document.getElementById('fund33Chart').getContext('2d');
+    fund33Chart = new Chart(ctxFund33, {
+        type: 'line',
+        data: { datasets: [{ label: 'Fundamental ~ 33rd Odd Harmonic', data: fund33Points, borderColor: '#ec489a', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.2 }] },
+        options: commonOptions(yMin, yMax, 'Amplitude (V)')
+    });
+
+    const ctxFund55 = document.getElementById('fund55Chart').getContext('2d');
+    fund55Chart = new Chart(ctxFund55, {
+        type: 'line',
+        data: { datasets: [{ label: 'Fundamental ~ 55th Odd Harmonic', data: fund55Points, borderColor: '#f43f5e', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.2 }] },
+        options: commonOptions(yMin, yMax, 'Amplitude (V)')
+    });
+
+    // Window resize adaptation
+    window.addEventListener('resize', () => {
+        [triangleChart, fundChart, fund3Chart, fund35Chart, fund357Chart, fund11Chart, fund33Chart, fund55Chart].forEach(chart => {
+            if (chart) chart.resize();
+        });
+    });
+
+    // KaTeX rendering
+    window.addEventListener('load', function() {
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '\\(', right: '\\)', display: false}
+                ],
+                throwOnError: false
+            });
+        } else {
+            console.warn('KaTeX auto-render not loaded, formulas will display as text');
+        }
+    });
+</script>
+</body>
+</html>

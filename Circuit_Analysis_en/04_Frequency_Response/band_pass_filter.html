@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>RLC Band-Pass Filter | Magnitude & Phase Response Simulation | Passband Marking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- KaTeX math formula rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #2563eb;
+            transform: scale(1.15);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15);
+        }
+        .jump-btn {
+            transition: all 0.15s ease;
+            background-color: #3b82f6;
+        }
+        .jump-btn:hover {
+            background-color: #2563eb;
+            transform: scale(1.02);
+        }
+        .jump-btn:active {
+            transform: scale(0.96);
+        }
+        .band-btn {
+            transition: all 0.15s ease;
+            background-color: #10b981;
+        }
+        .band-btn:hover {
+            background-color: #059669;
+            transform: scale(1.02);
+        }
+        .band-btn:active {
+            transform: scale(0.96);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- Back to Home button -->
+    <div class="flex justify-start mb-4">
+        <a href="../index.html"
+           class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Home
+        </a>
+    </div>
+
+    <!-- Title area -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            RLC Series Band-Pass Filter - Frequency Response Simulation
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            Adjust resistance \(R\), inductance \(L\), and capacitance \(C\) to observe output voltage magnitude and phase response | Input voltage \(V_{in}=1\ \text{V}\) (peak)
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left Control Panel -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- Parameter Card: R, L, C -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    Circuit Parameter Adjustment
+                </h3>
+
+                <!-- Resistance R: 20Ohm ~ 20kOhm -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Resistance \(R\)</label>
+                        <span class="text-blue-600 font-mono" id="r_val_display">1.0 kΩ</span>
+                    </div>
+                    <input type="range" id="r_slider" min="20" max="20000" step="1" value="1000" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>20 Ω</span><span>20 kΩ</span>
+                    </div>
+                </div>
+
+                <!-- Inductance L: 0.1 mH ~ 100 mH -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Inductance \(L\)</label>
+                        <span class="text-blue-600 font-mono" id="l_val_display">50.0 mH</span>
+                    </div>
+                    <input type="range" id="l_slider" min="0.1" max="100" step="0.1" value="50" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>0.1 mH</span><span>100 mH</span>
+                    </div>
+                </div>
+
+                <!-- Capacitance C: 0.001uF ~ 1uF -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Capacitance \(C\)</label>
+                        <span class="text-blue-600 font-mono" id="c_val_display">0.500 μF</span>
+                    </div>
+                    <input type="range" id="c_slider" min="0.001" max="1" step="0.001" value="0.5" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>0.001 μF</span><span>1 μF</span>
+                    </div>
+                </div>
+
+                <!-- Marker frequency f: 1Hz ~ 1MHz -->
+                <div class="mb-3 pt-2 border-t border-slate-100">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Marker Frequency \(f\)</label>
+                        <span class="text-blue-600 font-mono" id="f_point_display">1.00 kHz</span>
+                    </div>
+                    <input type="range" id="f_point_slider" min="1" max="1000000" step="1" value="1000" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>1 Hz</span><span>1 MHz</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2 flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Purple vertical line marks the current frequency; both charts display values at this point synchronously
+                    </p>
+                </div>
+            </div>
+
+            <!-- Characteristic Parameters Card + Mark Center Frequency + Mark Passband dual buttons -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-purple-500 rounded-full"></span>
+                    Filter Characteristic Parameters
+                </h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">Center Frequency \(f_0\)</span>
+                        <span class="font-mono font-bold text-indigo-700" id="f0_display">— Hz</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">Quality Factor \(Q\)</span>
+                        <span class="font-mono font-bold text-indigo-700" id="q_display">—</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">Bandwidth \(BW = f_0 / Q\)</span>
+                        <span class="font-mono font-bold text-indigo-700" id="bw_display">— Hz</span>
+                    </div>
+
+                    <!-- New: Passband upper and lower frequency limits (always calculated and displayed based on current parameters) -->
+                    <div class="flex justify-between items-center p-2 bg-emerald-50 rounded-lg border-l-4 border-emerald-400">
+                        <span class="text-slate-700 text-sm font-medium">Lower Frequency \(f_L\) (-3dB)</span>
+                        <span class="font-mono font-bold text-emerald-700" id="fl_display">— Hz</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-emerald-50 rounded-lg border-l-4 border-emerald-400">
+                        <span class="text-slate-700 text-sm font-medium">Upper Frequency \(f_H\) (-3dB)</span>
+                        <span class="font-mono font-bold text-emerald-700" id="fh_display">— Hz</span>
+                    </div>
+
+                    <div class="pt-2 flex flex-wrap gap-3 justify-center">
+                        <button id="jumpToF0Btn" class="jump-btn text-white text-sm font-medium px-5 py-2 rounded-full shadow-md flex items-center gap-2 transition focus:outline-none focus:ring-2 focus:ring-blue-300">
+                            Mark Center Frequency
+                        </button>
+                        <button id="markBandBtn" class="band-btn text-white text-sm font-medium px-5 py-2 rounded-full shadow-md flex items-center gap-2 transition focus:outline-none focus:ring-2 focus:ring-green-300">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            Mark Passband
+                        </button>
+                    </div>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-3 text-center">
+                    * Click the button to move the purple marker line to the center frequency \(f_0\);<br>
+                    * Click "Mark Passband" to show green dashed boundaries (\(f_L\) / \(f_H\)), dynamically updated with parameters.
+                </p>
+            </div>
+
+            <!-- Current frequency output characteristics card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-amber-500 rounded-full"></span>
+                    Output at Current Frequency \(f\)
+                </h3>
+                <div class="grid grid-cols-2 gap-3 text-center">
+                    <div class="bg-blue-50 p-3 rounded-xl">
+                        <div class="text-xs text-blue-700 font-semibold">Output Voltage \(V_{out}\)</div>
+                        <div class="text-xl font-bold text-blue-600" id="vout_point">0.00 V</div>
+                        <div class="text-[10px] text-blue-500 mt-1">Magnitude (Vin=1V)</div>
+                    </div>
+                    <div class="bg-emerald-50 p-3 rounded-xl">
+                        <div class="text-xs text-emerald-700 font-semibold">Phase Shift \(\varphi\)</div>
+                        <div class="text-xl font-bold text-emerald-600" id="phase_point">0.0°</div>
+                        <div class="text-[10px] text-emerald-500 mt-1">Output relative to input</div>
+                    </div>
+                </div>
+                <div class="mt-3 text-center text-xs text-slate-500 bg-slate-50 rounded-lg p-2">
+                    Transfer Function: \(H(s) = \dfrac{sRC}{s^2 LC + sRC + 1}\)
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Graph Area -->
+        <div class="lg:col-span-8 space-y-5">
+            <!-- Magnitude Response Chart -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 transition-all">
+                <div class="flex flex-wrap justify-between items-center mb-2 px-2">
+                    <div class="flex items-center gap-3 text-sm">
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-red-500 rounded-full"></div><span class="font-medium">Magnitude Response \(|H(f)|\)</span></div>
+                        <div class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Output Voltage / Input Voltage</div>
+                    </div>
+                    <div class="text-xs text-slate-400">X-axis: Logarithmic Frequency (Hz)</div>
+                </div>
+                <div class="relative">
+                    <canvas id="magChart" width="800" height="320" style="width:100%; height:auto; max-height: 320px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-1">
+                    Band-Pass Magnitude Response | Maximum gain (1 V) at center frequency, attenuated on both sides
+                </div>
+            </div>
+
+            <!-- Phase Response Chart -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 transition-all">
+                <div class="flex flex-wrap justify-between items-center mb-2 px-2">
+                    <div class="flex items-center gap-3 text-sm">
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-indigo-500 rounded-full"></div><span class="font-medium">Phase Response \(\angle H(f)\)</span></div>
+                        <div class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Phase Response</div>
+                    </div>
+                    <div class="text-xs text-slate-400">X-axis: Logarithmic Frequency (Hz)</div>
+                </div>
+                <div class="relative">
+                    <canvas id="phaseChart" width="800" height="320" style="width:100%; height:auto; max-height: 320px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-1">
+                    Band-Pass Phase Response | Transitions from +90° to -90°, 0° at center frequency
+                </div>
+            </div>
+
+            <!-- Explanation Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">Theoretical Basis</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Series RLC circuit, output voltage taken across the resistor:<br>
+                        \(H(s) = \dfrac{sRC}{s^2 LC + sRC + 1}\).<br>
+                        Center frequency \(f_0 = \dfrac{1}{2\pi\sqrt{LC}}\), where gain is maximum (1V).<br>
+                        Quality factor \(Q = \dfrac{1}{R}\sqrt{\dfrac{L}{C}}\), bandwidth \(BW = f_0 / Q\).<br>
+                        Phase: \(\varphi(f) = 90° - \arctan\left(\dfrac{2\pi f RC}{1 - (2\pi f)^2 LC}\right)\).<br>
+                        Passband boundaries (-3dB points): \(f_L = f_0\left(\sqrt{1+\frac{1}{4Q^2}}-\frac{1}{2Q}\right),\ f_H = f_0\left(\sqrt{1+\frac{1}{4Q^2}}+\frac{1}{2Q}\right)\).
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">Characteristic Interpretation</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        • Band-pass characteristic: signals pass only near the center frequency; both high and low frequencies are attenuated.<br>
+                        • Phase smoothly transitions from +90° (low frequency) to -90° (high frequency), with 0° at the center frequency.<br>
+                        • Adjusting \(R, L, C\) changes the center frequency and bandwidth; higher \(Q\) means sharper selectivity.<br>
+                        • Click "Mark Center Frequency" to automatically position the purple marker line at \(f_0\).<br>
+                        • Click "Mark Passband" to show green dashed lines at the -3dB upper and lower frequency limits \(f_L, f_H\), dynamically updated with parameters.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // DOM elements
+    const rSlider = document.getElementById('r_slider');
+    const lSlider = document.getElementById('l_slider');
+    const cSlider = document.getElementById('c_slider');
+    const fPointSlider = document.getElementById('f_point_slider');
+
+    const rDisplay = document.getElementById('r_val_display');
+    const lDisplay = document.getElementById('l_val_display');
+    const cDisplay = document.getElementById('c_val_display');
+    const fPointDisplay = document.getElementById('f_point_display');
+
+    const f0Display = document.getElementById('f0_display');
+    const qDisplay = document.getElementById('q_display');
+    const bwDisplay = document.getElementById('bw_display');
+    const flDisplay = document.getElementById('fl_display');
+    const fhDisplay = document.getElementById('fh_display');
+    const voutPointSpan = document.getElementById('vout_point');
+    const phasePointSpan = document.getElementById('phase_point');
+
+    const magCanvas = document.getElementById('magChart');
+    const phaseCanvas = document.getElementById('phaseChart');
+
+    let magChartInstance = null;
+    let phaseChartInstance = null;
+
+    const Vin = 1.0;
+    const F_MIN = 1;
+    const F_MAX = 1000000;
+    const NUM_POINTS = 550;
+
+    // Global flag: whether to show passband marker lines (green dashed)
+    let showBandpassMarkers = false;
+
+    // Generate logarithmic frequency array
+    function generateLogFrequencies(minFreq, maxFreq, points) {
+        const freqs = [];
+        const minLog = Math.log10(minFreq);
+        const maxLog = Math.log10(maxFreq);
+        for (let i = 0; i < points; i++) {
+            const logVal = minLog + (i / (points - 1)) * (maxLog - minLog);
+            freqs.push(Math.pow(10, logVal));
+        }
+        return freqs;
+    }
+
+    // Band-pass transfer function: H(s) = sRC / (s^2 LC + sRC + 1), s = j*omega
+    function computeBandpassResponse(freq, R, L, C) {
+        const omega = 2 * Math.PI * freq;
+        const omega2 = omega * omega;
+        const RC = R * C;
+        const LC = L * C;
+        const numReal = 0;
+        const numImag = omega * RC;
+        const denReal = 1 - omega2 * LC;
+        const denImag = omega * RC;
+        const denominatorSq = denReal * denReal + denImag * denImag;
+        if (denominatorSq < 1e-12) return { mag: 0, phase: 0 };
+        const H_real = (numReal * denReal + numImag * denImag) / denominatorSq;
+        const H_imag = (numImag * denReal - numReal * denImag) / denominatorSq;
+        const mag = Math.sqrt(H_real * H_real + H_imag * H_imag);
+        let phase = Math.atan2(H_imag, H_real) * 180 / Math.PI;
+        return { mag: mag * Vin, phase: phase };
+    }
+
+    // Calculate center frequency f0, quality factor Q, bandwidth BW
+    function computeBandpassParams(R, L, C) {
+        if (L <= 0 || C <= 0) return { f0: 0, Q: 0, BW: 0 };
+        const f0 = 1 / (2 * Math.PI * Math.sqrt(L * C));
+        const Q = (1 / R) * Math.sqrt(L / C);
+        const BW = f0 / Q;
+        return { f0, Q, BW };
+    }
+
+    // Precisely calculate passband upper and lower frequency limits (-3dB points)
+    function computeBandEdges(f0, Q) {
+        if (f0 <= 0 || Q <= 0) return { fLow: 0, fHigh: 0 };
+        const sqrtTerm = Math.sqrt(1 + 1 / (4 * Q * Q));
+        const fLow = f0 * (sqrtTerm - 1 / (2 * Q));
+        const fHigh = f0 * (sqrtTerm + 1 / (2 * Q));
+        // Boundary protection (within 1Hz ~ 1MHz range, out-of-range doesn't affect marking but values are still valid)
+        return { fLow: Math.max(1e-6, fLow), fHigh: fHigh };
+    }
+
+    function getCurrentParams() {
+        let R = parseFloat(rSlider.value);
+        let L = parseFloat(lSlider.value) * 1e-3; // mH -> H
+        let C = parseFloat(cSlider.value) * 1e-6; // uF -> F
+        const f_marker = parseFloat(fPointSlider.value);
+        if (isNaN(R)) R = 1000;
+        if (isNaN(L)) L = 0.01;
+        if (isNaN(C)) C = 0.1e-6;
+        return { R, L, C, f_marker };
+    }
+
+    function updateParameterDisplays(R, L, C) {
+        if (R >= 1000) rDisplay.innerText = `${(R/1000).toFixed(1)} kΩ`;
+        else rDisplay.innerText = `${R.toFixed(0)} Ω`;
+        lDisplay.innerText = `${(L*1000).toFixed(1)} mH`;
+        const c_uF = C * 1e6;
+        if (c_uF >= 1) cDisplay.innerText = `${c_uF.toFixed(3)} μF`;
+        else cDisplay.innerText = `${(c_uF * 1000).toFixed(2)} nF`;
+    }
+
+    function updateCharDisplaysAndEdges(R, L, C) {
+        const { f0, Q, BW } = computeBandpassParams(R, L, C);
+        if (isFinite(f0) && f0 > 0) {
+            if (f0 >= 1000) f0Display.innerText = `${(f0/1000).toFixed(2)} kHz`;
+            else f0Display.innerText = `${f0.toFixed(1)} Hz`;
+            qDisplay.innerText = Q.toFixed(2);
+            if (BW >= 1000) bwDisplay.innerText = `${(BW/1000).toFixed(2)} kHz`;
+            else bwDisplay.innerText = `${BW.toFixed(1)} Hz`;
+
+            // Calculate and display passband upper and lower limits (always displayed)
+            const { fLow, fHigh } = computeBandEdges(f0, Q);
+            if (isFinite(fLow) && fLow > 0) {
+                if (fLow >= 1000) flDisplay.innerText = `${(fLow/1000).toFixed(2)} kHz`;
+                else flDisplay.innerText = `${fLow.toFixed(1)} Hz`;
+            } else flDisplay.innerText = '—';
+            if (isFinite(fHigh) && fHigh > 0) {
+                if (fHigh >= 1000) fhDisplay.innerText = `${(fHigh/1000).toFixed(2)} kHz`;
+                else fhDisplay.innerText = `${fHigh.toFixed(1)} Hz`;
+            } else fhDisplay.innerText = '—';
+        } else {
+            f0Display.innerText = '—';
+            qDisplay.innerText = '—';
+            bwDisplay.innerText = '—';
+            flDisplay.innerText = '—';
+            fhDisplay.innerText = '—';
+        }
+    }
+
+    function updateMarkerValues(R, L, C, f_marker) {
+        const { mag, phase } = computeBandpassResponse(f_marker, R, L, C);
+        voutPointSpan.innerText = `${mag.toFixed(3)} V`;
+        phasePointSpan.innerText = `${phase.toFixed(1)}°`;
+        if (f_marker >= 1000000) fPointDisplay.innerText = `${(f_marker/1000000).toFixed(2)} MHz`;
+        else if (f_marker >= 1000) fPointDisplay.innerText = `${(f_marker/1000).toFixed(2)} kHz`;
+        else fPointDisplay.innerText = `${f_marker.toFixed(0)} Hz`;
+    }
+
+    function buildMagPhaseData(R, L, C) {
+        const freqs = generateLogFrequencies(F_MIN, F_MAX, NUM_POINTS);
+        const magData = [];
+        const phaseData = [];
+        for (let i = 0; i < freqs.length; i++) {
+            const f = freqs[i];
+            const { mag, phase } = computeBandpassResponse(f, R, L, C);
+            magData.push({ x: f, y: mag });
+            phaseData.push({ x: f, y: phase });
+        }
+        return { freqs, magData, phaseData };
+    }
+
+    // Get all currently active marker lines (purple center frequency marker + green passband upper/lower limits)
+    function getActiveMarkers(R, L, C) {
+        const markers = [];
+        // 1. Purple marker: current marker frequency (from slider)
+        const markerFreq = parseFloat(fPointSlider.value);
+        if (isFinite(markerFreq) && markerFreq >= F_MIN && markerFreq <= F_MAX) {
+            markers.push({
+                freq: markerFreq,
+                color: '#a855f7',
+                lineWidth: 2,
+                dash: [6, 8],
+                label: 'f_marker',
+                showDot: true
+            });
+        }
+        // 2. Passband green dashed lines (if activated)
+        if (showBandpassMarkers) {
+            const { f0, Q } = computeBandpassParams(R, L, C);
+            if (f0 > 0 && Q > 0) {
+                const { fLow, fHigh } = computeBandEdges(f0, Q);
+                // Add lower frequency marker (within valid range)
+                if (isFinite(fLow) && fLow >= F_MIN && fLow <= F_MAX) {
+                    markers.push({
+                        freq: fLow,
+                        color: '#10b981',
+                        lineWidth: 2,
+                        dash: [8, 6],
+                        label: 'f_L',
+                        showDot: true
+                    });
+                }
+                // Add upper frequency marker
+                if (isFinite(fHigh) && fHigh >= F_MIN && fHigh <= F_MAX) {
+                    markers.push({
+                        freq: fHigh,
+                        color: '#10b981',
+                        lineWidth: 2,
+                        dash: [8, 6],
+                        label: 'f_H',
+                        showDot: true
+                    });
+                }
+            }
+        }
+        return markers;
+    }
+
+    // Custom plugin: draw multiple marker lines (supports dots and text)
+    function createMarkersPlugin(markersGetter) {
+        return {
+            id: 'dynamicMarkers',
+            afterDraw(chart) {
+                const markers = markersGetter();
+                if (!markers || markers.length === 0) return;
+                const { ctx, chartArea: { left, right, top, bottom }, scales } = chart;
+                if (!scales.x) return;
+
+                ctx.save();
+                markers.forEach(marker => {
+                    const xPos = scales.x.getPixelForValue(marker.freq);
+                    if (xPos >= left && xPos <= right) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = marker.color;
+                        ctx.lineWidth = marker.lineWidth || 2;
+                        ctx.setLineDash(marker.dash || [6, 8]);
+                        ctx.moveTo(xPos, top);
+                        ctx.lineTo(xPos, bottom);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+
+                        // Draw a small dot at the top + brief label
+                        if (marker.showDot) {
+                            ctx.beginPath();
+                            ctx.arc(xPos, top + 10, 4, 0, 2 * Math.PI);
+                            ctx.fillStyle = marker.color;
+                            ctx.fill();
+                            ctx.fillStyle = 'white';
+                            ctx.font = 'bold 9px "Segoe UI"';
+                            ctx.fillText('●', xPos-2, top+12);
+                            ctx.fillStyle = marker.color;
+                            ctx.font = 'bold 10px monospace';
+                            let shortLabel = '';
+                            if (marker.label === 'f_marker') {
+                                let freqVal = marker.freq;
+                                if (freqVal >= 1e6) shortLabel = (freqVal/1e6).toFixed(1)+'M';
+                                else if (freqVal >= 1e3) shortLabel = (freqVal/1e3).toFixed(1)+'k';
+                                else shortLabel = freqVal.toFixed(1)+'Hz';
+                                ctx.fillText(`${shortLabel}`, xPos+5, top+14);
+                            } else if (marker.label === 'f_L') {
+                                let freqVal = marker.freq;
+                                if (freqVal >= 1e6) shortLabel = (freqVal/1e6).toFixed(1)+'M';
+                                else if (freqVal >= 1e3) shortLabel = (freqVal/1e3).toFixed(1)+'k';
+                                else shortLabel = freqVal.toFixed(1)+'Hz';
+                                ctx.fillText(`fL ${shortLabel}`, xPos+5, top+14);
+                            } else if (marker.label === 'f_H') {
+                                let freqVal = marker.freq;
+                                if (freqVal >= 1e6) shortLabel = (freqVal/1e6).toFixed(1)+'M';
+                                else if (freqVal >= 1e3) shortLabel = (freqVal/1e3).toFixed(1)+'k';
+                                else shortLabel = freqVal.toFixed(1)+'Hz';
+                                ctx.fillText(`fH ${shortLabel}`, xPos+5, top+14);
+                            }
+                        }
+                    }
+                });
+                ctx.restore();
+            }
+        };
+    }
+
+    function updateMagChart(R, L, C) {
+        const { magData } = buildMagPhaseData(R, L, C);
+        let maxMag = 0;
+        magData.forEach(p => { if (p.y > maxMag) maxMag = p.y; });
+        const yMax = Math.min(1.2, Math.max(1.05, maxMag * 1.05));
+
+        if (magChartInstance) {
+            // Refresh data
+            magChartInstance.data.datasets[0].data = magData;
+            // Update Y-axis range
+            magChartInstance.options.scales.y.max = yMax;
+            magChartInstance.update('none');
+        } else {
+            const options = {
+                responsive: true,
+                maintainAspectRatio: true,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Output Voltage: ${context.raw.y.toFixed(3)} V  @ ${context.raw.x.toFixed(1)} Hz`;
+                            }
+                        },
+                        backgroundColor: 'rgba(0,0,0,0.7)'
+                    },
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        type: 'logarithmic',
+                        title: { display: true, text: 'Frequency f (Hz)', font: { weight: 'bold', size: 12 } },
+                        ticks: {
+                            callback: (val) => {
+                                if (val >= 1000000) return (val/1000000).toFixed(0) + 'M';
+                                if (val >= 1000) return (val/1000).toFixed(0) + 'k';
+                                return val;
+                            },
+                            autoSkip: true,
+                            maxTicksLimit: 8
+                        },
+                        min: F_MIN,
+                        max: F_MAX,
+                        grid: { color: '#eef2ff' }
+                    },
+                    y: {
+                        title: { display: true, text: 'Output Voltage Magnitude (V)', font: { weight: 'bold', size: 12 } },
+                        min: 0,
+                        max: yMax,
+                        ticks: { stepSize: 0.2, callback: (val) => val.toFixed(1) + ' V' },
+                        grid: { color: '#eef2ff' }
+                    }
+                },
+                elements: { point: { radius: 0, hitRadius: 6 }, line: { borderWidth: 2.5, tension: 0.2 } }
+            };
+
+            const datasets = [{
+                label: '|H(f)| · Vin',
+                data: magData,
+                borderColor: '#ef4444',
+                backgroundColor: 'transparent',
+                borderWidth: 2.5,
+                pointRadius: 0,
+                fill: false
+            }];
+
+            magChartInstance = new Chart(magCanvas, {
+                type: 'line',
+                data: { datasets },
+                options: options,
+                plugins: [createMarkersPlugin(() => getActiveMarkers(getCurrentParams().R, getCurrentParams().L, getCurrentParams().C))]
+            });
+        }
+    }
+
+    function updatePhaseChart(R, L, C) {
+        const { phaseData } = buildMagPhaseData(R, L, C);
+        let minPhase = 0, maxPhase = 0;
+        phaseData.forEach(p => {
+            if (p.y < minPhase) minPhase = p.y;
+            if (p.y > maxPhase) maxPhase = p.y;
+        });
+        const yMin = Math.min(-100, minPhase - 10);
+        const yMax = Math.max(100, maxPhase + 10);
+
+        if (phaseChartInstance) {
+            // Refresh data
+            phaseChartInstance.data.datasets[0].data = phaseData;
+            // Update Y-axis range
+            phaseChartInstance.options.scales.y.min = yMin;
+            phaseChartInstance.options.scales.y.max = yMax;
+            phaseChartInstance.update('none');
+        } else {
+            const options = {
+                responsive: true,
+                maintainAspectRatio: true,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Phase Angle: ${context.raw.y.toFixed(1)}°  @ ${context.raw.x.toFixed(1)} Hz`;
+                            }
+                        },
+                        backgroundColor: 'rgba(0,0,0,0.7)'
+                    },
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        type: 'logarithmic',
+                        title: { display: true, text: 'Frequency f (Hz)', font: { weight: 'bold', size: 12 } },
+                        ticks: {
+                            callback: (val) => {
+                                if (val >= 1000000) return (val/1000000).toFixed(0) + 'M';
+                                if (val >= 1000) return (val/1000).toFixed(0) + 'k';
+                                return val;
+                            },
+                            autoSkip: true,
+                            maxTicksLimit: 8
+                        },
+                        min: F_MIN,
+                        max: F_MAX,
+                        grid: { color: '#eef2ff' }
+                    },
+                    y: {
+                        title: { display: true, text: 'Phase Angle (degrees)', font: { weight: 'bold', size: 12 } },
+                        min: yMin,
+                        max: yMax,
+                        ticks: { stepSize: 30, callback: (val) => val + '°' },
+                        grid: { color: '#eef2ff' }
+                    }
+                },
+                elements: { point: { radius: 0, hitRadius: 6 }, line: { borderWidth: 2.5, borderColor: '#6366f1', tension: 0.2 } }
+            };
+
+            const datasets = [{
+                label: 'Phase ∠H(f)',
+                data: phaseData,
+                borderColor: '#6366f1',
+                backgroundColor: 'transparent',
+                borderWidth: 2.5,
+                pointRadius: 0,
+                fill: false
+            }];
+
+            phaseChartInstance = new Chart(phaseCanvas, {
+                type: 'line',
+                data: { datasets },
+                options: options,
+                plugins: [createMarkersPlugin(() => getActiveMarkers(getCurrentParams().R, getCurrentParams().L, getCurrentParams().C))]
+            });
+        }
+    }
+
+    function refreshAll() {
+        const { R, L, C, f_marker } = getCurrentParams();
+        updateParameterDisplays(R, L, C);
+        updateCharDisplaysAndEdges(R, L, C);
+        updateMarkerValues(R, L, C, f_marker);
+
+        updateMagChart(R, L, C);
+        updatePhaseChart(R, L, C);
+    }
+
+    function jumpToCenterFrequency() {
+        const { R, L, C } = getCurrentParams();
+        if (L <= 0 || C <= 0) return;
+        const { f0 } = computeBandpassParams(R, L, C);
+        if (!isFinite(f0) || f0 <= 0) return;
+        let targetFreq = Math.min(F_MAX, Math.max(F_MIN, f0));
+        targetFreq = Math.round(targetFreq);
+        fPointSlider.value = targetFreq;
+        // Synchronously update marker frequency display (ensure slider label matches center frequency)
+        if (targetFreq >= 1000000) fPointDisplay.innerText = `${(targetFreq/1000000).toFixed(2)} MHz`;
+        else if (targetFreq >= 1000) fPointDisplay.innerText = `${(targetFreq/1000).toFixed(2)} kHz`;
+        else fPointDisplay.innerText = `${targetFreq.toFixed(0)} Hz`;
+        refreshAll();
+    }
+
+    function enableBandpassMarkers() {
+        showBandpassMarkers = true;
+        refreshAll();
+    }
+
+    // Event binding
+    rSlider.addEventListener('input', refreshAll);
+    lSlider.addEventListener('input', refreshAll);
+    cSlider.addEventListener('input', refreshAll);
+    fPointSlider.addEventListener('input', refreshAll);
+
+    const jumpBtn = document.getElementById('jumpToF0Btn');
+    if (jumpBtn) jumpBtn.addEventListener('click', (e) => { e.preventDefault(); jumpToCenterFrequency(); });
+
+    const markBandBtn = document.getElementById('markBandBtn');
+    if (markBandBtn) markBandBtn.addEventListener('click', (e) => { e.preventDefault(); enableBandpassMarkers(); });
+
+    window.addEventListener('resize', () => {
+        if (magChartInstance) magChartInstance.resize();
+        if (phaseChartInstance) phaseChartInstance.resize();
+        refreshAll();
+    });
+
+    refreshAll();
+
+    document.addEventListener("DOMContentLoaded", function() {
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '\\(', right: '\\)', display: false},
+                ],
+                throwOnError: false
+            });
+        }
+    });
+
+    console.log('RLC Band-Pass Filter simulation started | Magnitude + Phase real-time update | Supports passband marking (green dashed lines)');
+</script>
+</body>
+</html>

@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Ideal Transformer Simulation | Voltage-Current Transformation and Impedance Transformation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #2563eb;
+            transform: scale(1.15);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15);
+        }
+        .verify-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        .verify-pass {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .verify-fail {
+            background: #fef2f2;
+            color: #991b1b;
+        }
+        .step-tag {
+            display: inline-block;
+            background: #dbeafe;
+            color: #1e40af;
+            font-size: 0.65rem;
+            padding: 1px 6px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-left: 4px;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- Back to Home button -->
+    <div class="flex justify-start mb-4">
+        <a href="../index.html"
+           class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Home
+        </a>
+    </div>
+
+    <!-- Title area -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            Ideal Transformer · Voltage-Current Transformation and Impedance Transformation
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            Transformer with adjustable turns ratio \(n = N_2/N_1\) | Side-by-side display of primary and secondary voltage/current waveforms<br>
+            <span class="text-xs text-indigo-500">Verify \(V_2/V_1 = n\)，\(I_2/I_1 = 1/n\)，impedance transformation \(Z_{in} = Z_L / n^2\)</span>
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left control panel -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- Parameter adjustment card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    Transformer Parameters
+                </h3>
+
+                <!-- Turns ratio n -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Turns Ratio \(n = N_2/N_1\)</label>
+                        <span class="text-blue-600 font-mono" id="n_display">2.0</span>
+                    </div>
+                    <input type="range" id="n_slider" min="0.1" max="5" step="0.1" value="2.0" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>0.1 (Step-down)</span><span>5.0 (Step-up)</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">
+                        <span id="step_label">\(n > 1\): Step-up transformer</span>
+                    </p>
+                </div>
+
+                <!-- Primary voltage V1 RMS -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Primary Voltage \(V_1\) (RMS)</label>
+                        <span class="text-blue-600 font-mono" id="v1_display">100 V</span>
+                    </div>
+                    <input type="range" id="v1_slider" min="10" max="250" step="5" value="100" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 V</span><span>250 V</span>
+                    </div>
+                </div>
+
+                <!-- Frequency f -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Frequency \(f\)</label>
+                        <span class="text-blue-600 font-mono" id="f_display">50 Hz</span>
+                    </div>
+                    <input type="range" id="f_slider" min="40" max="60" step="1" value="50" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>40 Hz</span><span>60 Hz</span>
+                    </div>
+                </div>
+
+                <!-- Load resistance RL -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Load Resistance \(R_L\)</label>
+                        <span class="text-blue-600 font-mono" id="rl_display">500 Ω</span>
+                    </div>
+                    <input type="range" id="rl_slider" min="10" max="5000" step="10" value="500" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Ω</span><span>5000 Ω</span>
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-100 my-4"></div>
+
+                <!-- Display mode switch -->
+                <div class="mb-4">
+                    <label class="text-sm font-medium block mb-2">Value Display Mode</label>
+                    <div class="flex gap-2">
+                        <button id="btn_rms" class="flex-1 py-2 px-3 rounded-lg text-sm font-medium cursor-pointer" style="background:#3b82f6; color:white; border:2px solid #2563eb; transition:all 0.2s;">RMS</button>
+                        <button id="btn_peak" class="flex-1 py-2 px-3 rounded-lg text-sm font-medium cursor-pointer" style="background:#f1f5f9; color:#64748b; border:2px solid #e2e8f0; transition:all 0.2s;">Peak</button>
+                    </div>
+                </div>
+
+                <!-- Reset button -->
+                <div class="mt-6 flex justify-center">
+                    <button id="resetBtn" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-full shadow-md transition flex items-center gap-2" style="transition: all 0.2s;">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        Reset Parameters
+                    </button>
+                </div>
+            </div>
+
+            <!-- Theory card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-purple-500 rounded-full"></span>
+                    Theoretical Relations
+                </h3>
+                <div class="space-y-2 text-sm">
+                    <div class="bg-slate-50 p-2 rounded-lg flex justify-between">
+                        <span>\(V_2 = n \cdot V_1\)</span>
+                        <span class="font-mono text-blue-600 font-bold" id="v2_theory">— V</span>
+                    </div>
+                    <div class="bg-slate-50 p-2 rounded-lg flex justify-between">
+                        <span>\(I_2 = I_1 / n\)</span>
+                        <span class="font-mono text-green-600 font-bold" id="i2_theory">— A</span>
+                    </div>
+                    <div class="bg-slate-50 p-2 rounded-lg flex justify-between">
+                        <span>\(Z_{in} = R_L / n^2\)</span>
+                        <span class="font-mono text-orange-600 font-bold" id="zin_theory">— Ω</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actual values card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-cyan-500 rounded-full"></span>
+                    Actual Values <span id="display_mode_tag" class="text-xs text-slate-400 font-normal">(RMS)</span>
+                </h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-slate-50 p-2 rounded-lg">
+                        <div class="text-xs text-slate-500">\(V_1\)</div>
+                        <div class="font-mono text-blue-600 text-sm font-bold" id="v1_actual">—</div>
+                    </div>
+                    <div class="bg-slate-50 p-2 rounded-lg">
+                        <div class="text-xs text-slate-500">\(V_2\)</div>
+                        <div class="font-mono text-red-600 text-sm font-bold" id="v2_actual">—</div>
+                    </div>
+                    <div class="bg-slate-50 p-2 rounded-lg">
+                        <div class="text-xs text-slate-500">\(I_1\)</div>
+                        <div class="font-mono text-green-600 text-sm font-bold" id="i1_actual">—</div>
+                    </div>
+                    <div class="bg-slate-50 p-2 rounded-lg">
+                        <div class="text-xs text-slate-500">\(I_2\)</div>
+                        <div class="font-mono text-orange-600 text-sm font-bold" id="i2_actual">—</div>
+                    </div>
+                    <div class="bg-slate-50 p-2 rounded-lg">
+                        <div class="text-xs text-slate-500">\(P_{in}\)</div>
+                        <div class="font-mono text-indigo-600 text-sm font-bold" id="pin_actual">—</div>
+                    </div>
+                    <div class="bg-slate-50 p-2 rounded-lg">
+                        <div class="text-xs text-slate-500">\(P_{out}\)</div>
+                        <div class="font-mono text-indigo-600 text-sm font-bold" id="pout_actual">—</div>
+                    </div>
+                    <div class="bg-slate-50 p-2 rounded-lg col-span-2">
+                        <div class="text-xs text-slate-500">\(Z_{in}\) (Reflected Impedance)</div>
+                        <div class="font-mono text-orange-600 text-sm font-bold" id="zin_actual">—</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right waveform area -->
+        <div class="lg:col-span-8 space-y-6">
+            <!-- Voltage waveform card -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="flex justify-between items-center flex-wrap mb-2">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                        <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                        <h3 class="font-bold text-slate-800 text-lg">Voltage Waveforms · \(v_1(t)\) and \(v_2(t)\)</h3>
+                    </div>
+                    <span class="text-xs text-slate-500 font-mono" id="v_ratio_label">\(V_2/V_1 = n\)</span>
+                </div>
+                <div class="relative">
+                    <canvas id="voltageChart" width="700" height="260" style="width:100%; height:auto; max-height:280px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-1">
+                    🔵 Primary voltage \(v_1(t)\) &nbsp;|&nbsp; 🔴 Secondary voltage \(v_2(t)\) &nbsp;|&nbsp; Ideal transformer voltages are in phase, amplitude ratio = \(n\)
+                </div>
+            </div>
+
+            <!-- Current waveform card -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="flex justify-between items-center flex-wrap mb-2">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <div class="w-3 h-3 bg-orange-500 rounded-full"></div>
+                        <h3 class="font-bold text-slate-800 text-lg">Current Waveforms · \(i_1(t)\) and \(i_2(t)\)</h3>
+                    </div>
+                    <span class="text-xs text-slate-500 font-mono" id="i_ratio_label">\(I_1/I_2 = n\)</span>
+                </div>
+                <div class="relative">
+                    <canvas id="currentChart" width="700" height="260" style="width:100%; height:auto; max-height:280px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-1">
+                    🟢 Primary current \(i_1(t)\) &nbsp;|&nbsp; 🟠 Secondary current \(i_2(t)\) &nbsp;|&nbsp; Ideal transformer currents are in phase, amplitude ratio = \(1/n\)
+                </div>
+            </div>
+
+            <!-- Verification card -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <h3 class="font-bold text-slate-800 flex items-center gap-2 mb-3">
+                    <span class="w-3 h-3 bg-emerald-500 rounded-full inline-block"></span>
+                    Relation Verification
+                </h3>
+                <div class="flex justify-between gap-2 text-sm">
+                    <div class="flex-1 flex items-center justify-between p-2 bg-slate-50 rounded-lg">
+                        <span>\(V_2 / V_1 = n\)</span>
+                        <span id="verify_v" class="verify-badge">—</span>
+                    </div>
+                    <div class="flex-1 flex items-center justify-between p-2 bg-slate-50 rounded-lg">
+                        <span>\(I_1 / I_2 = n\)</span>
+                        <span id="verify_i" class="verify-badge">—</span>
+                    </div>
+                    <div class="flex-1 flex items-center justify-between p-2 bg-slate-50 rounded-lg">
+                        <span>\(P_{out} = P_{in}\)</span>
+                        <span id="verify_p" class="verify-badge">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Theory and characteristics cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">📐 Ideal Transformer Theory</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        \(V_2/V_1 = N_2/N_1 = n\)<br>
+                        \(I_2/I_1 = N_1/N_2 = 1/n\)<br>
+                        \(Z_{in} = V_1/I_1 = Z_L / n^2\) (reflected impedance)<br>
+                        Ideal transformer has no loss: \(P_{in} = P_{out}\)
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">⚡ Characteristics and Key Observations</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        • Ideal transformer maintains constant power; voltage and current transformations are reciprocals.<br>
+                        • \(n > 1\) step-up: secondary voltage increases, current decreases.<br>
+                        • \(n < 1\) step-down: secondary voltage decreases, current increases.<br>
+                        • Reflected impedance \(Z_{in}\) depends on load \(R_L\) and turns ratio \(n\).
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // DOM element bindings
+    const nSlider = document.getElementById('n_slider');
+    const v1Slider = document.getElementById('v1_slider');
+    const fSlider = document.getElementById('f_slider');
+    const rlSlider = document.getElementById('rl_slider');
+    const btnRMS = document.getElementById('btn_rms');
+    const btnPeak = document.getElementById('btn_peak');
+    const resetBtn = document.getElementById('resetBtn');
+
+    const nDisplay = document.getElementById('n_display');
+    const v1Display = document.getElementById('v1_display');
+    const fDisplay = document.getElementById('f_display');
+    const rlDisplay = document.getElementById('rl_display');
+    const stepLabel = document.getElementById('step_label');
+    const displayModeTag = document.getElementById('display_mode_tag');
+
+    const v2Theory = document.getElementById('v2_theory');
+    const i2Theory = document.getElementById('i2_theory');
+    const zinTheory = document.getElementById('zin_theory');
+
+    const v1Actual = document.getElementById('v1_actual');
+    const v2Actual = document.getElementById('v2_actual');
+    const i1Actual = document.getElementById('i1_actual');
+    const i2Actual = document.getElementById('i2_actual');
+    const pinActual = document.getElementById('pin_actual');
+    const poutActual = document.getElementById('pout_actual');
+    const zinActual = document.getElementById('zin_actual');
+
+    const verifyV = document.getElementById('verify_v');
+    const verifyI = document.getElementById('verify_i');
+    const verifyP = document.getElementById('verify_p');
+    const vRatioLabel = document.getElementById('v_ratio_label');
+    const iRatioLabel = document.getElementById('i_ratio_label');
+
+    const voltageCanvas = document.getElementById('voltageChart');
+    const currentCanvas = document.getElementById('currentChart');
+
+    let voltageChart = null;
+    let currentChart = null;
+
+    const PERIODS = 2.0;
+    const POINTS = 500;
+
+    // Display mode: 'rms' or 'peak'
+    let displayMode = 'rms';
+
+    const DEFAULTS = {
+        n: 2.0,
+        V1_rms: 100,
+        f: 50,
+        RL: 500
+    };
+
+    function getParams() {
+        const n = parseFloat(nSlider.value);
+        const V1_rms = parseFloat(v1Slider.value);
+        const f = parseFloat(fSlider.value);
+        const RL = parseFloat(rlSlider.value);
+        const V1_peak = V1_rms * Math.sqrt(2);
+        const V2_rms = n * V1_rms;
+        const V2_peak = V2_rms * Math.sqrt(2);
+        const I2_rms = V2_rms / RL;
+        const I2_peak = I2_rms * Math.sqrt(2);
+        const I1_rms = I2_rms * n;  // I1 = n * I2 (since I2/I1 = 1/n => I1 = n*I2)
+        const I1_peak = I1_rms * Math.sqrt(2);
+        const P_out = V2_rms * I2_rms;
+        const P_in = V1_rms * I1_rms;
+        const Z_in = RL / (n * n);
+        return { n, V1_rms, f, RL, V1_peak, V2_rms, V2_peak, I1_rms, I1_peak, I2_rms, I2_peak, P_in, P_out, Z_in };
+    }
+
+    function updateDisplays() {
+        const p = getParams();
+        nDisplay.innerText = p.n.toFixed(1);
+        v1Display.innerText = Math.round(p.V1_rms) + ' V';
+        fDisplay.innerText = p.f + ' Hz';
+        rlDisplay.innerText = Math.round(p.RL) + ' Ω';
+
+        // Step label
+        if (p.n > 1.05) stepLabel.innerText = 'n > 1: Step-up transformer';
+        else if (p.n < 0.95) stepLabel.innerText = 'n < 1: Step-down transformer';
+        else stepLabel.innerText = 'n ≈ 1: Isolation transformer';
+
+        // Theory values (always RMS)
+        v2Theory.innerText = p.V2_rms.toFixed(1) + ' V';
+        i2Theory.innerText = p.I2_rms.toFixed(3) + ' A';
+        zinTheory.innerText = p.Z_in.toFixed(1) + ' Ω';
+
+        // Actual values based on display mode
+        let v1Str, v2Str, i1Str, i2Str;
+        if (displayMode === 'rms') {
+            v1Str = p.V1_rms.toFixed(0) + ' V';
+            v2Str = p.V2_rms.toFixed(0) + ' V';
+            i1Str = p.I1_rms.toFixed(3) + ' A';
+            i2Str = p.I2_rms.toFixed(3) + ' A';
+        } else {
+            v1Str = p.V1_peak.toFixed(1) + ' V';
+            v2Str = p.V2_peak.toFixed(1) + ' V';
+            i1Str = p.I1_peak.toFixed(3) + ' A';
+            i2Str = p.I2_peak.toFixed(3) + ' A';
+        }
+        v1Actual.innerText = v1Str;
+        v2Actual.innerText = v2Str;
+        i1Actual.innerText = i1Str;
+        i2Actual.innerText = i2Str;
+        pinActual.innerText = p.P_in.toFixed(1) + ' W';
+        poutActual.innerText = p.P_out.toFixed(1) + ' W';
+        zinActual.innerText = p.Z_in.toFixed(1) + ' Ω';
+
+        // Verification
+        const actualVRatio = p.V2_rms / p.V1_rms;
+        const actualIRatio = p.I1_rms / p.I2_rms;
+        const tolerance = 0.001;
+
+        const vOK = Math.abs(actualVRatio - p.n) < tolerance;
+        const iOK = Math.abs(actualIRatio - p.n) < tolerance;
+        const pOK = Math.abs(p.P_in - p.P_out) < 0.01;
+
+        verifyV.className = vOK ? 'verify-badge verify-pass' : 'verify-badge verify-fail';
+        verifyV.innerText = vOK ? '✓ ' + actualVRatio.toFixed(2) + ' = ' + p.n.toFixed(1) : '✗ ' + actualVRatio.toFixed(2) + ' != ' + p.n.toFixed(1);
+
+        verifyI.className = iOK ? 'verify-badge verify-pass' : 'verify-badge verify-fail';
+        verifyI.innerText = iOK ? '✓ ' + actualIRatio.toFixed(2) + ' = ' + p.n.toFixed(1) : '✗ ' + actualIRatio.toFixed(2) + ' != ' + p.n.toFixed(1);
+
+        verifyP.className = pOK ? 'verify-badge verify-pass' : 'verify-badge verify-fail';
+        verifyP.innerText = pOK ? '✓ P_in = P_out = ' + p.P_in.toFixed(1) + ' W' : '✗ P_in != P_out';
+
+        // Chart ratio labels
+        vRatioLabel.innerText = 'V₂/V₁ = ' + actualVRatio.toFixed(2) + '  (n = ' + p.n.toFixed(1) + ')';
+        iRatioLabel.innerText = 'I₁/I₂ = ' + actualIRatio.toFixed(2) + '  (n = ' + p.n.toFixed(1) + ')';
+    }
+
+    function generateTimeAxis(f) {
+        const T = 1 / f;
+        const tMax = PERIODS * T;
+        const dt = tMax / (POINTS - 1);
+        const times = [];
+        for (let i = 0; i < POINTS; i++) times.push(i * dt);
+        return times;
+    }
+
+    function updateAllCharts() {
+        const p = getParams();
+        updateDisplays();
+
+        const times = generateTimeAxis(p.f);
+        const xMax = times[times.length - 1];
+        const omega = 2 * Math.PI * p.f;
+
+        // Voltage waveforms
+        const v1Data = times.map(t => p.V1_peak * Math.sin(omega * t));
+        const v2Data = times.map(t => p.V2_peak * Math.sin(omega * t));
+
+        // Current waveforms
+        const i1Data = times.map(t => p.I1_peak * Math.sin(omega * t));
+        const i2Data = times.map(t => p.I2_peak * Math.sin(omega * t));
+
+        const v1Points = times.map((t, i) => ({ x: t, y: v1Data[i] }));
+        const v2Points = times.map((t, i) => ({ x: t, y: v2Data[i] }));
+        const i1Points = times.map((t, i) => ({ x: t, y: i1Data[i] }));
+        const i2Points = times.map((t, i) => ({ x: t, y: i2Data[i] }));
+
+        // Y-axis ranges for voltage
+        const vAll = [...v1Data, ...v2Data];
+        const vAbsMax = Math.max(...vAll.map(v => Math.abs(v))) * 1.15;
+        const vYMax = vAbsMax === 0 ? 0.1 : vAbsMax;
+        const vYMin = -vYMax;
+
+        // Y-axis ranges for current
+        const iAll = [...i1Data, ...i2Data];
+        const iAbsMax = Math.max(...iAll.map(v => Math.abs(v))) * 1.15;
+        const iYMax = iAbsMax === 0 ? 0.1 : iAbsMax;
+        const iYMin = -iYMax;
+
+        // Common chart options factory
+        function chartOptions(xMax, yMin, yMax, yLabel) {
+            return {
+                responsive: true,
+                maintainAspectRatio: true,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.dataset.label || '';
+                                const val = context.raw.y;
+                                let unit = ' V';
+                                if (label.includes('i₁') || label.includes('i₂')) unit = ' A';
+                                return label + ': ' + val.toFixed(3) + unit + ' @ t = ' + context.raw.x.toFixed(4) + ' s';
+                            }
+                        },
+                        backgroundColor: 'rgba(0,0,0,0.7)',
+                    },
+                    legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } } }
+                },
+                scales: {
+                    x: {
+                        type: 'linear',
+                        title: { display: true, text: 'Time t (s)', font: { weight: 'bold', size: 11 } },
+                        ticks: { callback: (val) => val.toFixed(3) + 's', maxTicksLimit: 6 },
+                        min: 0,
+                        max: xMax,
+                        grid: { color: '#eef2ff' }
+                    },
+                    y: {
+                        title: { display: true, text: yLabel, font: { weight: 'bold', size: 11 } },
+                        min: yMin,
+                        max: yMax,
+                        ticks: { callback: (val) => val.toFixed(2) },
+                        grid: { color: '#eef2ff' }
+                    }
+                },
+                elements: { point: { radius: 0, hitRadius: 6, hoverRadius: 3 }, line: { tension: 0.2, borderWidth: 2.5 } }
+            };
+        }
+
+        // --- Voltage Chart ---
+        const vDatasets = [
+            { label: 'v₁(t) (V)', data: v1Points, borderColor: '#3b82f6', backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: 0, tension: 0.2 },
+            { label: 'v₂(t) (V)', data: v2Points, borderColor: '#ef4444', backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: 0, tension: 0.2 }
+        ];
+
+        if (voltageChart) {
+            voltageChart.data.datasets = vDatasets;
+            voltageChart.options.scales.y.min = vYMin;
+            voltageChart.options.scales.y.max = vYMax;
+            voltageChart.options.scales.x.max = xMax;
+            voltageChart.update('none');
+        } else {
+            voltageChart = new Chart(voltageCanvas, {
+                type: 'line',
+                data: { datasets: vDatasets },
+                options: chartOptions(xMax, vYMin, vYMax, 'Voltage (V)')
+            });
+        }
+
+        // --- Current Chart ---
+        const iDatasets = [
+            { label: 'i₁(t) (A)', data: i1Points, borderColor: '#22c55e', backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: 0, tension: 0.2, borderDash: [6, 4] },
+            { label: 'i₂(t) (A)', data: i2Points, borderColor: '#f97316', backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: 0, tension: 0.2, borderDash: [6, 4] }
+        ];
+
+        if (currentChart) {
+            currentChart.data.datasets = iDatasets;
+            currentChart.options.scales.y.min = iYMin;
+            currentChart.options.scales.y.max = iYMax;
+            currentChart.options.scales.x.max = xMax;
+            currentChart.update('none');
+        } else {
+            currentChart = new Chart(currentCanvas, {
+                type: 'line',
+                data: { datasets: iDatasets },
+                options: chartOptions(xMax, iYMin, iYMax, 'Current (A)')
+            });
+        }
+    }
+
+    function setDisplayMode(mode) {
+        displayMode = mode;
+        if (mode === 'rms') {
+            btnRMS.style.background = '#3b82f6';
+            btnRMS.style.color = 'white';
+            btnRMS.style.borderColor = '#2563eb';
+            btnPeak.style.background = '#f1f5f9';
+            btnPeak.style.color = '#64748b';
+            btnPeak.style.borderColor = '#e2e8f0';
+            displayModeTag.innerText = '(RMS)';
+        } else {
+            btnRMS.style.background = '#f1f5f9';
+            btnRMS.style.color = '#64748b';
+            btnRMS.style.borderColor = '#e2e8f0';
+            btnPeak.style.background = '#3b82f6';
+            btnPeak.style.color = 'white';
+            btnPeak.style.borderColor = '#2563eb';
+            displayModeTag.innerText = '(Peak)';
+        }
+        updateAllCharts();
+    }
+
+    function resetParams() {
+        nSlider.value = DEFAULTS.n;
+        v1Slider.value = DEFAULTS.V1_rms;
+        fSlider.value = DEFAULTS.f;
+        rlSlider.value = DEFAULTS.RL;
+        setDisplayMode('rms');
+    }
+
+    function bindEvents() {
+        nSlider.addEventListener('input', updateAllCharts);
+        v1Slider.addEventListener('input', updateAllCharts);
+        fSlider.addEventListener('input', updateAllCharts);
+        rlSlider.addEventListener('input', updateAllCharts);
+        btnRMS.addEventListener('click', () => setDisplayMode('rms'));
+        btnPeak.addEventListener('click', () => setDisplayMode('peak'));
+        resetBtn.addEventListener('click', resetParams);
+        window.addEventListener('resize', () => {
+            if (voltageChart) voltageChart.resize();
+            if (currentChart) currentChart.resize();
+        });
+    }
+
+    function init() {
+        bindEvents();
+        setDisplayMode('rms');
+        window.addEventListener('load', function() {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            } else {
+                console.warn('KaTeX auto-render not loaded, formulas will display as text');
+            }
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>

@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>RLC Series Circuit Frequency Response Simulation | Magnitude Curve + Resonance Marker Jump</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- KaTeX for math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        /* Custom slider style */
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #2563eb;
+            transform: scale(1.15);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15);
+        }
+        .jump-btn {
+            transition: all 0.15s ease;
+            background-color: #3b82f6;  /* Same color as slider circle */
+        }
+        .jump-btn:hover {
+            background-color: #2563eb;
+            transform: scale(1.02);
+        }
+        .jump-btn:active {
+            transform: scale(0.96);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- Back to Home button (top left) -->
+    <div class="flex justify-start mb-4">
+        <a href="../index.html"
+        class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Home
+        </a>
+    </div>
+    <!-- Title area -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            RLC Series Circuit - Frequency Response Simulation
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            Adjust \(R, L, C\) to observe resistor, inductor, and capacitor voltage magnitude curves with frequency | Input voltage \(V_{in}=1\ \text{V}\) (peak)
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left Control Panel -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- Parameter Card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    Circuit Parameter Adjustment
+                </h3>
+
+                <!-- Resistance R -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Resistance \(R\)</label>
+                        <span class="text-blue-600 font-mono" id="r_val_display">100 Ω</span>
+                    </div>
+                    <input type="range" id="r_slider" min="1" max="500" step="1" value="100" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>1 Ω</span><span>500 Ω</span>
+                    </div>
+                </div>
+
+                <!-- Inductance L -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Inductance \(L\)</label>
+                        <span class="text-blue-600 font-mono" id="l_val_display">10 mH</span>
+                    </div>
+                    <input type="range" id="l_slider" min="0.5" max="100" step="0.5" value="10" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>0.5 mH</span><span>100 mH</span>
+                    </div>
+                </div>
+
+                <!-- Capacitance C -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Capacitance \(C\)</label>
+                        <span class="text-blue-600 font-mono" id="c_val_display">10 μF</span>
+                    </div>
+                    <input type="range" id="c_slider" min="1" max="200" step="1" value="10" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>1 μF</span><span>200 μF</span>
+                    </div>
+                </div>
+
+                <!-- Input frequency f (current marker point) step changed to 1 for more precise resonance frequency jump -->
+                <div class="mb-3 pt-2 border-t border-slate-100">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Current Marker Frequency \(f\)</label>
+                        <span class="text-blue-600 font-mono" id="f_point_display">100 Hz</span>
+                    </div>
+                    <input type="range" id="f_point_slider" min="10" max="20000" step="1" value="100" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Hz</span><span>20 kHz</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2 flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Marker point displays voltage values at the corresponding frequency
+                    </p>
+                </div>
+            </div>
+
+            <!-- Characteristic Parameters Card (button moved below BW) -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-purple-500 rounded-full"></span>
+                    Circuit Characteristic Parameters
+                </h3>
+                <div class="space-y-3 text-sm">
+                    <!-- Resonance frequency row (no longer contains jump button) -->
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">Resonant Frequency \(f_0\)</span>
+                        <span class="font-mono font-bold text-indigo-700" id="f0_display">— Hz</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">Quality Factor \(Q\)</span>
+                        <span class="font-mono font-bold text-indigo-700" id="q_display">—</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">Bandwidth \(BW\)</span>
+                        <span class="font-mono font-bold text-indigo-700" id="bw_display">— Hz</span>
+                    </div>
+
+                    <!-- Blue rounded button: placed below bandwidth, centered -->
+                    <div class="pt-2 flex justify-center">
+                        <button id="jumpToF0Btn" class="jump-btn text-white text-sm font-medium px-5 py-2 rounded-full shadow-md flex items-center gap-2 transition focus:outline-none focus:ring-2 focus:ring-blue-300">
+                            Mark Resonant Frequency
+                        </button>
+                    </div>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-3 text-center">
+                    * Click the blue button to move the purple marker line to the resonant frequency point
+                </p>
+            </div>
+
+            <!-- Current frequency voltage values card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-amber-500 rounded-full"></span>
+                    Voltage Magnitudes at Current Frequency \(f\)
+                </h3>
+                <div class="grid grid-cols-3 gap-2 text-center">
+                    <div class="bg-blue-50 p-2 rounded-xl">
+                        <div class="text-xs text-blue-700 font-semibold">\(U_R\)</div>
+                        <div class="text-lg font-bold text-blue-600" id="ur_point">0.00 V</div>
+                    </div>
+                    <div class="bg-green-50 p-2 rounded-xl">
+                        <div class="text-xs text-green-700 font-semibold">\(U_L\)</div>
+                        <div class="text-lg font-bold text-green-600" id="ul_point">0.00 V</div>
+                    </div>
+                    <div class="bg-orange-50 p-2 rounded-xl">
+                        <div class="text-xs text-orange-700 font-semibold">\(U_C\)</div>
+                        <div class="text-lg font-bold text-orange-600" id="uc_point">0.00 V</div>
+                    </div>
+                </div>
+                <p class="text-[11px] text-slate-500 text-center mt-3">
+                    Input voltage peak \(V_{in}=1\ \text{V}\)
+                </p>
+            </div>
+        </div>
+
+        <!-- Right Graph Area -->
+        <div class="lg:col-span-8 space-y-5">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 transition-all">
+                <div class="flex flex-wrap justify-between items-center mb-3 px-2">
+                    <div class="flex items-center gap-4 text-sm">
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-blue-500 rounded-full"></div><span class="font-medium">\(U_R\) (Resistor)</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-green-500 rounded-full"></div><span class="font-medium">\(U_L\) (Inductor)</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-orange-500 rounded-full"></div><span class="font-medium">\(U_C\) (Capacitor)</span></div>
+                    </div>
+                    <div class="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded-full">
+                        X-axis: Frequency (logarithmic scale, Hz)
+                    </div>
+                </div>
+                <div class="relative">
+                    <canvas id="freqChart" width="800" height="450" style="width:100%; height:auto; max-height:500px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-2">
+                    Magnitude Response Curves | Hover over chart to view approximate values (Chart.js interactive)
+                </div>
+            </div>
+
+            <!-- Supplementary Explanation Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">Theoretical Basis</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        RLC series circuit, input \(V_{in}=1\angle0^\circ\),<br>
+                        Impedance \(Z = R + j(\omega L - \frac{1}{\omega C})\),<br>
+                        \(|U_R| = \frac{R}{|Z|},\ |U_L| = \frac{\omega L}{|Z|},\ |U_C| = \frac{1}{\omega C |Z|}\).<br>
+                        At resonance, \(U_L\) and \(U_C\) have equal magnitudes and may exceed the input voltage.
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">Characteristic Interpretation</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        • Resonant frequency \(f_0 = \frac{1}{2\pi\sqrt{LC}}\), where \(U_R\) is maximum and \(U_L=U_C\).<br>
+                        • Quality factor \(Q = \frac{1}{R}\sqrt{\frac{L}{C}}\); higher \(Q\) produces sharper curves.<br>
+                        • Changing \(R, L, C\) updates curves in real time, demonstrating frequency selectivity.<br>
+                        • Click the blue button below to instantly position the purple marker line at the resonant frequency.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Get DOM elements
+    const rSlider = document.getElementById('r_slider');
+    const lSlider = document.getElementById('l_slider');
+    const cSlider = document.getElementById('c_slider');
+    const fPointSlider = document.getElementById('f_point_slider');
+
+    const rDisplay = document.getElementById('r_val_display');
+    const lDisplay = document.getElementById('l_val_display');
+    const cDisplay = document.getElementById('c_val_display');
+    const fPointDisplay = document.getElementById('f_point_display');
+
+    const f0Display = document.getElementById('f0_display');
+    const qDisplay = document.getElementById('q_display');
+    const bwDisplay = document.getElementById('bw_display');
+
+    const urPointSpan = document.getElementById('ur_point');
+    const ulPointSpan = document.getElementById('ul_point');
+    const ucPointSpan = document.getElementById('uc_point');
+
+    const canvas = document.getElementById('freqChart');
+    let chartInstance = null;
+
+    // Constants: input voltage peak 1V
+    const Vin = 1.0;
+
+    // Frequency sweep range: 1 Hz to 200 kHz (logarithmic coordinates need sufficient width)
+    const F_MIN = 1;          // 1 Hz
+    const F_MAX = 200000;     // 200 kHz
+    const NUM_POINTS = 500;    // Number of points ensures smooth curve
+
+    // Generate logarithmic frequency array
+    function generateLogFrequencies(minFreq, maxFreq, points) {
+        const freqs = [];
+        const minLog = Math.log10(minFreq);
+        const maxLog = Math.log10(maxFreq);
+        for (let i = 0; i < points; i++) {
+            const logVal = minLog + (i / (points - 1)) * (maxLog - minLog);
+            freqs.push(Math.pow(10, logVal));
+        }
+        return freqs;
+    }
+
+    // Calculate impedance magnitude and three voltage magnitudes at given frequency
+    function computeVoltages(freq, R, L, C) {
+        const omega = 2 * Math.PI * freq;
+        const XL = omega * L;
+        const XC = 1 / (omega * C);
+        const Z = Math.sqrt(R * R + (XL - XC) ** 2);
+        if (Z < 1e-12) return { UR: 0, UL: 0, UC: 0, Z: 1e-12 };
+        const I = Vin / Z;
+        const UR = I * R;
+        const UL = I * XL;
+        const UC = I * XC;
+        return { UR, UL, UC, Z };
+    }
+
+    // Calculate resonant frequency f0, quality factor Q, bandwidth BW
+    function computeCharacteristics(R, L, C) {
+        if (L <= 0 || C <= 0) return { f0: 0, Q: 0, BW: 0 };
+        const f0 = 1 / (2 * Math.PI * Math.sqrt(L * C));
+        const Q = (1 / R) * Math.sqrt(L / C);
+        const BW = f0 / Q;
+        return { f0, Q, BW };
+    }
+
+    // Update parameter display (R, L, C value format)
+    function updateParameterDisplays(R, L, C) {
+        rDisplay.innerText = `${R.toFixed(1)} Ω`;
+        // L unit mH
+        if (L >= 0.001) lDisplay.innerText = `${(L * 1000).toFixed(1)} mH`;
+        else lDisplay.innerText = `${(L * 1e6).toFixed(1)} μH`;
+        // C unit uF
+        if (C >= 1e-6) cDisplay.innerText = `${(C * 1e6).toFixed(1)} μF`;
+        else cDisplay.innerText = `${(C * 1e9).toFixed(1)} nF`;
+    }
+
+    // Update characteristic parameter display
+    function updateCharDisplays(R, L, C) {
+        const { f0, Q, BW } = computeCharacteristics(R, L, C);
+        if (isFinite(f0) && f0 > 0) {
+            f0Display.innerText = f0 > 1000 ? `${(f0/1000).toFixed(2)} kHz` : `${f0.toFixed(1)} Hz`;
+            qDisplay.innerText = Q.toFixed(2);
+            if (BW > 0) bwDisplay.innerText = BW > 1000 ? `${(BW/1000).toFixed(2)} kHz` : `${BW.toFixed(1)} Hz`;
+            else bwDisplay.innerText = '∞';
+        } else {
+            f0Display.innerText = '—';
+            qDisplay.innerText = '—';
+            bwDisplay.innerText = '—';
+        }
+    }
+
+    // Get all current parameter values (SI units)
+    function getCurrentParams() {
+        const R = parseFloat(rSlider.value);                // Ohm
+        const L = parseFloat(lSlider.value) * 1e-3;         // H (mH -> H)
+        const C = parseFloat(cSlider.value) * 1e-6;         // F (uF -> F)
+        const f_marker = parseFloat(fPointSlider.value);    // Hz marker frequency
+        return { R, L, C, f_marker };
+    }
+
+    // Update and display voltage values at current marker point
+    function updateMarkerVoltages(R, L, C, f_marker) {
+        const { UR, UL, UC } = computeVoltages(f_marker, R, L, C);
+        urPointSpan.innerText = `${UR.toFixed(3)} V`;
+        ulPointSpan.innerText = `${UL.toFixed(3)} V`;
+        ucPointSpan.innerText = `${UC.toFixed(3)} V`;
+        // Display frequency value
+        if (f_marker >= 1000) fPointDisplay.innerText = `${(f_marker/1000).toFixed(1)} kHz`;
+        else fPointDisplay.innerText = `${f_marker.toFixed(0)} Hz`;
+    }
+
+    // Core: build dataset (magnitude response data)
+    function buildDatasets(R, L, C) {
+        const freqs = generateLogFrequencies(F_MIN, F_MAX, NUM_POINTS);
+        const urData = [];
+        const ulData = [];
+        const ucData = [];
+
+        for (let i = 0; i < freqs.length; i++) {
+            const f = freqs[i];
+            const { UR, UL, UC } = computeVoltages(f, R, L, C);
+            urData.push({ x: f, y: UR });
+            ulData.push({ x: f, y: UL });
+            ucData.push({ x: f, y: UC });
+        }
+        return { freqs, urData, ulData, ucData };
+    }
+
+    // Core function for jumping to resonant frequency (called by button)
+    function jumpToResonantFrequency() {
+        const { R, L, C } = getCurrentParams();
+        if (L <= 0 || C <= 0) return;
+        let { f0 } = computeCharacteristics(R, L, C);
+        if (!isFinite(f0) || f0 <= 0) return;
+
+        // Slider range limit: min=10, max=20000
+        const MIN_F_MARKER = 10;
+        const MAX_F_MARKER = 20000;
+        let targetFreq = f0;
+        let outOfRange = false;
+        if (targetFreq < MIN_F_MARKER) {
+            targetFreq = MIN_F_MARKER;
+            outOfRange = true;
+        } else if (targetFreq > MAX_F_MARKER) {
+            targetFreq = MAX_F_MARKER;
+            outOfRange = true;
+        }
+        // Since slider step=1, round to integer for slider precision
+        targetFreq = Math.round(targetFreq);
+        // Secondary boundary protection
+        targetFreq = Math.min(MAX_F_MARKER, Math.max(MIN_F_MARKER, targetFreq));
+
+        // Update slider value
+        fPointSlider.value = targetFreq;
+
+        // If resonant frequency exceeds markable range, notify in console (don't disturb user experience)
+        if (outOfRange) {
+            console.log(`Resonant frequency ${f0.toFixed(1)} Hz exceeds marker range (10~20000 Hz), set to boundary value ${targetFreq} Hz`);
+            // Optional brief notification effect: change button style or add small floating reminder (simple use of title attribute)
+            const jumpBtn = document.getElementById('jumpToF0Btn');
+            const originalTitle = jumpBtn.getAttribute('title') || '';
+            jumpBtn.setAttribute('title', `Resonant frequency ${f0.toFixed(1)} Hz out of range, marked at boundary`);
+            setTimeout(() => {
+                jumpBtn.setAttribute('title', originalTitle);
+            }, 1500);
+        } else {
+            console.log(`Jumping to resonant frequency: ${targetFreq} Hz`);
+        }
+
+        // Refresh entire chart and all displays (will re-read slider values and update vertical line and voltages)
+        refreshAll();
+    }
+
+    // Create chart configuration (only used during first initialization)
+    function createChartConfig() {
+        return {
+            type: 'line',
+            data: { datasets: [] },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) label += ': ';
+                                label += context.raw.y.toFixed(3) + ' V';
+                                label += `  @ ${context.raw.x.toFixed(1)} Hz`;
+                                return label;
+                            }
+                        },
+                        backgroundColor: 'rgba(0,0,0,0.7)',
+                        titleColor: '#f1f5f9',
+                        bodyColor: '#e2e8f0'
+                    },
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            boxWidth: 8,
+                            font: { size: 12 }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'logarithmic',
+                        title: {
+                            display: true,
+                            text: 'Frequency f (Hz)',
+                            font: { weight: 'bold', size: 13 }
+                        },
+                        ticks: {
+                            callback: function(val, index, ticks) {
+                                if (val < 1) return '';
+                                if (val >= 1000) return (val/1000).toFixed(0) + 'k';
+                                return val;
+                            },
+                            autoSkip: true,
+                            maxTicksLimit: 10
+                        },
+                        min: F_MIN,
+                        max: F_MAX,
+                        grid: { color: '#eef2ff', tickLength: 6 }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Voltage Magnitude (V)',
+                            font: { weight: 'bold', size: 13 }
+                        },
+                        min: 0,
+                        ticks: { stepSize: 0.5, callback: (val) => val.toFixed(1) + ' V' },
+                        grid: { color: '#eef2ff' }
+                    }
+                },
+                elements: {
+                    point: { radius: 0, hitRadius: 8, hoverRadius: 3 },
+                    line: { tension: 0.2, borderWidth: 2.5 }
+                },
+                // Disable animation to avoid lag during slider dragging
+                animation: false,
+                transitions: {
+                    active: { animation: { duration: 0 } }
+                }
+            }
+        };
+    }
+
+    // Custom plugin: draw vertical line at current marker frequency (enhance experience)
+    const markerLinePlugin = {
+        id: 'markerLine',
+        afterDraw(chart) {
+            const { ctx, chartArea: { left, right, top, bottom }, scales } = chart;
+            const currentParams = getCurrentParams();
+            const f_marker_local = currentParams.f_marker;
+            if (!scales.x || !scales.y) return;
+            const xPos = scales.x.getPixelForValue(f_marker_local);
+            if (xPos >= left && xPos <= right) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.strokeStyle = '#a855f7';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([6, 8]);
+                ctx.moveTo(xPos, top);
+                ctx.lineTo(xPos, bottom);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                // Add a small circle marker
+                ctx.beginPath();
+                ctx.arc(xPos, top + 12, 4, 0, 2 * Math.PI);
+                ctx.fillStyle = '#a855f7';
+                ctx.fill();
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 10px "Segoe UI"';
+                ctx.fillText('●', xPos-2, top+14);
+                ctx.fillStyle = '#581c87';
+                ctx.font = '10px monospace';
+                let freqText = f_marker_local >= 1000 ? (f_marker_local/1000).toFixed(1)+'k' : f_marker_local+' Hz';
+                ctx.fillText(`${freqText}`, xPos+5, top+16);
+                ctx.restore();
+            }
+        }
+    };
+
+    // Initialize chart (execute only once)
+    function initChart() {
+        if (chartInstance) return; // Prevent duplicate initialization
+        const config = createChartConfig();
+        chartInstance = new Chart(canvas, {
+            ...config,
+            plugins: [markerLinePlugin]
+        });
+    }
+
+    // Update chart data (refresh mechanism, don't destroy and rebuild)
+    function updateChart() {
+        const { R, L, C, f_marker } = getCurrentParams();
+
+        // Update UI parameter displays
+        updateParameterDisplays(R, L, C);
+        updateCharDisplays(R, L, C);
+        updateMarkerVoltages(R, L, C, f_marker);
+
+        // Build data
+        const { urData, ulData, ucData } = buildDatasets(R, L, C);
+
+        // Dynamically adjust Y-axis upper limit: based on actual maximum voltage data value (avoid clipping for very high Q)
+        let maxVoltage = 0;
+        [...urData, ...ulData, ...ucData].forEach(p => { if (p.y > maxVoltage) maxVoltage = p.y; });
+        let yMax = Math.min(5, Math.max(1.2, maxVoltage * 1.05));
+        if (yMax < 0.8) yMax = 0.8;
+
+        // Ensure chart is initialized
+        if (!chartInstance) {
+            initChart();
+        }
+
+        // Update datasets (don't destroy and rebuild)
+        chartInstance.data.datasets = [
+            {
+                label: 'U_R (Resistor)',
+                data: urData,
+                borderColor: '#3b82f6',
+                backgroundColor: 'transparent',
+                borderWidth: 2.5,
+                pointRadius: 0,
+                tension: 0.2,
+                fill: false,
+                order: 2
+            },
+            {
+                label: 'U_L (Inductor)',
+                data: ulData,
+                borderColor: '#22c55e',
+                backgroundColor: 'transparent',
+                borderWidth: 2.5,
+                pointRadius: 0,
+                tension: 0.2,
+                fill: false,
+                order: 1
+            },
+            {
+                label: 'U_C (Capacitor)',
+                data: ucData,
+                borderColor: '#f97316',
+                backgroundColor: 'transparent',
+                borderWidth: 2.5,
+                pointRadius: 0,
+                tension: 0.2,
+                fill: false,
+                order: 1
+            }
+        ];
+
+        // Update Y-axis upper limit
+        chartInstance.options.scales.y.max = yMax;
+
+        // Call update() to refresh chart (no animation for smoother experience)
+        chartInstance.update('none');
+    }
+
+    // Global refresh (called when slider changes)
+    function refreshAll() {
+        updateChart();
+    }
+
+    // Event listeners (update on all slider changes)
+    rSlider.addEventListener('input', refreshAll);
+    lSlider.addEventListener('input', refreshAll);
+    cSlider.addEventListener('input', refreshAll);
+    fPointSlider.addEventListener('input', () => {
+        // Update voltage display and vertical line position when marker point slides
+        refreshAll();
+    });
+
+    // Resonant frequency jump button listener (blue rounded button)
+    const jumpBtn = document.getElementById('jumpToF0Btn');
+    if (jumpBtn) {
+        jumpBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            jumpToResonantFrequency();
+        });
+    }
+
+    // Redraw chart when window size changes to fit dimensions
+    window.addEventListener('resize', () => {
+        if (chartInstance) {
+            chartInstance.resize();
+            chartInstance.update();
+        }
+    });
+
+    // Initialize parameter display and draw curves
+    refreshAll();
+
+    // Auto re-render math formulas (KaTeX)
+    document.addEventListener("DOMContentLoaded", function() {
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '\\(', right: '\\)', display: false},
+                ],
+                throwOnError: false
+            });
+        }
+    });
+
+    console.log('RLC simulation started | Magnitude response curves real-time update | Blue rounded button can mark resonant frequency with one click');
+</script>
+</body>
+</html>

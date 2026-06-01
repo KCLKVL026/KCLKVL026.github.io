@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>RC High-Pass Filter | Magnitude & Phase Response Simulation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- KaTeX math formula rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #2563eb;
+            transform: scale(1.15);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15);
+        }
+        .jump-btn {
+            transition: all 0.15s ease;
+            background-color: #3b82f6;
+        }
+        .jump-btn:hover {
+            background-color: #2563eb;
+            transform: scale(1.02);
+        }
+        .jump-btn:active {
+            transform: scale(0.96);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- Back to Home button -->
+    <div class="flex justify-start mb-4">
+        <a href="../index.html"
+           class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Home
+        </a>
+    </div>
+
+    <!-- Title area -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            First-Order RC High-Pass Filter - Frequency Response Simulation
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            Adjust resistance \(R\) and capacitance \(C\) to observe output voltage magnitude and phase lead characteristics | Input voltage \(V_{in}=1\ \text{V}\) (peak)
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left Control Panel -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- Parameter Card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    Circuit Parameter Adjustment
+                </h3>
+
+                <!-- Resistance R: 20Ohm ~ 20kOhm -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Resistance \(R\)</label>
+                        <span class="text-blue-600 font-mono" id="r_val_display">1.0 kΩ</span>
+                    </div>
+                    <input type="range" id="r_slider" min="20" max="20000" step="1" value="1000" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>20 Ω</span><span>20 kΩ</span>
+                    </div>
+                </div>
+
+                <!-- Capacitance C: 0.001uF ~ 1uF -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Capacitance \(C\)</label>
+                        <span class="text-blue-600 font-mono" id="c_val_display">0.100 μF</span>
+                    </div>
+                    <input type="range" id="c_slider" min="0.001" max="1" step="0.001" value="0.1" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>0.001 μF</span><span>1 μF</span>
+                    </div>
+                </div>
+
+                <!-- Marker frequency f: 1Hz ~ 1MHz -->
+                <div class="mb-3 pt-2 border-t border-slate-100">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Marker Frequency \(f\)</label>
+                        <span class="text-blue-600 font-mono" id="f_point_display">1.00 kHz</span>
+                    </div>
+                    <input type="range" id="f_point_slider" min="1" max="1000000" step="1" value="1000" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>1 Hz</span><span>1 MHz</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2 flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Purple vertical line marks the current frequency; both charts display values at this point synchronously
+                    </p>
+                </div>
+            </div>
+
+            <!-- Characteristic Parameters Card + Mark Cutoff Frequency Button -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-purple-500 rounded-full"></span>
+                    Filter Characteristic Parameters
+                </h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">Cutoff Frequency \(f_c\)</span>
+                        <span class="font-mono font-bold text-indigo-700" id="fc_display">— Hz</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">Time Constant \(\tau = RC\)</span>
+                        <span class="font-mono font-bold text-indigo-700" id="tau_display">— s</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">-3dB Gain</span>
+                        <span class="font-mono font-bold text-indigo-700">0.707 V / +45°</span>
+                    </div>
+
+                    <div class="pt-2 flex justify-center">
+                        <button id="jumpToFcBtn" class="jump-btn text-white text-sm font-medium px-5 py-2 rounded-full shadow-md flex items-center gap-2 transition focus:outline-none focus:ring-2 focus:ring-blue-300">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                            Mark Cutoff Frequency
+                        </button>
+                    </div>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-3 text-center">
+                    * Click the button to move the purple marker line to the cutoff frequency \(f_c\)
+                </p>
+            </div>
+
+            <!-- Current frequency output characteristics card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-amber-500 rounded-full"></span>
+                    Output at Current Frequency \(f\)
+                </h3>
+                <div class="grid grid-cols-2 gap-3 text-center">
+                    <div class="bg-blue-50 p-3 rounded-xl">
+                        <div class="text-xs text-blue-700 font-semibold">Output Voltage \(V_{out}\)</div>
+                        <div class="text-xl font-bold text-blue-600" id="vout_point">0.00 V</div>
+                        <div class="text-[10px] text-blue-500 mt-1">Magnitude (Vin=1V)</div>
+                    </div>
+                    <div class="bg-emerald-50 p-3 rounded-xl">
+                        <div class="text-xs text-emerald-700 font-semibold">Phase Shift \(\varphi\)</div>
+                        <div class="text-xl font-bold text-emerald-600" id="phase_point">0.0°</div>
+                        <div class="text-[10px] text-emerald-500 mt-1">Output leads input</div>
+                    </div>
+                </div>
+                <div class="mt-3 text-center text-xs text-slate-500 bg-slate-50 rounded-lg p-2">
+                    Transfer Function: \(H(f) = \dfrac{j2\pi f RC}{1 + j2\pi f RC}\)
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Graph Area -->
+        <div class="lg:col-span-8 space-y-5">
+            <!-- Magnitude Response Chart -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 transition-all">
+                <div class="flex flex-wrap justify-between items-center mb-2 px-2">
+                    <div class="flex items-center gap-3 text-sm">
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-red-500 rounded-full"></div><span class="font-medium">Magnitude Response \(|H(f)|\)</span></div>
+                        <div class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Output Voltage / Input Voltage</div>
+                    </div>
+                    <div class="text-xs text-slate-400">X-axis: Logarithmic Frequency (Hz)</div>
+                </div>
+                <div class="relative">
+                    <canvas id="magChart" width="800" height="320" style="width:100%; height:auto; max-height: 320px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-1">
+                    High-Pass Magnitude Response | Gain drops to 0.707 (-3dB) at the cutoff frequency
+                </div>
+            </div>
+
+            <!-- Phase Response Chart -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 transition-all">
+                <div class="flex flex-wrap justify-between items-center mb-2 px-2">
+                    <div class="flex items-center gap-3 text-sm">
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-indigo-500 rounded-full"></div><span class="font-medium">Phase Response \(\angle H(f)\)</span></div>
+                        <div class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Phase Lead Angle</div>
+                    </div>
+                    <div class="text-xs text-slate-400">X-axis: Logarithmic Frequency (Hz)</div>
+                </div>
+                <div class="relative">
+                    <canvas id="phaseChart" width="800" height="320" style="width:100%; height:auto; max-height: 320px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-1">
+                    High-Pass Phase Response | Transitions from +90° to 0°, phase shift of +45° at the cutoff frequency
+                </div>
+            </div>
+
+            <!-- Explanation Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">Theoretical Basis</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        First-order RC high-pass filter, input \(V_{in}=1\angle 0^\circ\),<br>
+                        Transfer function: \(H(f) = \frac{j2\pi f RC}{1+j2\pi f RC}\).<br>
+                        Magnitude: \(|H(f)| = \frac{2\pi f RC}{\sqrt{1+(2\pi f RC)^2}}\).<br>
+                        Phase: \(\varphi(f) = 90° - \arctan(2\pi f RC)\) (leading).<br>
+                        Cutoff frequency \(f_c = \frac{1}{2\pi RC}\), where \(|H| = 0.707\), \(\varphi = +45°\).
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">Characteristic Interpretation</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        • High-pass characteristic: low-frequency signals are suppressed, high-frequency signals pass with minimal attenuation.<br>
+                        • Phase lead monotonically decreases from +90° (very low frequency) to 0° (very high frequency).<br>
+                        • Adjusting \(R\) or \(C\) changes the cutoff frequency; the curve updates in real time.<br>
+                        • Click "Mark Cutoff Frequency" to automatically position the purple marker line at \(f_c\).
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // DOM elements
+    const rSlider = document.getElementById('r_slider');
+    const cSlider = document.getElementById('c_slider');
+    const fPointSlider = document.getElementById('f_point_slider');
+
+    const rDisplay = document.getElementById('r_val_display');
+    const cDisplay = document.getElementById('c_val_display');
+    const fPointDisplay = document.getElementById('f_point_display');
+
+    const fcDisplay = document.getElementById('fc_display');
+    const tauDisplay = document.getElementById('tau_display');
+    const voutPointSpan = document.getElementById('vout_point');
+    const phasePointSpan = document.getElementById('phase_point');
+
+    const magCanvas = document.getElementById('magChart');
+    const phaseCanvas = document.getElementById('phaseChart');
+
+    let magChartInstance = null;
+    let phaseChartInstance = null;
+
+    const Vin = 1.0;
+    const F_MIN = 1;
+    const F_MAX = 1000000;
+    const NUM_POINTS = 550;
+
+    // Generate logarithmic frequency array
+    function generateLogFrequencies(minFreq, maxFreq, points) {
+        const freqs = [];
+        const minLog = Math.log10(minFreq);
+        const maxLog = Math.log10(maxFreq);
+        for (let i = 0; i < points; i++) {
+            const logVal = minLog + (i / (points - 1)) * (maxLog - minLog);
+            freqs.push(Math.pow(10, logVal));
+        }
+        return freqs;
+    }
+
+    // High-pass response calculation: magnitude (V) and phase angle (degrees) (output leads)
+    function computeHighpassResponse(freq, R, C) {
+        const omegaRC = 2 * Math.PI * freq * R * C;
+        const mag = omegaRC / Math.sqrt(1 + omegaRC * omegaRC);
+        // Phase: 90° - arctan(omegaRC) (leading)
+        const phaseDeg = 90 - Math.atan(omegaRC) * 180 / Math.PI;
+        return { mag: mag * Vin, phase: phaseDeg };
+    }
+
+    // Calculate cutoff frequency fc = 1/(2*pi*RC)
+    function computeFilterParams(R, C) {
+        if (R <= 0 || C <= 0) return { fc: 0, tau: 0 };
+        const fc = 1 / (2 * Math.PI * R * C);
+        const tau = R * C;
+        return { fc, tau };
+    }
+
+    function getCurrentParams() {
+        let R = parseFloat(rSlider.value);
+        let C = parseFloat(cSlider.value) * 1e-6;
+        const f_marker = parseFloat(fPointSlider.value);
+        if (isNaN(R)) R = 1000;
+        if (isNaN(C)) C = 0.1e-6;
+        return { R, C, f_marker };
+    }
+
+    function updateParameterDisplays(R, C) {
+        if (R >= 1000) rDisplay.innerText = `${(R/1000).toFixed(1)} kΩ`;
+        else rDisplay.innerText = `${R.toFixed(0)} Ω`;
+        const c_uF = C * 1e6;
+        if (c_uF >= 1) cDisplay.innerText = `${c_uF.toFixed(3)} μF`;
+        else cDisplay.innerText = `${(c_uF * 1000).toFixed(2)} nF`;
+    }
+
+    function updateCharDisplays(R, C) {
+        const { fc, tau } = computeFilterParams(R, C);
+        if (isFinite(fc) && fc > 0) {
+            if (fc >= 1000) fcDisplay.innerText = `${(fc/1000).toFixed(2)} kHz`;
+            else fcDisplay.innerText = `${fc.toFixed(1)} Hz`;
+            if (tau >= 0.001) tauDisplay.innerText = `${(tau*1000).toFixed(2)} ms`;
+            else if (tau >= 1e-6) tauDisplay.innerText = `${(tau*1e6).toFixed(1)} μs`;
+            else tauDisplay.innerText = `${tau.toExponential(2)} s`;
+        } else {
+            fcDisplay.innerText = '—';
+            tauDisplay.innerText = '—';
+        }
+    }
+
+    function updateMarkerValues(R, C, f_marker) {
+        const { mag, phase } = computeHighpassResponse(f_marker, R, C);
+        voutPointSpan.innerText = `${mag.toFixed(3)} V`;
+        phasePointSpan.innerText = `${phase.toFixed(1)}°`;
+        if (f_marker >= 1000000) fPointDisplay.innerText = `${(f_marker/1000000).toFixed(2)} MHz`;
+        else if (f_marker >= 1000) fPointDisplay.innerText = `${(f_marker/1000).toFixed(2)} kHz`;
+        else fPointDisplay.innerText = `${f_marker.toFixed(0)} Hz`;
+    }
+
+    function buildMagPhaseData(R, C) {
+        const freqs = generateLogFrequencies(F_MIN, F_MAX, NUM_POINTS);
+        const magData = [];
+        const phaseData = [];
+        for (let i = 0; i < freqs.length; i++) {
+            const f = freqs[i];
+            const { mag, phase } = computeHighpassResponse(f, R, C);
+            magData.push({ x: f, y: mag });
+            phaseData.push({ x: f, y: phase });
+        }
+        return { freqs, magData, phaseData };
+    }
+
+    function createMarkerLinePlugin(getMarkerFreq) {
+        return {
+            id: 'markerLine',
+            afterDraw(chart) {
+                const { ctx, chartArea: { left, right, top, bottom }, scales } = chart;
+                const markerFreq = getMarkerFreq();
+                if (!scales.x || !markerFreq) return;
+                const xPos = scales.x.getPixelForValue(markerFreq);
+                if (xPos >= left && xPos <= right) {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#a855f7';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([6, 8]);
+                    ctx.moveTo(xPos, top);
+                    ctx.lineTo(xPos, bottom);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.beginPath();
+                    ctx.arc(xPos, top + 12, 4, 0, 2 * Math.PI);
+                    ctx.fillStyle = '#a855f7';
+                    ctx.fill();
+                    ctx.fillStyle = 'white';
+                    ctx.font = 'bold 10px "Segoe UI"';
+                    ctx.fillText('●', xPos-2, top+14);
+                    ctx.fillStyle = '#581c87';
+                    ctx.font = '10px monospace';
+                    let freqText = '';
+                    if (markerFreq >= 1000000) freqText = (markerFreq/1000000).toFixed(1)+'M';
+                    else if (markerFreq >= 1000) freqText = (markerFreq/1000).toFixed(1)+'k';
+                    else freqText = markerFreq+' Hz';
+                    ctx.fillText(`${freqText}`, xPos+5, top+16);
+                    ctx.restore();
+                }
+            }
+        };
+    }
+
+    function getCurrentMarkerFreq() {
+        return parseFloat(fPointSlider.value);
+    }
+
+    function updateMagChart(R, C) {
+        const { magData } = buildMagPhaseData(R, C);
+        let maxMag = 0;
+        magData.forEach(p => { if (p.y > maxMag) maxMag = p.y; });
+        const yMax = Math.min(1.2, Math.max(1.05, maxMag * 1.05));
+
+        if (magChartInstance) {
+            magChartInstance.data.datasets[0].data = magData;
+            magChartInstance.options.scales.y.max = yMax;
+            magChartInstance.update();
+            return;
+        }
+
+        const options = {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `Output Voltage: ${context.raw.y.toFixed(3)} V  @ ${context.raw.x.toFixed(1)} Hz`;
+                        }
+                    },
+                    backgroundColor: 'rgba(0,0,0,0.7)'
+                },
+                legend: { display: false }
+            },
+            scales: {
+                x: {
+                    type: 'logarithmic',
+                    title: { display: true, text: 'Frequency f (Hz)', font: { weight: 'bold', size: 12 } },
+                    ticks: {
+                        callback: (val) => {
+                            if (val >= 1000000) return (val/1000000).toFixed(0) + 'M';
+                            if (val >= 1000) return (val/1000).toFixed(0) + 'k';
+                            return val;
+                        },
+                        autoSkip: true,
+                        maxTicksLimit: 8
+                    },
+                    min: F_MIN,
+                    max: F_MAX,
+                    grid: { color: '#eef2ff' }
+                },
+                y: {
+                    title: { display: true, text: 'Output Voltage Magnitude (V)', font: { weight: 'bold', size: 12 } },
+                    min: 0,
+                    max: yMax,
+                    ticks: { stepSize: 0.2, callback: (val) => val.toFixed(1) + ' V' },
+                    grid: { color: '#eef2ff' }
+                }
+            },
+            elements: { point: { radius: 0, hitRadius: 6 }, line: { borderWidth: 2.5, tension: 0.2 } }
+        };
+
+        const datasets = [{
+            label: '|H(f)| · Vin',
+            data: magData,
+            borderColor: '#ef4444',
+            backgroundColor: 'transparent',
+            borderWidth: 2.5,
+            pointRadius: 0,
+            fill: false
+        }];
+
+        magChartInstance = new Chart(magCanvas, {
+            type: 'line',
+            data: { datasets },
+            options: options,
+            plugins: [createMarkerLinePlugin(getCurrentMarkerFreq)]
+        });
+    }
+
+    function updatePhaseChart(R, C) {
+        const { phaseData } = buildMagPhaseData(R, C);
+
+        if (phaseChartInstance) {
+            phaseChartInstance.data.datasets[0].data = phaseData;
+            phaseChartInstance.update();
+            return;
+        }
+
+        const options = {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `Phase Angle: ${context.raw.y.toFixed(1)}°  @ ${context.raw.x.toFixed(1)} Hz`;
+                        }
+                    },
+                    backgroundColor: 'rgba(0,0,0,0.7)'
+                },
+                legend: { display: false }
+            },
+            scales: {
+                x: {
+                    type: 'logarithmic',
+                    title: { display: true, text: 'Frequency f (Hz)', font: { weight: 'bold', size: 12 } },
+                    ticks: {
+                        callback: (val) => {
+                            if (val >= 1000000) return (val/1000000).toFixed(0) + 'M';
+                            if (val >= 1000) return (val/1000).toFixed(0) + 'k';
+                            return val;
+                        },
+                        autoSkip: true,
+                        maxTicksLimit: 8
+                    },
+                    min: F_MIN,
+                    max: F_MAX,
+                    grid: { color: '#eef2ff' }
+                },
+                y: {
+                    title: { display: true, text: 'Phase Angle (degrees)', font: { weight: 'bold', size: 12 } },
+                    min: -10,
+                    max: 100,
+                    ticks: { stepSize: 15, callback: (val) => val + '°' },
+                    grid: { color: '#eef2ff' }
+                }
+            },
+            elements: { point: { radius: 0, hitRadius: 6 }, line: { borderWidth: 2.5, borderColor: '#6366f1', tension: 0.2 } }
+        };
+
+        const datasets = [{
+            label: 'Phase ∠H(f)',
+            data: phaseData,
+            borderColor: '#6366f1',
+            backgroundColor: 'transparent',
+            borderWidth: 2.5,
+            pointRadius: 0,
+            fill: false
+        }];
+
+        phaseChartInstance = new Chart(phaseCanvas, {
+            type: 'line',
+            data: { datasets },
+            options: options,
+            plugins: [createMarkerLinePlugin(getCurrentMarkerFreq)]
+        });
+    }
+
+    function refreshAll() {
+        const { R, C, f_marker } = getCurrentParams();
+        updateParameterDisplays(R, C);
+        updateCharDisplays(R, C);
+        updateMarkerValues(R, C, f_marker);
+        updateMagChart(R, C);
+        updatePhaseChart(R, C);
+    }
+
+    function jumpToCutoffFrequency() {
+        const { R, C } = getCurrentParams();
+        if (R <= 0 || C <= 0) return;
+        const { fc } = computeFilterParams(R, C);
+        if (!isFinite(fc) || fc <= 0) return;
+
+        const MIN_F_MARKER = 1;
+        const MAX_F_MARKER = 1000000;
+        let targetFreq = fc;
+        let outOfRange = false;
+        if (targetFreq < MIN_F_MARKER) {
+            targetFreq = MIN_F_MARKER;
+            outOfRange = true;
+        } else if (targetFreq > MAX_F_MARKER) {
+            targetFreq = MAX_F_MARKER;
+            outOfRange = true;
+        }
+        targetFreq = Math.round(targetFreq);
+        targetFreq = Math.min(MAX_F_MARKER, Math.max(MIN_F_MARKER, targetFreq));
+
+        fPointSlider.value = targetFreq;
+
+        if (outOfRange) {
+            console.log(`Cutoff frequency ${fc.toFixed(1)} Hz exceeds marker range (1~1e6 Hz), set to boundary value`);
+            const btn = document.getElementById('jumpToFcBtn');
+            const originalTitle = btn.getAttribute('title') || '';
+            btn.setAttribute('title', `Cutoff frequency ${fc.toFixed(1)} Hz out of range, marked at boundary`);
+            setTimeout(() => btn.setAttribute('title', originalTitle), 1500);
+        }
+        refreshAll();
+    }
+
+    // Event binding
+    rSlider.addEventListener('input', refreshAll);
+    cSlider.addEventListener('input', refreshAll);
+    fPointSlider.addEventListener('input', refreshAll);
+
+    const jumpBtn = document.getElementById('jumpToFcBtn');
+    if (jumpBtn) {
+        jumpBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            jumpToCutoffFrequency();
+        });
+    }
+
+    window.addEventListener('resize', () => {
+        if (magChartInstance) magChartInstance.resize();
+        if (phaseChartInstance) phaseChartInstance.resize();
+        refreshAll();
+    });
+
+    refreshAll();
+
+    document.addEventListener("DOMContentLoaded", function() {
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '\\(', right: '\\)', display: false},
+                ],
+                throwOnError: false
+            });
+        }
+    });
+
+    console.log('RC High-Pass Filter simulation started | Magnitude + Phase real-time update | Purple marker line range 1Hz~1MHz');
+</script>
+</body>
+</html>

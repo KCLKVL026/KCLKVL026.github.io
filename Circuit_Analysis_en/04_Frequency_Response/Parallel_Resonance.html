@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Parallel RLC Frequency Response | Current Source Excitation | Branch Current Magnitude Curves + Resonance Marking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #2563eb;
+            transform: scale(1.15);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15);
+        }
+        .jump-btn {
+            transition: all 0.15s ease;
+            background-color: #3b82f6;
+        }
+        .jump-btn:hover {
+            background-color: #2563eb;
+            transform: scale(1.02);
+        }
+        .jump-btn:active {
+            transform: scale(0.96);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- Back to Home button -->
+    <div class="flex justify-start mb-4">
+        <a href="../index.html"
+        class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Home
+        </a>
+    </div>
+    <!-- Title area -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            RLC Parallel Circuit - Current Source Excitation - Branch Current Characteristics
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            Sinusoidal current source \(I_s = 0.1\ \text{A}\) (peak) excites parallel RLC | Observe how resistor, inductor, and capacitor branch current magnitudes change with frequency
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left Control Panel -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- Parameter Card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    Circuit Parameter Adjustment
+                </h3>
+
+                <!-- Resistance R (range 1~50 Ohm, initial 10 Ohm) -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Resistance \(R\)</label>
+                        <span class="text-blue-600 font-mono" id="r_val_display">10 Ω</span>
+                    </div>
+                    <input type="range" id="r_slider" min="1" max="50" step="1" value="10" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>1 Ω</span><span>50 Ω</span>
+                    </div>
+                </div>
+
+                <!-- Inductance L (range 0.5~100 mH, initial 10 mH) -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Inductance \(L\)</label>
+                        <span class="text-blue-600 font-mono" id="l_val_display">10 mH</span>
+                    </div>
+                    <input type="range" id="l_slider" min="0.5" max="100" step="0.5" value="10" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>0.5 mH</span><span>100 mH</span>
+                    </div>
+                </div>
+
+                <!-- Capacitance C (range 1~200 uF, initial 10 uF) -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Capacitance \(C\)</label>
+                        <span class="text-blue-600 font-mono" id="c_val_display">10 μF</span>
+                    </div>
+                    <input type="range" id="c_slider" min="1" max="200" step="1" value="10" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>1 μF</span><span>200 μF</span>
+                    </div>
+                </div>
+
+                <!-- Marker frequency slider -->
+                <div class="mb-3 pt-2 border-t border-slate-100">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Current Marker Frequency \(f\)</label>
+                        <span class="text-blue-600 font-mono" id="f_point_display">100 Hz</span>
+                    </div>
+                    <input type="range" id="f_point_slider" min="10" max="20000" step="1" value="100" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Hz</span><span>20 kHz</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2 flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Marker point displays branch current values at the corresponding frequency
+                    </p>
+                </div>
+            </div>
+
+            <!-- Parallel Resonance Characteristic Parameters Card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-purple-500 rounded-full"></span>
+                    Parallel Resonance Characteristic Parameters
+                </h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">Resonant Frequency \(f_0\)</span>
+                        <span class="font-mono font-bold text-indigo-700" id="f0_display">— Hz</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">Quality Factor \(Q\) (Parallel)</span>
+                        <span class="font-mono font-bold text-indigo-700" id="q_display">—</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">Bandwidth \(BW\)</span>
+                        <span class="font-mono font-bold text-indigo-700" id="bw_display">— Hz</span>
+                    </div>
+
+                    <div class="pt-2 flex justify-center">
+                        <button id="jumpToF0Btn" class="jump-btn text-white text-sm font-medium px-5 py-2 rounded-full shadow-md flex items-center gap-2 transition focus:outline-none focus:ring-2 focus:ring-blue-300">
+                            Mark Resonant Frequency
+                        </button>
+                    </div>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-3 text-center">
+                    * At parallel resonance \(I_L = I_C\), total current \(I_s\) flows entirely through resistor \(R\), \(I_R\) is maximum<br>* Click the button to move the purple marker line to the resonant frequency point
+                </p>
+            </div>
+
+            <!-- Current frequency branch current values card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-amber-500 rounded-full"></span>
+                    Branch Current Magnitudes at Current Frequency \(f\)
+                </h3>
+                <div class="grid grid-cols-3 gap-2 text-center">
+                    <div class="bg-blue-50 p-2 rounded-xl">
+                        <div class="text-xs text-blue-700 font-semibold">\(I_R\)</div>
+                        <div class="text-lg font-bold text-blue-600" id="ir_point">0.000 A</div>
+                    </div>
+                    <div class="bg-green-50 p-2 rounded-xl">
+                        <div class="text-xs text-green-700 font-semibold">\(I_L\)</div>
+                        <div class="text-lg font-bold text-green-600" id="il_point">0.000 A</div>
+                    </div>
+                    <div class="bg-orange-50 p-2 rounded-xl">
+                        <div class="text-xs text-orange-700 font-semibold">\(I_C\)</div>
+                        <div class="text-lg font-bold text-orange-600" id="ic_point">0.000 A</div>
+                    </div>
+                </div>
+                <p class="text-[11px] text-slate-500 text-center mt-3">
+                    Current source peak \(I_s = 0.1\ \text{A}\), each branch current is actual peak value
+                </p>
+            </div>
+        </div>
+
+        <!-- Right Graph Area -->
+        <div class="lg:col-span-8 space-y-5">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 transition-all">
+                <div class="flex flex-wrap justify-between items-center mb-3 px-2">
+                    <div class="flex items-center gap-4 text-sm">
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-blue-500 rounded-full"></div><span class="font-medium">\(I_R\) (Resistor Current)</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-green-500 rounded-full"></div><span class="font-medium">\(I_L\) (Inductor Current)</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-orange-500 rounded-full"></div><span class="font-medium">\(I_C\) (Capacitor Current)</span></div>
+                    </div>
+                    <div class="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded-full">
+                        X-axis: Frequency (logarithmic scale, Hz)
+                    </div>
+                </div>
+                <div class="relative">
+                    <canvas id="currentChart" width="800" height="450" style="width:100%; height:auto; max-height:500px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-2">
+                    Branch Current Magnitude Response | Current source excitation, at resonance \(I_R\) reaches peak, \(I_L = I_C\) and may be much larger than \(I_R\)
+                </div>
+            </div>
+
+            <!-- Supplementary Explanation Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">Theoretical Basis (Current Source Parallel)</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Current source \(I_s = 0.1\angle0^\circ\) applied to parallel RLC:<br>
+                        Parallel admittance \(Y = \dfrac{1}{R} + \dfrac{1}{j\omega L} + j\omega C\), terminal voltage \(V = I_s / Y\).<br>
+                        Branch currents: \(I_R = V/R,\ I_L = V/(j\omega L),\ I_C = V \cdot j\omega C\).<br>
+                        At resonance \(\omega_0 L = 1/(\omega_0 C)\), admittance is minimum (equal to \(1/R\)), voltage is maximum, \(I_R = I_s\), \(I_L = I_C = Q I_s\).
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">Parallel Resonance Characteristics (Current Source)</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        • Resonant frequency \(f_0 = \dfrac{1}{2\pi\sqrt{LC}}\), same as the series form.<br>
+                        • Parallel quality factor \(Q = R\sqrt{\dfrac{C}{L}} = \dfrac{R}{\omega_0 L} = \omega_0 R C\).<br>
+                        • At resonance, resistor current equals source current \(I_s\), inductor/capacitor current is \(Q\) times the source current.<br>
+                        • Click "Mark Resonant Frequency" to position the purple marker line at \(f_0\), intuitively comparing branch current relationships at the resonant point.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // DOM elements
+    const rSlider = document.getElementById('r_slider');
+    const lSlider = document.getElementById('l_slider');
+    const cSlider = document.getElementById('c_slider');
+    const fPointSlider = document.getElementById('f_point_slider');
+
+    const rDisplay = document.getElementById('r_val_display');
+    const lDisplay = document.getElementById('l_val_display');
+    const cDisplay = document.getElementById('c_val_display');
+    const fPointDisplay = document.getElementById('f_point_display');
+
+    const f0Display = document.getElementById('f0_display');
+    const qDisplay = document.getElementById('q_display');
+    const bwDisplay = document.getElementById('bw_display');
+
+    const irPointSpan = document.getElementById('ir_point');
+    const ilPointSpan = document.getElementById('il_point');
+    const icPointSpan = document.getElementById('ic_point');
+
+    const canvas = document.getElementById('currentChart');
+    let chartInstance = null;
+
+    // Current source peak 0.1 A
+    const Is = 0.1;   // A
+
+    // Frequency sweep range: 10 Hz ~ 200 kHz (ensures logarithmic coordinates cover resonance range)
+    const F_MIN = 10;
+    const F_MAX = 200000;
+    const NUM_POINTS = 500;
+
+    // Generate logarithmic frequency array
+    function generateLogFrequencies(minFreq, maxFreq, points) {
+        const freqs = [];
+        const minLog = Math.log10(minFreq);
+        const maxLog = Math.log10(maxFreq);
+        for (let i = 0; i < points; i++) {
+            const logVal = minLog + (i / (points - 1)) * (maxLog - minLog);
+            freqs.push(Math.pow(10, logVal));
+        }
+        return freqs;
+    }
+
+    // Parallel current source: calculate three branch current magnitudes at given frequency (I_R, I_L, I_C)
+    // Steps: 1) Calculate parallel admittance Y = 1/R + 1/(j*omega*L) + j*omega*C
+    //        2) Voltage V = Is / Y (complex)
+    //        3) I_R = V / R, I_L = V / (j*omega*L), I_C = V * j*omega*C
+    //        Returns each current magnitude (positive value)
+    function computeCurrents(freq, R, L, C) {
+        const omega = 2 * Math.PI * freq;
+        // Real part (conductance)
+        const G = 1 / R;
+        // Susceptance part: magnitude of 1/(j*omega*L) is 1/(omega*L), but keep sign: B_L = -1/(omega*L)
+        const BL = -1 / (omega * L);
+        const BC = omega * C;
+        const B_total = BL + BC;
+        // Admittance magnitude |Y| = sqrt(G^2 + B_total^2)
+        const Y_mag = Math.sqrt(G * G + B_total * B_total);
+        // Voltage magnitude |V| = Is / |Y|
+        const V_mag = Is / Y_mag;
+        // Voltage phase angle (optional, not needed for magnitude only)
+        // Calculate each branch current magnitude
+        const IR = V_mag / R;               // I_R = V / R
+        const IL = V_mag / (omega * L);     // I_L = V / (omega*L)
+        const IC = V_mag * omega * C;       // I_C = V * omega*C
+        return { IR, IL, IC, V_mag };
+    }
+
+    // Parallel resonance characteristics: f0, Q (parallel Q = R * sqrt(C/L)), bandwidth BW = f0 / Q
+    function computeParallelCharacteristics(R, L, C) {
+        if (L <= 0 || C <= 0) return { f0: 0, Q: 0, BW: 0 };
+        const f0 = 1 / (2 * Math.PI * Math.sqrt(L * C));
+        const Q = R * Math.sqrt(C / L);
+        const BW = f0 / Q;
+        return { f0, Q, BW };
+    }
+
+    // Update parameter display (R, L, C value format)
+    function updateParameterDisplays(R, L, C) {
+        rDisplay.innerText = `${R.toFixed(1)} Ω`;
+        if (L >= 0.001) lDisplay.innerText = `${(L * 1000).toFixed(1)} mH`;
+        else lDisplay.innerText = `${(L * 1e6).toFixed(1)} μH`;
+        if (C >= 1e-6) cDisplay.innerText = `${(C * 1e6).toFixed(1)} μF`;
+        else cDisplay.innerText = `${(C * 1e9).toFixed(1)} nF`;
+    }
+
+    // Update characteristic parameter display (parallel)
+    function updateCharDisplays(R, L, C) {
+        const { f0, Q, BW } = computeParallelCharacteristics(R, L, C);
+        if (isFinite(f0) && f0 > 0) {
+            f0Display.innerText = f0 > 1000 ? `${(f0/1000).toFixed(2)} kHz` : `${f0.toFixed(1)} Hz`;
+            qDisplay.innerText = Q.toFixed(2);
+            if (BW > 0 && isFinite(BW)) bwDisplay.innerText = BW > 1000 ? `${(BW/1000).toFixed(2)} kHz` : `${BW.toFixed(1)} Hz`;
+            else bwDisplay.innerText = '∞';
+        } else {
+            f0Display.innerText = '—';
+            qDisplay.innerText = '—';
+            bwDisplay.innerText = '—';
+        }
+    }
+
+    // Get all current parameter values (SI units)
+    function getCurrentParams() {
+        const R = parseFloat(rSlider.value);                // Ohm
+        const L = parseFloat(lSlider.value) * 1e-3;         // H (mH -> H)
+        const C = parseFloat(cSlider.value) * 1e-6;         // F (uF -> F)
+        const f_marker = parseFloat(fPointSlider.value);    // Hz
+        return { R, L, C, f_marker };
+    }
+
+    // Update branch current values at current marker point
+    function updateMarkerCurrents(R, L, C, f_marker) {
+        const { IR, IL, IC } = computeCurrents(f_marker, R, L, C);
+        irPointSpan.innerText = `${IR.toFixed(3)} A`;
+        ilPointSpan.innerText = `${IL.toFixed(3)} A`;
+        icPointSpan.innerText = `${IC.toFixed(3)} A`;
+        // Display frequency value
+        if (f_marker >= 1000) fPointDisplay.innerText = `${(f_marker/1000).toFixed(1)} kHz`;
+        else fPointDisplay.innerText = `${f_marker.toFixed(0)} Hz`;
+    }
+
+    // Build parallel current source current data set (IR, IL, IC vs frequency)
+    function buildCurrentDatasets(R, L, C) {
+        const freqs = generateLogFrequencies(F_MIN, F_MAX, NUM_POINTS);
+        const irData = [];
+        const ilData = [];
+        const icData = [];
+
+        for (let i = 0; i < freqs.length; i++) {
+            const f = freqs[i];
+            const { IR, IL, IC } = computeCurrents(f, R, L, C);
+            irData.push({ x: f, y: IR });
+            ilData.push({ x: f, y: IL });
+            icData.push({ x: f, y: IC });
+        }
+        return { irData, ilData, icData };
+    }
+
+    // Jump to resonant frequency (button functionality)
+    function jumpToResonantFrequency() {
+        const { R, L, C } = getCurrentParams();
+        if (L <= 0 || C <= 0) return;
+        let { f0 } = computeParallelCharacteristics(R, L, C);
+        if (!isFinite(f0) || f0 <= 0) return;
+
+        const MIN_F_MARKER = 10;
+        const MAX_F_MARKER = 20000;
+        let targetFreq = f0;
+        let outOfRange = false;
+        if (targetFreq < MIN_F_MARKER) {
+            targetFreq = MIN_F_MARKER;
+            outOfRange = true;
+        } else if (targetFreq > MAX_F_MARKER) {
+            targetFreq = MAX_F_MARKER;
+            outOfRange = true;
+        }
+        targetFreq = Math.round(targetFreq);
+        targetFreq = Math.min(MAX_F_MARKER, Math.max(MIN_F_MARKER, targetFreq));
+
+        fPointSlider.value = targetFreq;
+
+        if (outOfRange) {
+            console.log(`Parallel resonant frequency ${f0.toFixed(1)} Hz exceeds marker range (10~20000 Hz), set to boundary value ${targetFreq} Hz`);
+            const jumpBtn = document.getElementById('jumpToF0Btn');
+            const originalTitle = jumpBtn.getAttribute('title') || '';
+            jumpBtn.setAttribute('title', `Resonant frequency ${f0.toFixed(1)} Hz out of range, marked at boundary`);
+            setTimeout(() => {
+                jumpBtn.setAttribute('title', originalTitle);
+            }, 1500);
+        } else {
+            console.log(`Jumping to parallel resonant frequency: ${targetFreq} Hz`);
+        }
+
+        refreshAll();
+    }
+
+    // Custom plugin: draw vertical dashed line at current marker frequency (purple)
+    const markerLinePlugin = {
+        id: 'markerLine',
+        afterDraw(chart) {
+            const { ctx, chartArea: { left, right, top, bottom }, scales } = chart;
+            const currentParams = getCurrentParams();
+            const f_marker_local = currentParams.f_marker;
+            if (!scales.x || !scales.y) return;
+            const xPos = scales.x.getPixelForValue(f_marker_local);
+            if (xPos >= left && xPos <= right) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.strokeStyle = '#a855f7';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([6, 8]);
+                ctx.moveTo(xPos, top);
+                ctx.lineTo(xPos, bottom);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                // Top circle marker
+                ctx.beginPath();
+                ctx.arc(xPos, top + 12, 4, 0, 2 * Math.PI);
+                ctx.fillStyle = '#a855f7';
+                ctx.fill();
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 10px "Segoe UI"';
+                ctx.fillText('●', xPos-2, top+14);
+                ctx.fillStyle = '#581c87';
+                ctx.font = '10px monospace';
+                let freqText = f_marker_local >= 1000 ? (f_marker_local/1000).toFixed(1)+'k' : f_marker_local+' Hz';
+                ctx.fillText(`${freqText}`, xPos+5, top+16);
+                ctx.restore();
+            }
+        }
+    };
+
+    // Core chart drawing function (Chart.js)
+    function updateChart() {
+        const { R, L, C, f_marker } = getCurrentParams();
+
+        // Update UI display
+        updateParameterDisplays(R, L, C);
+        updateCharDisplays(R, L, C);
+        updateMarkerCurrents(R, L, C, f_marker);
+
+        // Build current data set
+        const { irData, ilData, icData } = buildCurrentDatasets(R, L, C);
+
+        // Dynamic Y-axis range: find maximum current value, set upper limit to maxCurrent*1.08 but not exceeding 2A
+        // (avoid inductor low-frequency being too large, but under current source the voltage is limited, actual current is finite)
+        let maxCurrent = 0;
+        [...irData, ...ilData, ...icData].forEach(p => { if (p.y > maxCurrent) maxCurrent = p.y; });
+        // Parallel current source: maximum current is usually inductor/capacitor current Q*Is at resonance,
+        // reasonable display limit of 2A is sufficient (Q can be quite high)
+        let yMax = Math.min(2.0, maxCurrent * 1.08);
+        if (yMax < 0.05) yMax = 0.2;
+        // Ensure curve details are visible
+        if (maxCurrent > 1.8) yMax = maxCurrent * 1.05;
+
+        // If chart already exists, only update data and options
+        if (chartInstance) {
+            chartInstance.data.datasets[0].data = irData;
+            chartInstance.data.datasets[1].data = ilData;
+            chartInstance.data.datasets[2].data = icData;
+            chartInstance.options.scales.y.max = yMax;
+            chartInstance.options.scales.y.ticks.stepSize = yMax > 1 ? 0.5 : (yMax > 0.2 ? 0.1 : 0.05);
+            chartInstance.update();
+            return;
+        }
+
+        const options = {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) label += ': ';
+                            label += context.raw.y.toFixed(3) + ' A';
+                            label += `  @ ${context.raw.x.toFixed(1)} Hz`;
+                            return label;
+                        }
+                    },
+                    backgroundColor: 'rgba(0,0,0,0.7)',
+                    titleColor: '#f1f5f9',
+                    bodyColor: '#e2e8f0'
+                },
+                legend: {
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        boxWidth: 8,
+                        font: { size: 12 }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    type: 'logarithmic',
+                    title: {
+                        display: true,
+                        text: 'Frequency f (Hz)',
+                        font: { weight: 'bold', size: 13 }
+                    },
+                    ticks: {
+                        callback: function(val, index, ticks) {
+                            if (val < 1) return '';
+                            if (val >= 1000) return (val/1000).toFixed(0) + 'k';
+                            return val;
+                        },
+                        autoSkip: true,
+                        maxTicksLimit: 10
+                    },
+                    min: F_MIN,
+                    max: F_MAX,
+                    grid: { color: '#eef2ff', tickLength: 6 }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Current Magnitude (A)',
+                        font: { weight: 'bold', size: 13 }
+                    },
+                    min: 0,
+                    max: yMax,
+                    ticks: {
+                        callback: (val) => val.toFixed(2) + ' A',
+                        stepSize: yMax > 1 ? 0.5 : (yMax > 0.2 ? 0.1 : 0.05)
+                    },
+                    grid: { color: '#eef2ff' }
+                }
+            },
+            elements: {
+                point: { radius: 0, hitRadius: 8, hoverRadius: 3 },
+                line: { tension: 0.2, borderWidth: 2.5 }
+            }
+        };
+
+        const datasets = [
+            {
+                label: 'I_R (Resistor Current)',
+                data: irData,
+                borderColor: '#3b82f6',
+                backgroundColor: 'transparent',
+                borderWidth: 2.5,
+                pointRadius: 0,
+                tension: 0.2,
+                fill: false,
+                order: 2
+            },
+            {
+                label: 'I_L (Inductor Current)',
+                data: ilData,
+                borderColor: '#22c55e',
+                backgroundColor: 'transparent',
+                borderWidth: 2.5,
+                pointRadius: 0,
+                tension: 0.2,
+                fill: false,
+                order: 1
+            },
+            {
+                label: 'I_C (Capacitor Current)',
+                data: icData,
+                borderColor: '#f97316',
+                backgroundColor: 'transparent',
+                borderWidth: 2.5,
+                pointRadius: 0,
+                tension: 0.2,
+                fill: false,
+                order: 1
+            }
+        ];
+
+        // Create new chart
+        chartInstance = new Chart(canvas, {
+            type: 'line',
+            data: { datasets },
+            options: options,
+            plugins: [markerLinePlugin]
+        });
+    }
+
+    // Global refresh
+    function refreshAll() {
+        updateChart();
+    }
+
+    // Event listeners
+    rSlider.addEventListener('input', refreshAll);
+    lSlider.addEventListener('input', refreshAll);
+    cSlider.addEventListener('input', refreshAll);
+    fPointSlider.addEventListener('input', () => {
+        refreshAll();
+    });
+
+    // Jump button listener
+    const jumpBtn = document.getElementById('jumpToF0Btn');
+    if (jumpBtn) {
+        jumpBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            jumpToResonantFrequency();
+        });
+    }
+
+    // Redraw on window resize
+    window.addEventListener('resize', () => {
+        if (chartInstance) {
+            chartInstance.resize();
+            chartInstance.update();
+        }
+    });
+
+    // Initial render
+    refreshAll();
+
+    // KaTeX auto render
+    document.addEventListener("DOMContentLoaded", function() {
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '\\(', right: '\\)', display: false},
+                ],
+                throwOnError: false
+            });
+        }
+    });
+
+    console.log('Parallel RLC current source simulation started | Resistance range 1~50 Ohm (initial 10 Ohm) | Branch current magnitude response | Resonance marking ready');
+</script>
+</body>
+</html>

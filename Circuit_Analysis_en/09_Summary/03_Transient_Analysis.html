@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unit 03: Dynamic Circuit Time-Domain Analysis - Fundamentals of Circuit Analysis</title>
+<link rel="stylesheet" href="./css/back-button.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<style>
+  :root {
+    --font-body: 'Noto Sans SC', 'Inter', -apple-system, sans-serif;
+    --font-mono: 'SF Mono', 'Fira Code', Consolas, monospace;
+    --c-bg: #fefcfa;
+    --c-surface: #ffffff;
+    --c-sidebar: rgba(255,255,255,0.85);
+    --c-text: #3d3d3d;
+    --c-text-dim: #8a8a8a;
+    --c-text-head: #2c2c2c;
+    --c-border: #ede8e3;
+    --c-lavender: #e8e0f0;
+    --c-lavender-deep: #9b8ec4;
+    --c-peach: #fde8d8;
+    --c-peach-deep: #e8956a;
+    --c-sky: #dce8f8;
+    --c-sky-deep: #6a9fd8;
+    --c-mint: #daf0e8;
+    --c-mint-deep: #5aaf8a;
+    --c-rose: #f8dce0;
+    --c-rose-deep: #d87088;
+    --c-amber: #f8ecd0;
+    --c-amber-deep: #c89a40;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --sidebar-w: 260px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --c-bg: #1a1a24;
+      --c-surface: #24243a;
+      --c-sidebar: rgba(26,26,36,0.92);
+      --c-text: #d4d4d4;
+      --c-text-dim: #7a7a8e;
+      --c-text-head: #eee;
+      --c-border: #3a3a52;
+      --c-lavender: #2e2840;
+      --c-lavender-deep: #b8a8e0;
+      --c-peach: #3a2820;
+      --c-peach-deep: #f0a878;
+      --c-sky: #1e2838;
+      --c-sky-deep: #88b8f0;
+      --c-mint: #1e3028;
+      --c-mint-deep: #70d0a0;
+      --c-rose: #382028;
+      --c-rose-deep: #f08898;
+      --c-amber: #302818;
+      --c-amber-deep: #e8c060;
+    }
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-body);
+    color: var(--c-text);
+    background: var(--c-bg);
+    background-image:
+      radial-gradient(ellipse 600px 400px at 10% 20%, rgba(232,224,240,0.5) 0%, transparent 70%),
+      radial-gradient(ellipse 500px 500px at 90% 70%, rgba(253,232,216,0.4) 0%, transparent 70%),
+      radial-gradient(ellipse 400px 300px at 50% 90%, rgba(220,232,248,0.3) 0%, transparent 70%);
+    font-size: 15.5px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    position: fixed;
+    top: 1.5rem; left: 1.5rem; bottom: 1.5rem;
+    width: var(--sidebar-w);
+    background: var(--c-sidebar);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.75rem 1.25rem;
+    overflow-y: auto;
+    z-index: 100;
+    transition: transform 0.35s cubic-bezier(.4,0,.2,1);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+  }
+  .sidebar-brand {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--c-lavender-deep);
+    margin-bottom: 0.5rem;
+  }
+  .sidebar-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--c-border);
+  }
+  /* ── Sidebar Tree Nav ── */
+  .sidebar nav {
+    font-size: 0.82rem;
+  }
+  .sidebar nav ul {
+    list-style: none;
+    margin: 0; padding: 0;
+  }
+  .sidebar nav ul ul {
+    padding-left: 0;
+    margin-left: 0.6rem;
+    border-left: 1px dashed var(--c-border);
+  }
+  .sidebar nav li {
+    position: relative;
+    margin-bottom: 1px;
+  }
+  .sidebar nav a {
+    display: block;
+    padding: 0.3rem 0.55rem;
+    color: var(--c-text-dim);
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s;
+    line-height: 1.55;
+  }
+  .sidebar nav a:hover {
+    color: var(--c-text-head);
+    background: var(--c-lavender);
+  }
+  .sidebar nav a.active {
+    color: var(--c-lavender-deep);
+    background: var(--c-lavender);
+    font-weight: 600;
+  }
+  .sidebar nav .nav-chapter {
+    font-weight: 600;
+    color: var(--c-text-head);
+    font-size: 0.83rem;
+    padding: 0.35rem 0.55rem;
+    margin-top: 0.3rem;
+    cursor: pointer;
+    position: relative;
+    padding-right: 1.6rem;
+  }
+  .sidebar nav .nav-chapter::after {
+    content: '\25BE';
+    position: absolute;
+    right: 0.55rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.7rem;
+    color: var(--c-text-dim);
+    transition: transform 0.25s ease;
+  }
+  .sidebar nav li.collapsed > .nav-chapter::after {
+    transform: translateY(-50%) rotate(-90deg);
+  }
+  .sidebar nav li.collapsed > ul {
+    display: none;
+  }
+  .sidebar nav .nav-chapter:first-child { margin-top: 0; }
+  .sidebar nav .nav-section {
+    font-size: 0.78rem;
+    padding-left: 0.55rem;
+  }
+  .sidebar nav .nav-sub {
+    font-size: 0.75rem;
+    padding-left: 0.35rem;
+    color: var(--c-text-dim);
+  }
+
+  /* ── Main ── */
+  .main {
+    margin-left: calc(var(--sidebar-w) + 3rem);
+    padding: 2.5rem 0;
+    max-width: 780px;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    position: relative;
+    background: linear-gradient(135deg, var(--c-lavender) 0%, var(--c-sky) 50%, var(--c-peach) 100%);
+    border-radius: var(--radius);
+    padding: 3rem 2.5rem 2.5rem;
+    margin-bottom: 3rem;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 50%;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -30px; left: 30%;
+    width: 100px; height: 100px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 50%;
+  }
+  .hero h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    position: relative;
+    z-index: 1;
+  }
+  .hero .sub {
+    color: var(--c-text-dim);
+    font-size: 0.95rem;
+    margin-top: 0.4rem;
+    position: relative;
+    z-index: 1;
+  }
+  .hero .tags {
+    margin-top: 1rem;
+    position: relative;
+    z-index: 1;
+  }
+  .tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.6);
+    backdrop-filter: blur(8px);
+    padding: 0.2rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.73rem;
+    font-weight: 600;
+    color: var(--c-text);
+    margin-right: 0.4rem;
+    border: 1px solid rgba(255,255,255,0.5);
+  }
+
+  /* ── Tree Card ── */
+  .tree-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.75rem 2rem;
+    margin-bottom: 3rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+  }
+  .tree-card h2 {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--c-lavender-deep);
+    margin-bottom: 1rem;
+  }
+  .tree-card pre {
+    font-family: var(--font-mono);
+    font-size: 0.83rem;
+    line-height: 1.9;
+    color: var(--c-text-dim);
+    overflow-x: auto;
+  }
+
+  /* ── Section ── */
+  section { margin-bottom: 2.5rem; }
+
+  .section-label {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    margin-bottom: 0.6rem;
+  }
+  .section-label.ch7 { background: var(--c-lavender); color: var(--c-lavender-deep); }
+
+  h2.sec-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    margin-bottom: 1.25rem;
+  }
+  h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--c-text-head);
+    margin: 1.75rem 0 0.75rem;
+  }
+  h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--c-text);
+    margin: 1.25rem 0 0.5rem;
+  }
+  p { margin-bottom: 0.7rem; }
+  ul, ol { margin: 0.4rem 0 1rem 1.2rem; }
+  li { margin-bottom: 0.3rem; }
+  li ul, li ol { margin-top: 0.25rem; margin-bottom: 0; }
+  strong { font-weight: 600; }
+
+  /* ── Param Cards ── */
+  .param-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.25rem 0;
+  }
+  .param-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  }
+  .param-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  }
+  .param-card .badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .param-card.z-card .badge { background: var(--c-lavender); color: var(--c-lavender-deep); }
+  .param-card.y-card .badge { background: var(--c-sky); color: var(--c-sky-deep); }
+  .param-card.t-card .badge { background: var(--c-peach); color: var(--c-peach-deep); }
+  .param-card.h-card .badge { background: var(--c-mint); color: var(--c-mint-deep); }
+
+  .param-card .card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    margin-bottom: 0.6rem;
+  }
+  .param-card .desc {
+    font-size: 0.83rem;
+    color: var(--c-text-dim);
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
+  }
+  .param-card .formula-mini {
+    background: var(--c-bg);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.88rem;
+    overflow-x: auto;
+  }
+  .param-card .conditions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .param-card .cond-chip {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    background: var(--c-bg);
+    border: 1px solid var(--c-border);
+    color: var(--c-text-dim);
+  }
+
+  /* ── Full-width param detail ── */
+  .param-detail {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.75rem 2rem;
+    margin: 1.25rem 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  }
+  .param-detail .detail-head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  .param-detail .detail-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    flex-shrink: 0;
+  }
+  .param-detail .detail-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+  }
+  .param-detail .formula-block {
+    background: var(--c-bg);
+    border-radius: var(--radius-sm);
+    padding: 1.25rem 1.5rem;
+    margin: 0.75rem 0;
+    overflow-x: auto;
+    border-left: 3px solid var(--c-border);
+  }
+  .param-detail .meaning-list {
+    list-style: none;
+    margin: 0.75rem 0 0 0;
+    padding: 0;
+  }
+  .param-detail .meaning-list li {
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+  }
+  .param-detail .meaning-list li:nth-child(odd) { background: var(--c-bg); }
+  .param-detail .cond-row {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+  .param-detail .cond-pill {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.35rem 0.8rem;
+    border-radius: 20px;
+    border: 1px solid var(--c-border);
+  }
+  .z-accent { background: var(--c-lavender); color: var(--c-lavender-deep); border-color: var(--c-lavender) !important; }
+  .y-accent { background: var(--c-sky); color: var(--c-sky-deep); border-color: var(--c-sky) !important; }
+  .t-accent { background: var(--c-peach); color: var(--c-peach-deep); border-color: var(--c-peach) !important; }
+  .h-accent { background: var(--c-mint); color: var(--c-mint-deep); border-color: var(--c-mint) !important; }
+
+  /* ── Comparison Grid ── */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+  .compare-cell {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    text-align: center;
+    transition: transform 0.2s;
+  }
+  .compare-cell:hover { transform: translateY(-2px); }
+  .compare-cell .cell-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+  }
+  .compare-cell:nth-child(1) .cell-label { color: var(--c-lavender-deep); }
+  .compare-cell:nth-child(2) .cell-label { color: var(--c-sky-deep); }
+  .compare-cell:nth-child(3) .cell-label { color: var(--c-peach-deep); }
+  .compare-cell:nth-child(4) .cell-label { color: var(--c-mint-deep); }
+  .compare-cell .cell-letter {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+  .compare-cell:nth-child(1) { border-top: 3px solid var(--c-lavender-deep); }
+  .compare-cell:nth-child(2) { border-top: 3px solid var(--c-sky-deep); }
+  .compare-cell:nth-child(3) { border-top: 3px solid var(--c-peach-deep); }
+  .compare-cell:nth-child(4) { border-top: 3px solid var(--c-mint-deep); }
+  .compare-cell .cell-row {
+    font-size: 0.78rem;
+    color: var(--c-text-dim);
+    margin: 0.2rem 0;
+  }
+  .compare-cell .cell-row strong { color: var(--c-text); }
+
+  /* ── Connection cards ── */
+  .connect-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+  .connect-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.25rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+  }
+  .connect-card .cc-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+    color: var(--c-text-head);
+  }
+  .connect-card .cc-desc {
+    font-size: 0.8rem;
+    color: var(--c-text-dim);
+    margin-bottom: 0.4rem;
+  }
+  .connect-card .cc-formula {
+    font-size: 0.85rem;
+  }
+  .connect-card.full { grid-column: 1 / -1; }
+
+  /* ── Steps ── */
+  .step-flow {
+    display: flex;
+    gap: 0;
+    margin: 1.25rem 0;
+    align-items: stretch;
+  }
+  .step-item {
+    flex: 1;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    padding: 1.25rem 1rem;
+    text-align: center;
+    position: relative;
+    font-size: 0.85rem;
+  }
+  .step-item:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+  .step-item:last-child { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+  .step-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: -0.55rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0; height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-left: 8px solid var(--c-border);
+    z-index: 2;
+  }
+  .step-num {
+    width: 2rem; height: 2rem;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.5rem;
+  }
+  .step-item:nth-child(1) .step-num { background: var(--c-lavender-deep); }
+  .step-item:nth-child(2) .step-num { background: var(--c-sky-deep); }
+  .step-item:nth-child(3) .step-num { background: var(--c-peach-deep); }
+  .step-item:nth-child(4) .step-num { background: var(--c-mint-deep); }
+
+  /* ── Mobile ── */
+  .menu-btn {
+    display: none;
+    position: fixed;
+    top: 1rem; left: 1rem;
+    z-index: 200;
+    width: 44px; height: 44px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: 12px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    color: var(--c-text);
+  }
+  @media (max-width: 960px) {
+    .sidebar { transform: translateX(-110%); }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; padding: 1.5rem; padding-top: 4.5rem; }
+    .menu-btn { display: flex; align-items: center; justify-content: center; }
+    .param-grid, .connect-grid { grid-template-columns: 1fr; }
+    .compare-grid { grid-template-columns: 1fr 1fr; }
+    .step-flow { flex-direction: column; }
+    .step-item { border-radius: var(--radius-sm) !important; }
+    .step-item:not(:last-child)::after { display: none; }
+    .hero { padding: 2rem 1.5rem; }
+    .hero h1 { font-size: 1.5rem; }
+  }
+  @media print {
+    .sidebar, .menu-btn { display: none; }
+    .main { margin-left: 0; padding: 1rem; }
+    .hero { background: #f0f0f0 !important; }
+    .param-card:hover { transform: none; }
+  }
+  a:focus-visible, button:focus-visible {
+    outline: 3px solid var(--c-lavender-deep);
+    outline-offset: 2px;
+  }
+</style>
+</head>
+<body>
+
+<button class="menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('open')" aria-label="Toggle nav">&#9776;</button>
+
+<aside class="sidebar">
+  <div class="sidebar-brand">Fundamentals of Circuit Analysis</div>
+  <div class="sidebar-title">Unit 03: Dynamic Circuit Time-Domain Analysis</div>
+  <nav>
+    <ul>
+      <li><a href="#overview">Knowledge Structure Overview</a></li>
+      <li>
+        <a href="#sec-7-1" class="nav-chapter">7. Dynamic Circuit Time-Domain Analysis</a>
+        <ul>
+          <li>
+            <a href="#sec-7-1" class="nav-section">7.1 Transient Process and Switching Rules</a>
+            <ul>
+              <li><a href="#sec-7-1-1" class="nav-sub">Basic Concepts</a></li>
+              <li><a href="#sec-7-1-2" class="nav-sub">Switching Rules</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#sec-7-2" class="nav-section">7.2 Zero-Input Response</a>
+            <ul>
+              <li><a href="#sec-7-2-1" class="nav-sub">RC Zero-Input</a></li>
+              <li><a href="#sec-7-2-2" class="nav-sub">RL Zero-Input</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#sec-7-3" class="nav-section">7.3 Zero-State Response</a>
+            <ul>
+              <li><a href="#sec-7-3-1" class="nav-sub">RC Zero-State</a></li>
+              <li><a href="#sec-7-3-2" class="nav-sub">RL Zero-State</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#sec-7-4" class="nav-section">7.4 Full Response and Three-Element Method</a>
+            <ul>
+              <li><a href="#sec-7-4-1" class="nav-sub">Full Response</a></li>
+              <li><a href="#sec-7-4-2" class="nav-sub">Three-Element Method</a></li>
+            </ul>
+          </li>
+          <li><a href="#sec-7-5" class="nav-section">7.5 Step Function and Response</a></li>
+          <li><a href="#sec-7-6" class="nav-section">7.6 Impulse Function and Response</a></li>
+          <li>
+            <a href="#sec-7-7" class="nav-section">7.7 Second-Order Circuit Zero-Input</a>
+            <ul>
+              <li><a href="#compare-rc-rl" class="nav-sub">RC vs RL Comparison</a></li>
+              <li><a href="#compare-response" class="nav-sub">Four Response Types</a></li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </nav>
+</aside>
+
+<main class="main">
+
+  <!-- Back to Home Button -->
+  <div class="back-btn-wrap">
+    <a href="index.html" class="back-btn">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+      </svg>
+      Back to Home
+    </a>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>Unit 03: Dynamic Circuit Time-Domain Analysis</h1>
+    <p class="sub">Fundamentals of Circuit Analysis (2026) &middot; Chapter 7</p>
+    <div class="tags">
+      <span class="tag">Transient Process</span>
+      <span class="tag">First-Order Circuits</span>
+      <span class="tag">Three-Element Method</span>
+      <span class="tag">Step Response</span>
+      <span class="tag">Impulse Response</span>
+      <span class="tag">Second-Order Circuits</span>
+    </div>
+  </div>
+
+  <!-- Tree -->
+  <div class="tree-card" id="overview">
+    <h2>Knowledge Structure Overview</h2>
+    <pre>
+Dynamic Circuit Time-Domain Analysis
+&#9492;&#9472; 7. Dynamic Circuit Time-Domain Analysis
+    &#9500;&#9472; 7.1 Transient Process and Switching Rules
+    &#9474;   &#9500;&#9472; 7.1.1 Basic Concepts of Dynamic Circuits
+    &#9474;   &#9492;&#9472; 7.1.2 Switching Rules
+    &#9500;&#9472; 7.2 First-Order Circuit Zero-Input Response
+    &#9474;   &#9500;&#9472; 7.2.1 First-Order RC Circuit Zero-Input Response
+    &#9474;   &#9492;&#9472; 7.2.2 First-Order RL Circuit Zero-Input Response
+    &#9500;&#9472; 7.3 First-Order Circuit Zero-State Response
+    &#9474;   &#9500;&#9472; 7.3.1 First-Order RC Circuit Zero-State Response
+    &#9474;   &#9492;&#9472; 7.3.2 First-Order RL Circuit Zero-State Response
+    &#9500;&#9472; 7.4 First-Order Circuit Full Response and Three-Element Method
+    &#9474;   &#9500;&#9472; 7.4.1 Full Response of First-Order Circuits
+    &#9474;   &#9492;&#9472; 7.4.2 Three-Element Method for First-Order Circuits
+    &#9500;&#9472; 7.5 Step Function and Step Response
+    &#9474;   &#9500;&#9472; 7.5.1 Step Function
+    &#9474;   &#9492;&#9472; 7.5.2 Step Response
+    &#9500;&#9472; 7.6 Impulse Function and Impulse Response
+    &#9474;   &#9500;&#9472; 7.6.1 Impulse Function
+    &#9474;   &#9492;&#9472; 7.6.2 Impulse Response
+    &#9492;&#9472; 7.7 Second-Order Circuit Zero-Input Response</pre>
+  </div>
+
+  <!-- 7.1 -->
+  <section id="sec-7-1">
+    <span class="section-label ch7">Chapter 7</span>
+    <h2 class="sec-title">7.1 Transient Process and Switching Rules</h2>
+
+    <h3 id="sec-7-1-1">7.1.1 Basic Concepts of Dynamic Circuits</h3>
+    <ul>
+      <li><strong>Dynamic Circuit</strong>: A circuit containing energy-storage elements such as capacitors or inductors</li>
+      <li><strong>Transient Process (Transition Process)</strong>: The intermediate process when a circuit transitions from one steady state to another</li>
+      <li><strong>Cause</strong>: Energy in energy-storage elements cannot change instantaneously (energy accumulation and release require time)</li>
+      <li><strong>Steady State</strong>: The state where all quantities in the circuit have reached stability (DC steady state or AC steady state)</li>
+      <li><strong>Switching</strong>: A sudden change in circuit structure or parameters (switch operation, parameter change, etc.)</li>
+    </ul>
+
+    <h3 id="sec-7-1-2">7.1.2 Switching Rules</h3>
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge z-accent">Core Theorem</span>
+        <span class="detail-title">Switching Rules</span>
+      </div>
+      <p><strong>Statement</strong>: At the switching instant ($t = 0$), capacitor voltage and inductor current cannot change instantaneously</p>
+      <div class="formula-block">
+        $$u_C(0^+) = u_C(0^-) \qquad i_L(0^+) = i_L(0^-)$$
+      </div>
+      <p><strong>Physical Basis</strong>: Energy cannot change instantaneously ($W_C = \frac{1}{2}Cu_C^2$, $W_L = \frac{1}{2}Li_L^2$)</p>
+      <p><strong>Corollaries</strong>:</p>
+      <ul>
+        <li>Capacitor current can change instantaneously</li>
+        <li>Inductor voltage can change instantaneously</li>
+        <li>Resistor voltage and current can both change instantaneously</li>
+      </ul>
+    </div>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge y-accent">Procedure</span>
+        <span class="detail-title">Steps for Determining Initial Values</span>
+      </div>
+      <div class="step-flow">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div>Find $u_C(0^-)$ and $i_L(0^-)$<br>at $t = 0^-$<br>(steady-state analysis)</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div>Apply switching rules to get<br>$u_C(0^+)$ and $i_L(0^+)$</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div>Draw the $t = 0^+$<br>equivalent circuit (capacitor replaced by voltage source, inductor by current source)</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <div>Find initial values<br>of other quantities</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7.2 -->
+  <section id="sec-7-2">
+    <span class="section-label ch7">Chapter 7</span>
+    <h2 class="sec-title">7.2 First-Order Circuit Zero-Input Response</h2>
+
+    <div class="param-grid">
+      <div class="param-detail" id="sec-7-2-1">
+        <div class="detail-head">
+          <span class="detail-badge z-accent">RC Circuit</span>
+          <span class="detail-title">First-Order RC Circuit Zero-Input Response</span>
+        </div>
+        <p><strong>Circuit Structure</strong>: A charged capacitor C discharging through a resistor R</p>
+        <div class="formula-block">
+          $$RC\frac{du_C}{dt} + u_C = 0$$
+          $$u_C(t) = u_C(0^+)e^{-t/\tau}$$
+        </div>
+        <ul class="meaning-list">
+          <li><strong>Time Constant</strong>: $\tau = RC$ (unit: seconds)</li>
+          <li>Capacitor voltage decays exponentially to zero</li>
+          <li>Larger $\tau$ means slower decay</li>
+          <li>After $3\tau \sim 5\tau$, the transient process can be considered essentially complete</li>
+        </ul>
+        <div class="formula-block">
+          $$i(t) = -\frac{u_C(0^+)}{R}e^{-t/\tau}$$
+        </div>
+        <p><strong>Discharge Current</strong>: Maximum at the start, zero at the end</p>
+      </div>
+
+      <div class="param-detail" id="sec-7-2-2">
+        <div class="detail-head">
+          <span class="detail-badge y-accent">RL Circuit</span>
+          <span class="detail-title">First-Order RL Circuit Zero-Input Response</span>
+        </div>
+        <p><strong>Circuit Structure</strong>: An energized inductor L releasing energy through a resistor R</p>
+        <div class="formula-block">
+          $$L\frac{di_L}{dt} + Ri_L = 0$$
+          $$i_L(t) = i_L(0^+)e^{-t/\tau}$$
+        </div>
+        <ul class="meaning-list">
+          <li><strong>Time Constant</strong>: $\tau = L/R$ (unit: seconds)</li>
+          <li>Inductor current decays exponentially to zero</li>
+          <li>Inductor voltage $u_L(t) = -Ri_L(0^+)e^{-t/\tau}$ (changes instantaneously)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7.3 -->
+  <section id="sec-7-3">
+    <span class="section-label ch7">Chapter 7</span>
+    <h2 class="sec-title">7.3 First-Order Circuit Zero-State Response</h2>
+
+    <div class="param-grid">
+      <div class="param-detail" id="sec-7-3-1">
+        <div class="detail-head">
+          <span class="detail-badge z-accent">RC Circuit</span>
+          <span class="detail-title">First-Order RC Circuit Zero-State Response</span>
+        </div>
+        <p><strong>Circuit Structure</strong>: An uncharged capacitor C connected to a DC voltage source $U_s$</p>
+        <div class="formula-block">
+          $$RC\frac{du_C}{dt} + u_C = U_s$$
+          $$u_C(t) = U_s(1 - e^{-t/\tau}), \quad \tau = RC$$
+        </div>
+        <ul class="meaning-list">
+          <li>Capacitor voltage rises exponentially from zero to $U_s$</li>
+          <li>Charging current $i(t) = \frac{U_s}{R}e^{-t/\tau}$, maximum at start, zero at end</li>
+          <li>Capacitor acts as an open circuit (DC steady state)</li>
+        </ul>
+      </div>
+
+      <div class="param-detail" id="sec-7-3-2">
+        <div class="detail-head">
+          <span class="detail-badge y-accent">RL Circuit</span>
+          <span class="detail-title">First-Order RL Circuit Zero-State Response</span>
+        </div>
+        <p><strong>Circuit Structure</strong>: An inductor L with zero current connected to a DC voltage source $U_s$ (in series with resistor R)</p>
+        <div class="formula-block">
+          $$L\frac{di_L}{dt} + Ri_L = U_s$$
+          $$i_L(t) = \frac{U_s}{R}(1 - e^{-t/\tau}), \quad \tau = L/R$$
+        </div>
+        <ul class="meaning-list">
+          <li>Inductor current rises exponentially from zero to $U_s/R$</li>
+          <li>Inductor voltage $u_L(t) = U_s e^{-t/\tau}$, maximum at start, zero at end</li>
+          <li>Inductor acts as a short circuit (DC steady state)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7.4 -->
+  <section id="sec-7-4">
+    <span class="section-label ch7">Chapter 7</span>
+    <h2 class="sec-title">7.4 Full Response and Three-Element Method</h2>
+
+    <h3 id="sec-7-4-1">7.4.1 Full Response of First-Order Circuits</h3>
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge t-accent">Definition</span>
+        <span class="detail-title">Full Response</span>
+      </div>
+      <p><strong>Definition</strong>: The sum of the zero-input response and the zero-state response</p>
+      <div class="formula-block">
+        $$\text{Full Response} = \text{Zero-Input Response} + \text{Zero-State Response}$$
+      </div>
+      <p><strong>Second Decomposition</strong>: Steady-state component + Transient component</p>
+      <div class="formula-block">
+        $$\text{Full Response} = \text{Steady-State Component} + \text{Transient Component}$$
+      </div>
+      <p><strong>RC Circuit Full Response</strong>:</p>
+      <div class="formula-block">
+        $$u_C(t) = U_s + [u_C(0^+) - U_s]e^{-t/\tau}$$
+      </div>
+      <ul class="meaning-list">
+        <li>$U_s$: Steady-state component (final value)</li>
+        <li>$[u_C(0^+) - U_s]e^{-t/\tau}$: Transient component (decaying term)</li>
+        <li><strong>Physical Meaning</strong>: The full response reflects the complete change process of the circuit from its initial state to steady state</li>
+      </ul>
+    </div>
+
+    <h3 id="sec-7-4-2">7.4.2 Three-Element Method for First-Order Circuits</h3>
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge h-accent">Key Method</span>
+        <span class="detail-title">Three-Element Method</span>
+      </div>
+      <p><strong>Three Elements</strong>:</p>
+      <ul class="meaning-list">
+        <li><strong>Initial Value</strong> $f(0^+)$: The value immediately after switching</li>
+        <li><strong>Steady-State Value</strong> $f(\infty)$: The steady-state value as $t \to \infty$</li>
+        <li><strong>Time Constant</strong> $\tau$: Determines the speed of the transient process</li>
+      </ul>
+      <p><strong>General Formula</strong>:</p>
+      <div class="formula-block">
+        $$f(t) = f(\infty) + [f(0^+) - f(\infty)]e^{-t/\tau}$$
+      </div>
+      <p><strong>Applicable Range</strong>: Full response of any first-order linear circuit</p>
+      <div class="cond-row">
+        <span class="cond-pill z-accent">Applies to: first-order linear circuits</span>
+        <span class="cond-pill y-accent">$\tau = R_{eq}C$ or $\tau = L/R_{eq}$</span>
+      </div>
+    </div>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge t-accent">Procedure</span>
+        <span class="detail-title">Three-Element Method Solution Steps</span>
+      </div>
+      <div class="step-flow">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div>Find $f(0^+)$<br>using switching rules and<br>the $t=0^+$ equivalent circuit</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div>Find $f(\infty)$<br>open-circuit capacitor, short-circuit inductor<br>solve for DC steady state</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div>Find $\tau$<br>set independent sources to zero,<br>find $R_{eq}$</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <div>Substitute into formula<br>$f(t) = f(\infty) + [f(0^+) - f(\infty)]e^{-t/\tau}$</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7.5 -->
+  <section id="sec-7-5">
+    <span class="section-label ch7">Chapter 7</span>
+    <h2 class="sec-title">7.5 Step Function and Step Response</h2>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge z-accent">7.5.1</span>
+        <span class="detail-title">Step Function</span>
+      </div>
+      <div class="formula-block">
+        $$\varepsilon(t) = \begin{cases} 0, & t < 0 \\ 1, & t > 0 \end{cases}$$
+      </div>
+      <ul class="meaning-list">
+        <li><strong>Delayed Step</strong>: $\varepsilon(t - t_0)$ transitions at $t = t_0$</li>
+        <li><strong>Amplitude Step</strong>: $K\varepsilon(t)$ with amplitude K</li>
+        <li><strong>Physical Meaning</strong>: Represents a switch closing (or opening) at $t=0$</li>
+      </ul>
+    </div>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge y-accent">7.5.2</span>
+        <span class="detail-title">Step Response</span>
+      </div>
+      <p><strong>Definition</strong>: The zero-state response of a first-order circuit under a step input</p>
+      <div class="connect-grid">
+        <div class="connect-card">
+          <div class="cc-name">RC Circuit Step Response</div>
+          <div class="cc-formula">$u_C(t) = U_s(1-e^{-t/\tau})\varepsilon(t)$</div>
+        </div>
+        <div class="connect-card">
+          <div class="cc-name">RL Circuit Step Response</div>
+          <div class="cc-formula">$i_L(t) = \frac{U_s}{R}(1-e^{-t/\tau})\varepsilon(t)$</div>
+        </div>
+      </div>
+      <p><strong>Significance</strong>: The step response is the basis for analyzing more complex inputs</p>
+    </div>
+  </section>
+
+  <!-- 7.6 -->
+  <section id="sec-7-6">
+    <span class="section-label ch7">Chapter 7</span>
+    <h2 class="sec-title">7.6 Impulse Function and Impulse Response</h2>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge z-accent">7.6.1</span>
+        <span class="detail-title">Impulse Function</span>
+      </div>
+      <div class="formula-block">
+        $$\delta(t) = \begin{cases} 0, & t \neq 0 \\ \infty, & t = 0 \end{cases}, \quad \int_{-\infty}^{+\infty}\delta(t)dt = 1$$
+      </div>
+      <ul class="meaning-list">
+        <li><strong>Sifting Property</strong>: $\int_{-\infty}^{+\infty}f(t)\delta(t)dt = f(0)$</li>
+        <li><strong>Physical Meaning</strong>: Represents an extremely large force acting over an extremely short time (e.g., hammer blow, lightning strike)</li>
+        <li><strong>Relationship with Step Function</strong>: $\delta(t) = d\varepsilon(t)/dt$</li>
+      </ul>
+    </div>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge h-accent">7.6.2</span>
+        <span class="detail-title">Impulse Response</span>
+      </div>
+      <p><strong>Definition</strong>: The zero-state response of a circuit under a unit impulse function $\delta(t)$</p>
+      <p><strong>Solution Methods</strong>:</p>
+      <ul>
+        <li>Method 1: Direct solution of the differential equation</li>
+        <li>Method 2: Differentiate the step response (for first-order circuits)</li>
+      </ul>
+      <div class="formula-block">
+        $$h(t) = \frac{1}{RC}e^{-t/RC}\varepsilon(t)$$
+      </div>
+      <p><strong>RC Circuit Impulse Response</strong></p>
+      <div class="cond-row">
+        <span class="cond-pill z-accent">Impulse response = derivative of step response</span>
+        <span class="cond-pill y-accent">Fourier transform pair with frequency response</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7.7 -->
+  <section id="sec-7-7">
+    <span class="section-label ch7">Chapter 7</span>
+    <h2 class="sec-title">7.7 Second-Order Circuit Zero-Input Response</h2>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge t-accent">Overview</span>
+        <span class="detail-title">Second-Order Circuit Basic Equation</span>
+      </div>
+      <p><strong>Circuit Structure</strong>: Contains two energy-storage elements (e.g., RLC series or parallel circuit)</p>
+      <p><strong>Differential Equation</strong>: Second-order constant-coefficient linear differential equation (RLC series as example)</p>
+      <div class="formula-block">
+        $$LC\frac{d^2u_C}{dt^2} + RC\frac{du_C}{dt} + u_C = 0$$
+      </div>
+      <p><strong>Characteristic Equation</strong>:</p>
+      <div class="formula-block">
+        $$s^2 + \frac{R}{L}s + \frac{1}{LC} = 0$$
+      </div>
+      <p><strong>Characteristic Roots</strong>:</p>
+      <div class="formula-block">
+        $$s_{1,2} = -\alpha \pm \sqrt{\alpha^2 - \omega_0^2}$$
+      </div>
+      <ul class="meaning-list">
+        <li>$\alpha = R/(2L)$: Damping coefficient</li>
+        <li>$\omega_0 = 1/\sqrt{LC}$: Natural angular frequency</li>
+      </ul>
+    </div>
+
+    <h3 id="compare-response">Four Response Types</h3>
+    <div class="compare-grid">
+      <div class="compare-cell">
+        <div class="cell-label">Overdamped</div>
+        <div class="cell-letter">&alpha; &gt; &omega;&#8320;</div>
+        <div class="cell-row">Two <strong>unequal real roots</strong></div>
+        <div class="cell-row">Non-oscillatory decay</div>
+        <div class="cell-row">Slowest decay</div>
+        <div class="cell-row">&nbsp;</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">Critically Damped</div>
+        <div class="cell-letter">&alpha; = &omega;&#8320;</div>
+        <div class="cell-row">Two <strong>equal real roots</strong></div>
+        <div class="cell-row">Non-oscillatory decay</div>
+        <div class="cell-row">Fastest without oscillation</div>
+        <div class="cell-row">&nbsp;</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">Underdamped</div>
+        <div class="cell-letter">&alpha; &lt; &omega;&#8320;</div>
+        <div class="cell-row"><strong>Complex conjugate roots</strong></div>
+        <div class="cell-row">Oscillatory decay</div>
+        <div class="cell-row">$\omega_d = \sqrt{\omega_0^2 - \alpha^2}$</div>
+        <div class="cell-row">Damped oscillation frequency</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">Undamped</div>
+        <div class="cell-letter">&alpha; = 0</div>
+        <div class="cell-row"><strong>Pure imaginary roots</strong></div>
+        <div class="cell-row">Sustained oscillation</div>
+        <div class="cell-row">Ideal case</div>
+        <div class="cell-row">&nbsp;</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RC vs RL Comparison -->
+  <section id="compare-rc-rl">
+    <span class="section-label ch7">Summary</span>
+    <h2 class="sec-title">RC vs RL First-Order Circuit Comparison</h2>
+    <div class="compare-grid">
+      <div class="compare-cell">
+        <div class="cell-label">RC Zero-Input</div>
+        <div class="cell-letter">RC</div>
+        <div class="cell-row">$\tau = RC$</div>
+        <div class="cell-row">$u_C(t) = u_C(0^+)e^{-t/\tau}$</div>
+        <div class="cell-row">Capacitor discharge</div>
+        <div class="cell-row">Exponential decay to zero</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">RL Zero-Input</div>
+        <div class="cell-letter">RL</div>
+        <div class="cell-row">$\tau = L/R$</div>
+        <div class="cell-row">$i_L(t) = i_L(0^+)e^{-t/\tau}$</div>
+        <div class="cell-row">Inductor energy release</div>
+        <div class="cell-row">Exponential decay to zero</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">RC Zero-State</div>
+        <div class="cell-letter">RC</div>
+        <div class="cell-row">$\tau = RC$</div>
+        <div class="cell-row">$u_C(t) = U_s(1-e^{-t/\tau})$</div>
+        <div class="cell-row">Capacitor charging</div>
+        <div class="cell-row">Exponential rise to $U_s$</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">RL Zero-State</div>
+        <div class="cell-letter">RL</div>
+        <div class="cell-row">$\tau = L/R$</div>
+        <div class="cell-row">$i_L(t) = \frac{U_s}{R}(1-e^{-t/\tau})$</div>
+        <div class="cell-row">Inductor current buildup</div>
+        <div class="cell-row">Exponential rise to $U_s/R$</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+const sections = document.querySelectorAll('[id]');
+const navLinks = document.querySelectorAll('.sidebar nav a');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(a => a.classList.remove('active'));
+      const link = document.querySelector(`.sidebar nav a[href="#${entry.target.id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-15% 0px -75% 0px' });
+sections.forEach(s => { if (s.closest('.main')) observer.observe(s); });
+navLinks.forEach(a => a.addEventListener('click', () => {
+  document.querySelector('.sidebar').classList.remove('open');
+}));
+
+// Chapter collapse/expand
+document.querySelectorAll('.sidebar .nav-chapter').forEach(ch => {
+  ch.addEventListener('click', e => {
+    e.preventDefault();
+    const li = ch.parentElement;
+    li.classList.toggle('collapsed');
+  });
+});
+</script>
+
+</body>
+</html>

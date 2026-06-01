@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Three-Phase Load Star-Delta Connection · Phase Voltage and Line Voltage Relationship</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] { height: 5px; -webkit-appearance: none; background: #e2e8f0; border-radius: 5px; outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #3b82f6; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb:hover { background: #2563eb; transform: scale(1.15); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .card-hover { transition: all 0.2s ease; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15); }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- Back to Home -->
+    <div class="flex justify-start mb-4">
+        <a href="../index.html"
+           class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Home
+        </a>
+    </div>
+
+    <!-- Title area -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            Three-Phase Load Star-Delta Connection · Phase Voltage and Line Voltage Relationship
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            Same three-phase supply connected to loads in Star (Y) and Delta (Δ) configurations.<br>
+            Side-by-side comparison of voltage relationships under both connections, verifying the \(\sqrt{3}\) proportionality.
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left control panel -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- Parameter adjustment card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    Supply and Load Parameters
+                </h3>
+
+                <!-- Phase voltage -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Phase Voltage \(V_{\text{phase}}\)</label>
+                        <span class="text-blue-600 font-mono" id="vp_display">220 V</span>
+                    </div>
+                    <input type="range" id="vp_slider" min="100" max="400" step="5" value="220" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>100 V</span><span>400 V</span>
+                    </div>
+                </div>
+
+                <!-- Frequency -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Frequency \(f\)</label>
+                        <span class="text-blue-600 font-mono" id="freq_display">50 Hz</span>
+                    </div>
+                    <input type="range" id="freq_slider" min="40" max="60" step="1" value="50" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>40 Hz</span><span>60 Hz</span>
+                    </div>
+                </div>
+
+                <!-- Load impedance -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Load Impedance \(Z\)</label>
+                        <span class="text-blue-600 font-mono" id="z_display">50 Ω</span>
+                    </div>
+                    <input type="range" id="z_slider" min="10" max="200" step="1" value="50" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Ω</span><span>200 Ω</span>
+                    </div>
+                </div>
+
+                <!-- Reset button -->
+                <div class="mt-4 flex justify-center">
+                    <button id="resetBtn" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-full shadow-md transition flex items-center gap-2 text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        Reset Parameters
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Y connection parameters card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-red-400 rounded-full"></span>
+                    Star (Y) Connection Parameters
+                </h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">Line Voltage \(V_{\text{line}}\)</span>
+                        <span class="font-mono font-bold text-red-600" id="y_vline">380.6 V</span>
+                    </div>
+                    <div class="flex justify-between p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">Phase Current \(I_{\text{phase}}\)</span>
+                        <span class="font-mono font-bold text-red-600" id="y_iphase">4.40 A</span>
+                    </div>
+                    <div class="flex justify-between p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">Line Current \(I_{\text{line}}\)</span>
+                        <span class="font-mono font-bold text-red-600" id="y_iline">4.40 A</span>
+                    </div>
+                    <p class="text-xs text-slate-400 text-center">\(V_{\text{line}} = \sqrt{3}\,V_{\text{phase}},\quad I_{\text{line}} = I_{\text{phase}}\)</p>
+                </div>
+            </div>
+
+            <!-- Delta connection parameters card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-purple-400 rounded-full"></span>
+                    Delta (Δ) Connection Parameters
+                </h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">Line Voltage \(V_{\text{line}}\)</span>
+                        <span class="font-mono font-bold text-purple-600" id="d_vline">380.6 V</span>
+                    </div>
+                    <div class="flex justify-between p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">Phase Current \(I_{\text{phase}}\)</span>
+                        <span class="font-mono font-bold text-purple-600" id="d_iphase">7.61 A</span>
+                    </div>
+                    <div class="flex justify-between p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">Line Current \(I_{\text{line}}\)</span>
+                        <span class="font-mono font-bold text-purple-600" id="d_iline">13.18 A</span>
+                    </div>
+                    <p class="text-xs text-slate-400 text-center">\(V_{\text{line}} = V_{\text{phase}},\quad I_{\text{line}} = \sqrt{3}\,I_{\text{phase}}\)</p>
+                </div>
+            </div>
+
+            <!-- Comparison card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-indigo-500 rounded-full"></span>
+                    Comparative Analysis
+                </h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between p-2 bg-indigo-50 rounded-lg">
+                        <span class="text-slate-600">\(\displaystyle\frac{V_{\text{line,Y}}}{V_{\text{line,Δ}}}\)</span>
+                        <span class="font-mono font-bold text-indigo-700" id="ratio_v">1.000</span>
+                    </div>
+                    <div class="flex justify-between p-2 bg-indigo-50 rounded-lg">
+                        <span class="text-slate-600">\(\displaystyle\frac{I_{\text{line,Δ}}}{I_{\text{line,Y}}}\)</span>
+                        <span class="font-mono font-bold text-indigo-700" id="ratio_i">3.000</span>
+                    </div>
+                    <p class="text-xs text-slate-400 text-center mt-2">
+                        Under the same supply, Δ-connected load phase voltage is \(\sqrt{3}\) times that of Y-connected load;<br>Δ-connected line current is 3 times that of Y-connected load.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right graphics area -->
+        <div class="lg:col-span-8 space-y-5">
+            <!-- Two waveform charts side by side -->
+            <div class="grid grid-cols-1 gap-4">
+                <!-- Y connection waveform -->
+                <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="w-3 h-3 bg-red-400 rounded-full"></span>
+                        <h3 class="font-bold text-slate-800 text-sm">Star (Y) Connection · Voltage Waveforms</h3>
+                    </div>
+                    <div class="relative" style="height: 380px;">
+                        <canvas id="yChart" style="width:100%; height:100%;"></canvas>
+                    </div>
+                    <div class="flex flex-wrap justify-center gap-3 mt-2 text-xs">
+                        <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-red-500 inline-block rounded"></span>Phase A</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-green-500 inline-block rounded"></span>Phase B</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-blue-500 inline-block rounded"></span>Phase C</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-purple-500 inline-block rounded" style="border-top:2px dashed #a855f7; height:0;"></span>Line Voltage AB</span>
+                    </div>
+                </div>
+
+                <!-- Delta connection waveform -->
+                <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="w-3 h-3 bg-purple-400 rounded-full"></span>
+                        <h3 class="font-bold text-slate-800 text-sm">Delta (Δ) Connection · Voltage Waveforms</h3>
+                    </div>
+                    <div class="relative" style="height: 380px;">
+                        <canvas id="dChart" style="width:100%; height:100%;"></canvas>
+                    </div>
+                    <div class="flex flex-wrap justify-center gap-3 mt-2 text-xs">
+                        <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-red-500 inline-block rounded"></span>AB Phase</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-green-500 inline-block rounded"></span>BC Phase</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-blue-500 inline-block rounded"></span>CA Phase</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom info cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 card-hover">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">Theoretical Basis</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Y-connection: load bears phase voltage, line voltage is \(\sqrt{3}\) times phase voltage (\(\approx 1.732\)).<br>
+                        Δ-connection: load bears line voltage (equal to phase voltage), line current is \(\sqrt{3}\) times phase current.<br>
+                        Under the same supply, Δ-connected load has higher voltage and larger current.
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 card-hover">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">Characteristic Interpretation</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Y-connection is suitable for long-distance power distribution (with neutral point grounding); each phase load voltage is \(1/\sqrt{3}\) of the line voltage.<br>
+                        Δ-connection is suitable for high-power equipment such as motors, providing higher starting torque.<br>
+                        Total three-phase power is independent of connection type (for the same line voltage and line current).
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // === DOM Elements ===
+    const vpSlider = document.getElementById('vp_slider');
+    const freqSlider = document.getElementById('freq_slider');
+    const zSlider = document.getElementById('z_slider');
+
+    const vpDisplay = document.getElementById('vp_display');
+    const freqDisplay = document.getElementById('freq_display');
+    const zDisplay = document.getElementById('z_display');
+
+    const yVline = document.getElementById('y_vline');
+    const yIphase = document.getElementById('y_iphase');
+    const yIline = document.getElementById('y_iline');
+    const dVline = document.getElementById('d_vline');
+    const dIphase = document.getElementById('d_iphase');
+    const dIline = document.getElementById('d_iline');
+    const ratioV = document.getElementById('ratio_v');
+    const ratioI = document.getElementById('ratio_i');
+
+    let yChartInstance = null;
+    let dChartInstance = null;
+
+    const SQRT3 = Math.sqrt(3);
+    const SQRT2 = Math.sqrt(2);
+    const DEG120 = (120 * Math.PI) / 180;
+    const DEG30 = (30 * Math.PI) / 180;
+
+    function getParams() {
+        const Vp_rms = parseFloat(vpSlider.value);
+        const f = parseFloat(freqSlider.value);
+        const Zmag = parseFloat(zSlider.value);
+        return { Vp_rms, f, Zmag };
+    }
+
+    function generateTimeAxis(f, periods) {
+        const T = 1 / f;
+        const duration = periods * T;
+        const points = 800;
+        const times = [];
+        const dt = duration / (points - 1);
+        for (let i = 0; i < points; i++) {
+            times.push(i * dt);
+        }
+        return { times, T, duration };
+    }
+
+    function updateDisplay() {
+        const { Vp_rms, f, Zmag } = getParams();
+
+        vpDisplay.innerText = Vp_rms + ' V';
+        freqDisplay.innerText = f + ' Hz';
+        zDisplay.innerText = Zmag + ' Ω';
+
+        // Y connection
+        const VlineY = SQRT3 * Vp_rms;
+        const IphaseY = Vp_rms / Zmag;
+        const IlineY = IphaseY;
+
+        yVline.innerText = VlineY.toFixed(1) + ' V';
+        yIphase.innerText = IphaseY.toFixed(2) + ' A';
+        yIline.innerText = IlineY.toFixed(2) + ' A';
+
+        // Δ connection: loads see line-to-line voltage
+        const VphaseD = VlineY;  // = √3 * Vp_rms (line-to-line of source)
+        const IphaseD = VphaseD / Zmag;
+        const IlineD = SQRT3 * IphaseD;
+
+        dVline.innerText = VphaseD.toFixed(1) + ' V';
+        dIphase.innerText = IphaseD.toFixed(2) + ' A';
+        dIline.innerText = IlineD.toFixed(2) + ' A';
+
+        // Ratios
+        ratioV.innerText = (VlineY / VphaseD).toFixed(3);
+        ratioI.innerText = (IlineD / IlineY).toFixed(3);
+    }
+
+    function buildYDatasets(Vp_rms, f) {
+        const { times, T, duration } = generateTimeAxis(f, 1.5);
+        const Vm = Vp_rms * SQRT2;
+        const omega = 2 * Math.PI * f;
+        const Vline_m = SQRT3 * Vm;
+
+        const vA = times.map(t => Vm * Math.sin(omega * t));
+        const vB = times.map(t => Vm * Math.sin(omega * t - DEG120));
+        const vC = times.map(t => Vm * Math.sin(omega * t + DEG120));
+        const vAB = times.map(t => Vline_m * Math.sin(omega * t + DEG30));
+
+        const ptsA  = times.map((t, i) => ({ x: t, y: vA[i] }));
+        const ptsB  = times.map((t, i) => ({ x: t, y: vB[i] }));
+        const ptsC  = times.map((t, i) => ({ x: t, y: vC[i] }));
+        const ptsAB = times.map((t, i) => ({ x: t, y: vAB[i] }));
+
+        return { times, T, duration, Vm, Vline_m, ptsA, ptsB, ptsC, ptsAB };
+    }
+
+    function buildDDatasets(Vp_rms, f) {
+        const { times, T, duration } = generateTimeAxis(f, 1.5);
+        const Vline_m = SQRT3 * Vp_rms * SQRT2;
+        const omega = 2 * Math.PI * f;
+
+        // Δ phase voltages = line-to-line voltages
+        const vAB = times.map(t => Vline_m * Math.sin(omega * t + DEG30));
+        const vBC = times.map(t => Vline_m * Math.sin(omega * t + DEG30 - DEG120));
+        const vCA = times.map(t => Vline_m * Math.sin(omega * t + DEG30 + DEG120));
+
+        const ptsAB = times.map((t, i) => ({ x: t, y: vAB[i] }));
+        const ptsBC = times.map((t, i) => ({ x: t, y: vBC[i] }));
+        const ptsCA = times.map((t, i) => ({ x: t, y: vCA[i] }));
+
+        return { times, T, duration, Vline_m, ptsAB, ptsBC, ptsCA };
+    }
+
+    function makeLineOptions(duration, yMax) {
+        return {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            return ctx.dataset.label + ': ' + ctx.raw.y.toFixed(1) + ' V  (@ t=' + ctx.raw.x.toFixed(4) + ' s)';
+                        }
+                    },
+                    backgroundColor: 'rgba(0,0,0,0.75)',
+                    titleColor: '#f1f5f9',
+                    bodyColor: '#e2e8f0'
+                },
+                legend: { display: false }
+            },
+            scales: {
+                x: {
+                    type: 'linear',
+                    title: { display: true, text: 'Time t (s)', font: { size: 11, weight: 'bold' } },
+                    min: 0,
+                    max: duration,
+                    ticks: { callback: v => v.toFixed(3) + 's', maxTicksLimit: 6, font: { size: 10 } },
+                    grid: { color: '#eef2ff' }
+                },
+                y: {
+                    title: { display: true, text: 'Voltage (V)', font: { size: 11, weight: 'bold' } },
+                    min: -yMax,
+                    max: yMax,
+                    ticks: { callback: v => v.toFixed(0) + ' V', maxTicksLimit: 6, font: { size: 10 } },
+                    grid: { color: '#eef2ff' }
+                }
+            },
+            elements: { point: { radius: 0, hitRadius: 6, hoverRadius: 2 }, line: { tension: 0.2 } }
+        };
+    }
+
+    function updateYChart() {
+        const { Vp_rms, f } = getParams();
+        const { duration, ptsA, ptsB, ptsC, ptsAB, Vline_m } = buildYDatasets(Vp_rms, f);
+        const yMax = Math.ceil((Vline_m * 1.15) / 100) * 100;
+
+        if (yChartInstance) {
+            yChartInstance.data.datasets[0].data = ptsA;
+            yChartInstance.data.datasets[1].data = ptsB;
+            yChartInstance.data.datasets[2].data = ptsC;
+            yChartInstance.data.datasets[3].data = ptsAB;
+            yChartInstance.options.scales.x.max = duration;
+            yChartInstance.options.scales.x.ticks.callback = v => v.toFixed(3) + 's';
+            yChartInstance.options.scales.y.max = yMax;
+            yChartInstance.options.scales.y.min = -yMax;
+            yChartInstance.update('none');
+        } else {
+            yChartInstance = new Chart(document.getElementById('yChart'), {
+                type: 'line',
+                data: {
+                    datasets: [
+                        { label: 'V_AN (Phase A)', data: ptsA, borderColor: '#ef4444', borderWidth: 2.2, pointRadius: 0, tension: 0.2 },
+                        { label: 'V_BN (Phase B)', data: ptsB, borderColor: '#22c55e', borderWidth: 2.2, pointRadius: 0, tension: 0.2 },
+                        { label: 'V_CN (Phase C)', data: ptsC, borderColor: '#3b82f6', borderWidth: 2.2, pointRadius: 0, tension: 0.2 },
+                        { label: 'V_AB (Line Voltage)', data: ptsAB, borderColor: '#a855f7', borderWidth: 2.5, borderDash: [8, 4], pointRadius: 0, tension: 0.2 }
+                    ]
+                },
+                options: makeLineOptions(duration, yMax)
+            });
+        }
+    }
+
+    function updateDChart() {
+        const { Vp_rms, f } = getParams();
+        const { duration, ptsAB, ptsBC, ptsCA, Vline_m } = buildDDatasets(Vp_rms, f);
+        const yMax = Math.ceil((Vline_m * 1.15) / 100) * 100;
+
+        if (dChartInstance) {
+            dChartInstance.data.datasets[0].data = ptsAB;
+            dChartInstance.data.datasets[1].data = ptsBC;
+            dChartInstance.data.datasets[2].data = ptsCA;
+            dChartInstance.options.scales.x.max = duration;
+            dChartInstance.options.scales.x.ticks.callback = v => v.toFixed(3) + 's';
+            dChartInstance.options.scales.y.max = yMax;
+            dChartInstance.options.scales.y.min = -yMax;
+            dChartInstance.update('none');
+        } else {
+            dChartInstance = new Chart(document.getElementById('dChart'), {
+                type: 'line',
+                data: {
+                    datasets: [
+                        { label: 'V_AB (AB Phase)', data: ptsAB, borderColor: '#ef4444', borderWidth: 2.2, pointRadius: 0, tension: 0.2 },
+                        { label: 'V_BC (BC Phase)', data: ptsBC, borderColor: '#22c55e', borderWidth: 2.2, pointRadius: 0, tension: 0.2 },
+                        { label: 'V_CA (CA Phase)', data: ptsCA, borderColor: '#3b82f6', borderWidth: 2.2, pointRadius: 0, tension: 0.2 }
+                    ]
+                },
+                options: makeLineOptions(duration, yMax)
+            });
+        }
+    }
+
+    function refreshAll() {
+        updateDisplay();
+        updateYChart();
+        updateDChart();
+    }
+
+    const DEFAULTS = { vp: 220, freq: 50, z: 50 };
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+        vpSlider.value = DEFAULTS.vp;
+        freqSlider.value = DEFAULTS.freq;
+        zSlider.value = DEFAULTS.z;
+        refreshAll();
+    });
+
+    vpSlider.addEventListener('input', refreshAll);
+    freqSlider.addEventListener('input', refreshAll);
+    zSlider.addEventListener('input', refreshAll);
+
+    window.addEventListener('resize', () => {
+        if (yChartInstance) yChartInstance.resize();
+        if (dChartInstance) dChartInstance.resize();
+    });
+
+    // Initialize
+    refreshAll();
+
+    // KaTeX rendering
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    { left: '\\[', right: '\\]', display: true },
+                    { left: '\\(', right: '\\)', display: false }
+                ],
+                throwOnError: false
+            });
+        }
+    });
+</script>
+</body>
+</html>

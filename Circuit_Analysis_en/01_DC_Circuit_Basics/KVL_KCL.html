@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Kirchhoff's Laws · Loop Voltage and Node Current | Interactive Circuit Simulation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #2563eb;
+            transform: scale(1.15);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15);
+        }
+        .reset-btn {
+            transition: all 0.2s;
+        }
+        .reset-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- Back to home button -->
+    <div class="flex justify-start mb-4">
+        <a href="../index.html"
+        class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Home
+        </a>
+    </div>
+
+    <!-- Title section -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            Kirchhoff's Laws · Loop Voltage and Node Current
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            DC circuit (dual mesh) | Adjust any resistor value and observe that KVL and KCL always hold
+            <br><span class="text-xs text-indigo-500">\(U_1 = 12\text{V}\) (fixed) &nbsp;|&nbsp; Three loops · Four resistors · Two mesh currents</span>
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left control panel -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- Circuit parameter settings card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    Circuit Parameter Settings
+                </h3>
+
+                <!-- R1 -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Resistance \(R_1\) (top left)</label>
+                        <span class="text-blue-600 font-mono" id="r1_display">100 Ω</span>
+                    </div>
+                    <input type="range" id="r1_slider" min="10" max="1000" step="10" value="100" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Ω</span><span>1000 Ω</span>
+                    </div>
+                </div>
+
+                <!-- R2 -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Resistance \(R_2\) (middle)</label>
+                        <span class="text-blue-600 font-mono" id="r2_display">200 Ω</span>
+                    </div>
+                    <input type="range" id="r2_slider" min="10" max="1000" step="10" value="200" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Ω</span><span>1000 Ω</span>
+                    </div>
+                </div>
+
+                <!-- R3 -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Resistance \(R_3\) (right)</label>
+                        <span class="text-blue-600 font-mono" id="r3_display">300 Ω</span>
+                    </div>
+                    <input type="range" id="r3_slider" min="10" max="1000" step="10" value="300" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Ω</span><span>1000 Ω</span>
+                    </div>
+                </div>
+
+                <!-- R4 -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Resistance \(R_4\) (bottom)</label>
+                        <span class="text-blue-600 font-mono" id="r4_display">100 Ω</span>
+                    </div>
+                    <input type="range" id="r4_slider" min="10" max="1000" step="10" value="100" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Ω</span><span>1000 Ω</span>
+                    </div>
+                </div>
+
+                <!-- V1 (fixed display) -->
+                <div class="border-t border-slate-100 my-3"></div>
+                <div class="mb-3">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Source Voltage \(U_1\)</label>
+                        <span class="text-blue-600 font-mono font-bold">12.00 V</span>
+                    </div>
+                    <p class="text-xs text-slate-400">Fixed voltage source, located in the left branch</p>
+                </div>
+
+                <!-- Reset button -->
+                <div class="mt-6 flex justify-center">
+                    <button id="resetBtn" class="reset-btn bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-full shadow-md transition flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        Reset Parameters
+                    </button>
+                </div>
+            </div>
+
+            <!-- Circuit topology diagram card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-blue-500 rounded-full"></span>
+                    Circuit Structure Diagram
+                </h3>
+                <div class="text-xs text-slate-600 bg-indigo-50 p-3 rounded-lg leading-relaxed space-y-2">
+                    <div class="text-center mb-2 text-slate-700 font-sans font-bold">Dual Mesh DC Circuit</div>
+                    <div class="flex justify-center">
+                        <img src="./img/KVL_KCL.jpg" alt="Dual mesh DC circuit topology" class="max-w-full h-auto rounded-md shadow-sm" style="max-height: 200px;">
+                    </div>
+                    <div class="mt-2 text-slate-500 text-center">
+                        Mesh currents: \(I_1\) (left, blue) &nbsp; \(I_2\) (right, orange)<br>
+                        Branch currents: \(I_{R1}=I_1,\; I_{R4}=I_1,\; I_{R2}=I_1-I_2,\; I_{R3}=I_2\)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right chart and results area -->
+        <div class="lg:col-span-8 space-y-6">
+            <!-- Branch voltage bar chart -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4" style="min-height: 520px; display: flex; flex-direction: column;">
+                    <div class="flex items-center gap-2 mb-2">
+                    <div class="w-3 h-3 bg-indigo-500 rounded-full"></div>
+                    <h3 class="font-bold text-slate-800 text-lg">Branch Voltage Distribution · Bar Chart</h3>
+                </div>
+                <!-- Left mesh KVL formula (blue) -->
+                <div id="kvl_left_formula" class="text-sm font-mono font-bold text-blue-600 mb-1">
+                    Left Mesh: \(U_1 - U_{R1} - U_{R2} - U_{R4} = 0.000\text{ V}\)
+                </div>
+                <!-- Right mesh KVL formula (orange) -->
+                <div id="kvl_right_formula" class="text-sm font-mono font-bold text-orange-500 mb-1">
+                    Right Mesh: \(U_{R2} - U_{R3} = 0.000\text{ V}\)
+                </div>
+                <div class="relative flex-1">
+                    <canvas id="voltageChart" width="700" height="350" style="width:100%; height:100%;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-1">
+                    Voltage drops across the four resistors &nbsp;|&nbsp; Voltage across each resistor \(U_{R1} \sim U_{R4}\)
+                </div>
+            </div>
+
+            <!-- Numerical results display card -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Mesh currents & branch currents -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-2">Current Calculation Results</h4>
+                    <div class="space-y-1.5 text-xs">
+                        <div class="flex justify-between py-1 border-b border-slate-100">
+                            <span class="font-medium">Mesh Current \(I_1\) (blue)</span>
+                            <span class="font-mono text-blue-600" id="i1_val">— mA</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-slate-100">
+                            <span class="font-medium">Mesh Current \(I_2\) (orange)</span>
+                            <span class="font-mono text-orange-500" id="i2_val">— mA</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-slate-100">
+                            <span class="font-medium">\(I_{R1}\)</span>
+                            <span class="font-mono text-slate-700" id="ir1_val">— mA</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-slate-100">
+                            <span class="font-medium">\(I_{R2} = I_1 - I_2\)</span>
+                            <span class="font-mono text-slate-700" id="ir2_val">— mA</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-slate-100">
+                            <span class="font-medium">\(I_{R3}\)</span>
+                            <span class="font-mono text-slate-700" id="ir3_val">— mA</span>
+                        </div>
+                        <div class="flex justify-between py-1">
+                            <span class="font-medium">\(I_{R4}\)</span>
+                            <span class="font-mono text-slate-700" id="ir4_val">— mA</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KVL & KCL verification -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-2">KVL &amp; KCL Verification</h4>
+                    <div class="space-y-1.5 text-xs">
+                        <div class="py-1 border-b border-slate-100">
+                            <span class="font-medium">Loop 1 (left): \(U_1 - U_{R1} - U_{R2} - U_{R4}\)</span>
+                            <span class="font-mono text-green-600 float-right" id="kvl1_val">= 0.000 V</span>
+                        </div>
+                        <div class="py-1 border-b border-slate-100">
+                            <span class="font-medium">Loop 2 (right): \(U_{R2} - U_{R3}\)</span>
+                            <span class="font-mono text-green-600 float-right" id="kvl2_val">= 0.000 V</span>
+                        </div>
+                        <div class="py-1 border-b border-slate-100">
+                            <span class="font-medium">Loop 3 (outer): \(U_1 - U_{R1} - U_{R3} - U_{R4}\)</span>
+                            <span class="font-mono text-green-600 float-right" id="kvl3_val">= 0.000 V</span>
+                        </div>
+                        <div class="py-1 mt-1 bg-green-50 rounded px-2">
+                            <div><span class="font-bold text-green-700">KCL (Node B): \(I_{R1} = I_{R2} + I_{R3}\)</span></div>
+                            <div><span class="font-mono text-green-700" id="kcl_val">—</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer info cards -->
+    <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div class="bg-white/70 backdrop-blur-sm rounded-xl shadow-md border border-slate-200 p-5">
+            <h4 class="font-bold text-indigo-800 text-sm mb-2">Kirchhoff's Voltage Law (KVL)</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+                \(\sum V = 0\) Around any closed loop, the algebraic sum of voltage rises equals the algebraic sum of voltage drops. Regardless of how component parameters change, KVL always holds strictly. This simulation demonstrates KVL verification for 3 loops: left loop (\(U_1\)-\(R_1\)-\(R_2\)-\(R_4\)), right loop (\(R_2\)-\(R_3\)), and outer loop (\(U_1\)-\(R_1\)-\(R_3\)-\(R_4\)).
+            </p>
+        </div>
+        <div class="bg-white/70 backdrop-blur-sm rounded-xl shadow-md border border-slate-200 p-5">
+            <h4 class="font-bold text-indigo-800 text-sm mb-2">Kirchhoff's Current Law (KCL)</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+                \(\sum I = 0\) At any node, the total current flowing into the node equals the total current flowing out. In this circuit, at the top middle node B: \(I_{R1}\) (inflow) = \(I_{R2} + I_{R3}\) (outflow). KCL always holds exactly. Adjusting any resistor value verifies this relationship.
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // DOM element binding
+    const r1Slider = document.getElementById('r1_slider');
+    const r2Slider = document.getElementById('r2_slider');
+    const r3Slider = document.getElementById('r3_slider');
+    const r4Slider = document.getElementById('r4_slider');
+    const resetBtn = document.getElementById('resetBtn');
+
+    const r1Display = document.getElementById('r1_display');
+    const r2Display = document.getElementById('r2_display');
+    const r3Display = document.getElementById('r3_display');
+    const r4Display = document.getElementById('r4_display');
+
+    const i1Val = document.getElementById('i1_val');
+    const i2Val = document.getElementById('i2_val');
+    const ir1Val = document.getElementById('ir1_val');
+    const ir2Val = document.getElementById('ir2_val');
+    const ir3Val = document.getElementById('ir3_val');
+    const ir4Val = document.getElementById('ir4_val');
+    const kvl1Val = document.getElementById('kvl1_val');
+    const kvl2Val = document.getElementById('kvl2_val');
+    const kvl3Val = document.getElementById('kvl3_val');
+    const kclVal = document.getElementById('kcl_val');
+    const kvlLeftFormula = document.getElementById('kvl_left_formula');
+    const kvlRightFormula = document.getElementById('kvl_right_formula');
+
+    const voltageCanvas = document.getElementById('voltageChart');
+    let voltageChart = null;
+
+    const DEFAULTS = {
+        R1: 100,
+        R2: 200,
+        R3: 300,
+        R4: 100
+    };
+    const V1 = 12.0;
+
+    function getParams() {
+        return {
+            R1: parseFloat(r1Slider.value),
+            R2: parseFloat(r2Slider.value),
+            R3: parseFloat(r3Slider.value),
+            R4: parseFloat(r4Slider.value)
+        };
+    }
+
+    function updateDisplays(R1, R2, R3, R4) {
+        r1Display.innerText = R1 + ' Ω';
+        r2Display.innerText = R2 + ' Ω';
+        r3Display.innerText = R3 + ' Ω';
+        r4Display.innerText = R4 + ' Ω';
+    }
+
+    function computeCircuit(R1, R2, R3, R4) {
+        // Solve mesh equations:
+        // Mesh 1: V1 = I1*(R1+R2+R4) - I2*R2
+        // Mesh 2: 0 = -I1*R2 + I2*(R2+R3)
+        // -> I1*R2 = I2*(R2+R3) -> I2 = I1 * R2/(R2+R3)
+        const denom = R2 + R3;
+        // Plug into mesh 1:
+        // V1 = I1*(R1+R2+R4) - I1*R2*R2/(R2+R3)
+        // V1 = I1 * [(R1+R2+R4) - R2^2/(R2+R3)]
+        // V1 = I1 * [(R1+R2+R4)*(R2+R3) - R2^2] / (R2+R3)
+        const coeff = ((R1+R2+R4) * denom - R2 * R2) / denom;
+        const I1 = V1 / coeff;
+        const I2 = I1 * R2 / denom;
+
+        // Branch voltages
+        const VR1 = I1 * R1;
+        const VR2 = (I1 - I2) * R2;
+        const VR3 = I2 * R3;
+        const VR4 = I1 * R4;
+
+        // KVL sums
+        const kvl1 = V1 - VR1 - VR2 - VR4;   // left loop
+        const kvl2 = VR2 - VR3;               // right loop
+        const kvl3 = V1 - VR1 - VR3 - VR4;    // outer loop
+
+        // KCL check
+        const IR1 = I1;
+        const IR2 = I1 - I2;
+        const IR3 = I2;
+        const kclCheck = IR1 - (IR2 + IR3);   // should be 0
+
+        return {
+            I1, I2,
+            VR1, VR2, VR3, VR4,
+            kvl1, kvl2, kvl3,
+            IR1, IR2, IR3, I_R4: I1,
+            kclCheck
+        };
+    }
+
+    function updateFormulas(res) {
+        // Left mesh: V1 - VR1 - VR2 - VR4 = kvl1
+        const v1 = V1.toFixed(2);
+        const vr1 = res.VR1.toFixed(2);
+        const vr2 = res.VR2.toFixed(2);
+        const vr4 = res.VR4.toFixed(2);
+        const kvl1 = res.kvl1.toFixed(4);
+        const leftFormula = 'Left Mesh: \\quad U_1 - U_{R1} - U_{R2} - U_{R4} = ' + v1 + ' - ' + vr1 + ' - ' + vr2 + ' - ' + vr4 + ' = ' + kvl1 + '\\text{ V}';
+        if (typeof katex !== 'undefined') {
+            katex.render(leftFormula, kvlLeftFormula, { throwOnError: false });
+        } else {
+            kvlLeftFormula.textContent = 'Left Mesh: U1 - UR1 - UR2 - UR4 = ' + v1 + ' - ' + vr1 + ' - ' + vr2 + ' - ' + vr4 + ' = ' + kvl1 + ' V';
+        }
+
+        // Right mesh: VR2 - VR3 = kvl2
+        const vr2r = res.VR2.toFixed(2);
+        const vr3 = res.VR3.toFixed(2);
+        const kvl2 = res.kvl2.toFixed(4);
+        const rightFormula = 'Right Mesh: \\quad U_{R2} - U_{R3} = ' + vr2r + ' - ' + vr3 + ' = ' + kvl2 + '\\text{ V}';
+        if (typeof katex !== 'undefined') {
+            katex.render(rightFormula, kvlRightFormula, { throwOnError: false });
+        } else {
+            kvlRightFormula.textContent = 'Right Mesh: UR2 - UR3 = ' + vr2r + ' - ' + vr3 + ' = ' + kvl2 + ' V';
+        }
+    }
+
+    function updateResultDisplays(res) {
+        const toMA = 1000;
+        i1Val.innerText = (res.I1 * toMA).toFixed(3) + ' mA';
+        i2Val.innerText = (res.I2 * toMA).toFixed(3) + ' mA';
+        ir1Val.innerText = (res.IR1 * toMA).toFixed(3) + ' mA';
+        ir2Val.innerText = (res.IR2 * toMA).toFixed(3) + ' mA';
+        ir3Val.innerText = (res.IR3 * toMA).toFixed(3) + ' mA';
+        ir4Val.innerText = (res.I_R4 * toMA).toFixed(3) + ' mA';
+        kvl1Val.innerText = '= ' + res.kvl1.toFixed(4) + ' V';
+        kvl2Val.innerText = '= ' + res.kvl2.toFixed(4) + ' V';
+        kvl3Val.innerText = '= ' + res.kvl3.toFixed(4) + ' V';
+
+        const kclAbs = Math.abs(res.kclCheck);
+        kclVal.innerText = kclAbs < 1e-9 ? 'Verified ✓  (' + (res.IR1*1000).toFixed(2) + ' = ' + (res.IR2*1000).toFixed(2) + ' + ' + (res.IR3*1000).toFixed(2) + ' mA)' : 'Deviation: ' + res.kclCheck.toExponential(3);
+
+        // Color kvl results green when near zero
+        [kvl1Val, kvl2Val, kvl3Val].forEach(el => {
+            el.className = 'font-mono float-right ' + (Math.abs(parseFloat(el.innerText.replace('= ','').replace(' V',''))) < 0.001 ? 'text-green-600' : 'text-red-500');
+        });
+    }
+
+    function updateAllCharts() {
+        const { R1, R2, R3, R4 } = getParams();
+        updateDisplays(R1, R2, R3, R4);
+        const res = computeCircuit(R1, R2, R3, R4);
+        updateResultDisplays(res);
+        updateFormulas(res);
+
+        // --- Voltage bar chart ---
+        const vLabels = ['UR1 (R₁)', 'UR2 (R₂)', 'UR3 (R₃)', 'UR4 (R₄)'];
+        const vData = [res.VR1, res.VR2, res.VR3, res.VR4];
+        const vMax = Math.max(...vData.map(Math.abs), 1) * 1.2;
+
+        if (voltageChart) {
+            voltageChart.data.labels = vLabels;
+            voltageChart.data.datasets[0].data = vData;
+            voltageChart.options.scales.y.max = vMax;
+            voltageChart.update();
+        } else {
+            voltageChart = new Chart(voltageCanvas, {
+                type: 'bar',
+                data: {
+                    labels: vLabels,
+                    datasets: [{
+                        label: 'Voltage Drop (V)',
+                        data: vData,
+                        backgroundColor: ['#6366f1', '#a0522d', '#a5b4fc', '#f59e0b'],
+                        borderColor: ['#4f46e5', '#8B4513', '#818cf8', '#d97706'],
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) { return 'Voltage Drop: ' + ctx.raw.toFixed(3) + ' V'; }
+                            },
+                            backgroundColor: 'rgba(0,0,0,0.7)'
+                        },
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { size: 11 } }
+                        },
+                        y: {
+                            title: { display: true, text: 'Voltage (V)', font: { weight: 'bold', size: 11 } },
+                            min: 0,
+                            max: vMax,
+                            ticks: { callback: v => v.toFixed(2) + ' V' },
+                            grid: { color: '#eef2ff' }
+                        }
+                    },
+                    barPercentage: 0.55,
+                    categoryPercentage: 0.65
+                }
+            });
+        }
+
+    }
+
+    function resetParams() {
+        r1Slider.value = DEFAULTS.R1;
+        r2Slider.value = DEFAULTS.R2;
+        r3Slider.value = DEFAULTS.R3;
+        r4Slider.value = DEFAULTS.R4;
+        updateAllCharts();
+    }
+
+    function bindEvents() {
+        r1Slider.addEventListener('input', updateAllCharts);
+        r2Slider.addEventListener('input', updateAllCharts);
+        r3Slider.addEventListener('input', updateAllCharts);
+        r4Slider.addEventListener('input', updateAllCharts);
+        resetBtn.addEventListener('click', resetParams);
+        window.addEventListener('resize', () => {
+            if (voltageChart) voltageChart.resize();
+        });
+    }
+
+    function init() {
+        bindEvents();
+        updateAllCharts();
+        window.addEventListener('load', function() {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            } else {
+                console.warn('KaTeX auto-render not loaded, formulas displayed as text');
+            }
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>

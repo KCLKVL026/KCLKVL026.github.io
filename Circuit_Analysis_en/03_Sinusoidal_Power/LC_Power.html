@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Inductor and Capacitor Power Curve Simulation | Instantaneous Power Analysis</title>
+    <!-- TailwindCSS + Chart.js + KaTeX -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+    <style>
+        /* Custom slider styles + scrollbar (consistent with L_component style) */
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #2563eb;
+            transform: scale(1.15);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15);
+        }
+        /* Keep canvas responsive */
+        canvas {
+            width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- Back to home button (mimicking L_component) -->
+    <div class="flex justify-start mb-4">
+        <a href="../index.html"
+           class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Home
+        </a>
+    </div>
+
+    <!-- Title area (gradient blue style) -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            Inductor and Capacitor Instantaneous Power Curves
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            Sinusoidal AC current reference \(i(t)=I_m\sin(2\pi f t)\) | Dashed line: current waveform &middot; Solid line: instantaneous power waveform
+            <br><span class="text-xs text-indigo-500">Voltage amplitude \(V_m\) affects power amplitude | Average power of pure energy storage components is zero</span>
+        </p>
+    </div>
+
+    <!-- Main layout: two columns (consistent with L_component) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left control area (4 columns) -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- Card 1: Parameter adjustment -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    Signal Source &amp; Component Parameters
+                </h3>
+
+                <!-- Voltage amplitude Vm -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Voltage Amplitude \(V_m\)</label>
+                        <span class="text-blue-600 font-mono" id="vm_display">4.00 V</span>
+                    </div>
+                    <input type="range" id="vm_slider" min="0.2" max="5" step="0.02" value="4.0" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>0.2 V</span><span>5 V</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">Increasing voltage makes power peak significantly higher than current amplitude for easier observation</p>
+                </div>
+
+                <!-- Frequency f -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Frequency \(f\)</label>
+                        <span class="text-blue-600 font-mono" id="f_display">50.0 Hz</span>
+                    </div>
+                    <input type="range" id="f_slider" min="10" max="500" step="1" value="50" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Hz</span><span>500 Hz</span>
+                    </div>
+                    <p class="text-xs text-slate-500">Frequency changes inductive/capacitive reactance &rarr; affects current amplitude and power peak</p>
+                </div>
+
+                <!-- Inductor L (mH) -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Inductor \(L\)</label>
+                        <span class="text-blue-600 font-mono" id="l_display">4.0 mH</span>
+                    </div>
+                    <input type="range" id="l_slider" min="0.2" max="20" step="0.2" value="4.0" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>0.2 mH</span><span>20 mH</span>
+                    </div>
+                    <p class="text-xs text-slate-500">Inductor current lags voltage by 90&deg;, power \(p_L(t)=\frac{V_m^2}{2\omega L}\sin(2\omega t)\)</p>
+                </div>
+
+                <!-- Capacitor C (uF) -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Capacitor \(C\)</label>
+                        <span class="text-blue-600 font-mono" id="c_display">3000.0 &mu;F</span>
+                    </div>
+                    <input type="range" id="c_slider" min="500" max="5000" step="50" value="3000" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>500 &mu;F</span><span>5000 &mu;F</span>
+                    </div>
+                    <p class="text-xs text-slate-500">Capacitor current leads voltage by 90&deg;, power \(p_C(t)= -\frac{V_m^2 \omega C}{2}\sin(2\omega t)\)</p>
+                </div>
+
+                <!-- Reset button (blue theme) -->
+                <div class="mt-6 flex justify-center">
+                    <button id="resetBtn" class="reset-btn bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-full shadow-md transition flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        Reset Parameters
+                    </button>
+                </div>
+            </div>
+
+            <!-- Card 2: Power characteristic parameters (reactive power / power factor) -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-blue-500 rounded-full"></span>
+                    Reactive Power &amp; Power Factor
+                </h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-slate-50 p-2 rounded-lg">
+                        <div class="text-xs text-slate-500">Inductor Reactive \(Q_L\)</div>
+                        <div class="font-mono text-blue-600 text-sm font-bold" id="ql_val">&mdash; var</div>
+                    </div>
+                    <div class="bg-slate-50 p-2 rounded-lg">
+                        <div class="text-xs text-slate-500">Capacitor Reactive \(Q_C\)</div>
+                        <div class="font-mono text-blue-600 text-sm font-bold" id="qc_val">&mdash; var</div>
+                    </div>
+                    <div class="bg-slate-50 p-2 rounded-lg">
+                        <div class="text-xs text-slate-500">\(\cos\varphi_L\) (Inductor)</div>
+                        <div class="font-mono text-indigo-600 text-sm font-bold" id="pf_l">0.00</div>
+                    </div>
+                    <div class="bg-slate-50 p-2 rounded-lg">
+                        <div class="text-xs text-slate-500">\(\cos\varphi_C\) (Capacitor)</div>
+                        <div class="font-mono text-indigo-600 text-sm font-bold" id="pf_c">0.00</div>
+                    </div>
+                </div>
+                <div class="mt-3 text-xs text-slate-500 bg-indigo-50 p-2 rounded-lg">
+                    Pure inductor/capacitor voltage and current have a phase difference of &plusmn;90&deg;, power factor is 0, average power is zero, and reactive power equals the power peak.
+                </div>
+            </div>
+        </div>
+
+        <!-- Right waveform area (8 columns) -->
+        <div class="lg:col-span-8 space-y-6">
+            <!-- Inductor power curve card -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 wave-card">
+                <div class="flex justify-between items-center flex-wrap mb-2">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                        <h3 class="font-bold text-slate-800 text-lg">Inductor &middot; Current \(i_L(t)\) and Power \(p_L(t)\)</h3>
+                    </div>
+                    <div class="phase-badge bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-medium shadow-sm">Phase Diff \(+90^\circ\) (Current Lags Voltage)</div>
+                </div>
+                <div class="relative">
+                    <canvas id="inductorChart" width="700" height="280" style="width:100%; height:auto; max-height:300px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-1">
+                    Dashed: Current \(i_L(t)\) (A) &nbsp;&nbsp;|&nbsp;&nbsp; Solid: Instantaneous Power \(p_L(t)\) (W) &mdash; Bidirectional energy exchange, average power is zero
+                </div>
+            </div>
+
+            <!-- Capacitor power curve card -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 wave-card">
+                <div class="flex justify-between items-center flex-wrap mb-2">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-purple-500 rounded-full"></div>
+                        <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                        <h3 class="font-bold text-slate-800 text-lg">Capacitor &middot; Current \(i_C(t)\) and Power \(p_C(t)\)</h3>
+                    </div>
+                    <div class="phase-badge bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-medium shadow-sm">Phase Diff \(-90^\circ\) (Current Leads Voltage)</div>
+                </div>
+                <div class="relative">
+                    <canvas id="capacitorChart" width="700" height="280" style="width:100%; height:auto; max-height:300px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-1">
+                    Dashed: Current \(i_C(t)\) (A) &nbsp;&nbsp;|&nbsp;&nbsp; Solid: Instantaneous Power \(p_C(t)\) (W) &mdash; Negative sine power waveform, opposite phase to inductor
+                </div>
+            </div>
+
+            <!-- Additional notes cards (theory/observation) two-column layout -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">Theoretical Basis (Current Reference)</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Let \(i(t)=I_m\sin(\omega t)\), then inductor voltage \(v_L = L\frac{di}{dt}= \omega L I_m \cos(\omega t)\),<br>
+                        Instantaneous power \(p_L = \frac{\omega L I_m^2}{2}\sin(2\omega t)\).<br>
+                        Capacitor voltage \(v_C = \frac{1}{C}\int i\,dt = -\frac{I_m}{\omega C}\cos(\omega t)\),<br>
+                        Instantaneous power \(p_C = -\frac{I_m^2}{2\omega C}\sin(2\omega t)\).<br>
+                        Where \(I_m = V_m/(\omega L)\) (inductor) or \(I_m = V_m \omega C\) (capacitor).
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">Waveform Observation Key Points</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        &bull; Current reference is a sine wave (red dashed), power waveform is a double-frequency sine.<br>
+                        &bull; Inductor power \(p_L\) is always a positive sine half-cycle (absorb &rarr; release), capacitor power \(p_C\) is a negative sine.<br>
+                        &bull; Increasing voltage \(V_m\) or decreasing frequency/reactance makes power peak clearly exceed current peak.<br>
+                        &bull; Pure energy storage component average power = 0, reactive power \(Q = \pm \frac{V_m^2}{2X}\).
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- DOM element bindings ----------
+    const vmSlider = document.getElementById('vm_slider');
+    const fSlider = document.getElementById('f_slider');
+    const lSlider = document.getElementById('l_slider');
+    const cSlider = document.getElementById('c_slider');
+    const resetBtn = document.getElementById('resetBtn');
+
+    const vmDisplay = document.getElementById('vm_display');
+    const fDisplay = document.getElementById('f_display');
+    const lDisplay = document.getElementById('l_display');
+    const cDisplay = document.getElementById('c_display');
+    const qlSpan = document.getElementById('ql_val');
+    const qcSpan = document.getElementById('qc_val');
+    const pfLSpan = document.getElementById('pf_l');
+    const pfCSpan = document.getElementById('pf_c');
+
+    const inductorCanvas = document.getElementById('inductorChart');
+    const capacitorCanvas = document.getElementById('capacitorChart');
+    let inductorChart = null, capacitorChart = null;
+
+    // Chart initialization flag
+    let chartsInitialized = false;
+
+    const PERIODS = 2.0;
+    const POINTS = 500;
+
+    // Default parameters (4V voltage for clearer display of power peak > current peak)
+    const DEFAULTS = {
+        Vm: 4.0,
+        f: 50,
+        L_mH: 4.0,
+        C_uF: 3000
+    };
+
+    // Update left panel value displays
+    function updateDisplays() {
+        const Vm = parseFloat(vmSlider.value);
+        const f = parseFloat(fSlider.value);
+        const L_mH = parseFloat(lSlider.value);
+        const C_uF = parseFloat(cSlider.value);
+        vmDisplay.innerText = Vm.toFixed(2) + " V";
+        fDisplay.innerText = f.toFixed(1) + " Hz";
+        lDisplay.innerText = L_mH.toFixed(1) + " mH";
+        cDisplay.innerText = C_uF.toFixed(1) + " μF";
+    }
+
+    // Calculate reactive power Q and update stats bar
+    function updateStats(Vm, f, L, C) {
+        const omega = 2 * Math.PI * f;
+        // Inductor reactive Q_L = Vm^2 / (2 * omega * L)
+        const Q_L = Vm * Vm / (2 * omega * L);
+        // Capacitor reactive Q_C = Vm^2 * omega * C / 2
+        const Q_C = Vm * Vm * omega * C / 2;
+        qlSpan.innerText = Q_L.toFixed(3) + " var";
+        qcSpan.innerText = Q_C.toFixed(3) + " var";
+        pfLSpan.innerText = "0.00";
+        pfCSpan.innerText = "0.00";
+    }
+
+    // Generate time axis (seconds)
+    function generateTimeAxis(f) {
+        const T = 1 / f;
+        const tMax = PERIODS * T;
+        const dt = tMax / (POINTS - 1);
+        const times = [];
+        for (let i = 0; i < POINTS; i++) times.push(i * dt);
+        return times;
+    }
+
+    // Inductor data (current reference sine, power formula)
+    function getInductorData(times, Vm, f, L) {
+        const omega = 2 * Math.PI * f;
+        const I_m = Vm / (omega * L);          // current amplitude (A)
+        const powerAmplitude = (omega * L * I_m * I_m) / 2;  // = Vm^2/(2*omega*L)
+        const current = times.map(t => I_m * Math.sin(omega * t));
+        const power = times.map(t => powerAmplitude * Math.sin(2 * omega * t));
+        return { current, power };
+    }
+
+    // Capacitor data (current reference sine, power with negative sign)
+    function getCapacitorData(times, Vm, f, C) {
+        const omega = 2 * Math.PI * f;
+        const I_m = Vm * omega * C;            // current amplitude (A)
+        const powerAmplitude = (I_m * I_m) / (2 * omega * C);  // = Vm^2 * omega * C / 2
+        const current = times.map(t => I_m * Math.sin(omega * t));
+        const power = times.map(t => -powerAmplitude * Math.sin(2 * omega * t));
+        return { current, power };
+    }
+
+    // Common chart options generator (dynamic y-axis range)
+    function createChartOptions(yMin, yMax, xMax, yLabel = 'Amplitude (A / W)') {
+        return {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            let val = context.raw.y;
+                            let unit = (label.includes('Current') || label.includes('current')) ? ' A' : ' W';
+                            return `${label}: ${val.toFixed(3)}${unit} @ t = ${context.raw.x.toFixed(4)} s`;
+                        }
+                    },
+                    backgroundColor: 'rgba(0,0,0,0.7)',
+                },
+                legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } } }
+            },
+            scales: {
+                x: {
+                    type: 'linear',
+                    title: { display: true, text: 'Time t (s)', font: { weight: 'bold', size: 11 } },
+                    ticks: { callback: (val) => val.toFixed(3) + 's', maxTicksLimit: 6 },
+                    min: 0,
+                    max: xMax,
+                    grid: { color: '#eef2ff' }
+                },
+                y: {
+                    title: { display: true, text: yLabel, font: { weight: 'bold', size: 11 } },
+                    min: yMin,
+                    max: yMax,
+                    ticks: { callback: (val) => val.toFixed(2) },
+                    grid: { color: '#eef2ff' }
+                }
+            },
+            elements: { point: { radius: 0, hitRadius: 6, hoverRadius: 3 }, line: { tension: 0.2, borderWidth: 2.2 } }
+        };
+    }
+
+    // Initialize both charts (created only once)
+    function initCharts() {
+        // Inductor chart initial configuration
+        const indOptions = createChartOptions(-0.1, 0.1, 0.04, 'Amplitude (A / W)');
+        inductorChart = new Chart(inductorCanvas, {
+            type: 'line',
+            data: {
+                datasets: [
+                    { label: 'Current i_L(t) (A)', data: [], borderColor: '#ef4444', borderWidth: 2.2, borderDash: [6, 4], pointRadius: 0, tension: 0.2, fill: false },
+                    { label: 'Power p_L(t) (W)', data: [], borderColor: '#22c55e', borderWidth: 2.5, borderDash: [], pointRadius: 0, tension: 0.2, fill: false }
+                ]
+            },
+            options: indOptions
+        });
+
+        // Capacitor chart initial configuration
+        const capOptions = createChartOptions(-0.1, 0.1, 0.04, 'Amplitude (A / W)');
+        capacitorChart = new Chart(capacitorCanvas, {
+            type: 'line',
+            data: {
+                datasets: [
+                    { label: 'Current i_C(t) (A)', data: [], borderColor: '#ef4444', borderWidth: 2.2, borderDash: [6, 4], pointRadius: 0, tension: 0.2, fill: false },
+                    { label: 'Power p_C(t) (W)', data: [], borderColor: '#8b5cf6', borderWidth: 2.5, borderDash: [], pointRadius: 0, tension: 0.2, fill: false }
+                ]
+            },
+            options: capOptions
+        });
+
+        chartsInitialized = true;
+    }
+
+    // Core refresh function: recalculate data and update charts in place (no destroy/rebuild)
+    function updateCharts() {
+        const Vm = parseFloat(vmSlider.value);
+        const f = parseFloat(fSlider.value);
+        const L = parseFloat(lSlider.value) * 1e-3;   // mH -> H
+        const C = parseFloat(cSlider.value) * 1e-6;   // uF -> F
+
+        updateDisplays();
+        updateStats(Vm, f, L, C);
+
+        const times = generateTimeAxis(f);
+        const xMax = times[times.length - 1];
+
+        // Inductor data
+        const ind = getInductorData(times, Vm, f, L);
+        const inductorCurrentPoints = times.map((t, i) => ({ x: t, y: ind.current[i] }));
+        const inductorPowerPoints = times.map((t, i) => ({ x: t, y: ind.power[i] }));
+
+        // Capacitor data
+        const cap = getCapacitorData(times, Vm, f, C);
+        const capacitorCurrentPoints = times.map((t, i) => ({ x: t, y: cap.current[i] }));
+        const capacitorPowerPoints = times.map((t, i) => ({ x: t, y: cap.power[i] }));
+
+        // Calculate inductor Y-axis range (10% margin)
+        const indAll = [...ind.current, ...ind.power];
+        const indAbsMax = Math.max(...indAll.map(v => Math.abs(v))) * 1.1;
+        const indYMax = indAbsMax === 0 ? 0.1 : indAbsMax;
+        const indYMin = -indYMax;
+
+        // Capacitor Y-axis range
+        const capAll = [...cap.current, ...cap.power];
+        const capAbsMax = Math.max(...capAll.map(v => Math.abs(v))) * 1.1;
+        const capYMax = capAbsMax === 0 ? 0.1 : capAbsMax;
+        const capYMin = -capYMax;
+
+        // ---------- Refresh inductor chart data in place ----------
+        inductorChart.data.datasets[0].data = inductorCurrentPoints;
+        inductorChart.data.datasets[1].data = inductorPowerPoints;
+        inductorChart.options.scales.y.min = indYMin;
+        inductorChart.options.scales.y.max = indYMax;
+        inductorChart.options.scales.x.max = xMax;
+        inductorChart.update('none');
+
+        // ---------- Refresh capacitor chart data in place ----------
+        capacitorChart.data.datasets[0].data = capacitorCurrentPoints;
+        capacitorChart.data.datasets[1].data = capacitorPowerPoints;
+        capacitorChart.options.scales.y.min = capYMin;
+        capacitorChart.options.scales.y.max = capYMax;
+        capacitorChart.options.scales.x.max = xMax;
+        capacitorChart.update('none');
+    }
+
+    // Reset all parameters to defaults
+    function resetParams() {
+        vmSlider.value = DEFAULTS.Vm;
+        fSlider.value = DEFAULTS.f;
+        lSlider.value = DEFAULTS.L_mH;
+        cSlider.value = DEFAULTS.C_uF;
+        updateCharts();
+    }
+
+    // Event bindings
+    function bindEvents() {
+        vmSlider.addEventListener('input', updateCharts);
+        fSlider.addEventListener('input', updateCharts);
+        lSlider.addEventListener('input', updateCharts);
+        cSlider.addEventListener('input', updateCharts);
+        resetBtn.addEventListener('click', resetParams);
+        window.addEventListener('resize', () => {
+            if (inductorChart) inductorChart.resize();
+            if (capacitorChart) capacitorChart.resize();
+        });
+    }
+
+    // Initialize page and render KaTeX formulas
+    function init() {
+        bindEvents();
+        initCharts();
+        updateCharts();
+        // Render math formulas
+        window.addEventListener('load', () => {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            } else {
+                console.warn('KaTeX auto-render not loaded, formulas will display as plain text');
+            }
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>

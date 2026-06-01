@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Circuit Analysis Fundamentals | Interactive Simulation Index</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .card-hover {
+            transition: all 0.25s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.15);
+        }
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+        .nav-card:active {
+            transform: scale(0.98);
+            transition: transform 0.05s;
+        }
+        .nav-card:focus-visible {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+            border-radius: 1rem;
+        }
+        .section-title {
+            position: relative;
+            display: inline-block;
+        }
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, #3b82f6, #06b6d4);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans antialiased">
+
+    <div class="max-w-7xl mx-auto px-4 py-6 md:py-10">
+        
+        <!-- Header Title -->
+        <div class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-3 tracking-tight">
+                Circuit Analysis Fundamentals
+            </h1>
+            <p class="text-slate-600 max-w-2xl mx-auto text-base md:text-lg">
+                Interactive Simulation · Intuitive Understanding of Circuit Principles<br>
+                Grouped by knowledge modules — click a card to start an immersive learning experience
+            </p>
+        </div>
+
+        <!-- ================= 1. DC Circuit Basics ================= -->
+        <div class="mb-12">
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold text-slate-800 section-title">DC Circuit Basics</h2>
+                <span class="text-sm text-slate-400 ml-2">Ohm's Law · Series/Parallel · KVL/KCL · Bridge</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7 auto-rows-fr">
+                <!-- Ohm's Law and Power -->
+                <a href="./01_DC_Circuit_Basics/Ohms_Law.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 text-xl shadow-sm">
+                            ⚡
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-red-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-red-700 transition-colors">Ohm's Law and Power</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Adjust voltage/resistance with sliders, real-time current and power display. V-I and P-R characteristic curves with automatic unit conversion.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-red-500 gap-1">
+                            <span>V=IR</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Power Calculation</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- Series and Parallel Resistors -->
+                <a href="./01_DC_Circuit_Basics/Series_Parallel_Resistors.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 text-xl shadow-sm">
+                            🔗
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-rose-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-rose-700 transition-colors">Series and Parallel Resistors</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Switchable series/parallel modes, showing equivalent resistance, voltage/current divider ratios, bar charts comparing voltage and current distribution.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-rose-500 gap-1">
+                            <span>Equivalent Resistance</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Voltage/Current Divider</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- Kirchhoff's Laws -->
+                <a href="./01_DC_Circuit_Basics/KVL_KCL.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 text-xl shadow-sm">
+                            📐
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-pink-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-pink-700 transition-colors">Kirchhoff's Laws (KVL/KCL)</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Multi-loop DC circuit: change any resistor and observe that KVL and KCL always hold, with real-time voltage and current distribution.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-pink-500 gap-1">
+                            <span>KVL</span>
+                            <span class="text-slate-300">|</span>
+                            <span>KCL</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- Wheatstone Bridge -->
+                <a href="./01_DC_Circuit_Basics/Wheatstone_Bridge.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-fuchsia-100 flex items-center justify-center text-fuchsia-600 text-xl shadow-sm">
+                            🌉
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-fuchsia-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-fuchsia-700 transition-colors">Wheatstone Bridge</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Classic bridge circuit: adjust bridge arm resistors to observe balance conditions, with real-time changes in galvanometer current direction and magnitude.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-fuchsia-500 gap-1">
+                            <span>Bridge Balance</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Galvanometer</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ================= 2. Circuit Theorems ================= -->
+        <div class="mb-12">
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold text-slate-800 section-title">Circuit Theorems</h2>
+                <span class="text-sm text-slate-400 ml-2">Thevenin · Norton · Superposition · Maximum Power Transfer</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7 auto-rows-fr">
+                <!-- Thevenin and Norton Equivalents -->
+                <a href="./02_Circuit_Theorems/Thevenin_Norton.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xl shadow-sm">
+                            🔄
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-blue-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-blue-700 transition-colors">Thevenin and Norton Equivalents</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Simplification of active two-terminal networks: the V_th + R_th equivalent circuit drives the same load as the original network, verifying complete equivalence.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-blue-500 gap-1">
+                            <span>Thevenin</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Norton</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- Superposition Theorem -->
+                <a href="./02_Circuit_Theorems/Superposition.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xl shadow-sm">
+                            ➕
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-indigo-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-indigo-700 transition-colors">Superposition Theorem</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Linear circuit with 2 independent sources: each source acts alone, the superposition equals the total response, with step-by-step animated demonstration.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-indigo-500 gap-1">
+                            <span>Stepwise Superposition</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Linear System</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- Maximum Power Transfer Theorem -->
+                <a href="./02_Circuit_Theorems/Max_Power_Transfer.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center text-sky-600 text-xl shadow-sm">
+                            📈
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-sky-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-sky-700 transition-colors">Maximum Power Transfer Theorem</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Thevenin equivalent source driving a variable load: power-resistance parabolic curve, marking the maximum power matching point.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-sky-500 gap-1">
+                            <span>Load Matching</span>
+                            <span class="text-slate-300">|</span>
+                            <span>R_L=R_th</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ================= 3. Sinusoidal Characteristics and Power ================= -->
+        <div class="mb-12">
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold text-slate-800 section-title">Sinusoidal Characteristics and Power</h2>
+                <span class="text-sm text-slate-400 ml-2">Sinusoidal Steady State · Impedance Characteristics · Power Exchange</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7 auto-rows-fr">
+                <!-- RLC Sinusoidal Characteristics -->
+                <a href="./03_Sinusoidal_Power/RLC_AC_V3.html" target="_blank" rel="noopener noreferrer" 
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xl shadow-sm">
+                            🔄
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-indigo-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-indigo-700 transition-colors">RLC Sinusoidal Characteristics</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Impedance characteristics of RLC components under sinusoidal steady state, with intuitive display of voltage-current phase relationships.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-indigo-500 gap-1">
+                            <span>Interactive Simulation</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Amplitude & Phase</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- Resistor Sinusoidal Characteristics -->
+                <a href="./03_Sinusoidal_Power/R_component.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 text-xl shadow-sm">
+                            🔌
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-rose-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-rose-700 transition-colors">Resistor Sinusoidal Characteristics</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            AC response of a purely resistive circuit: voltage and current waveforms are perfectly in sync, with dynamic demonstration of resistance's effect on amplitude.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-rose-500 gap-1">
+                            <span>Ohm's Law</span>
+                            <span class="text-slate-300">|</span>
+                            <span>No Phase Shift</span>
+                        </div>
+                    </div>
+                </a>                
+                <!-- Inductor Sinusoidal Characteristics -->
+                <a href="./03_Sinusoidal_Power/L_component.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-xl shadow-sm">
+                            🧲
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-emerald-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-emerald-700 transition-colors">Inductor Sinusoidal Characteristics</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Inductive reactance is proportional to frequency; current lags voltage by 90 degrees, with energy storage characteristics and frequency response curves.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-emerald-500 gap-1">
+                            <span>Lagging Characteristic</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Blocks High Freq</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- Capacitor Sinusoidal Characteristics -->
+                <a href="./03_Sinusoidal_Power/C_component.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 text-xl shadow-sm">
+                            ⚡
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-amber-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-amber-700 transition-colors">Capacitor Sinusoidal Characteristics</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Capacitive reactance varies with frequency under AC; current leads voltage by 90 degrees, with dynamic charging/discharging process.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-amber-500 gap-1">
+                            <span>Leading Characteristic</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Frequency Filtering</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- LC Power Curves -->
+                <a href="./03_Sinusoidal_Power/LC_Power.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 text-xl shadow-sm">
+                            📊
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-teal-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-teal-700 transition-colors">LC Power Curves</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Power characteristic curves for inductors and capacitors, with dynamic demonstration of power factor and reactive power.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-teal-500 gap-1">
+                            <span>Reactive Power</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Energy Oscillation</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ================= 4. Frequency Response ================= -->
+        <div class="mb-12">
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold text-slate-800 section-title">Frequency Response · Filters and Resonance</h2>
+                <span class="text-sm text-slate-400 ml-2">Frequency-Selective Networks · Cutoff Frequency · Resonance Curves</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7 auto-rows-fr">
+                <!-- RC Low-Pass Filter -->
+                <a href="./04_Frequency_Response/RC_low_pass_filter.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center text-sky-600 text-xl shadow-sm">
+                            🔽
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-sky-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-sky-700 transition-colors">RC Low-Pass Filter</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Passes low-frequency signals and attenuates high-frequency components, with adjustable magnitude-frequency response and cutoff frequency in real time.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-sky-500 gap-1">
+                            <span>Cutoff Frequency</span>
+                            <span class="text-slate-300">|</span>
+                            <span>-3dB Point</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- RC High-Pass Filter -->
+                <a href="./04_Frequency_Response/RC_high_pass_filter.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-cyan-100 flex items-center justify-center text-cyan-600 text-xl shadow-sm">
+                            🔼
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-cyan-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-cyan-700 transition-colors">RC High-Pass Filter</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Attenuates low-frequency components while passing high-frequency signals, with phase lead characteristics and cutoff frequency visualization.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-cyan-500 gap-1">
+                            <span>High-Pass Filtering</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Phase Lead</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- Band-Pass Filter -->
+                <a href="./04_Frequency_Response/band_pass_filter.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 text-xl shadow-sm">
+                            ⚙️
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-violet-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-violet-700 transition-colors">Band-Pass Filter</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Passes signals within a specific frequency band, with real-time display of center frequency and bandwidth.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-violet-500 gap-1">
+                            <span>Center Frequency</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Quality Factor</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- Band-Stop Filter -->
+                <a href="./04_Frequency_Response/band_stop_filter.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-fuchsia-100 flex items-center justify-center text-fuchsia-600 text-xl shadow-sm">
+                            ⛔
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-fuchsia-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-fuchsia-700 transition-colors">Band-Stop Filter</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Suppresses signals within a specific frequency band, with clear notch characteristics.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-fuchsia-500 gap-1">
+                            <span>Notch Filter</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Stopband Rejection</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- RLC Series Resonance Frequency Response -->
+                <a href="./04_Frequency_Response/Series_Resonance_V2.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 text-xl shadow-sm">
+                            📈
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-purple-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-purple-700 transition-colors">RLC Series Resonance Frequency Response</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            At resonance, impedance is minimum and current is maximum; observe the effect of quality factor Q on curve sharpness.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-purple-500 gap-1">
+                            <span>Resonance Peak</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Frequency Selectivity</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- RLC Parallel Resonance Frequency Response (current source excitation) -->
+                <a href="./04_Frequency_Response/Parallel_Resonance.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 text-xl shadow-sm">
+                            ⚡
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-pink-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-pink-700 transition-colors">RLC Parallel Resonance Frequency Response</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Under current source excitation, at resonance admittance is minimum, impedance is maximum, and terminal voltage reaches its peak. Quality factor Q affects the voltage peak sharpness.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-pink-500 gap-1">
+                            <span>Current Source Excitation</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Maximum Impedance</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ================= 5. Mutual Inductance and Transformers ================= -->
+        <div class="mb-12">
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold text-slate-800 section-title">Mutual Inductance and Transformers</h2>
+                <span class="text-sm text-slate-400 ml-2">Coupled Inductors · Ideal Transformer · Impedance Transformation</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7 auto-rows-fr">
+                <!-- Mutually Coupled Coils -->
+                <a href="./05_Mutual_Inductance_Transformers/Mutual_Inductance.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 text-xl shadow-sm">
+                            🧲
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-violet-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-violet-700 transition-colors">Mutually Coupled Coils</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Two coupled inductors: adjust coupling coefficient k, observe equivalent inductance changes in series aiding/opposing, with T-model decoupling equivalent.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-violet-500 gap-1">
+                            <span>Coupling Coefficient</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Decoupling Equivalent</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- Ideal Transformer -->
+                <a href="./05_Mutual_Inductance_Transformers/Ideal_Transformer.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 text-xl shadow-sm">
+                            ⚡
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-purple-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-purple-700 transition-colors">Ideal Transformer</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Adjustable turns ratio n: compare primary/secondary voltage and current waveforms, verify V2/V1=n, I2/I1=1/n, and impedance transformation.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-purple-500 gap-1">
+                            <span>Turns Ratio</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Impedance Transformation</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ================= 6. Transient Analysis ================= -->
+        <div class="mb-12">
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold text-slate-800 section-title">Transient Analysis</h2>
+                <span class="text-sm text-slate-400 ml-2">RC/RL Charging/Discharging · Time Constant</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7 auto-rows-fr">
+                <!-- Capacitor Charging/Discharging -->
+                <a href="./06_Transient_Analysis/Capacitor_Charging_Discharging.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-xl shadow-sm">
+                            🔋
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-orange-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-orange-700 transition-colors">Capacitor Charging/Discharging</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Transient process of RC circuit: the effect of time constant tau on exponential rise/fall curves, with dynamic demonstration.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-orange-500 gap-1">
+                            <span>Transient Analysis</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Time Constant</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- Inductor Charging/Discharging -->
+                <a href="./06_Transient_Analysis/Inductor_Charging_Discharging.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 text-xl shadow-sm">
+                            🧲
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-yellow-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-yellow-700 transition-colors">Inductor Charging/Discharging</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Transient process of RL circuit: time constant tau=L/R, current exponential rise/fall, and magnetic field energy storage changes.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-yellow-600 gap-1">
+                            <span>Transient Analysis</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Time Constant L/R</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- RLC Second-Order Transient Response -->
+                <a href="./06_Transient_Analysis/RLC_Step_Response.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 text-xl shadow-sm">
+                            🔄
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-rose-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-rose-700 transition-colors">RLC Second-Order Transient Response</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Series RLC circuit step response: switch between underdamped/critically damped/overdamped states, with real-time s-plane pole tracking.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-rose-500 gap-1">
+                            <span>Damping Characteristics</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Pole Distribution</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ================= 7. Fourier Series Expansion of Non-Sinusoidal Periodic Signals ================= -->
+        <div class="mb-12">
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold text-slate-800 section-title">Fourier Series Expansion · Harmonic Synthesis</h2>
+                <span class="text-sm text-slate-400 ml-2">Spectrum Analysis · Gibbs Phenomenon</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7 auto-rows-fr">
+                <!-- Square Wave Fourier Series -->
+                <a href="./07_Fourier_Series/Square_Fourier_Series_V3.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xl shadow-sm">
+                            ◻️
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-blue-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-blue-700 transition-colors">Square Wave Fourier Series</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Square wave decomposed into sinusoidal harmonic superposition, Gibbs phenomenon, spectrum visualization for understanding Fourier transforms.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-blue-500 gap-1">
+                            <span>Harmonic Synthesis</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Gibbs Phenomenon</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- Triangle Wave Fourier Series -->
+                <a href="./07_Fourier_Series/Triangle_Fourier_Series.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-lime-100 flex items-center justify-center text-lime-600 text-xl shadow-sm">
+                            📐
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-lime-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-lime-700 transition-colors">Triangle Wave Fourier Series</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Triangle wave harmonic amplitudes decay with the square of frequency, converging faster, with smooth waveform synthesis demonstration.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-lime-500 gap-1">
+                            <span>Odd Harmonics</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Fast Convergence</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- Sawtooth Wave Fourier Series -->
+                <a href="./07_Fourier_Series/Sawtooth_Fourier_Series.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 text-xl shadow-sm">
+                            〰️
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-purple-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-purple-700 transition-colors">Sawtooth Wave Fourier Series</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Sawtooth wave contains all integer harmonics (both odd and even), amplitudes decay as 1/n, forming a complete comparison series with square/triangle/trapezoidal waves.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-purple-500 gap-1">
+                            <span>Odd & Even Harmonics</span>
+                            <span class="text-slate-300">|</span>
+                            <span>1/n Decay</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- Trapezoidal Wave Fourier Series -->
+                <a href="./07_Fourier_Series/Trapezoidal_Fourier_Series.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-xl shadow-sm">
+                            📏
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-green-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-green-700 transition-colors">Trapezoidal Wave Fourier Series</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Trapezoidal wave spectral characteristics: flat top and sloped edges affect harmonic decay, compared with square and triangle wave harmonic differences.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-green-500 gap-1">
+                            <span>Harmonic Suppression</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Spectral Rolloff</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- ================= 8. Three-Phase Circuits ================= -->
+        <div class="mb-12">
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold text-slate-800 section-title">Three-Phase Circuits · Symmetric Sources</h2>
+                <span class="text-sm text-slate-400 ml-2">120° Phase Difference · Waveform Symmetry</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7 auto-rows-fr">
+                <!-- Three-Phase Symmetric Source Voltage Waveforms -->
+                <a href="./08_Three_Phase_Circuits/Three_phase_AC.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 text-xl shadow-sm">
+                            ⚡3️⃣
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-yellow-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-yellow-700 transition-colors">Three-Phase Symmetric Source Voltage Waveforms</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Three-phase sinusoidal voltage waveforms with equal amplitudes and 120° phase differences, with dynamic display of symmetry and phase sequence.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-yellow-600 gap-1">
+                            <span>120° Phase Shift</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Symmetric Sources</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- Three-Phase Load Star-Delta Connection -->
+                <a href="./08_Three_Phase_Circuits/Three_Phase_Load_Connection.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 text-xl shadow-sm">
+                            🔺
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-amber-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-amber-700 transition-colors">Three-Phase Load Star-Delta Connection</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Same three-phase source connected to loads in Y and Delta configurations, with side-by-side display of phase/line voltage-current relationships, verifying the sqrt(3) ratio.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-amber-600 gap-1">
+                            <span>Y-Delta Transform</span>
+                            <span class="text-slate-300">|</span>
+                            <span>sqrt(3) Relationship</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- Three-Phase Unbalanced Load -->
+                <a href="./08_Three_Phase_Circuits/Three_Phase_Unbalanced.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-xl shadow-sm">
+                            ⚖️
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-orange-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-orange-700 transition-colors">Three-Phase Unbalanced Load</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            In a three-phase four-wire system, one phase load changes, showing neutral point displacement and neutral line current changes, with real-time phasor diagram updates.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-orange-600 gap-1">
+                            <span>Neutral Displacement</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Phasor Diagram</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+
+
+
+
+        <!-- ================= 9. Knowledge Summary ================= -->
+        <div class="mb-12">
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold text-slate-800 section-title">Knowledge Summary</h2>
+                <span class="text-sm text-slate-400 ml-2">Systematic Review · Formula Quick Reference · Study Outline</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7 auto-rows-fr">
+                <!-- DC Resistive Circuits -->
+                <a href="./09_Summary/01_DC_Resistive_Circuits.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 text-xl shadow-sm">
+                            📘
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-teal-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-teal-700 transition-colors">DC Resistive Circuits</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Covers fundamental circuit concepts, Kirchhoff's laws, equivalent transformations, systematic analysis methods, and circuit theorems (superposition, Thevenin, Norton, maximum power transfer).
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-teal-500 gap-1">
+                            <span>Chapters 1-4</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Branch/Mesh/Nodal</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- Sinusoidal Steady-State Analysis -->
+                <a href="./09_Summary/02_Sinusoidal_Steady_State.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-cyan-100 flex items-center justify-center text-cyan-600 text-xl shadow-sm">
+                            📗
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-cyan-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-cyan-700 transition-colors">Sinusoidal Steady-State Analysis</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Phasor method analysis of sinusoidal steady-state circuits: impedance and admittance, four types of power, power factor correction, resonance circuits, coupled inductors and ideal transformers.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-cyan-500 gap-1">
+                            <span>Chapters 5-6</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Phasors · Resonance · Transformers</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- Dynamic Circuit Time-Domain Analysis -->
+                <a href="./09_Summary/03_Transient_Analysis.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-xl shadow-sm">
+                            📙
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-orange-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-orange-700 transition-colors">Dynamic Circuit Time-Domain Analysis</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Switching laws, first-order circuit zero-input/zero-state/complete response, three-element method, step and impulse response, second-order circuit damping classification.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-orange-500 gap-1">
+                            <span>Chapter 7</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Transient · Three-Element Method</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- Two-Port Networks -->
+                <a href="./09_Summary/04_Two_Port_Networks.html" target="_blank" rel="noopener noreferrer"
+                   class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                    <div class="flex items-start justify-between">
+                        <div class="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 text-xl shadow-sm">
+                            📕
+                        </div>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-violet-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold text-slate-800 group-hover:text-violet-700 transition-colors">Two-Port Networks</h3>
+                        <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Z/Y/T/H parameter equations, reciprocity and symmetry conditions, cascade/parallel/series equivalents, and network connection analysis methods.
+                        </p>
+                        <div class="mt-3 flex items-center text-xs font-medium text-violet-500 gap-1">
+                            <span>Chapter 8</span>
+                            <span class="text-slate-300">|</span>
+                            <span>Parameter Equations · Network Connections</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Teaching Assistance Info Cards -->
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="bg-white/70 backdrop-blur-sm rounded-xl shadow-md border border-slate-200 p-5 transition-all hover:shadow-lg">
+                <div class="flex items-center gap-2 text-indigo-700 mb-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    <h3 class="font-bold text-base">Interactive Simulation Teaching</h3>
+                </div>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    All major modules are dynamic simulation tools supporting real-time parameter adjustment and dynamic waveform/curve refresh, intuitively revealing the fundamental principles of circuits. Optimized for desktops and tablets; a modern browser is recommended for the best interactive experience.
+                </p>
+            </div>
+            <div class="bg-white/70 backdrop-blur-sm rounded-xl shadow-md border border-slate-200 p-5 transition-all hover:shadow-lg">
+                <div class="flex items-center gap-2 text-emerald-700 mb-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                    <h3 class="font-bold text-base">Teaching Philosophy</h3>
+                </div>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    Covers core circuit analysis topics: DC circuits, sinusoidal steady state, resonance, filters, transient processes, Fourier decomposition, and three-phase circuits. This index page aggregates all simulation resources to support classroom demonstrations and independent student exploration.
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-12 text-center text-xs text-slate-400 border-t border-slate-200/60 pt-6">
+            <p>Circuit Analysis Fundamentals Teaching Aid · Dynamic Simulation Toolkit | 30 Interactive Modules, Organized by Knowledge Domain</p>
+            <p class="mt-1">Click a card to open the interactive interface in a new tab; maximize the window for full functionality</p>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            console.log("Circuit Analysis Fundamentals | Full index page loaded | Contains 30 simulation modules: Sinusoidal Characteristics / Frequency Response / Transient Analysis / Fourier Series / Three-Phase Circuits / DC Basics / Circuit Theorems / Mutual Inductance & Transformers (Op-Amp section reserved for Analog Electronics)");
+        })();
+    </script>
+</body>
+</html>

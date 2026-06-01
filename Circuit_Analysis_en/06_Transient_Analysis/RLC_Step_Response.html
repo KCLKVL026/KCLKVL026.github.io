@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>RLC Second-Order Transient Response · Step Response and Damping Characteristics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- KaTeX math rendering -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #2563eb;
+            transform: scale(1.15);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15);
+        }
+        .phase-badge {
+            background: #eff6ff;
+            border-radius: 20px;
+            padding: 0.2rem 0.7rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #1e40af;
+        }
+        .reset-btn {
+            transition: all 0.2s;
+        }
+        .reset-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- Back to Home button (top left) -->
+    <div class="flex justify-start mb-4">
+        <a href="../index.html"
+        class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Home
+        </a>
+    </div>
+
+    <!-- Title area -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            RLC Second-Order Transient Response · Step Response and Damping Characteristics
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            Series RLC circuit step response under square wave excitation | Adjust \(R, L, C\) to observe underdamped (oscillatory decay), critically damped, and overdamped states
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left control panel -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- Parameter adjustment card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    Circuit Parameter Adjustment
+                </h3>
+
+                <!-- Resistance R -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Resistance \(R\)</label>
+                        <span class="text-blue-600 font-mono" id="r_display">50 Ω</span>
+                    </div>
+                    <input type="range" id="r_slider" min="10" max="500" step="1" value="50" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Ω</span><span>500 Ω</span>
+                    </div>
+                </div>
+
+                <!-- Inductance L -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Inductance \(L\)</label>
+                        <span class="text-blue-600 font-mono" id="l_display">10.0 mH</span>
+                    </div>
+                    <input type="range" id="l_slider" min="1" max="50" step="1" value="10" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>1 mH</span><span>50 mH</span>
+                    </div>
+                </div>
+
+                <!-- Capacitance C -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Capacitance \(C\)</label>
+                        <span class="text-blue-600 font-mono" id="c_display">10.0 μF</span>
+                    </div>
+                    <input type="range" id="c_slider" min="1" max="100" step="1" value="10" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>1 μF</span><span>100 μF</span>
+                    </div>
+                </div>
+
+                <!-- Frequency f -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Square Wave Frequency \(f\)</label>
+                        <span class="text-blue-600 font-mono" id="f_display">50 Hz</span>
+                    </div>
+                    <input type="range" id="f_slider" min="10" max="200" step="1" value="50" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Hz</span><span>200 Hz</span>
+                    </div>
+                </div>
+
+                <!-- Reset & Critical Damping buttons -->
+                <div class="mt-6 flex justify-center gap-3">
+                    <button id="resetBtn" class="reset-btn bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-full shadow-md transition flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        Reset Parameters
+                    </button>
+                    <button id="criticalDampingBtn" class="reset-btn bg-emerald-500 hover:bg-emerald-600 text-white font-medium py-2 px-5 rounded-full shadow-md transition flex items-center gap-2 text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        Critical Damping
+                    </button>
+                </div>
+            </div>
+
+            <!-- Characteristic parameters display card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-3">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    Characteristic Parameters
+                </h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
+                        <span class="font-medium">\(\zeta\) Damping Ratio</span>
+                        <span class="font-mono text-indigo-600" id="zeta_display">--</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
+                        <span class="font-medium">Damping State</span>
+                        <span class="font-mono font-bold text-sm" id="damping_state">--</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
+                        <span class="font-medium">\(\omega_0\) Resonant Frequency</span>
+                        <span class="font-mono text-emerald-600" id="w0_display">--</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2 bg-slate-50 rounded-lg" id="wd_row">
+                        <span class="font-medium">\(\omega_d\) Damped Frequency</span>
+                        <span class="font-mono text-amber-600" id="wd_display">--</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right waveform area -->
+        <div class="lg:col-span-8 space-y-6">
+            <!-- Main waveform chart -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-5">
+                <div class="flex justify-between items-center flex-wrap mb-2">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                        <h3 class="font-bold text-slate-800 text-lg">Series RLC Circuit · Square Wave Excitation Response</h3>
+                    </div>
+                    <span class="phase-badge">\(v_{\text{in}}(t)\), \(v_C(t)\), \(i(t)\)</span>
+                </div>
+                <div class="relative">
+                    <canvas id="mainChart" width="700" height="380" style="width:100%; height:auto; max-height:400px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-1">
+                    Gray staircase: input square wave \(v_{\text{in}}\); Blue curve: capacitor voltage \(v_C(t)\); Orange curve: current \(i(t)\) (scaled for display)
+                </div>
+            </div>
+
+            <!-- Response metrics (single row) -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-3 h-3 bg-purple-500 rounded-full"></div>
+                    <h3 class="font-bold text-slate-800 text-lg">Response Metrics</h3>
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="bg-red-50 rounded-xl p-3 text-center">
+                        <div class="text-xs text-red-600 font-semibold mb-1">Peak Voltage</div>
+                        <div class="font-mono font-bold text-red-500" id="peak_v_display">--</div>
+                    </div>
+                    <div class="bg-orange-50 rounded-xl p-3 text-center">
+                        <div class="text-xs text-orange-600 font-semibold mb-1">Overshoot</div>
+                        <div class="font-mono font-bold text-orange-500" id="overshoot_display">--</div>
+                    </div>
+                    <div class="bg-blue-50 rounded-xl p-3 text-center">
+                        <div class="text-xs text-blue-600 font-semibold mb-1">Settling Time (est.)</div>
+                        <div class="font-mono font-bold text-blue-600" id="settling_display">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Supplementary info cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-2">Three Damping States</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        <strong>Underdamped (\(\zeta < 1\)):</strong> \(v_C(t)\) oscillates with decay, overshoot increases as \(\zeta\) decreases. Poles are a pair of complex conjugates.<br>
+                        <strong>Critically Damped (\(\zeta = 1\)):</strong> Fastest non-overshooting response, \(v_C(t)\) rises monotonically without oscillation. Poles are repeated real roots.<br>
+                        <strong>Overdamped (\(\zeta > 1\)):</strong> Response rises slowly and monotonically, no oscillation. Poles are two distinct negative real roots.
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-2">Characteristic Formulas</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        \(\zeta = \frac{R}{2}\sqrt{\frac{C}{L}}\)，\(\omega_0 = \frac{1}{\sqrt{LC}}\)<br>
+                        \(\omega_d = \omega_0\sqrt{1-\zeta^2}\) (underdamped)<br>
+                        Overshoot \(M_p = e^{-\pi\zeta/\sqrt{1-\zeta^2}} \times 100\%\)<br>
+                        Poles: \(s_{1,2} = -\zeta\omega_0 \pm \omega_0\sqrt{\zeta^2-1}\)
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // DOM elements
+    const rSlider = document.getElementById('r_slider');
+    const lSlider = document.getElementById('l_slider');
+    const cSlider = document.getElementById('c_slider');
+    const fSlider = document.getElementById('f_slider');
+    const resetBtn = document.getElementById('resetBtn');
+
+    const rDisplay = document.getElementById('r_display');
+    const lDisplay = document.getElementById('l_display');
+    const cDisplay = document.getElementById('c_display');
+    const fDisplay = document.getElementById('f_display');
+
+    const zetaDisplay = document.getElementById('zeta_display');
+    const dampingState = document.getElementById('damping_state');
+    const w0Display = document.getElementById('w0_display');
+    const wdDisplay = document.getElementById('wd_display');
+    const wdRow = document.getElementById('wd_row');
+    const peakVDisplay = document.getElementById('peak_v_display');
+    const overshootDisplay = document.getElementById('overshoot_display');
+    const settlingDisplay = document.getElementById('settling_display');
+
+    const mainCanvas = document.getElementById('mainChart');
+
+    let mainChart;
+    let currentScaleI = 1;  // module-level for tooltip access
+
+    // Default values
+    const DEFAULTS = {
+        R: 50,
+        L_mH: 10,
+        C_uF: 10,
+        f: 50
+    };
+
+    // Simulation parameters
+    const SAMPLE_POINTS = 1500;
+    const PERIODS = 3;
+
+    // Get current parameters (SI units)
+    function getParams() {
+        const R = parseFloat(rSlider.value);
+        const L_mH = parseFloat(lSlider.value);
+        const C_uF = parseFloat(cSlider.value);
+        const f = parseFloat(fSlider.value);
+        const L = L_mH * 1e-3;   // mH -> H
+        const C = C_uF * 1e-6;   // μF -> F
+        return { R, L, C, f, L_mH, C_uF };
+    }
+
+    // Compute characteristic parameters
+    function computeCharacteristics(R, L, C) {
+        const w0 = 1 / Math.sqrt(L * C);       // Resonant frequency rad/s
+        const zeta = (R / 2) * Math.sqrt(C / L); // Damping ratio
+        let wd = 0;
+        let dampingLabel, dampingColor;
+        if (zeta < 0.995) {
+            wd = w0 * Math.sqrt(1 - zeta * zeta);
+            dampingLabel = 'Underdamped (oscillatory decay)';
+            dampingColor = '#f59e0b';
+        } else if (zeta < 1.005) {
+            dampingLabel = 'Critically Damped';
+            dampingColor = '#10b981';
+        } else {
+            dampingLabel = 'Overdamped (monotonic decay)';
+            dampingColor = '#ef4444';
+        }
+        // Overshoot (only meaningful for underdamped)
+        let overshootPct = 0;
+        if (zeta < 1) {
+            overshootPct = Math.exp(-Math.PI * zeta / Math.sqrt(1 - zeta * zeta)) * 100;
+        }
+        // Settling time estimate (2% criterion: 4/α)
+        const alpha = zeta * w0;
+        let settlingTime = 0;
+        if (alpha > 1e-9) {
+            settlingTime = 4 / alpha;
+        }
+        return { w0, zeta, wd, dampingLabel, dampingColor, overshootPct, settlingTime, alpha };
+    }
+
+    // RK4 numerical solver for series RLC circuit
+    // State: [v_C, i]
+    // dv_C/dt = i / C
+    // di/dt = (v_in - v_C - R*i) / L
+    function rk4Step(vC, i, vIn, R, L, C, dt) {
+        function dVC(i) { return i / C; }
+        function dI(vC, i, vIn) { return (vIn - vC - R * i) / L; }
+
+        const k1v = dVC(i);
+        const k1i = dI(vC, i, vIn);
+
+        const k2v = dVC(i + 0.5 * dt * k1i);
+        const k2i = dI(vC + 0.5 * dt * k1v, i + 0.5 * dt * k1i, vIn);
+
+        const k3v = dVC(i + 0.5 * dt * k2i);
+        const k3i = dI(vC + 0.5 * dt * k2v, i + 0.5 * dt * k2i, vIn);
+
+        const k4v = dVC(i + dt * k3i);
+        const k4i = dI(vC + dt * k3v, i + dt * k3i, vIn);
+
+        const vC_new = vC + (dt / 6) * (k1v + 2 * k2v + 2 * k3v + k4v);
+        const i_new = i + (dt / 6) * (k1i + 2 * k2i + 2 * k3i + k4i);
+
+        return { vC: vC_new, i: i_new };
+    }
+
+    // Generate square wave input and simulation data
+    function simulateResponse(R, L, C, f) {
+        const T = 1 / f;
+        const halfT = T / 2;
+        const tMax = PERIODS * T;
+        const dt = tMax / (SAMPLE_POINTS - 1);
+
+        const times = [];
+        const vInArr = [];
+        const vCArr = [];
+        const iArr = [];
+
+        let vC = 0;
+        let i = 0;
+
+        for (let n = 0; n < SAMPLE_POINTS; n++) {
+            const t = n * dt;
+            times.push(t);
+
+            // Square wave input
+            const tMod = t % T;
+            const vIn = (tMod < halfT) ? 1.0 : 0.0;
+            vInArr.push(vIn);
+
+            vCArr.push(vC);
+            iArr.push(i);
+
+            // RK4 stepping
+            const result = rk4Step(vC, i, vIn, R, L, C, dt);
+            vC = result.vC;
+            i = result.i;
+        }
+
+        return { times, vInArr, vCArr, iArr };
+    }
+
+    // Update displays
+    function updateDisplays(params, chars) {
+        const { R, L_mH, C_uF, f } = params;
+        rDisplay.textContent = R + ' Ω';
+        lDisplay.textContent = L_mH.toFixed(1) + ' mH';
+        cDisplay.textContent = C_uF.toFixed(1) + ' μF';
+        fDisplay.textContent = f + ' Hz';
+
+        const { w0, zeta, wd, dampingLabel, dampingColor, overshootPct, settlingTime, alpha } = chars;
+
+        zetaDisplay.textContent = zeta.toFixed(4);
+        dampingState.textContent = dampingLabel;
+        dampingState.style.color = dampingColor;
+        w0Display.textContent = (w0 / 1000).toFixed(2) + ' krad/s (' + w0.toFixed(0) + ' rad/s)';
+
+        if (zeta < 1) {
+            wdRow.style.display = 'flex';
+            wdDisplay.textContent = (wd / 1000).toFixed(2) + ' krad/s (' + wd.toFixed(0) + ' rad/s)';
+        } else {
+            wdRow.style.display = 'none';
+        }
+    }
+
+    // Update response metrics
+    function updateMetrics(data, chars) {
+        const { vCArr, iArr } = data;
+        const { zeta, overshootPct, settlingTime } = chars;
+
+        // Peak voltage in the first half period
+        let peakVC = 0;
+        for (let k = 0; k < vCArr.length; k++) {
+            if (vCArr[k] > peakVC) peakVC = vCArr[k];
+        }
+
+        peakVDisplay.textContent = peakVC.toFixed(3) + ' V';
+
+        if (zeta < 1 && overshootPct > 0.01) {
+            overshootDisplay.textContent = overshootPct.toFixed(1) + '%';
+        } else {
+            overshootDisplay.textContent = 'None';
+        }
+        overshootDisplay.style.color = (zeta < 1) ? '#f97316' : '#64748b';
+
+        if (settlingTime > 0 && settlingTime < 10) {
+            settlingDisplay.textContent = settlingTime.toFixed(3) + ' s';
+        } else if (settlingTime >= 10) {
+            settlingDisplay.textContent = '>10 s';
+        } else {
+            settlingDisplay.textContent = '--';
+        }
+    }
+
+    // Update main waveform chart
+    function updateMainChart(data, params) {
+        const { times, vInArr, vCArr, iArr } = data;
+
+        // Current scaling factor (for display in same chart)
+        const maxI = Math.max(...iArr.map(Math.abs));
+        currentScaleI = maxI > 1e-6 ? 0.8 / maxI : 1;
+
+        const vinPoints = times.map((t, idx) => ({ x: t, y: vInArr[idx] }));
+        const vcPoints = times.map((t, idx) => ({ x: t, y: vCArr[idx] }));
+        const iPoints = times.map((t, idx) => ({ x: t, y: iArr[idx] * currentScaleI }));
+
+        if (mainChart) {
+            mainChart.data.datasets[0].data = vinPoints;
+            mainChart.data.datasets[1].data = vcPoints;
+            mainChart.data.datasets[2].data = iPoints;
+            mainChart.options.scales.x.max = times[times.length - 1];
+            mainChart.update();
+        } else {
+            mainChart = new Chart(mainCanvas, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Input Square Wave v_in(t) (V)',
+                            data: vinPoints,
+                            borderColor: '#94a3b8',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            tension: 0,
+                            stepped: 'before',
+                            borderDash: [6, 3]
+                        },
+                        {
+                            label: 'Capacitor Voltage v_C(t) (V)',
+                            data: vcPoints,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2.5,
+                            pointRadius: 0,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Current i(t) (scaled)',
+                            data: iPoints,
+                            borderColor: '#f97316',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            tension: 0.3,
+                            borderDash: [3, 2]
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    if (ctx.datasetIndex === 2) {
+                                        const realI = ctx.raw.y / currentScaleI;
+                                        return 'Current i(t): ' + (realI * 1000).toFixed(3) + ' mA @ t=' + ctx.raw.x.toFixed(4) + ' s';
+                                    }
+                                    return ctx.dataset.label + ': ' + ctx.raw.y.toFixed(3) + ' @ t=' + ctx.raw.x.toFixed(4) + ' s';
+                                }
+                            },
+                            backgroundColor: 'rgba(0,0,0,0.7)'
+                        },
+                        legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8, font: { size: 10 } } }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            title: { display: true, text: 'Time t (s)', font: { weight: 'bold', size: 11 } },
+                            ticks: { callback: (v) => v.toFixed(3) + 's', maxTicksLimit: 6 },
+                            min: 0,
+                            max: times[times.length - 1],
+                            grid: { color: '#eef2ff' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Voltage (V) / Current (scaled)', font: { weight: 'bold', size: 11 } },
+                            min: -1.0,
+                            max: 1.4,
+                            ticks: { callback: (v) => v.toFixed(2) },
+                            grid: { color: '#eef2ff' }
+                        }
+                    },
+                    elements: { point: { radius: 0, hitRadius: 6, hoverRadius: 3 }, line: { tension: 0.3, borderWidth: 2.2 } }
+                }
+            });
+        }
+    }
+
+    // Update all charts and displays
+    function updateAll() {
+        const params = getParams();
+        const { R, L, C, f } = params;
+        const chars = computeCharacteristics(R, L, C);
+
+        updateDisplays(params, chars);
+
+        const data = simulateResponse(R, L, C, f);
+        updateMetrics(data, chars);
+        updateMainChart(data, params);
+    }
+
+    // Reset parameters
+    function resetParams() {
+        rSlider.value = DEFAULTS.R;
+        lSlider.value = DEFAULTS.L_mH;
+        cSlider.value = DEFAULTS.C_uF;
+        fSlider.value = DEFAULTS.f;
+        updateAll();
+    }
+
+    // Event binding
+    function bindEvents() {
+        rSlider.addEventListener('input', () => updateAll());
+        lSlider.addEventListener('input', () => updateAll());
+        cSlider.addEventListener('input', () => updateAll());
+        fSlider.addEventListener('input', () => updateAll());
+        resetBtn.addEventListener('click', () => resetParams());
+        document.getElementById('criticalDampingBtn').addEventListener('click', () => {
+            const L = parseFloat(lSlider.value) * 1e-3;
+            const C = parseFloat(cSlider.value) * 1e-6;
+            // ζ = (R/2)√(C/L) = 1  →  R = 2√(L/C)
+            const R_crit = 2 * Math.sqrt(L / C);
+            rSlider.value = Math.round(Math.max(10, Math.min(500, R_crit)));
+            updateAll();
+        });
+        window.addEventListener('resize', () => {
+            if (mainChart) mainChart.resize();
+        });
+    }
+
+    // Initialize
+    function init() {
+        bindEvents();
+        updateAll();
+        window.addEventListener('load', function() {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            } else {
+                console.warn('KaTeX auto-render not loaded');
+            }
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>

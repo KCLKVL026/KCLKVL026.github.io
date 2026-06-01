@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Three-Phase Unbalanced Load · Neutral Point Displacement and Neutral Line Current</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] { height: 5px; -webkit-appearance: none; background: #e2e8f0; border-radius: 5px; outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #3b82f6; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb:hover { background: #2563eb; transform: scale(1.15); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .card-hover { transition: all 0.2s ease; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15); }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- Back to Home -->
+    <div class="flex justify-start mb-4">
+        <a href="../index.html"
+           class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Home
+        </a>
+    </div>
+
+    <!-- Title area -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            Three-Phase Unbalanced Load · Neutral Point Displacement and Neutral Line Current
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            One phase load changes in a three-phase four-wire system, demonstrating neutral point displacement and neutral line current changes.<br>
+            Voltage/current phasor diagrams update in real time, intuitively presenting the unbalanced effect.
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left control panel -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- Load parameters card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    Three-Phase Load Parameters
+                </h3>
+
+                <!-- Phase A load -->
+                <div class="mb-4 p-3 bg-red-50 rounded-xl border border-red-100">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label class="text-red-700">Phase A Load \(Z_A\)</label>
+                        <span class="text-red-600 font-mono" id="za_display">50 Ω</span>
+                    </div>
+                    <input type="range" id="za_slider" min="10" max="200" step="1" value="50" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Ω</span><span>200 Ω</span>
+                    </div>
+                </div>
+
+                <!-- Phase B load -->
+                <div class="mb-4 p-3 bg-green-50 rounded-xl border border-green-100">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label class="text-green-700">Phase B Load \(Z_B\)</label>
+                        <span class="text-green-600 font-mono" id="zb_display">50 Ω</span>
+                    </div>
+                    <input type="range" id="zb_slider" min="10" max="200" step="1" value="50" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Ω</span><span>200 Ω</span>
+                    </div>
+                </div>
+
+                <!-- Phase C load -->
+                <div class="mb-4 p-3 bg-blue-50 rounded-xl border border-blue-100">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label class="text-blue-700">Phase C Load \(Z_C\)</label>
+                        <span class="text-blue-600 font-mono" id="zc_display">50 Ω</span>
+                    </div>
+                    <input type="range" id="zc_slider" min="10" max="200" step="1" value="50" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Ω</span><span>200 Ω</span>
+                    </div>
+                </div>
+
+                <!-- Phase A power factor angle -->
+                <div class="mb-3 pt-2 border-t border-slate-100">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Phase A Power Factor Angle \(\varphi_A\)</label>
+                        <span class="text-blue-600 font-mono" id="phia_display">0°</span>
+                    </div>
+                    <input type="range" id="phia_slider" min="-90" max="90" step="5" value="0" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>-90° (Capacitive)</span><span>90° (Inductive)</span>
+                    </div>
+                </div>
+
+                <!-- Fixed parameters -->
+                <div class="mt-4 p-3 bg-slate-50 rounded-xl">
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-slate-500">Phase Voltage \(V_{\text{phase}}\)</span>
+                        <span class="font-mono font-bold text-slate-700">220 V (RMS)</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-500">Frequency \(f\)</span>
+                        <span class="font-mono font-bold text-slate-700">50 Hz</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current display card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-amber-500 rounded-full"></span>
+                    Three-Phase Currents
+                </h3>
+                <div class="grid grid-cols-3 gap-2 text-center text-sm">
+                    <div class="bg-red-50 p-2 rounded-xl">
+                        <div class="text-xs text-red-600 font-semibold">\(I_A\)</div>
+                        <div class="font-bold text-red-600 font-mono" id="ia_display">4.40 A</div>
+                        <div class="text-xs text-red-400" id="ia_angle">0°</div>
+                    </div>
+                    <div class="bg-green-50 p-2 rounded-xl">
+                        <div class="text-xs text-green-600 font-semibold">\(I_B\)</div>
+                        <div class="font-bold text-green-600 font-mono" id="ib_display">4.40 A</div>
+                        <div class="text-xs text-green-400" id="ib_angle">-120°</div>
+                    </div>
+                    <div class="bg-blue-50 p-2 rounded-xl">
+                        <div class="text-xs text-blue-600 font-semibold">\(I_C\)</div>
+                        <div class="font-bold text-blue-600 font-mono" id="ic_display">4.40 A</div>
+                        <div class="text-xs text-blue-400" id="ic_angle">120°</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Neutral point and neutral line card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-purple-500 rounded-full"></span>
+                    Neutral Point Analysis
+                </h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between p-2 bg-purple-50 rounded-lg">
+                        <span class="text-slate-600">Neutral Displacement Voltage \(V_{NN'}\)</span>
+                        <span class="font-mono font-bold text-purple-700" id="vnn_display">0.00 V</span>
+                    </div>
+                    <div class="flex justify-between p-2 bg-purple-50 rounded-lg">
+                        <span class="text-slate-600">\(V_{NN'}\) Angle</span>
+                        <span class="font-mono font-bold text-purple-700" id="vnn_angle">0°</span>
+                    </div>
+                    <div class="flex justify-between p-2 bg-purple-50 rounded-lg">
+                        <span class="text-slate-600">Neutral Line Current \(I_N\)</span>
+                        <span class="font-mono font-bold text-purple-700" id="in_mag">0.00 A</span>
+                    </div>
+                    <div class="flex justify-between p-2 bg-purple-50 rounded-lg">
+                        <span class="text-slate-600">\(I_N\) Angle</span>
+                        <span class="font-mono font-bold text-purple-700" id="in_angle">--</span>
+                    </div>
+                    <p class="text-xs text-slate-400 text-center mt-2">
+                        \(V_{NN'}\) is the neutral point displacement voltage (calculated) without a neutral line
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right graphics area -->
+        <div class="lg:col-span-8 space-y-5">
+            <!-- Phasor diagram -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="flex flex-wrap justify-between items-center mb-2">
+                    <h3 class="font-bold text-slate-800">Voltage/Current Phasor Diagram</h3>
+                    <div class="flex flex-wrap gap-3 text-xs">
+                        <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-red-500 inline-block rounded" style="height:3px;"></span>V_A</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-green-500 inline-block rounded" style="height:3px;"></span>V_B</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-blue-500 inline-block rounded" style="height:3px;"></span>V_C</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-fuchsia-500 inline-block rounded"></span>I_A</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-pink-400 inline-block rounded"></span>I_B</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-amber-400 inline-block rounded"></span>I_C</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-purple-500 inline-block rounded" style="height:3px;"></span>I_N</span>
+                    </div>
+                </div>
+                <div class="relative" style="height: 440px;">
+                    <canvas id="phasorChart" width="700" height="440" style="width:100%; height:100%;"></canvas>
+                </div>
+                <p class="text-xs text-slate-400 text-center mt-2">
+                    Arrow length represents RMS magnitude, direction represents phase angle. Current phasors are scaled by 50x to match voltage scale; labels show actual values. V_NN' is shown as a purple dashed line.
+                </p>
+            </div>
+
+            <!-- Waveform chart -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="w-3 h-3 bg-blue-400 rounded-full"></span>
+                    <h3 class="font-bold text-slate-800 text-sm">Voltage and Neutral Line Current Waveforms</h3>
+                </div>
+                <div class="relative" style="height: 280px;">
+                    <canvas id="waveformChart" width="700" height="280" style="width:100%; height:100%;"></canvas>
+                </div>
+                <div class="flex flex-wrap justify-center gap-3 mt-2 text-xs">
+                    <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-red-400 inline-block rounded"></span>V_A</span>
+                    <!-- <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-green-400 inline-block rounded"></span>V_B</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-blue-400 inline-block rounded"></span>V_C</span> -->
+                    <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-fuchsia-400 inline-block rounded"></span>I_A</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-purple-400 inline-block rounded" style="height:2.5px;"></span>I_N</span>
+                </div>
+            </div>
+
+            <!-- Bottom info cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 card-hover">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">Theoretical Basis</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        In a three-phase four-wire system, neutral current \(I_N = I_A + I_B + I_C\) (phasor sum).<br>
+                        When load is balanced, \(I_N = 0\); when unbalanced, \(I_N \neq 0\).<br>
+                        Without a neutral line (three-phase three-wire), the neutral displacement voltage is:<br>
+                        \(V_{NN'} = \frac{V_A Y_A + V_B Y_B + V_C Y_C}{Y_A + Y_B + Y_C}\)
+                        where \(Y = 1/Z\) is admittance.
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 card-hover">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">Characteristic Interpretation</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        The neutral line forces the load neutral point potential to equal the supply neutral point, keeping each phase load voltage symmetric.<br>
+                        If the neutral line breaks, unbalance causes severe voltage deviation across phases (some phases over-voltage, some under-voltage).<br>
+                        Adjust Phase A load to observe: I_A changes in the phasor diagram, I_N appears, V_NN' deviates from the origin.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // === Constants ===
+    const Vp_rms = 220;
+    const f = 50;
+    const SQRT2 = Math.sqrt(2);
+    const SQRT3 = Math.sqrt(3);
+    const DEG120 = (120 * Math.PI) / 180;
+    const DEG90 = (90 * Math.PI) / 180;
+
+    // Supply voltage phasors (RMS)
+    const VA_phasor_mag = Vp_rms;
+    const VA_phasor_ang = 0;
+    const VB_phasor_mag = Vp_rms;
+    const VB_phasor_ang = -120 * Math.PI / 180;
+    const VC_phasor_mag = Vp_rms;
+    const VC_phasor_ang = 120 * Math.PI / 180;
+
+    // === DOM Elements ===
+    const zaSlider = document.getElementById('za_slider');
+    const zbSlider = document.getElementById('zb_slider');
+    const zcSlider = document.getElementById('zc_slider');
+    const phiaSlider = document.getElementById('phia_slider');
+
+    const zaDisplay = document.getElementById('za_display');
+    const zbDisplay = document.getElementById('zb_display');
+    const zcDisplay = document.getElementById('zc_display');
+    const phiaDisplay = document.getElementById('phia_display');
+
+    const iaDisplay = document.getElementById('ia_display');
+    const ibDisplay = document.getElementById('ib_display');
+    const icDisplay = document.getElementById('ic_display');
+    const iaAngle = document.getElementById('ia_angle');
+    const ibAngle = document.getElementById('ib_angle');
+    const icAngle = document.getElementById('ic_angle');
+
+    const vnnDisplay = document.getElementById('vnn_display');
+    const vnnAngle = document.getElementById('vnn_angle');
+    const inMag = document.getElementById('in_mag');
+    const inAngle = document.getElementById('in_angle');
+
+    let phasorChart = null;
+    let waveformChart = null;
+
+    function getParams() {
+        const Za = parseFloat(zaSlider.value);
+        const Zb = parseFloat(zbSlider.value);
+        const Zc = parseFloat(zcSlider.value);
+        const phia_deg = parseFloat(phiaSlider.value);
+        return { Za, Zb, Zc, phia_deg };
+    }
+
+    // Complex arithmetic helpers
+    function complexAdd(a_re, a_im, b_re, b_im) {
+        return { re: a_re + b_re, im: a_im + b_im };
+    }
+    function complexDiv(a_re, a_im, b_re, b_im) {
+        const den = b_re * b_re + b_im * b_im;
+        return { re: (a_re * b_re + a_im * b_im) / den, im: (a_im * b_re - a_re * b_im) / den };
+    }
+    function complexMul(a_re, a_im, b_re, b_im) {
+        return { re: a_re * b_re - a_im * b_im, im: a_re * b_im + a_im * b_re };
+    }
+    function polarToRect(mag, ang_rad) {
+        return { re: mag * Math.cos(ang_rad), im: mag * Math.sin(ang_rad) };
+    }
+    function rectToPolar(re, im) {
+        const mag = Math.sqrt(re * re + im * im);
+        const ang = Math.atan2(im, re);
+        return { mag, ang };
+    }
+
+    function computeAll() {
+        const { Za, Zb, Zc, phia_deg } = getParams();
+        const phia_rad = (phia_deg * Math.PI) / 180;
+
+        // Source voltages (complex)
+        const vA = polarToRect(VA_phasor_mag, VA_phasor_ang);
+        const vB = polarToRect(VB_phasor_mag, VB_phasor_ang);
+        const vC = polarToRect(VC_phasor_mag, VC_phasor_ang);
+
+        // Load admittances
+        const Ya_mag = 1 / Za;
+        const Ya_re = Ya_mag * Math.cos(-phia_rad);  // Y = 1/Z = (1/|Z|)∠(-φ)
+        const Ya_im = Ya_mag * Math.sin(-phia_rad);
+        const Yb_mag = 1 / Zb;
+        const Yb_re = Yb_mag;
+        const Yb_im = 0;
+        const Yc_mag = 1 / Zc;
+        const Yc_re = Yc_mag;
+        const Yc_im = 0;
+
+        // Neutral displacement voltage (Millman, 3-wire case without neutral)
+        // V_NN' = (V_A*Y_A + V_B*Y_B + V_C*Y_C) / (Y_A + Y_B + Y_C)
+        const num_re = vA.re * Ya_re - vA.im * Ya_im + vB.re * Yb_re + vC.re * Yc_re;
+        const num_im = vA.re * Ya_im + vA.im * Ya_re + vB.im * Yb_re + vC.im * Yc_re;
+        const den_re = Ya_re + Yb_re + Yc_re;
+        const den_im = Ya_im + Yb_im + Yc_im;
+        const vnn = complexDiv(num_re, num_im, den_re, den_im);
+        const vnn_polar = rectToPolar(vnn.re, vnn.im);
+
+        // Phase currents (4-wire: I = V_source / Z_load)
+        const iA = complexMul(vA.re, vA.im, Ya_re, Ya_im);
+        const iB = complexMul(vB.re, vB.im, Yb_re, Yb_im);
+        const iC = complexMul(vC.re, vC.im, Yc_re, Yc_im);
+        const iA_polar = rectToPolar(iA.re, iA.im);
+        const iB_polar = rectToPolar(iB.re, iB.im);
+        const iC_polar = rectToPolar(iC.re, iC.im);
+
+        // Neutral current I_N = I_A + I_B + I_C
+        const iN_re = iA.re + iB.re + iC.re;
+        const iN_im = iA.im + iB.im + iC.im;
+        const iN_polar = rectToPolar(iN_re, iN_im);
+
+        return {
+            Za, Zb, Zc, phia_deg, phia_rad,
+            vnn: vnn_polar,
+            iA: iA_polar, iB: iB_polar, iC: iC_polar,
+            iN: iN_polar
+        };
+    }
+
+    function updateDisplays() {
+        const { Za, Zb, Zc, phia_deg, vnn, iA, iB, iC, iN } = computeAll();
+
+        zaDisplay.innerText = Za + ' Ω';
+        zbDisplay.innerText = Zb + ' Ω';
+        zcDisplay.innerText = Zc + ' Ω';
+        phiaDisplay.innerText = phia_deg + '°';
+
+        const toDeg = r => ((r * 180 / Math.PI) % 360 + 360) % 360;
+
+        iaDisplay.innerText = iA.mag.toFixed(2) + ' A';
+        iaAngle.innerText = toDeg(iA.ang).toFixed(1) + '°';
+        ibDisplay.innerText = iB.mag.toFixed(2) + ' A';
+        ibAngle.innerText = toDeg(iB.ang).toFixed(1) + '°';
+        icDisplay.innerText = iC.mag.toFixed(2) + ' A';
+        icAngle.innerText = toDeg(iC.ang).toFixed(1) + '°';
+
+        vnnDisplay.innerText = vnn.mag.toFixed(2) + ' V';
+        vnnAngle.innerText = toDeg(vnn.ang).toFixed(1) + '°';
+        inMag.innerText = iN.mag.toFixed(2) + ' A';
+        if (iN.mag > 0.001) {
+            inAngle.innerText = toDeg(iN.ang).toFixed(1) + '°';
+        } else {
+            inAngle.innerText = '--';
+        }
+    }
+
+    // === Phasor Diagram ===
+    const I_SCALE = 50; // Current scaling factor for phasor visualization
+
+    // Store current phasor data for plugin callbacks
+    let phasorData = {};
+
+    const phasorArrowPlugin = {
+        id: 'phasorArrows',
+        beforeDatasetsDraw(chart) {
+            const d = phasorData;
+            const { ctx, scales: { x: xScale, y: yScale } } = chart;
+            if (!xScale || !yScale) return;
+            const cx = xScale.getPixelForValue(0);
+            const cy = yScale.getPixelForValue(0);
+
+            function drawArrow(tipRe, tipIm, color, lineWidth, dashed) {
+                const tx = xScale.getPixelForValue(tipRe);
+                const ty = yScale.getPixelForValue(tipIm);
+                if (isNaN(tx) || isNaN(ty)) return;
+                ctx.save();
+                ctx.beginPath();
+                ctx.strokeStyle = color;
+                ctx.lineWidth = lineWidth;
+                ctx.setLineDash(dashed || []);
+                ctx.moveTo(cx, cy);
+                ctx.lineTo(tx, ty);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                const angle = Math.atan2(cy - ty, tx - cx);
+                const headLen = 10;
+                ctx.beginPath();
+                ctx.fillStyle = color;
+                ctx.moveTo(tx, ty);
+                ctx.lineTo(tx - headLen * Math.cos(angle - Math.PI / 6), ty + headLen * Math.sin(angle - Math.PI / 6));
+                ctx.lineTo(tx - headLen * Math.cos(angle + Math.PI / 6), ty + headLen * Math.sin(angle + Math.PI / 6));
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            }
+
+            drawArrow(d.vA.re, d.vA.im, '#ef4444', 3, []);
+            drawArrow(d.vB.re, d.vB.im, '#22c55e', 3, []);
+            drawArrow(d.vC.re, d.vC.im, '#3b82f6', 3, []);
+            drawArrow(d.iA.re, d.iA.im, '#d946ef', 2.5, []);
+            drawArrow(d.iB.re, d.iB.im, '#f472b6', 2.5, []);
+            drawArrow(d.iC.re, d.iC.im, '#f59e0b', 2.5, []);
+            if (d.iN.mag > 0.01) drawArrow(d.iN.re, d.iN.im, '#a855f7', 3.5, []);
+            if (d.vnn.mag > 0.01) drawArrow(d.vnn.re, d.vnn.im, '#a855f7', 2, [6, 4]);
+        },
+        afterDatasetsDraw(chart) {
+            const d = phasorData;
+            const { ctx, scales: { x: xScale, y: yScale } } = chart;
+            if (!xScale || !yScale) return;
+
+            function drawLabel(tipRe, tipIm, text, color, offsetX, offsetY) {
+                const tx = xScale.getPixelForValue(tipRe);
+                const ty = yScale.getPixelForValue(tipIm);
+                if (isNaN(tx) || isNaN(ty)) return;
+                ctx.save();
+                ctx.font = 'bold 11px "Segoe UI", sans-serif';
+                ctx.fillStyle = color;
+                ctx.fillText(text, tx + (offsetX || 6), ty + (offsetY || -6));
+                ctx.restore();
+            }
+
+            drawLabel(d.vA.re, d.vA.im, 'V_A', '#ef4444', 6, -6);
+            drawLabel(d.vB.re, d.vB.im, 'V_B', '#22c55e', 6, -6);
+            drawLabel(d.vC.re, d.vC.im, 'V_C', '#3b82f6', -20, 12);
+            drawLabel(d.iA.re, d.iA.im, 'I_A ' + d.iA_orig.toFixed(1) + 'A', '#d946ef', 6, 6);
+            drawLabel(d.iB.re, d.iB.im, 'I_B ' + d.iB_orig.toFixed(1) + 'A', '#f472b6', 6, 6);
+            drawLabel(d.iC.re, d.iC.im, 'I_C ' + d.iC_orig.toFixed(1) + 'A', '#f59e0b', -25, -6);
+            if (d.iN.mag > 0.01) drawLabel(d.iN.re, d.iN.im, 'I_N ' + d.iN_orig.toFixed(1) + 'A', '#a855f7', 6, 6);
+            if (d.vnn.mag > 0.01) {
+                const tx = xScale.getPixelForValue(d.vnn.re);
+                const ty = yScale.getPixelForValue(d.vnn.im);
+                if (!isNaN(tx) && !isNaN(ty)) {
+                    ctx.save();
+                    ctx.font = 'bold 11px "Segoe UI", sans-serif';
+                    ctx.fillStyle = '#a855f7';
+                    ctx.fillText("N'", tx + 8, ty + 4);
+                    ctx.restore();
+                }
+            }
+        }
+    };
+
+    function updatePhasorChart() {
+        const { vnn, iA, iB, iC, iN } = computeAll();
+
+        const vA = polarToRect(VA_phasor_mag, VA_phasor_ang);
+        const vB = polarToRect(VB_phasor_mag, VB_phasor_ang);
+        const vC = polarToRect(VC_phasor_mag, VC_phasor_ang);
+        // Scale currents for visualization
+        const iA_s = polarToRect(iA.mag * I_SCALE, iA.ang);
+        const iB_s = polarToRect(iB.mag * I_SCALE, iB.ang);
+        const iC_s = polarToRect(iC.mag * I_SCALE, iC.ang);
+        const iN_s = polarToRect(iN.mag * I_SCALE, iN.ang);
+        const vnn_p = { re: vnn.re, im: vnn.im };
+
+        // Store scaled coordinates and original magnitudes (for labels)
+        phasorData = {
+            vA, vB, vC,
+            iA: iA_s, iB: iB_s, iC: iC_s, iN: iN_s, vnn: vnn_p,
+            iA_orig: iA.mag, iB_orig: iB.mag, iC_orig: iC.mag, iN_orig: iN.mag
+        };
+
+        const maxVal = Math.max(VA_phasor_mag * 1.3, iA.mag * I_SCALE * 1.3, iB.mag * I_SCALE * 1.3, iC.mag * I_SCALE * 1.3, iN.mag * I_SCALE * 1.3, vnn.mag * 1.3, 50);
+
+        if (phasorChart) {
+            phasorChart.options.scales.x.max = maxVal;
+            phasorChart.options.scales.x.min = -maxVal;
+            phasorChart.options.scales.y.max = maxVal;
+            phasorChart.options.scales.y.min = -maxVal;
+            phasorChart.update('none');
+        } else {
+            phasorChart = new Chart(document.getElementById('phasorChart'), {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        { label: 'V_A', data: [{ x: 0, y: 0 }], pointRadius: 0, showLine: false },
+                        { label: 'V_B', data: [{ x: 0, y: 0 }], pointRadius: 0, showLine: false },
+                        { label: 'V_C', data: [{ x: 0, y: 0 }], pointRadius: 0, showLine: false },
+                        { label: 'I_A', data: [{ x: 0, y: 0 }], pointRadius: 0, showLine: false },
+                        { label: 'I_B', data: [{ x: 0, y: 0 }], pointRadius: 0, showLine: false },
+                        { label: 'I_C', data: [{ x: 0, y: 0 }], pointRadius: 0, showLine: false },
+                        { label: 'I_N', data: [{ x: 0, y: 0 }], pointRadius: 0, showLine: false },
+                        { label: "V_NN'", data: [{ x: 0, y: 0 }], pointRadius: 0, showLine: false }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    animation: false,
+                    plugins: {
+                        tooltip: { enabled: false },
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear', min: -maxVal, max: maxVal,
+                            title: { display: true, text: 'Real Axis — Voltage(V) / Current×' + I_SCALE + '(A)', font: { weight: 'bold', size: 11 } },
+                            ticks: { stepSize: Math.ceil(maxVal / 100) * 20, font: { size: 10 } },
+                            grid: { color: '#eef2ff' }, position: 'center'
+                        },
+                        y: {
+                            type: 'linear', min: -maxVal, max: maxVal,
+                            title: { display: true, text: 'Imaginary Axis — Voltage(V) / Current×' + I_SCALE + '(A)', font: { weight: 'bold', size: 11 } },
+                            ticks: { stepSize: Math.ceil(maxVal / 100) * 20, font: { size: 10 } },
+                            grid: { color: '#eef2ff' }, position: 'center'
+                        }
+                    }
+                },
+                plugins: [phasorArrowPlugin]
+            });
+        }
+    }
+
+    // === Waveform Chart ===
+    function updateWaveformChart() {
+        const { iA, iB, iC, iN } = computeAll();
+
+        const T = 1 / f;
+        const duration = 1.5 * T;
+        const points = 600;
+        const omega = 2 * Math.PI * f;
+        const Vm = Vp_rms * SQRT2;
+
+        const times = [];
+        const dt = duration / (points - 1);
+        for (let i = 0; i < points; i++) times.push(i * dt);
+
+        const vA_wave = times.map(t => Vm * Math.sin(omega * t));
+        const vB_wave = times.map(t => Vm * Math.sin(omega * t - DEG120));
+        const vC_wave = times.map(t => Vm * Math.sin(omega * t + DEG120));
+
+        const Ia_m = iA.mag * SQRT2;
+        const In_m = iN.mag * SQRT2;
+        const iA_wave = times.map(t => Ia_m * Math.sin(omega * t + iA.ang));
+        const iN_wave = times.map(t => In_m * Math.sin(omega * t + iN.ang));
+
+        const pts_VA = times.map((t, i) => ({ x: t, y: vA_wave[i] }));
+        const pts_VB = times.map((t, i) => ({ x: t, y: vB_wave[i] }));
+        const pts_VC = times.map((t, i) => ({ x: t, y: vC_wave[i] }));
+        const pts_IA = times.map((t, i) => ({ x: t, y: iA_wave[i] }));
+        const pts_IN = times.map((t, i) => ({ x: t, y: iN_wave[i] }));
+
+        const vMax = Vm * 1.15;
+        const iMax = Math.max(Ia_m, In_m, 1) * 1.3;
+
+        if (waveformChart) {
+            waveformChart.data.datasets[0].data = pts_VA;
+            // waveformChart.data.datasets[1].data = pts_VB;
+            // waveformChart.data.datasets[2].data = pts_VC;
+            waveformChart.data.datasets[1].data = pts_IA;
+            waveformChart.data.datasets[2].data = pts_IN;
+            waveformChart.options.scales.x.max = duration;
+            waveformChart.options.scales.y.max = vMax;
+            waveformChart.options.scales.y.min = -vMax;
+            waveformChart.options.scales.y1.max = iMax;
+            waveformChart.options.scales.y1.min = -iMax;
+            waveformChart.update('none');
+        } else {
+            waveformChart = new Chart(document.getElementById('waveformChart'), {
+                type: 'line',
+                data: {
+                    datasets: [
+                        { label: 'V_A', data: pts_VA, borderColor: '#ef4444', borderWidth: 2, pointRadius: 0, tension: 0.2, yAxisID: 'y' },
+                        // { label: 'V_B', data: pts_VB, borderColor: '#22c55e', borderWidth: 2, pointRadius: 0, tension: 0.2, yAxisID: 'y' },
+                        // { label: 'V_C', data: pts_VC, borderColor: '#3b82f6', borderWidth: 2, pointRadius: 0, tension: 0.2, yAxisID: 'y' },
+                        { label: 'I_A', data: pts_IA, borderColor: '#d946ef', borderWidth: 2, pointRadius: 0, tension: 0.2, yAxisID: 'y1' },
+                        { label: 'I_N', data: pts_IN, borderColor: '#a855f7', borderWidth: 2.5, borderDash: [6, 3], pointRadius: 0, tension: 0.2, yAxisID: 'y1' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    const label = ctx.dataset.label || '';
+                                    const unit = label.startsWith('V') ? ' V' : ' A';
+                                    return label + ': ' + ctx.raw.y.toFixed(2) + unit + '  (@ t=' + ctx.raw.x.toFixed(4) + ' s)';
+                                }
+                            },
+                            backgroundColor: 'rgba(0,0,0,0.75)',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#e2e8f0'
+                        },
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            title: { display: true, text: 'Time t (s)', font: { size: 11, weight: 'bold' } },
+                            min: 0, max: duration,
+                            ticks: { callback: v => v.toFixed(3) + 's', maxTicksLimit: 6, font: { size: 10 } },
+                            grid: { color: '#eef2ff' }
+                        },
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            title: { display: true, text: 'Voltage (V)', font: { size: 11, weight: 'bold' }, color: '#64748b' },
+                            min: -vMax, max: vMax,
+                            ticks: { callback: v => v.toFixed(0) + ' V', maxTicksLimit: 6, font: { size: 10 }, color: '#64748b' },
+                            grid: { color: '#eef2ff' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            position: 'right',
+                            title: { display: true, text: 'Current (A)', font: { size: 11, weight: 'bold' }, color: '#a855f7' },
+                            min: -iMax, max: iMax,
+                            ticks: { callback: v => v.toFixed(2) + ' A', maxTicksLimit: 6, font: { size: 10 }, color: '#a855f7' },
+                            grid: { drawOnChartArea: false }
+                        }
+                    },
+                    elements: { point: { radius: 0, hitRadius: 6, hoverRadius: 2 }, line: { tension: 0.2 } }
+                }
+            });
+        }
+    }
+
+    function refreshAll() {
+        updateDisplays();
+        updatePhasorChart();
+        updateWaveformChart();
+    }
+
+    zaSlider.addEventListener('input', refreshAll);
+    zbSlider.addEventListener('input', refreshAll);
+    zcSlider.addEventListener('input', refreshAll);
+    phiaSlider.addEventListener('input', refreshAll);
+
+    window.addEventListener('resize', () => {
+        if (phasorChart) phasorChart.resize();
+        if (waveformChart) waveformChart.resize();
+    });
+
+    // Initialize
+    refreshAll();
+
+    // KaTeX rendering
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    { left: '\\[', right: '\\]', display: true },
+                    { left: '\\(', right: '\\)', display: false }
+                ],
+                throwOnError: false
+            });
+        }
+    });
+</script>
+</body>
+</html>

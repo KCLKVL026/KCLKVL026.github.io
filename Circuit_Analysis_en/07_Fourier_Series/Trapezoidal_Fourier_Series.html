@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Fourier Series · Trapezoidal Wave Decomposition and Harmonic Superposition | 1,3,5,7,11,33,55th Harmonic Synthesis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- KaTeX math rendering -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] { height: 5px; -webkit-appearance: none; background: #e2e8f0; border-radius: 5px; outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #3b82f6; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb:hover { background: #2563eb; transform: scale(1.15); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .card-hover { transition: all 0.2s ease; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15); }
+        .phase-badge { background: #eff6ff; border-radius: 20px; padding: 0.2rem 0.7rem; font-size: 0.7rem; font-weight: 500; color: #1e40af; }
+        .wave-card { transition: all 0.2s; }
+        canvas { max-height: 280px; width: 100%; }
+        .two-columns { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+        @media (max-width: 768px) { .two-columns { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <div class="flex justify-start mb-4">
+        <a href="../index.html"
+        class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Home
+        </a>
+    </div>
+
+    <!-- Title area -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            Fourier Series · Trapezoidal Wave Decomposition and Harmonic Superposition
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            A trapezoidal wave can be decomposed into the superposition of odd sine harmonics, with spectral decay rate between that of the square wave and triangle wave.<br>
+            Trapezoidal wave parameters: rising/falling edges each occupy 20% of the half-period (\(0.1\,\text{s}\)), flat top occupies 60% (\(0.3\,\text{s}\)), amplitude \(\pm1\).<br>
+            The charts below show the fundamental wave, and the process of progressively adding 3rd, 5th, 7th, 11th, 33rd, and 55th harmonics to approximate a trapezoidal wave.
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left auxiliary info card -->
+        <div class="lg:col-span-3 space-y-6">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    Fourier Series (Trapezoidal Wave)
+                </h3>
+                <div class="text-xs text-slate-600 space-y-2">
+                    <p>Fourier series of a periodic trapezoidal wave (amplitude \(\pm1\), rise time \(\tau_r\), flat top time \(\tau_p\), fall time \(\tau_f\)) contains only odd sine terms:</p>
+                    <div class="bg-slate-50 p-2 rounded-md font-mono text-center">
+                        \[
+                        f(t) = \sum_{n=1,3,5,\ldots}^{\infty} b_n \sin(n\omega t)
+                        \]
+                    </div>
+                    <p>Coefficients \(b_n\) decay as \(n^2\) (when rise/fall edges are non-zero), converging faster than the square wave. This demo uses numerical integration to precisely compute each harmonic coefficient.<br>
+                    Parameters: period \(T=1\,\text{s}\), rising edge length \(0.1\,\text{s}\), flat top length \(0.3\,\text{s}\), falling edge length \(0.1\,\text{s}\).</p>
+                </div>
+                <div class="mt-3 text-xs text-blue-600 bg-indigo-50 p-2 rounded-lg">
+                    📌 Horizontal axis is time \(t\) (seconds), fundamental frequency \(f = 1\,\text{Hz}\), showing two complete periods. Trapezoidal wave edges are smooth, harmonic decay is fast, and finite-term synthesis already closely approximates the waveform.
+                </div>
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-2 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-blue-500 rounded-full"></span>
+                    Key Observations
+                </h3>
+                <ul class="text-xs text-slate-600 space-y-1 list-disc pl-4">
+                    <li>The fundamental is a sine wave with amplitude ~0.93 (slightly larger than the triangle wave fundamental).</li>
+                    <li>Adding the 3rd harmonic, the waveform begins to show a "trapezoidal" outline with small ripples in the flat top region.</li>
+                    <li>Adding 5th and 7th harmonics reduces flat top ripples, and rising/falling edges steepen.</li>
+                    <li>Adding 11th, 33rd, and 55th harmonics makes the waveform nearly coincide with the ideal trapezoidal wave, with negligible Gibbs overshoot.</li>
+                    <li>Due to the presence of rising/falling edges, the trapezoidal wave's high-frequency components decay rapidly, and synthesis convergence is superior to the square wave.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Right 8 waveform cards, two per row -->
+        <div class="lg:col-span-9">
+            <div class="two-columns">
+                <!-- 1. Ideal trapezoidal wave (reference) -->
+                <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 wave-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-indigo-700 text-base">① Ideal Trapezoidal Wave (Reference)</h4>
+                        <span class="phase-badge text-xs">Amplitude ±1 V</span>
+                    </div>
+                    <div class="relative" style="height: 260px;">
+                        <canvas id="trapezoidWaveChart" width="500" height="260" style="width:100%; height:100%;"></canvas>
+                    </div>
+                    <p class="text-center text-xs text-slate-500 mt-2">Rise/fall edges 0.1s each, flat top 0.3s, symmetric trapezoid</p>
+                </div>
+
+                <!-- 2. Fundamental (1st harmonic) -->
+                <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 wave-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-emerald-700 text-base">② Fundamental Component (1st Harmonic)</h4>
+                        <span class="phase-badge text-xs">Amplitude ≈ 0.905</span>
+                    </div>
+                    <div class="relative" style="height: 260px;">
+                        <canvas id="fundamentalChart" width="500" height="260" style="width:100%; height:100%;"></canvas>
+                    </div>
+                    <p class="text-center text-xs text-slate-500 mt-2">\(f_1(t)=b_1\sin(\omega t)\), dominant frequency component</p>
+                </div>
+
+                <!-- 3. Fundamental + 3rd harmonic -->
+                <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 wave-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-amber-700 text-base">③ Fundamental + 3rd Harmonic</h4>
+                        <span class="phase-badge text-xs">1st + 3rd</span>
+                    </div>
+                    <div class="relative" style="height: 260px;">
+                        <canvas id="fund3Chart" width="500" height="260" style="width:100%; height:100%;"></canvas>
+                    </div>
+                    <p class="text-center text-xs text-slate-500 mt-2">Flat top outline begins to appear, rise/fall segments curve</p>
+                </div>
+
+                <!-- 4. Fundamental + 3rd + 5th harmonics -->
+                <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 wave-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-orange-700 text-base">④ Fundamental + 3rd + 5th Harmonics</h4>
+                        <span class="phase-badge text-xs">1+3+5th</span>
+                    </div>
+                    <div class="relative" style="height: 260px;">
+                        <canvas id="fund35Chart" width="500" height="260" style="width:100%; height:100%;"></canvas>
+                    </div>
+                    <p class="text-center text-xs text-slate-500 mt-2">Flat top ripples decrease, rise/fall edges steepen</p>
+                </div>
+
+                <!-- 5. Fundamental + 3rd + 5th + 7th harmonics -->
+                <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 wave-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-red-700 text-base">⑤ Fundamental + 3rd + 5th + 7th Harmonics</h4>
+                        <span class="phase-badge text-xs">1+3+5+7th</span>
+                    </div>
+                    <div class="relative" style="height: 260px;">
+                        <canvas id="fund357Chart" width="500" height="260" style="width:100%; height:100%;"></canvas>
+                    </div>
+                    <p class="text-center text-xs text-slate-500 mt-2">Further approximation, flatter flat top region</p>
+                </div>
+
+                <!-- 6. Fundamental + 3+5+7+9+11th harmonics (1~11 odd) -->
+                <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 wave-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-purple-700 text-base">⑥ Fundamental + 3+5+7+9+11th Harmonics</h4>
+                        <span class="phase-badge text-xs">1+3+5+7+9+11th</span>
+                    </div>
+                    <div class="relative" style="height: 260px;">
+                        <canvas id="fund11Chart" width="500" height="260" style="width:100%; height:100%;"></canvas>
+                    </div>
+                    <p class="text-center text-xs text-slate-500 mt-2">Flat top ripples essentially disappear, rising edge straighter</p>
+                </div>
+
+                <!-- 7. Fundamental ~ 33rd harmonic (odd harmonics up to 33rd) -->
+                <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 wave-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-pink-700 text-base">⑦ Fundamental ~ 33rd Harmonic (Odd)</h4>
+                        <span class="phase-badge text-xs">1+3+5+...+33rd</span>
+                    </div>
+                    <div class="relative" style="height: 260px;">
+                        <canvas id="fund33Chart" width="500" height="260" style="width:100%; height:100%;"></canvas>
+                    </div>
+                    <p class="text-center text-xs text-slate-500 mt-2">Nearly perfect trapezoidal wave, high-order harmonic contribution minimal</p>
+                </div>
+
+                <!-- 8. Fundamental ~ 55th harmonic (odd harmonics up to 55th) -->
+                <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 wave-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-rose-700 text-base">⑧ Fundamental ~ 55th Harmonic (Odd)</h4>
+                        <span class="phase-badge text-xs">1+3+5+...+55th</span>
+                    </div>
+                    <div class="relative" style="height: 260px;">
+                        <canvas id="fund55Chart" width="500" height="260" style="width:100%; height:100%;"></canvas>
+                    </div>
+                    <p class="text-center text-xs text-slate-500 mt-2">Extremely high-order harmonics, waveform nearly completely coincides with ideal trapezoidal wave</p>
+                </div>
+            </div>
+            <div class="mt-4 text-center text-xs text-slate-400 bg-white/60 rounded-lg p-2">
+                💡 The trapezoidal wave Fourier series decays as \(1/n^2\) (when rise/fall edges are non-zero), converging as fast as the triangle wave and much faster than the square wave. Therefore, the finite-term synthesis waveform already closely approximates the original waveform.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ==================== Trapezoidal Wave Parameters ====================
+    const T = 1.0;                // Period 1 second, fundamental frequency 1Hz
+    const omega = 2 * Math.PI;    // Angular frequency 2π rad/s
+    const duration = 2 * T;       // Display two complete periods (0~2 seconds)
+    const points = 2000;          // Sample points (sufficient precision)
+
+    // Trapezoidal wave parameters: rise edge 20% of half period, fall edge 20% of half period, flat top 60%
+    // Half period length = 0.5s
+    const halfT = T / 2;          // 0.5 seconds
+    const riseRatio = 0.2;        // Rise edge ratio of half period 20%
+    const fallRatio = 0.2;        // Fall edge ratio of half period 20%
+    const flatRatio = 1 - riseRatio - fallRatio; // 60%
+
+    const tr = halfT * riseRatio;   // Rise edge time = 0.1s
+    const tf = halfT * fallRatio;   // Fall edge time = 0.1s
+    const tp = halfT * flatRatio;   // Flat top time = 0.3s
+
+    // Ideal trapezoidal wave function (based on half-period symmetry)
+    function idealTrapezoid(t) {
+        // Map time to [0, T) range
+        let t_mod = t % T;
+        if (t_mod < 0) t_mod += T;
+        let half = T / 2;
+        let sign = 1;
+        if (t_mod >= half) {
+            sign = -1;
+            t_mod = t_mod - half;
+        }
+        // t_mod is in [0, half]
+        if (t_mod <= tr) {
+            // Rise edge
+            return sign * (t_mod / tr);
+        } else if (t_mod <= tr + tp) {
+            // Flat top
+            return sign * 1.0;
+        } else if (t_mod <= tr + tp + tf) {
+            // Fall edge
+            let frac = (t_mod - (tr + tp)) / tf;
+            return sign * (1.0 - frac);
+        } else {
+            // Theoretically half period ends at 0, but return 0 to prevent numerical errors
+            return 0;
+        }
+    }
+
+    // Numerical integration to compute harmonic coefficients b_n (only odd harmonics, trapezoidal wave is odd symmetric)
+    // b_n = (2/T) ∫_{0}^{T} f(t) sin(nωt) dt
+    function computeCoefficient(n, N_samples = 10000) {
+        const dt_int = T / N_samples;
+        let sum = 0;
+        for (let i = 0; i < N_samples; i++) {
+            const t = i * dt_int;
+            const ft = idealTrapezoid(t);
+            const sinVal = Math.sin(n * omega * t);
+            sum += ft * sinVal * dt_int;
+        }
+        return (2 / T) * sum;
+    }
+
+    // Precompute first 55 odd harmonic coefficients (n=1,3,5,...,55)
+    const maxHarmonic = 55;
+    const harmonics = [];
+    for (let n = 1; n <= maxHarmonic; n += 2) {
+        harmonics.push({ n, coeff: computeCoefficient(n) });
+    }
+
+    // Synthesis function: given time t and maximum harmonic order maxN
+    function synthesize(t, maxN) {
+        let sum = 0;
+        for (let h of harmonics) {
+            if (h.n <= maxN) {
+                sum += h.coeff * Math.sin(h.n * omega * t);
+            } else {
+                break;
+            }
+        }
+        return sum;
+    }
+
+    // Generate time axis (0 ~ duration)
+    const times = [];
+    const dt = duration / (points - 1);
+    for (let i = 0; i < points; i++) {
+        times.push(i * dt);
+    }
+
+    // Precompute waveform data
+    const trapezoidData = times.map(t => idealTrapezoid(t));
+    const fundData = times.map(t => synthesize(t, 1));
+    const fund3Data = times.map(t => synthesize(t, 3));
+    const fund35Data = times.map(t => synthesize(t, 5));
+    const fund357Data = times.map(t => synthesize(t, 7));
+    const fund11Data = times.map(t => synthesize(t, 11));
+    const fund33Data = times.map(t => synthesize(t, 33));
+    const fund55Data = times.map(t => synthesize(t, 55));
+
+    // Build point sets
+    const trapezoidPoints = times.map((t, idx) => ({ x: t, y: trapezoidData[idx] }));
+    const fundPoints = times.map((t, idx) => ({ x: t, y: fundData[idx] }));
+    const fund3Points = times.map((t, idx) => ({ x: t, y: fund3Data[idx] }));
+    const fund35Points = times.map((t, idx) => ({ x: t, y: fund35Data[idx] }));
+    const fund357Points = times.map((t, idx) => ({ x: t, y: fund357Data[idx] }));
+    const fund11Points = times.map((t, idx) => ({ x: t, y: fund11Data[idx] }));
+    const fund33Points = times.map((t, idx) => ({ x: t, y: fund33Data[idx] }));
+    const fund55Points = times.map((t, idx) => ({ x: t, y: fund55Data[idx] }));
+
+    // Chart Y-axis range
+    const yMin = -1.2;
+    const yMax = 1.2;
+
+    const commonOptions = (yMinVal, yMaxVal, yLabel = 'Voltage (V)') => ({
+        responsive: true,
+        maintainAspectRatio: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return `${context.dataset.label}: ${context.raw.y.toFixed(3)} V @ t = ${context.raw.x.toFixed(3)} s`;
+                    }
+                },
+                backgroundColor: 'rgba(0,0,0,0.7)',
+            },
+            legend: {
+                position: 'top',
+                labels: { font: { size: 10 }, boxWidth: 8, usePointStyle: true }
+            }
+        },
+        scales: {
+            x: {
+                type: 'linear',
+                title: { display: true, text: 'Time t (s)', font: { size: 10, weight: 'bold' } },
+                ticks: { callback: (val) => val.toFixed(2) + 's', maxTicksLimit: 5 },
+                min: 0,
+                max: duration,
+                grid: { color: '#eef2ff' }
+            },
+            y: {
+                title: { display: true, text: yLabel, font: { size: 10, weight: 'bold' } },
+                min: yMinVal,
+                max: yMaxVal,
+                ticks: { callback: (val) => val.toFixed(1) },
+                grid: { color: '#eef2ff' }
+            }
+        },
+        elements: {
+            point: { radius: 0, hitRadius: 5, hoverRadius: 2 },
+            line: { tension: 0.2, borderWidth: 2 }
+        }
+    });
+
+    // Initialize all charts
+    let trapezoidChart, fundChart, fund3Chart, fund35Chart, fund357Chart, fund11Chart, fund33Chart, fund55Chart;
+
+    const ctxTrap = document.getElementById('trapezoidWaveChart').getContext('2d');
+    trapezoidChart = new Chart(ctxTrap, {
+        type: 'line',
+        data: { datasets: [{ label: 'Ideal Trapezoidal Wave (Reference)', data: trapezoidPoints, borderColor: '#3b82f6', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.2 }] },
+        options: commonOptions(yMin, yMax, 'Amplitude (V)')
+    });
+
+    const ctxFund = document.getElementById('fundamentalChart').getContext('2d');
+    fundChart = new Chart(ctxFund, {
+        type: 'line',
+        data: { datasets: [{ label: 'Fundamental (1st Harmonic)', data: fundPoints, borderColor: '#10b981', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.2 }] },
+        options: commonOptions(yMin, yMax, 'Amplitude (V)')
+    });
+
+    const ctxFund3 = document.getElementById('fund3Chart').getContext('2d');
+    fund3Chart = new Chart(ctxFund3, {
+        type: 'line',
+        data: { datasets: [{ label: 'Fundamental + 3rd Harmonic', data: fund3Points, borderColor: '#f59e0b', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.2 }] },
+        options: commonOptions(yMin, yMax, 'Amplitude (V)')
+    });
+
+    const ctxFund35 = document.getElementById('fund35Chart').getContext('2d');
+    fund35Chart = new Chart(ctxFund35, {
+        type: 'line',
+        data: { datasets: [{ label: 'Fundamental + 3rd + 5th Harmonic', data: fund35Points, borderColor: '#ea580c', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.2 }] },
+        options: commonOptions(yMin, yMax, 'Amplitude (V)')
+    });
+
+    const ctxFund357 = document.getElementById('fund357Chart').getContext('2d');
+    fund357Chart = new Chart(ctxFund357, {
+        type: 'line',
+        data: { datasets: [{ label: 'Fundamental + 3+5+7th Harmonic', data: fund357Points, borderColor: '#dc2626', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.2 }] },
+        options: commonOptions(yMin, yMax, 'Amplitude (V)')
+    });
+
+    const ctxFund11 = document.getElementById('fund11Chart').getContext('2d');
+    fund11Chart = new Chart(ctxFund11, {
+        type: 'line',
+        data: { datasets: [{ label: 'Fundamental + 3+5+7+9+11th Harmonic', data: fund11Points, borderColor: '#8b5cf6', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.2 }] },
+        options: commonOptions(yMin, yMax, 'Amplitude (V)')
+    });
+
+    const ctxFund33 = document.getElementById('fund33Chart').getContext('2d');
+    fund33Chart = new Chart(ctxFund33, {
+        type: 'line',
+        data: { datasets: [{ label: 'Fundamental ~ 33rd Odd Harmonic', data: fund33Points, borderColor: '#ec489a', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.2 }] },
+        options: commonOptions(yMin, yMax, 'Amplitude (V)')
+    });
+
+    const ctxFund55 = document.getElementById('fund55Chart').getContext('2d');
+    fund55Chart = new Chart(ctxFund55, {
+        type: 'line',
+        data: { datasets: [{ label: 'Fundamental ~ 55th Odd Harmonic', data: fund55Points, borderColor: '#f43f5e', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.2 }] },
+        options: commonOptions(yMin, yMax, 'Amplitude (V)')
+    });
+
+    // Window resize adaptation
+    window.addEventListener('resize', () => {
+        [trapezoidChart, fundChart, fund3Chart, fund35Chart, fund357Chart, fund11Chart, fund33Chart, fund55Chart].forEach(chart => {
+            if (chart) chart.resize();
+        });
+    });
+
+    // KaTeX rendering
+    window.addEventListener('load', function() {
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '\\(', right: '\\)', display: false}
+                ],
+                throwOnError: false
+            });
+        } else {
+            console.warn('KaTeX auto-render not loaded, formulas will display as text');
+        }
+    });
+</script>
+</body>
+</html>

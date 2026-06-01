@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Knowledge Summary | Fundamentals of Circuit Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .card-hover {
+            transition: all 0.25s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.15);
+        }
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+        .nav-card:active {
+            transform: scale(0.98);
+            transition: transform 0.05s;
+        }
+        .nav-card:focus-visible {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+            border-radius: 1rem;
+        }
+        .section-title {
+            position: relative;
+            display: inline-block;
+        }
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, #3b82f6, #06b6d4);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans antialiased">
+
+    <div class="max-w-7xl mx-auto px-4 py-6 md:py-10">
+
+        <!-- Header Title Area -->
+        <div class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-teal-600 via-cyan-600 to-blue-600 bg-clip-text text-transparent mb-3 tracking-tight">
+                Knowledge Summary
+            </h1>
+            <p class="text-slate-600 max-w-2xl mx-auto text-base md:text-lg">
+                Systematic Review &middot; Formula Quick Reference &middot; Study Outline<br>
+                Grouped by knowledge module &mdash; click a card to enter the corresponding unit
+            </p>
+        </div>
+
+        <!-- Four Knowledge Summary Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-7 max-w-4xl mx-auto">
+            <!-- DC Resistive Circuits -->
+            <a href="./01_DC_Resistive_Circuits.html" target="_blank" rel="noopener noreferrer"
+               class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between">
+                    <div class="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 text-xl shadow-sm">
+                        📘
+                    </div>
+                    <svg class="w-5 h-5 text-slate-400 group-hover:text-teal-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                    </svg>
+                </div>
+                <div class="mt-4">
+                    <h3 class="text-xl font-bold text-slate-800 group-hover:text-teal-700 transition-colors">DC Resistive Circuits</h3>
+                    <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                        Covers fundamental circuit concepts, Kirchhoff's laws, equivalent transformations, systematic analysis methods, and circuit theorems (superposition, Thevenin, Norton, maximum power transfer).
+                    </p>
+                    <div class="mt-3 flex items-center text-xs font-medium text-teal-500 gap-1">
+                        <span>Chapters 1-4</span>
+                        <span class="text-slate-300">|</span>
+                        <span>Branch / Mesh / Node Methods</span>
+                    </div>
+                </div>
+            </a>
+            <!-- Sinusoidal Steady-State Analysis -->
+            <a href="./02_Sinusoidal_Steady_State.html" target="_blank" rel="noopener noreferrer"
+               class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between">
+                    <div class="w-10 h-10 rounded-full bg-cyan-100 flex items-center justify-center text-cyan-600 text-xl shadow-sm">
+                        📗
+                    </div>
+                    <svg class="w-5 h-5 text-slate-400 group-hover:text-cyan-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                    </svg>
+                </div>
+                <div class="mt-4">
+                    <h3 class="text-xl font-bold text-slate-800 group-hover:text-cyan-700 transition-colors">Sinusoidal Steady-State Analysis</h3>
+                    <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                        Phasor method for sinusoidal steady-state circuits, impedance and admittance, four types of power, power factor correction, resonance circuits, coupled inductors, and ideal transformers.
+                    </p>
+                    <div class="mt-3 flex items-center text-xs font-medium text-cyan-500 gap-1">
+                        <span>Chapters 5-6</span>
+                        <span class="text-slate-300">|</span>
+                        <span>Phasor Method &middot; Resonance &middot; Transformers</span>
+                    </div>
+                </div>
+            </a>
+            <!-- Dynamic Circuit Time-Domain Analysis -->
+            <a href="./03_Transient_Analysis.html" target="_blank" rel="noopener noreferrer"
+               class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between">
+                    <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-xl shadow-sm">
+                        📙
+                    </div>
+                    <svg class="w-5 h-5 text-slate-400 group-hover:text-orange-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                    </svg>
+                </div>
+                <div class="mt-4">
+                    <h3 class="text-xl font-bold text-slate-800 group-hover:text-orange-700 transition-colors">Dynamic Circuit Time-Domain Analysis</h3>
+                    <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                        Switching rules, first-order circuit zero-input/zero-state/full responses, three-element method, step and impulse responses, second-order circuit damping classification.
+                    </p>
+                    <div class="mt-3 flex items-center text-xs font-medium text-orange-500 gap-1">
+                        <span>Chapter 7</span>
+                        <span class="text-slate-300">|</span>
+                        <span>Transient &middot; Three-Element Method</span>
+                    </div>
+                </div>
+            </a>
+            <!-- Two-Port Networks -->
+            <a href="./04_Two_Port_Networks.html" target="_blank" rel="noopener noreferrer"
+               class="nav-card group bg-white/90 backdrop-blur-sm rounded-2xl shadow-md border border-slate-200/80 p-6 flex flex-col transition-all duration-200 hover:shadow-xl card-hover">
+                <div class="flex items-start justify-between">
+                    <div class="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 text-xl shadow-sm">
+                        📕
+                    </div>
+                    <svg class="w-5 h-5 text-slate-400 group-hover:text-violet-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                    </svg>
+                </div>
+                <div class="mt-4">
+                    <h3 class="text-xl font-bold text-slate-800 group-hover:text-violet-700 transition-colors">Two-Port Networks</h3>
+                    <p class="text-slate-500 text-sm mt-2 leading-relaxed">
+                        Z/Y/T/H parameter equations, reciprocal and symmetric conditions, cascade/parallel/series equivalents, network connection analysis methods.
+                    </p>
+                    <div class="mt-3 flex items-center text-xs font-medium text-violet-500 gap-1">
+                        <span>Chapter 8</span>
+                        <span class="text-slate-300">|</span>
+                        <span>Parameter Equations &middot; Network Connections</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Back to Home -->
+        <div class="mt-10 text-center">
+            <a href="../index.html" class="inline-flex items-center gap-2 text-slate-500 hover:text-teal-600 transition-colors text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to Circuit Analysis Home
+            </a>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-8 text-center text-xs text-slate-400 border-t border-slate-200/60 pt-6">
+            <p>Knowledge Summary &middot; Circuit Analysis Supplementary Teaching | 4 Units</p>
+            <p class="mt-1">Click a card to open the corresponding unit in a new tab</p>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            console.log("Knowledge Summary index page loaded | Contains 4 units: DC Resistive Circuits, Sinusoidal Steady-State Analysis, Dynamic Circuit Time-Domain Analysis, Two-Port Networks");
+        })();
+    </script>
+</body>
+</html>

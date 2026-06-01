@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unit 01: DC Resistive Circuits - Fundamentals of Circuit Analysis</title>
+<link rel="stylesheet" href="./css/back-button.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<style>
+  :root {
+    --font-body: 'Noto Sans SC', 'Inter', -apple-system, sans-serif;
+    --font-mono: 'SF Mono', 'Fira Code', Consolas, monospace;
+    --c-bg: #fefcfa;
+    --c-surface: #ffffff;
+    --c-sidebar: rgba(255,255,255,0.85);
+    --c-text: #3d3d3d;
+    --c-text-dim: #8a8a8a;
+    --c-text-head: #2c2c2c;
+    --c-border: #ede8e3;
+    --c-lavender: #e8e0f0;
+    --c-lavender-deep: #9b8ec4;
+    --c-peach: #fde8d8;
+    --c-peach-deep: #e8956a;
+    --c-sky: #dce8f8;
+    --c-sky-deep: #6a9fd8;
+    --c-mint: #daf0e8;
+    --c-mint-deep: #5aaf8a;
+    --c-rose: #f8dce0;
+    --c-rose-deep: #d87088;
+    --c-amber: #f8ecd0;
+    --c-amber-deep: #c89a40;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --sidebar-w: 260px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --c-bg: #1a1a24;
+      --c-surface: #24243a;
+      --c-sidebar: rgba(26,26,36,0.92);
+      --c-text: #d4d4d4;
+      --c-text-dim: #7a7a8e;
+      --c-text-head: #eee;
+      --c-border: #3a3a52;
+      --c-lavender: #2e2840;
+      --c-lavender-deep: #b8a8e0;
+      --c-peach: #3a2820;
+      --c-peach-deep: #f0a878;
+      --c-sky: #1e2838;
+      --c-sky-deep: #88b8f0;
+      --c-mint: #1e3028;
+      --c-mint-deep: #70d0a0;
+      --c-rose: #382028;
+      --c-rose-deep: #f08898;
+      --c-amber: #302818;
+      --c-amber-deep: #e8c060;
+    }
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-body);
+    color: var(--c-text);
+    background: var(--c-bg);
+    background-image:
+      radial-gradient(ellipse 600px 400px at 10% 20%, rgba(232,224,240,0.5) 0%, transparent 70%),
+      radial-gradient(ellipse 500px 500px at 90% 70%, rgba(253,232,216,0.4) 0%, transparent 70%),
+      radial-gradient(ellipse 400px 300px at 50% 90%, rgba(220,232,248,0.3) 0%, transparent 70%);
+    font-size: 15.5px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    position: fixed;
+    top: 1.5rem; left: 1.5rem; bottom: 1.5rem;
+    width: var(--sidebar-w);
+    background: var(--c-sidebar);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.75rem 1.25rem;
+    overflow-y: auto;
+    z-index: 100;
+    transition: transform 0.35s cubic-bezier(.4,0,.2,1);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+  }
+  .sidebar-brand {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--c-lavender-deep);
+    margin-bottom: 0.5rem;
+  }
+  .sidebar-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--c-border);
+  }
+  /* ── Sidebar Tree Nav ── */
+  .sidebar nav {
+    font-size: 0.82rem;
+  }
+  .sidebar nav ul {
+    list-style: none;
+    margin: 0; padding: 0;
+  }
+  .sidebar nav ul ul {
+    padding-left: 0;
+    margin-left: 0.6rem;
+    border-left: 1px dashed var(--c-border);
+  }
+  .sidebar nav li {
+    position: relative;
+    margin-bottom: 1px;
+  }
+  .sidebar nav a {
+    display: block;
+    padding: 0.3rem 0.55rem;
+    color: var(--c-text-dim);
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s;
+    line-height: 1.55;
+  }
+  .sidebar nav a:hover {
+    color: var(--c-text-head);
+    background: var(--c-lavender);
+  }
+  .sidebar nav a.active {
+    color: var(--c-lavender-deep);
+    background: var(--c-lavender);
+    font-weight: 600;
+  }
+  .sidebar nav .nav-chapter {
+    font-weight: 600;
+    color: var(--c-text-head);
+    font-size: 0.83rem;
+    padding: 0.35rem 0.55rem;
+    margin-top: 0.3rem;
+    cursor: pointer;
+    position: relative;
+    padding-right: 1.6rem;
+  }
+  .sidebar nav .nav-chapter::after {
+    content: '▾';
+    position: absolute;
+    right: 0.55rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.7rem;
+    color: var(--c-text-dim);
+    transition: transform 0.25s ease;
+  }
+  .sidebar nav li.collapsed > .nav-chapter::after {
+    transform: translateY(-50%) rotate(-90deg);
+  }
+  .sidebar nav li.collapsed > ul {
+    display: none;
+  }
+  .sidebar nav .nav-chapter:first-child { margin-top: 0; }
+  .sidebar nav .nav-section {
+    font-size: 0.78rem;
+    padding-left: 0.55rem;
+  }
+  .sidebar nav .nav-sub {
+    font-size: 0.75rem;
+    padding-left: 0.35rem;
+    color: var(--c-text-dim);
+  }
+
+  /* ── Main ── */
+  .main {
+    margin-left: calc(var(--sidebar-w) + 3rem);
+    padding: 2.5rem 0;
+    max-width: 780px;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    position: relative;
+    background: linear-gradient(135deg, var(--c-lavender) 0%, var(--c-sky) 50%, var(--c-peach) 100%);
+    border-radius: var(--radius);
+    padding: 3rem 2.5rem 2.5rem;
+    margin-bottom: 3rem;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 50%;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -30px; left: 30%;
+    width: 100px; height: 100px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 50%;
+  }
+  .hero h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    position: relative;
+    z-index: 1;
+  }
+  .hero .sub {
+    color: var(--c-text-dim);
+    font-size: 0.95rem;
+    margin-top: 0.4rem;
+    position: relative;
+    z-index: 1;
+  }
+  .hero .tags {
+    margin-top: 1rem;
+    position: relative;
+    z-index: 1;
+  }
+  .tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.6);
+    backdrop-filter: blur(8px);
+    padding: 0.2rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.73rem;
+    font-weight: 600;
+    color: var(--c-text);
+    margin-right: 0.4rem;
+    border: 1px solid rgba(255,255,255,0.5);
+  }
+
+  /* ── Tree Card ── */
+  .tree-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.75rem 2rem;
+    margin-bottom: 3rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+  }
+  .tree-card h2 {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--c-lavender-deep);
+    margin-bottom: 1rem;
+  }
+  .tree-card pre {
+    font-family: var(--font-mono);
+    font-size: 0.83rem;
+    line-height: 1.9;
+    color: var(--c-text-dim);
+    overflow-x: auto;
+  }
+
+  /* ── Section ── */
+  section { margin-bottom: 2.5rem; }
+
+  .section-label {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    margin-bottom: 0.6rem;
+  }
+  .section-label.ch1 { background: var(--c-lavender); color: var(--c-lavender-deep); }
+  .section-label.ch2 { background: var(--c-peach); color: var(--c-peach-deep); }
+  .section-label.ch3 { background: var(--c-sky); color: var(--c-sky-deep); }
+  .section-label.ch4 { background: var(--c-mint); color: var(--c-mint-deep); }
+
+  h2.sec-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    margin-bottom: 1.25rem;
+  }
+  h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--c-text-head);
+    margin: 1.75rem 0 0.75rem;
+  }
+  h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--c-text);
+    margin: 1.25rem 0 0.5rem;
+  }
+  p { margin-bottom: 0.7rem; }
+  ul, ol { margin: 0.4rem 0 1rem 1.2rem; }
+  li { margin-bottom: 0.3rem; }
+  li ul, li ol { margin-top: 0.25rem; margin-bottom: 0; }
+  strong { font-weight: 600; }
+
+  /* ── Param Cards ── */
+  .param-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.25rem 0;
+  }
+  .param-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  }
+  .param-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  }
+  .param-card .badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .param-card.z-card .badge { background: var(--c-lavender); color: var(--c-lavender-deep); }
+  .param-card.y-card .badge { background: var(--c-sky); color: var(--c-sky-deep); }
+  .param-card.t-card .badge { background: var(--c-peach); color: var(--c-peach-deep); }
+  .param-card.h-card .badge { background: var(--c-mint); color: var(--c-mint-deep); }
+
+  .param-card .card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    margin-bottom: 0.6rem;
+  }
+  .param-card .desc {
+    font-size: 0.83rem;
+    color: var(--c-text-dim);
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
+  }
+  .param-card .formula-mini {
+    background: var(--c-bg);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.88rem;
+    overflow-x: auto;
+  }
+  .param-card .conditions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .param-card .cond-chip {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    background: var(--c-bg);
+    border: 1px solid var(--c-border);
+    color: var(--c-text-dim);
+  }
+
+  /* ── Full-width param detail ── */
+  .param-detail {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.75rem 2rem;
+    margin: 1.25rem 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  }
+  .param-detail .detail-head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  .param-detail .detail-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    flex-shrink: 0;
+  }
+  .param-detail .detail-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+  }
+  .param-detail .formula-block {
+    background: var(--c-bg);
+    border-radius: var(--radius-sm);
+    padding: 1.25rem 1.5rem;
+    margin: 0.75rem 0;
+    overflow-x: auto;
+    border-left: 3px solid var(--c-border);
+  }
+  .param-detail .meaning-list {
+    list-style: none;
+    margin: 0.75rem 0 0 0;
+    padding: 0;
+  }
+  .param-detail .meaning-list li {
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+  }
+  .param-detail .meaning-list li:nth-child(odd) { background: var(--c-bg); }
+  .param-detail .cond-row {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+  .param-detail .cond-pill {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.35rem 0.8rem;
+    border-radius: 20px;
+    border: 1px solid var(--c-border);
+  }
+  .z-accent { background: var(--c-lavender); color: var(--c-lavender-deep); border-color: var(--c-lavender) !important; }
+  .y-accent { background: var(--c-sky); color: var(--c-sky-deep); border-color: var(--c-sky) !important; }
+  .t-accent { background: var(--c-peach); color: var(--c-peach-deep); border-color: var(--c-peach) !important; }
+  .h-accent { background: var(--c-mint); color: var(--c-mint-deep); border-color: var(--c-mint) !important; }
+
+  /* ── Comparison Grid ── */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+  .compare-cell {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    text-align: center;
+    transition: transform 0.2s;
+  }
+  .compare-cell:hover { transform: translateY(-2px); }
+  .compare-cell .cell-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+  }
+  .compare-cell:nth-child(1) .cell-label { color: var(--c-lavender-deep); }
+  .compare-cell:nth-child(2) .cell-label { color: var(--c-sky-deep); }
+  .compare-cell:nth-child(3) .cell-label { color: var(--c-peach-deep); }
+  .compare-cell:nth-child(4) .cell-label { color: var(--c-mint-deep); }
+  .compare-cell .cell-letter {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+  .compare-cell:nth-child(1) { border-top: 3px solid var(--c-lavender-deep); }
+  .compare-cell:nth-child(2) { border-top: 3px solid var(--c-sky-deep); }
+  .compare-cell:nth-child(3) { border-top: 3px solid var(--c-peach-deep); }
+  .compare-cell:nth-child(4) { border-top: 3px solid var(--c-mint-deep); }
+  .compare-cell .cell-row {
+    font-size: 0.78rem;
+    color: var(--c-text-dim);
+    margin: 0.2rem 0;
+  }
+  .compare-cell .cell-row strong { color: var(--c-text); }
+
+  /* ── Connection cards ── */
+  .connect-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+  .connect-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.25rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+  }
+  .connect-card .cc-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+    color: var(--c-text-head);
+  }
+  .connect-card .cc-desc {
+    font-size: 0.8rem;
+    color: var(--c-text-dim);
+    margin-bottom: 0.4rem;
+  }
+  .connect-card .cc-formula {
+    font-size: 0.85rem;
+  }
+  .connect-card .cc-formula .katex {
+    display: block;
+    margin: 0.4em 0;
+  }
+  .connect-card.full { grid-column: 1 / -1; }
+
+  /* ── Steps ── */
+  .step-flow {
+    display: flex;
+    gap: 0;
+    margin: 1.25rem 0;
+    align-items: stretch;
+  }
+  .step-item {
+    flex: 1;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    padding: 1.25rem 1rem;
+    text-align: center;
+    position: relative;
+    font-size: 0.85rem;
+  }
+  .step-item:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+  .step-item:last-child { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+  .step-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: -0.55rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0; height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-left: 8px solid var(--c-border);
+    z-index: 2;
+  }
+  .step-num {
+    width: 2rem; height: 2rem;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.5rem;
+  }
+  .step-item:nth-child(1) .step-num { background: var(--c-lavender-deep); }
+  .step-item:nth-child(2) .step-num { background: var(--c-sky-deep); }
+  .step-item:nth-child(3) .step-num { background: var(--c-peach-deep); }
+  .step-item:nth-child(4) .step-num { background: var(--c-mint-deep); }
+  .step-item:nth-child(5) .step-num { background: var(--c-rose-deep); }
+
+  /* ── Mobile ── */
+  .menu-btn {
+    display: none;
+    position: fixed;
+    top: 1rem; left: 1rem;
+    z-index: 200;
+    width: 44px; height: 44px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: 12px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    color: var(--c-text);
+  }
+  @media (max-width: 960px) {
+    .sidebar { transform: translateX(-110%); }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; padding: 1.5rem; padding-top: 4.5rem; }
+    .menu-btn { display: flex; align-items: center; justify-content: center; }
+    .param-grid, .connect-grid { grid-template-columns: 1fr; }
+    .compare-grid { grid-template-columns: 1fr 1fr; }
+    .step-flow { flex-direction: column; }
+    .step-item { border-radius: var(--radius-sm) !important; }
+    .step-item:not(:last-child)::after { display: none; }
+    .hero { padding: 2rem 1.5rem; }
+    .hero h1 { font-size: 1.5rem; }
+  }
+  @media print {
+    .sidebar, .menu-btn { display: none; }
+    .main { margin-left: 0; padding: 1rem; }
+    .hero { background: #f0f0f0 !important; }
+    .param-card:hover { transform: none; }
+  }
+  a:focus-visible, button:focus-visible {
+    outline: 3px solid var(--c-lavender-deep);
+    outline-offset: 2px;
+  }
+</style>
+</head>
+<body>
+
+<button class="menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('open')" aria-label="Toggle nav">&#9776;</button>
+
+<aside class="sidebar">
+  <div class="sidebar-brand">Fundamentals of Circuit Analysis</div>
+  <div class="sidebar-title">Unit 01: DC Resistive Circuits</div>
+  <nav>
+    <ul>
+      <li><a href="#overview">Knowledge Structure Overview</a></li>
+      <li>
+        <a href="#ch1" class="nav-chapter">1. Basic Circuit Concepts and Laws</a>
+        <ul>
+          <li><a href="#ch1" class="nav-section">1.1 Actual Circuits and Circuit Models</a></li>
+          <li><a href="#ch1-quantities" class="nav-section">1.2 Fundamental Circuit Quantities</a></li>
+          <li><a href="#ch1-kirchhoff" class="nav-section">1.3 Kirchhoff's Laws</a></li>
+          <li><a href="#ch1-passive" class="nav-section">1.4 Passive Elements</a></li>
+          <li><a href="#ch1-active" class="nav-section">1.5 Active Elements</a></li>
+        </ul>
+      </li>
+      <li>
+        <a href="#ch2" class="nav-chapter">2. Equivalent Transformations</a>
+        <ul>
+          <li><a href="#ch2" class="nav-section">2.1 Equivalence of Two-Terminal Networks</a></li>
+          <li><a href="#ch2-resistor" class="nav-section">2.2 Resistor Equivalent Transformations</a></li>
+          <li><a href="#ch2-source" class="nav-section">2.3 Source Equivalent Transformations</a></li>
+          <li><a href="#ch2-equiv" class="nav-section">2.4 Equivalent Resistance of Passive Networks</a></li>
+          <li><a href="#ch2-equiv" class="nav-section">2.5 Bridge Circuits</a></li>
+        </ul>
+      </li>
+      <li>
+        <a href="#ch3" class="nav-chapter">3. Systematic Analysis Methods</a>
+        <ul>
+          <li><a href="#ch3-branch" class="nav-section">3.1 Branch Current Method</a></li>
+          <li><a href="#ch3-mesh" class="nav-section">3.2 Mesh Current and Loop Current Methods</a></li>
+          <li><a href="#ch3-node" class="nav-section">3.3 Node Voltage Method</a></li>
+        </ul>
+      </li>
+      <li>
+        <a href="#ch4" class="nav-chapter">4. Circuit Theorems</a>
+        <ul>
+          <li><a href="#ch4-superposition" class="nav-section">4.1 Superposition Theorem</a></li>
+          <li><a href="#ch4-substitution" class="nav-section">4.2 Substitution Theorem</a></li>
+          <li><a href="#ch4-equivalent" class="nav-section">4.3 Equivalent Source Theorem</a></li>
+          <li><a href="#ch4-maxpower" class="nav-section">4.4 Maximum Power Transfer Theorem</a></li>
+        </ul>
+      </li>
+    </ul>
+  </nav>
+</aside>
+
+<main class="main">
+
+  <!-- Back to Home Button -->
+  <div class="back-btn-wrap">
+    <a href="index.html" class="back-btn">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+      </svg>
+      Back to Home
+    </a>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>Unit 01: DC Resistive Circuits</h1>
+    <p class="sub">Fundamentals of Circuit Analysis (2026) &middot; Chapters 1-4</p>
+    <div class="tags">
+      <span class="tag">DC Circuits</span>
+      <span class="tag">Kirchhoff's Laws</span>
+      <span class="tag">Equivalent Transformations</span>
+      <span class="tag">Circuit Theorems</span>
+    </div>
+  </div>
+
+  <!-- Tree -->
+  <div class="tree-card" id="overview">
+    <h2>Knowledge Structure Overview</h2>
+    <pre>
+DC Resistive Circuits
+&#9500;&#9472; 1. Basic Circuit Concepts and Laws
+&#9474;   &#9500;&#9472; 1.1 Actual Circuits and Circuit Models
+&#9474;   &#9500;&#9472; 1.2 Fundamental Circuit Quantities
+&#9474;   &#9500;&#9472; 1.3 Kirchhoff's Laws
+&#9474;   &#9500;&#9472; 1.4 Passive Elements
+&#9474;   &#9492;&#9472; 1.5 Active Elements
+&#9500;&#9472; 2. Equivalent Transformations
+&#9474;   &#9500;&#9472; 2.1 Equivalence of Two-Terminal Networks
+&#9474;   &#9500;&#9472; 2.2 Resistor Equivalent Transformations
+&#9474;   &#9500;&#9472; 2.3 Source Equivalent Transformations
+&#9474;   &#9500;&#9472; 2.4 Equivalent Resistance of Passive Networks
+&#9474;   &#9492;&#9472; 2.5 Bridge Circuits
+&#9500;&#9472; 3. Systematic Analysis Methods
+&#9474;   &#9500;&#9472; 3.1 Branch Current Method
+&#9474;   &#9500;&#9472; 3.2 Mesh Current and Loop Current Methods
+&#9474;   &#9492;&#9472; 3.3 Node Voltage Method
+&#9492;&#9472; 4. Circuit Theorems
+    &#9500;&#9472; 4.1 Superposition Theorem
+    &#9500;&#9472; 4.2 Substitution Theorem
+    &#9500;&#9472; 4.3 Equivalent Source Theorem
+    &#9492;&#9472; 4.4 Maximum Power Transfer Theorem</pre>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- Chapter 1: Basic Circuit Concepts and Laws -->
+  <!-- ═══════════════════════════════════════════════════ -->
+
+  <section id="ch1">
+    <span class="section-label ch1">Chapter 1</span>
+    <h2 class="sec-title">1.1 Actual Circuits and Circuit Models</h2>
+
+    <h4>1.1.1 Actual Circuits</h4>
+    <ul>
+      <li><strong>Definition</strong>: A current path formed by electrical equipment and devices connected in a specific manner</li>
+      <li><strong>Components</strong>: Source (provides electrical energy), intermediate links (transmit and distribute energy), load (consumes energy)</li>
+      <li><strong>Function</strong>: To achieve energy transmission and conversion, or signal transmission and processing</li>
+    </ul>
+
+    <h4>1.1.2 Circuit Models</h4>
+    <ul>
+      <li><strong>Definition</strong>: A mathematical model that uses ideal circuit elements to approximately describe an actual circuit</li>
+      <li><strong>Ideal Circuit Elements</strong>: Idealized models with precise mathematical relationships (resistor R, capacitor C, inductor L, voltage source, current source)</li>
+      <li><strong>Modeling Principle</strong>: Under certain conditions, use combinations of ideal elements to reflect the main electromagnetic properties of actual devices</li>
+      <li><strong>Lumped-Parameter Circuits</strong>: When circuit dimensions are much smaller than signal wavelength, lumped-parameter elements can be used</li>
+    </ul>
+  </section>
+
+  <!-- 1.2 Fundamental Circuit Quantities -->
+  <section id="ch1-quantities">
+    <span class="section-label ch1">Chapter 1</span>
+    <h2 class="sec-title">1.2 Fundamental Circuit Quantities</h2>
+
+    <div class="param-grid">
+      <div class="param-card z-card">
+        <span class="badge">Current</span>
+        <div class="card-title">Current</div>
+        <div class="desc">The amount of charge passing through a conductor's cross-section per unit time.</div>
+        <div class="formula-mini">$i = dq/dt$</div>
+        <div class="conditions">
+          <span class="cond-chip">Unit: Ampere (A)</span>
+        </div>
+      </div>
+      <div class="param-card y-card">
+        <span class="badge">Voltage</span>
+        <div class="card-title">Voltage</div>
+        <div class="desc">The work done by the electric field force when a unit positive charge moves from point a to point b.</div>
+        <div class="formula-mini">$u_{ab} = dw/dq$</div>
+        <div class="conditions">
+          <span class="cond-chip">Unit: Volt (V)</span>
+        </div>
+      </div>
+      <div class="param-card t-card">
+        <span class="badge">Power</span>
+        <div class="card-title">Power</div>
+        <div class="desc">The work done by the electric field force per unit time (rate of energy conversion).</div>
+        <div class="formula-mini">$p = dw/dt = ui$</div>
+        <div class="conditions">
+          <span class="cond-chip">Unit: Watt (W)</span>
+        </div>
+      </div>
+      <div class="param-card h-card">
+        <span class="badge">Potential</span>
+        <div class="card-title">Electric Potential</div>
+        <div class="desc">The voltage at a point relative to a reference point.</div>
+        <div class="formula-mini">$V_a = u_{a0}$</div>
+        <div class="conditions">
+          <span class="cond-chip">Reference: Ground</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge z-accent">Reference Direction</span>
+        <span class="detail-title">Reference Directions for Current and Voltage</span>
+      </div>
+      <ul class="meaning-list">
+        <li><strong>Current Reference Direction</strong>: An assumed direction of positive charge motion. Current is positive when the actual direction agrees with the reference direction, and negative when opposite</li>
+        <li><strong>Voltage Reference Direction</strong>: An assumed direction of voltage drop (positive terminal to negative terminal)</li>
+        <li><strong>Associated Reference Direction</strong>: Current flows in at the positive terminal and out at the negative terminal</li>
+        <li><strong>Power Sign</strong>: $p > 0$ means the element absorbs (consumes) power; $p < 0$ means the element delivers (supplies) power</li>
+        <li><strong>Power Balance</strong>: In any circuit, the sum of power absorbed by all elements equals zero (conservation of energy)</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 1.3 Kirchhoff's Laws -->
+  <section id="ch1-kirchhoff">
+    <span class="section-label ch1">Chapter 1</span>
+    <h2 class="sec-title">1.3 Kirchhoff's Laws</h2>
+
+    <div class="connect-grid">
+      <div class="connect-card">
+        <div class="cc-name">KVL &mdash; Kirchhoff's Voltage Law</div>
+        <div class="cc-desc">The algebraic sum of voltages around any loop is zero</div>
+        <div class="cc-formula">$\sum u = 0$</div>
+      </div>
+      <div class="connect-card">
+        <div class="cc-name">KCL &mdash; Kirchhoff's Current Law</div>
+        <div class="cc-desc">The sum of currents entering any node equals the sum of currents leaving that node</div>
+        <div class="cc-formula">$\sum i_{in} = \sum i_{out}$</div>
+      </div>
+    </div>
+
+    <h3>1.3.1 Kirchhoff's Voltage Law (KVL)</h3>
+    <ul>
+      <li><strong>Statement</strong>: The algebraic sum of all branch voltages around any loop is zero, $\sum u = 0$</li>
+      <li><strong>Corollary</strong>: The algebraic sum of voltage drops equals the algebraic sum of voltage rises in a loop</li>
+    </ul>
+
+    <h4>KVL Writing Procedure</h4>
+    <div class="step-flow">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div>Choose the loop<br>traversal direction</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div>Determine reference<br>directions for each branch voltage</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div>Positive if consistent,<br>negative if opposite</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div>Write the equation<br>$\sum u = 0$</div>
+      </div>
+    </div>
+
+    <h3>1.3.2 Kirchhoff's Current Law (KCL)</h3>
+    <ul>
+      <li><strong>Statement</strong>: At any instant, the sum of currents entering any node equals the sum of currents leaving that node, $\sum i_{in} = \sum i_{out}$</li>
+      <li><strong>Equivalent Form</strong>: $\sum i = 0$ (entering positive, leaving negative)</li>
+      <li><strong>Generalization</strong>: KCL applies to any closed surface (generalized node)</li>
+    </ul>
+  </section>
+
+  <!-- 1.4 Passive Elements -->
+  <section id="ch1-passive">
+    <span class="section-label ch1">Chapter 1</span>
+    <h2 class="sec-title">1.4 Passive Elements</h2>
+
+    <div class="param-grid">
+      <div class="param-card z-card">
+        <span class="badge">Resistor</span>
+        <div class="card-title">Resistor</div>
+        <div class="desc">A two-terminal element where voltage is proportional to current. A linear resistor has a V-I characteristic that is a straight line through the origin.</div>
+        <div class="formula-mini">$u = Ri$</div>
+        <div class="conditions">
+          <span class="cond-chip">Unit: Ohm (&Omega;)</span>
+          <span class="cond-chip">$p = i^2R = u^2/R$</span>
+        </div>
+      </div>
+      <div class="param-card y-card">
+        <span class="badge">Capacitor</span>
+        <div class="card-title">Capacitor</div>
+        <div class="desc">A two-terminal element that stores electric field energy. Capacitor voltage cannot change instantaneously (memory property). Acts as an open circuit under DC steady-state conditions.</div>
+        <div class="formula-mini">$i = C(du/dt)$</div>
+        <div class="conditions">
+          <span class="cond-chip">Unit: Farad (F)</span>
+          <span class="cond-chip">$W_C = \frac{1}{2}Cu^2$</span>
+        </div>
+      </div>
+      <div class="param-card t-card full">
+        <span class="badge">Inductor</span>
+        <div class="card-title">Inductor</div>
+        <div class="desc">A two-terminal element that stores magnetic field energy. Inductor current cannot change instantaneously (memory property). Acts as a short circuit under DC steady-state conditions.</div>
+        <div class="formula-mini">$u = L(di/dt)$</div>
+        <div class="conditions">
+          <span class="cond-chip">Unit: Henry (H)</span>
+          <span class="cond-chip">$W_L = \frac{1}{2}Li^2$</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 1.5 Active Elements -->
+  <section id="ch1-active">
+    <span class="section-label ch1">Chapter 1</span>
+    <h2 class="sec-title">1.5 Active Elements</h2>
+
+    <h3>1.5.1 Independent Sources</h3>
+    <div class="connect-grid">
+      <div class="connect-card">
+        <div class="cc-name">Ideal Voltage Source</div>
+        <div class="cc-desc">Terminal voltage is constant, independent of external circuit. Internal resistance is zero.</div>
+        <div class="cc-formula">V-I characteristic: a line parallel to the current axis</div>
+      </div>
+      <div class="connect-card">
+        <div class="cc-name">Ideal Current Source</div>
+        <div class="cc-desc">Output current is constant, independent of external circuit. Internal resistance is infinite.</div>
+        <div class="cc-formula">V-I characteristic: a line parallel to the voltage axis</div>
+      </div>
+    </div>
+
+    <h3>1.5.2 Dependent Sources</h3>
+    <p><strong>Definition</strong>: Sources whose voltage or current is controlled by the voltage or current of another branch in the circuit.</p>
+    <div class="compare-grid">
+      <div class="compare-cell">
+        <div class="cell-label">VCVS</div>
+        <div class="cell-letter">&mu;</div>
+        <div class="cell-row">Voltage Controlled Voltage Source</div>
+        <div class="cell-row">$u_2 = \mu u_1$</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">VCCS</div>
+        <div class="cell-letter">$g_m$</div>
+        <div class="cell-row">Voltage Controlled Current Source</div>
+        <div class="cell-row">$i_2 = g_m u_1$</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">CCVS</div>
+        <div class="cell-letter">$r_m$</div>
+        <div class="cell-row">Current Controlled Voltage Source</div>
+        <div class="cell-row">$u_2 = r_m i_1$</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">CCCS</div>
+        <div class="cell-letter">&beta;</div>
+        <div class="cell-row">Current Controlled Current Source</div>
+        <div class="cell-row">$i_2 = \beta i_1$</div>
+      </div>
+    </div>
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge z-accent">Note</span>
+        <span class="detail-title">Special Properties of Dependent Sources</span>
+      </div>
+      <ul class="meaning-list">
+        <li>Dependent sources are not independent excitations and cannot act alone</li>
+        <li>In the superposition theorem, they cannot be zeroed independently like independent sources</li>
+        <li>Dependent sources must always remain in the circuit</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- Chapter 2: Equivalent Transformations -->
+  <!-- ═══════════════════════════════════════════════════ -->
+
+  <section id="ch2">
+    <span class="section-label ch2">Chapter 2</span>
+    <h2 class="sec-title">2.1 Equivalence of Two-Terminal Networks</h2>
+    <ul>
+      <li><strong>Definition</strong>: Two two-terminal networks are equivalent if their port V-I relationships (VCR) are identical</li>
+      <li><strong>Purpose of Equivalent Transformations</strong>: To simplify circuit analysis and reduce the number of unknowns</li>
+      <li><strong>Note</strong>: Equivalence applies to the external circuit; internal structures may differ</li>
+    </ul>
+  </section>
+
+  <!-- 2.2 Resistor Equivalent Transformations -->
+  <section id="ch2-resistor">
+    <span class="section-label ch2">Chapter 2</span>
+    <h2 class="sec-title">2.2 Resistor Equivalent Transformations</h2>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge t-accent">Series</span>
+        <span class="detail-title">Series Equivalent of Resistors</span>
+      </div>
+      <div class="formula-block">
+        $$R_{eq} = R_1 + R_2 + \cdots + R_n$$
+      </div>
+      <ul class="meaning-list">
+        <li><strong>Characteristic</strong>: The current through each resistor is the same</li>
+        <li><strong>Voltage Divider Formula</strong>: $u_k = \dfrac{R_k}{R_1+R_2+\cdots+R_n} \cdot u$</li>
+      </ul>
+    </div>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge y-accent">Parallel</span>
+        <span class="detail-title">Parallel Equivalent of Resistors</span>
+      </div>
+      <div class="formula-block">
+        $$G_{eq} = G_1 + G_2 + \cdots + G_n$$
+         <!-- $$\frac{1}{R_{eq}} = \frac{1}{R_1} + \frac{1}{R_2} + \cdots + \frac{1}{R_n}$$-->
+      </div>
+      <ul class="meaning-list">
+        <li><strong>Characteristic</strong>: The voltage across each resistor is the same</li>
+        <li><strong>Two resistors in parallel: $R_{eq} = \dfrac{R_1 R_2}{R_1 + R_2}$ or $G_{eq} = G_1 + G_2 $</li>
+        <li><strong>Current Divider Formula</strong>: $i_k = \dfrac{G_k}{G_{eq}} \cdot i$</li>
+      </ul>
+    </div>
+
+    <h3>2.2.2 Resistor Y-Delta Equivalent Transformation</h3>
+    <div class="connect-grid">
+      <div class="connect-card">
+        <div class="cc-name">&Delta;&rarr;Y Transformation</div>
+        <div class="cc-desc">Given three resistors in delta connection, find the equivalent star connection</div>
+        <div class="cc-formula">
+          $R_1 = \dfrac{R_{12}R_{31}}{R_{12}+R_{23}+R_{31}}$<br>
+          $R_2 = \dfrac{R_{12}R_{23}}{R_{12}+R_{23}+R_{31}}$<br>
+          $R_3 = \dfrac{R_{31}R_{23}}{R_{12}+R_{23}+R_{31}}$
+        </div>
+      </div>
+      <div class="connect-card">
+        <div class="cc-name">Y&rarr;&Delta; Transformation</div>
+        <div class="cc-desc">Given three resistors in star connection, find the equivalent delta connection</div>
+        <div class="cc-formula">
+          $R_{12} = \dfrac{R_1R_2+R_2R_3+R_3R_1}{R_3}$<br>
+          $R_{23} = \dfrac{R_1R_2+R_2R_3+R_3R_1}{R_1}$<br>
+          $R_{31} = \dfrac{R_1R_2+R_2R_3+R_3R_1}{R_2}$
+        </div>
+      </div>
+      <div class="connect-card full">
+        <div class="cc-name">Symmetric Case</div>
+        <div class="cc-desc">When $R_{12}=R_{23}=R_{31}=R_\Delta$</div>
+        <div class="cc-formula">$R_Y = R_\Delta/3$</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2.3 Source Equivalent Transformations -->
+  <section id="ch2-source">
+    <span class="section-label ch2">Chapter 2</span>
+    <h2 class="sec-title">2.3 Source Equivalent Transformations</h2>
+
+    <h3>2.3.1 Practical Source Models and Equivalent Transformations</h3>
+    <div class="connect-grid">
+      <div class="connect-card">
+        <div class="cc-name">Voltage Source Model</div>
+        <div class="cc-desc">Ideal voltage source $U_s$ in series with internal resistance $R_0$</div>
+      </div>
+      <div class="connect-card">
+        <div class="cc-name">Current Source Model</div>
+        <div class="cc-desc">Ideal current source $I_s$ in parallel with internal resistance $R_0$</div>
+      </div>
+      <div class="connect-card full">
+        <div class="cc-name">Equivalent Transformation Relationship</div>
+        <div class="cc-desc">Internal resistance $R_0$ remains unchanged; equivalent only for the external circuit</div>
+        <div class="cc-formula">$U_s = I_s \cdot R_0 \qquad I_s = U_s / R_0$</div>
+      </div>
+    </div>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge t-accent">Note</span>
+        <span class="detail-title">Equivalent Transformation Precautions</span>
+      </div>
+      <ul class="meaning-list">
+        <li>Internal resistance $R_0$ remains unchanged during equivalent transformation</li>
+        <li>The transformation is equivalent only for the external circuit, not internally</li>
+        <li>Ideal voltage sources and ideal current sources cannot be directly transformed into each other</li>
+      </ul>
+    </div>
+
+    <h3>2.3.2 Series and Parallel Equivalents of Ideal Sources</h3>
+    <div class="compare-grid">
+      <div class="compare-cell">
+        <div class="cell-label">Voltage Sources in Series</div>
+        <div class="cell-letter">&Sigma;</div>
+        <div class="cell-row">$U_s = U_{s1} + U_{s2}$</div>
+        <div class="cell-row">Add if same direction</div>
+        <div class="cell-row">Subtract if opposite</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">Voltage Sources in Parallel</div>
+        <div class="cell-letter">=</div>
+        <div class="cell-row">Requires all voltage sources</div>
+        <div class="cell-row">to have equal voltage</div>
+        <div class="cell-row">Otherwise violates KVL</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">Current Sources in Series</div>
+        <div class="cell-letter">=</div>
+        <div class="cell-row">Requires all current sources</div>
+        <div class="cell-row">to have equal current</div>
+        <div class="cell-row">Otherwise violates KCL</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">Current Sources in Parallel</div>
+        <div class="cell-letter">&Sigma;</div>
+        <div class="cell-row">$I_s = I_{s1} + I_{s2}$</div>
+        <div class="cell-row">Add if same direction</div>
+        <div class="cell-row">Subtract if opposite</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2.4 & 2.5 Equivalent Resistance and Bridge -->
+  <section id="ch2-equiv">
+    <span class="section-label ch2">Chapter 2</span>
+    <h2 class="sec-title">2.4 Equivalent Resistance of Passive Two-Terminal Networks</h2>
+    <p><strong>Definition</strong>: The equivalent resistance at the port after setting all independent sources to zero (voltage sources short-circuited, current sources open-circuited).</p>
+    <h4>Solution Methods</h4>
+    <div class="param-grid">
+      <div class="param-card z-card">
+        <span class="badge">Method 1</span>
+        <div class="card-title">Series-Parallel Simplification</div>
+        <div class="desc">Use resistor series-parallel formulas to simplify step by step.</div>
+      </div>
+      <div class="param-card y-card">
+        <span class="badge">Method 2</span>
+        <div class="card-title">External Source Method</div>
+        <div class="desc">Apply voltage and find current, or apply current and find voltage, to calculate port equivalent resistance.</div>
+      </div>
+      <div class="param-card t-card">
+        <span class="badge">Method 3</span>
+        <div class="card-title">Y-Delta Transformation</div>
+        <div class="desc">Transform Y or delta connections, then simplify.</div>
+      </div>
+      <div class="param-card h-card">
+        <span class="badge">Method 4</span>
+        <div class="card-title">Symmetry Analysis</div>
+        <div class="desc">Use circuit symmetry to simplify calculations.</div>
+      </div>
+    </div>
+
+    <h3>2.5 Bridge Circuits</h3>
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge h-accent">Bridge</span>
+        <span class="detail-title">Bridge Circuits</span>
+      </div>
+      <div class="formula-block">
+        <strong>Bridge Balance Condition</strong>: The product of opposite arm resistances are equal<br>
+        $$R_1 R_3 = R_2 R_4$$
+      </div>
+      <ul class="meaning-list">
+        <li><strong>Balance Characteristics</strong>: No current flows in the bridge arm; it can be treated as open or short circuit</li>
+        <li><strong>Unbalanced Bridge</strong>: Requires Y-delta transformation or other methods to solve</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- Chapter 3: Systematic Analysis Methods -->
+  <!-- ═══════════════════════════════════════════════════ -->
+
+  <section id="ch3">
+    <span class="section-label ch3">Chapter 3</span>
+    <h2 class="sec-title">3. Systematic Analysis Methods</h2>
+
+    <div class="param-grid">
+      <div class="param-card z-card">
+        <span class="badge">Method 1</span>
+        <div class="card-title">Branch Current Method</div>
+        <div class="desc">Use branch currents as unknowns, write KCL and KVL equations and solve simultaneously.</div>
+        <div class="conditions">
+          <span class="cond-chip">Equations = b</span>
+          <span class="cond-chip">Intuitive but many equations</span>
+        </div>
+      </div>
+      <div class="param-card y-card">
+        <span class="badge">Method 2</span>
+        <div class="card-title">Mesh Current Method</div>
+        <div class="desc">Assume circulating currents flowing around each mesh boundary as unknowns.</div>
+        <div class="conditions">
+          <span class="cond-chip">Equations = number of meshes</span>
+          <span class="cond-chip">Only for planar circuits</span>
+        </div>
+      </div>
+      <div class="param-card t-card full">
+        <span class="badge">Method 3</span>
+        <div class="card-title">Node Voltage Method</div>
+        <div class="desc">Use node voltages relative to the reference node as unknowns.</div>
+        <div class="conditions">
+          <span class="cond-chip">Equations = n-1</span>
+          <span class="cond-chip">Widely applicable</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3.1 Branch Current Method -->
+  <section id="ch3-branch">
+    <span class="section-label ch3">Chapter 3</span>
+    <h2 class="sec-title">3.1 Branch Current Method</h2>
+
+    <h3>3.1.1 Two Types of Constraints and Circuit Equations</h3>
+    <div class="connect-grid">
+      <div class="connect-card">
+        <div class="cc-name">KCL Constraints</div>
+        <div class="cc-desc">For a circuit with n nodes</div>
+        <div class="cc-formula">Independent KCL equations = n-1</div>
+      </div>
+      <div class="connect-card">
+        <div class="cc-name">KVL Constraints</div>
+        <div class="cc-desc">For a planar circuit with b branches and n nodes</div>
+        <div class="cc-formula">Independent KVL equations = b-(n-1)</div>
+      </div>
+      <div class="connect-card full">
+        <div class="cc-name">Element Constraints (VCR)</div>
+        <div class="cc-desc">The voltage-current relationship for each branch</div>
+      </div>
+    </div>
+
+    <h3>3.1.2 Writing Branch Current Equations</h3>
+    <div class="step-flow">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div>Assign reference<br>directions for each branch current</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div>Write KCL equations<br>for n-1 nodes</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div>Write KVL equations<br>for independent loops</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div>Express branch voltages<br>using branch currents (VCR)</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">5</div>
+        <div>Solve simultaneously<br>b equations total</div>
+      </div>
+    </div>
+
+    <h3>3.1.3 Circuit Topology (Graph Theory Basics)</h3>
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge y-accent">Graph Theory</span>
+        <span class="detail-title">Circuit Topology Fundamentals</span>
+      </div>
+      <ul class="meaning-list">
+        <li><strong>Graph</strong>: A collection of nodes and branches</li>
+        <li><strong>Connected Graph</strong>: A path exists between any two nodes</li>
+        <li><strong>Tree</strong>: A connected subgraph containing all nodes but no loops</li>
+        <li><strong>Tree Branch</strong>: A branch belonging to the tree; count = n-1</li>
+        <li><strong>Link</strong>: A branch not belonging to the tree; count = b-(n-1)</li>
+        <li><strong>Fundamental Loop</strong>: A loop formed by one link and several tree branches</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 3.2 Mesh Current Method -->
+  <section id="ch3-mesh">
+    <span class="section-label ch3">Chapter 3</span>
+    <h2 class="sec-title">3.2 Mesh Current and Loop Current Methods</h2>
+
+    <h3>3.2.1 Standard Form of Mesh Current Equations</h3>
+    <p>For planar circuits, using mesh currents as unknowns. Standard form:</p>
+    <div class="formula-block">
+      $$\begin{bmatrix}
+      R_{11} & R_{12} & \cdots & R_{1m} \\
+      R_{21} & R_{22} & \cdots & R_{2m} \\
+      \vdots & \vdots & \ddots & \vdots \\
+      R_{m1} & R_{m2} & \cdots & R_{mm}
+      \end{bmatrix}
+      \begin{bmatrix} i_{m1} \\ i_{m2} \\ \vdots \\ i_{mm} \end{bmatrix} =
+      \begin{bmatrix} u_{s11} \\ u_{s22} \\ \vdots \\ u_{smm} \end{bmatrix}$$
+    </div>
+    <div class="param-detail">
+      <ul class="meaning-list">
+        <li><strong>Self-resistance $R_{ii}$</strong>: The sum of all resistances in mesh $i$; always positive</li>
+        <li><strong>Mutual resistance $R_{ij}$ $(i \neq j)$</strong>: The sum of resistances on the common branch of mesh $i$ and mesh $j$. Positive when the two mesh currents flow in the same direction on the common branch, negative when opposite (if all mesh currents are assigned clockwise, mutual resistance is always negative)</li>
+        <li><strong>$u_{sii}$</strong>: The algebraic sum of all voltage source rises in mesh $i$</li>
+      </ul>
+    </div>
+
+    <h3>3.2.2 Mesh Current Equations with Current Sources</h3>
+    <div class="connect-grid">
+      <div class="connect-card">
+        <div class="cc-name">Current Source on a Boundary Branch</div>
+        <div class="cc-desc">That mesh current is known; write the equation directly</div>
+      </div>
+      <div class="connect-card">
+        <div class="cc-name">Current Source on a Common Branch</div>
+        <div class="cc-desc">Introduce the voltage across the current source as an additional unknown; add one equation</div>
+      </div>
+    </div>
+
+    <h3>3.2.3 Mesh Current Equations with Dependent Sources</h3>
+    <div class="step-flow">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div>Treat the dependent source<br>as an independent source first</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div>Express the controlling quantity<br>in terms of mesh currents</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div>Substitute into<br>the equations and simplify</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3.3 Node Voltage Method -->
+  <section id="ch3-node">
+    <span class="section-label ch3">Chapter 3</span>
+    <h2 class="sec-title">3.3 Node Voltage Method</h2>
+
+    <h3>3.3.1 Standard Form of Node Voltage Equations</h3>
+    <p>Using node voltages (potential differences relative to the reference node) as unknowns. Standard form:</p>
+    <div class="formula-block">
+      $$\begin{bmatrix}
+      G_{11} & G_{12} & \cdots & G_{1,n-1} \\
+      G_{21} & G_{22} & \cdots & G_{2,n-1} \\
+      \vdots & \vdots & \ddots & \vdots \\
+      G_{n-1,1} & G_{n-1,2} & \cdots & G_{n-1,n-1}
+      \end{bmatrix}
+      \begin{bmatrix} u_{n1} \\ u_{n2} \\ \vdots \\ u_{n,n-1} \end{bmatrix} =
+      \begin{bmatrix} i_{s11} \\ i_{s22} \\ \vdots \\ i_{s,n-1,n-1} \end{bmatrix}$$
+    </div>
+    <div class="param-detail">
+      <ul class="meaning-list">
+        <li><strong>Self-conductance $G_{ii}$</strong>: The sum of all conductances connected to node $i$; always positive</li>
+        <li><strong>Mutual conductance $G_{ij}$ $(i \neq j)$</strong>: The sum of conductances directly connecting node $i$ and node $j$; always negative</li>
+        <li><strong>$i_{sii}$</strong>: The algebraic sum of all current source currents flowing into node $i$ (positive for inflow)</li>
+      </ul>
+    </div>
+
+    <h3>3.3.2 Node Voltage Equations with Ideal Voltage Source Branches</h3>
+    <div class="connect-grid">
+      <div class="connect-card">
+        <div class="cc-name">Voltage Source Between a Node and the Reference</div>
+        <div class="cc-desc">That node voltage is known; one less equation to write</div>
+      </div>
+      <div class="connect-card">
+        <div class="cc-name">Voltage Source Between Two Non-Reference Nodes</div>
+        <div class="cc-desc">Introduce the current through the voltage source as an additional unknown; add one equation</div>
+      </div>
+    </div>
+
+    <h3>3.3.3 Node Voltage Equations with Dependent Sources</h3>
+    <p>Approach: Similar to the mesh method, first treat the dependent source as an independent source, then express the controlling quantity in terms of node voltages and substitute.</p>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- Chapter 4: Circuit Theorems -->
+  <!-- ═══════════════════════════════════════════════════ -->
+
+  <section id="ch4">
+    <span class="section-label ch4">Chapter 4</span>
+    <h2 class="sec-title">4. Circuit Theorems</h2>
+
+    <div class="param-grid">
+      <div class="param-card z-card">
+        <span class="badge">Theorem 1</span>
+        <div class="card-title">Superposition Theorem</div>
+        <div class="desc">In a linear circuit, the current (or voltage) in any branch equals the algebraic sum of the contributions from each independent source acting alone.</div>
+        <div class="conditions">
+          <span class="cond-chip">Only for linear circuits</span>
+        </div>
+      </div>
+      <div class="param-card y-card">
+        <span class="badge">Theorem 2</span>
+        <div class="card-title">Substitution Theorem</div>
+        <div class="desc">If the voltage u or current i of a branch is known, that branch can be replaced by an ideal voltage or current source.</div>
+        <div class="conditions">
+          <span class="cond-chip">Linear or nonlinear</span>
+        </div>
+      </div>
+      <div class="param-card t-card">
+        <span class="badge">Theorem 3</span>
+        <div class="card-title">Equivalent Source Theorem</div>
+        <div class="desc">A source-containing linear two-terminal network can be replaced by a Thevenin or Norton equivalent circuit.</div>
+        <div class="conditions">
+          <span class="cond-chip">Thevenin + Norton</span>
+        </div>
+      </div>
+      <div class="param-card h-card">
+        <span class="badge">Theorem 4</span>
+        <div class="card-title">Maximum Power Transfer</div>
+        <div class="desc">When $R_L = R_{eq}$, the load receives maximum power.</div>
+        <div class="conditions">
+          <span class="cond-chip">Efficiency 50%</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4.1 Superposition Theorem -->
+  <section id="ch4-superposition">
+    <span class="section-label ch4">Chapter 4</span>
+    <h2 class="sec-title">4.1 Superposition Theorem</h2>
+    <p><strong>Statement</strong>: In a linear circuit, the current (or voltage) in any branch equals the algebraic sum of the currents (or voltages) produced in that branch by each independent source acting alone.</p>
+
+    <h4>Application Steps</h4>
+    <div class="step-flow">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div>Retain only one<br>independent source at a time</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div>Set other independent sources to zero<br>(voltage sources shorted, current sources opened)</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div>Calculate the response<br>for each independent source separately</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div>Algebraically add<br>all responses</div>
+      </div>
+    </div>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge z-accent">Note</span>
+        <span class="detail-title">Superposition Theorem Limitations</span>
+      </div>
+      <ul class="meaning-list">
+        <li>Applicable only to linear circuits</li>
+        <li>Power cannot be directly calculated using the superposition theorem (power is a quadratic function of voltage or current)</li>
+        <li>Dependent sources cannot be zeroed independently; they must always remain in the circuit</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 4.2 Substitution Theorem -->
+  <section id="ch4-substitution">
+    <span class="section-label ch4">Chapter 4</span>
+    <h2 class="sec-title">4.2 Substitution Theorem</h2>
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge y-accent">Theorem</span>
+        <span class="detail-title">Substitution Theorem</span>
+      </div>
+      <ul class="meaning-list">
+        <li><strong>Statement</strong>: In a linear or nonlinear circuit, if the voltage u (or current i) of a branch is known, that branch can be replaced by an ideal voltage source with voltage equal to u (or an ideal current source with current equal to i), without changing the voltages and currents in the rest of the circuit</li>
+        <li><strong>Significance</strong>: Allows complex problems to be decomposed into simpler ones</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 4.3 Equivalent Source Theorem -->
+  <section id="ch4-equivalent">
+    <span class="section-label ch4">Chapter 4</span>
+    <h2 class="sec-title">4.3 Equivalent Source Theorem</h2>
+
+    <h3>4.3.1 Thevenin's Theorem</h3>
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge h-accent">Thevenin</span>
+        <span class="detail-title">Thevenin's Theorem</span>
+      </div>
+      <div class="formula-block">
+        $$\text{Source-containing linear two-terminal network} \equiv U_{oc} \text{ (open-circuit voltage) in series with } R_{eq}$$
+      </div>
+      <p><strong>Solution Steps:</strong></p>
+      <div class="step-flow">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div>Find open-circuit voltage $U_{oc}$<br>Disconnect the branch of interest</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div>Find equivalent resistance $R_{eq}$<br>Set independent sources to zero</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div>Draw the equivalent circuit<br>Connect the branch of interest</div>
+        </div>
+      </div>
+      <p><strong>Methods for finding $R_{eq}$:</strong></p>
+      <ul class="meaning-list">
+        <li>Method 1: Direct calculation after setting independent sources to zero</li>
+        <li>Method 2: $R_{eq} = U_{oc} / I_{sc}$ (open-circuit voltage divided by short-circuit current)</li>
+        <li>Method 3: External source method</li>
+      </ul>
+    </div>
+
+    <h3>4.3.2 Norton's Theorem</h3>
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge h-accent">Norton</span>
+        <span class="detail-title">Norton's Theorem</span>
+      </div>
+      <div class="formula-block">
+        $$\text{Source-containing linear two-terminal network} \equiv I_{sc} \text{ (short-circuit current) in parallel with } R_{eq}$$
+      </div>
+      <p><strong>Relationship with Thevenin's Theorem:</strong></p>
+      <div class="formula-block">
+        $$U_{oc} = I_{sc} \cdot R_{eq}$$
+        Norton and Thevenin circuits can be equivalently transformed into each other
+      </div>
+    </div>
+  </section>
+
+  <!-- 4.4 Maximum Power Transfer Theorem -->
+  <section id="ch4-maxpower">
+    <span class="section-label ch4">Chapter 4</span>
+    <h2 class="sec-title">4.4 Maximum Power Transfer Theorem</h2>
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge h-accent">Theorem</span>
+        <span class="detail-title">Maximum Power Transfer Theorem</span>
+      </div>
+      <div class="formula-block">
+        <strong>Condition</strong>: When the load resistance $R_L$ equals the Thevenin equivalent resistance $R_{eq}$ of the source-containing two-terminal network, the load receives maximum power.
+        <br><br>
+        $$P_{max} = \frac{U_{oc}^2}{4R_{eq}}$$
+      </div>
+      <div class="cond-row">
+        <span class="cond-pill h-accent">Matching condition: $R_L = R_{eq}$</span>
+        <span class="cond-pill h-accent">Transfer efficiency: 50%</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+const sections = document.querySelectorAll('[id]');
+const navLinks = document.querySelectorAll('.sidebar nav a');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(a => a.classList.remove('active'));
+      const link = document.querySelector(`.sidebar nav a[href="#${entry.target.id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-15% 0px -75% 0px' });
+sections.forEach(s => { if (s.closest('.main')) observer.observe(s); });
+navLinks.forEach(a => a.addEventListener('click', () => {
+  document.querySelector('.sidebar').classList.remove('open');
+}));
+
+// Chapter collapse/expand
+document.querySelectorAll('.sidebar .nav-chapter').forEach(ch => {
+  ch.addEventListener('click', e => {
+    e.preventDefault();
+    const li = ch.parentElement;
+    li.classList.toggle('collapsed');
+  });
+});
+</script>
+
+</body>
+</html>

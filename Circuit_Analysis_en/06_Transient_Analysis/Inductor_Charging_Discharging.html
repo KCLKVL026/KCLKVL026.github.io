@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>RL Circuit · Inductor Charging/Discharging Characteristics | Square Wave Excitation and Time Constant (Current in mA)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- KaTeX math rendering -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #2563eb;
+            transform: scale(1.15);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15);
+        }
+        .phase-badge {
+            background: #eff6ff;
+            border-radius: 20px;
+            padding: 0.2rem 0.7rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #1e40af;
+        }
+        .reset-btn {
+            transition: all 0.2s;
+        }
+        .reset-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- Back to Home button (top left) -->
+    <div class="flex justify-start mb-4">
+        <a href="../index.html"
+        class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Home
+        </a>
+    </div>
+    <!-- Title area -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            RL Circuit · Inductor Charging/Discharging Characteristics (Square Wave Excitation)
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            Square wave voltage \(v_{\text{in}}(t)\) applied to a series RL circuit | Observe the charging/discharging transient response of inductor current \(i_L(t)\)<br>
+            <span class="text-xs text-indigo-500">Inductor current unit: milliamps (mA)</span>
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left control panel -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- Parameter adjustment card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    Signal Source & RL Parameters
+                </h3>
+
+                <!-- Voltage amplitude Vm -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Square Wave Amplitude \(V_m\)</label>
+                        <span class="text-blue-600 font-mono" id="vm_display">1.00 V</span>
+                    </div>
+                    <input type="range" id="vm_slider" min="0.2" max="5" step="0.02" value="1.0" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>0.2 V</span><span>5 V</span>
+                    </div>
+                </div>
+
+                <!-- Frequency f -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Square Wave Frequency \(f\)</label>
+                        <span class="text-blue-600 font-mono" id="f_display">50.0 Hz</span>
+                    </div>
+                    <input type="range" id="f_slider" min="10" max="500" step="1" value="150" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Hz</span><span>500 Hz</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">50% duty cycle square wave; frequency affects charging/discharging time ratio</p>
+                </div>
+
+                <div class="border-t border-slate-100 my-3"></div>
+
+                <!-- Resistance R (Ohm) range 10~1000 Ohm, default 500 Ohm -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Resistance \(R\)</label>
+                        <span class="text-blue-600 font-mono" id="r_display">500 Ω</span>
+                    </div>
+                    <input type="range" id="r_slider" min="20" max="2000" step="5" value="1000" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>20 Ω</span><span>2000 Ω</span>
+                    </div>
+                </div>
+
+                <!-- Inductance L (mH) range 1~1000 mH, default 500mH -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Inductance \(L\)</label>
+                        <span class="text-blue-600 font-mono" id="l_display">500 mH</span>
+                    </div>
+                    <input type="range" id="l_slider" min="10" max="1000" step="5" value="500" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 mH</span><span>1000 mH</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1">Time constant \(\tau = L/R\), determines charging/discharging speed</p>
+                </div>
+
+                <!-- Reset button -->
+                <div class="mt-6 flex justify-center">
+                    <button id="resetBtn" class="reset-btn bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-full shadow-md transition flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        Reset Parameters
+                    </button>
+                </div>
+            </div>
+
+            <!-- Auxiliary info card: RL charging/discharging theory -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-blue-500 rounded-full"></span>
+                    Time Constant & Charging/Discharging Rules
+                </h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
+                        <span class="font-medium">⏱️ Time Constant \(\tau\)</span>
+                        <span class="font-mono text-emerald-600">\(\tau = L/R\)</span>
+                        <span class="text-xs text-slate-500">Unit: seconds (s)</span>
+                    </div>
+                </div>
+                <div class="mt-3 text-xs text-slate-600 bg-indigo-50 p-2 rounded-lg leading-relaxed">
+                    📐 <strong>RL Circuit Charging/Discharging Formulas (Inductor Current)</strong><br>
+                    Charging phase ( \(v_{\text{in}} = V_m\) ):
+                    \(i_L(t) = \frac{V_m}{R} + \left(I_0 - \frac{V_m}{R}\right)e^{-t/\tau}\) <br>
+                    Discharging phase ( \(v_{\text{in}} = 0\) ):
+                    \(i_L(t) = 0 + (I_0 - 0)e^{-t/\tau}\) <br>
+                    <strong>\(\tau = L/R\)</strong> determines transient speed: after \(1\tau\) current rises/drops ~63.2%, after \(5\tau\) essentially reaches steady state.<br>
+                    The ratio of square wave frequency to \(\tau\) affects the inductor current waveform shape (exponential charging/discharging).<br>
+                    <strong>Inductor current unit: milliamps (mA)</strong>, displayed values in the chart are converted to mA.
+                </div>
+                <div class="mt-2 text-xs text-slate-500 bg-white p-2 rounded border border-slate-100">
+                    💡 Key observations: When period \(T \ll \tau\), current charging/discharging is incomplete, appearing as an approximate triangle wave; when \(T \gg \tau\), current can fully charge or discharge, waveform approaches a square wave.<br>
+                    <span class="text-blue-600">Current default parameters: R=500Ω, L=500mH → τ=0.001s, period T=0.02s, half-period 0.01s (10τ), charging/discharging ~99.995%, current nearly fully charges/discharges. Steady-state current \(I_{max}=V_m/R = 2\,\text{mA}\).</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right waveform area -->
+        <div class="lg:col-span-8 space-y-6">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 wave-card">
+                <div class="flex justify-between items-center flex-wrap mb-2">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                        <h3 class="font-bold text-slate-800 text-lg">RL Circuit Response · Input Square Wave \(v_{\text{in}}(t)\) and Inductor Current \(i_L(t)\) (mA)</h3>
+                    </div>
+                    <div class="phase-badge">Time Constant \(\tau = L/R\) | Exponential Charging/Discharging</div>
+                </div>
+                <div class="relative">
+                    <canvas id="rlChart" width="700" height="400" style="width:100%; height:auto; max-height:420px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-1">
+                    Blue staircase waveform: input square wave voltage \(v_{\text{in}}\); Orange curve: inductor current \(i_L(t)\) (mA), reflecting RL charging/discharging transient process.
+                </div>
+            </div>
+
+            <!-- Supplementary info cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">🔍 Waveform Observation Points</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        • Square wave rising edge: inductor current begins exponential rise toward \(V_m/R\) (mA).<br>
+                        • Square wave falling edge: inductor discharges through resistor, current decays exponentially toward 0.<br>
+                        • Larger time constant \(\tau = L/R\) means slower charging/discharging, more "sluggish" waveform.<br>
+                        • Adjust frequency: at low frequencies, current can fully charge/discharge; at high frequencies, waveform appears as approximate triangle wave.
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">⚙️ Parameter Influence Rules</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        \(i_L(t)\) charging rate is determined by \(\tau = L/R\).<br>
+                        Increasing \(L\) or decreasing \(R\) → \(\tau\) increases → charging/discharging slows down, waveform distortion becomes more pronounced;<br>
+                        Increasing square wave frequency \(f\) → period decreases → charging/discharging time shortens, current amplitude decreases.<br>
+                        Amplitude \(V_m\) changes steady-state current value \(V_m/R\) (mA), but not the time constant.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // DOM element bindings
+    const vmSlider = document.getElementById('vm_slider');
+    const fSlider = document.getElementById('f_slider');
+    const rSlider = document.getElementById('r_slider');
+    const lSlider = document.getElementById('l_slider');
+    const resetBtn = document.getElementById('resetBtn');
+
+    const vmDisplay = document.getElementById('vm_display');
+    const fDisplay = document.getElementById('f_display');
+    const rDisplay = document.getElementById('r_display');
+    const lDisplay = document.getElementById('l_display');
+
+    const canvas = document.getElementById('rlChart');
+    let chart;
+
+    // Waveform parameters
+    const PERIODS = 2.0;          // Display two complete periods
+    const SAMPLE_POINTS = 800;    // Sample points
+
+    // Default values (R=500Ω, L=500mH → τ=0.001s, half-period 0.01s → 10τ, nearly full charge/discharge)
+    const DEFAULTS = {
+        Vm: 1.0,
+        f: 150,
+        R_ohm: 1000,       // 1000 Ω
+        L_mH: 500         // 500 mH -> τ = 0.5/500 = 0.001s
+    };
+
+    // Get current parameters (SI units)
+    function getParams() {
+        const Vm = parseFloat(vmSlider.value);
+        const f = parseFloat(fSlider.value);
+        const R = parseFloat(rSlider.value);
+        const L_mH = parseFloat(lSlider.value);
+        const L = L_mH * 1e-3;   // mH -> H
+        const tau = L / R;        // Time constant (seconds)
+        return { Vm, f, R, L, tau, L_mH };
+    }
+
+    // Update left-side value displays
+    function updateParamDisplays() {
+        const { Vm, f, R, L_mH, tau } = getParams();
+        vmDisplay.innerText = Vm.toFixed(2) + " V";
+        fDisplay.innerText = f.toFixed(1) + " Hz";
+        rDisplay.innerText = R.toFixed(0) + " Ω";
+        lDisplay.innerText = L_mH.toFixed(0) + " mH";
+    }
+
+    // Generate time axis (seconds) showing PERIODS periods
+    function generateTimeAxis(f) {
+        const T = 1 / f;
+        const tMax = PERIODS * T;
+        const dt = tMax / (SAMPLE_POINTS - 1);
+        const times = [];
+        for (let i = 0; i < SAMPLE_POINTS; i++) {
+            times.push(i * dt);
+        }
+        return times;
+    }
+
+    /**
+     * Precisely compute RL circuit response to 50% duty cycle square wave (inductor current)
+     * Uses piecewise analytical formula: based on starting current of each charge/discharge interval,
+     * computes the exponential solution at any time within that interval.
+     * @param {number[]} times Time array (seconds)
+     * @param {number} Vm Square wave high-level amplitude (V)
+     * @param {number} f Frequency (Hz)
+     * @param {number} R Resistance (Ω)
+     * @param {number} L Inductance (H)
+     * @returns { v_in: number[], i_L_mA: number[] } Input square wave voltage sequence and inductor current sequence (mA)
+     */
+    function computeRLResponse(times, Vm, f, R, L) {
+        const T = 1 / f;                // Period
+        const halfT = T / 2;            // High-level duration
+        const tau = L / R;              // Time constant
+        const Imax_A = Vm / R;          // Steady-state maximum current (A)
+        const Imax_mA = Imax_A * 1000;  // Steady-state maximum current (mA)
+
+        if (tau === 0) return { v_in: new Array(times.length).fill(0), i_L_mA: new Array(times.length).fill(0) };
+
+        const cycles = PERIODS;
+        const events = [];
+        let currentTime = 0;
+        let currentCurrent_A = 0;     // i_L(0) = 0 (A)
+        events.push({ time: currentTime, i_start_A: currentCurrent_A, target_A: Imax_A, isCharging: true });
+
+        for (let i = 0; i < cycles; i++) {
+            const t_start_charge = i * T;
+            const t_end_charge = t_start_charge + halfT;
+            const t_start_discharge = t_end_charge;
+            const t_end_discharge = (i+1) * T;
+
+            // Current at end of charging phase (A)
+            const i_after_charge_A = Imax_A + (currentCurrent_A - Imax_A) * Math.exp(-halfT / tau);
+            events.push({ time: t_end_charge, i_start_A: i_after_charge_A, target_A: 0, isCharging: false });
+
+            // Current at end of discharging phase (A)
+            const i_after_discharge_A = 0 + (i_after_charge_A - 0) * Math.exp(-halfT / tau);
+            currentCurrent_A = i_after_discharge_A;
+            if (i < cycles - 1) {
+                events.push({ time: t_end_discharge, i_start_A: currentCurrent_A, target_A: Imax_A, isCharging: true });
+            } else {
+                events.push({ time: t_end_discharge, i_start_A: currentCurrent_A, target_A: Imax_A, isCharging: true });
+            }
+        }
+
+        const v_in = new Array(times.length);
+        const i_L_mA = new Array(times.length);
+
+        function getSquareVoltage(t) {
+            const t_mod = t % T;
+            return (t_mod < halfT) ? Vm : 0;
+        }
+
+        let eventIdx = 0;
+        for (let i = 0; i < times.length; i++) {
+            const t = times[i];
+            v_in[i] = getSquareVoltage(t);
+
+            while (eventIdx + 1 < events.length && events[eventIdx + 1].time <= t) {
+                eventIdx++;
+            }
+            const ev = events[eventIdx];
+            const dt = t - ev.time;
+            const target_A = ev.target_A;
+            const startI_A = ev.i_start_A;
+            let iL_A = target_A + (startI_A - target_A) * Math.exp(-dt / tau);
+            if (Math.abs(iL_A) < 1e-9) iL_A = 0;
+            if (iL_A > Imax_A + 1e-9) iL_A = Imax_A;
+            // Convert to mA
+            i_L_mA[i] = iL_A * 1000;
+        }
+
+        return { v_in, i_L_mA };
+    }
+
+    // Helper function: get y-axis max/min from data arrays (with margin)
+    function getYAxisMax(dataArrays) {
+        let maxVal = -Infinity;
+        let minVal = Infinity;
+        for (let arr of dataArrays) {
+            for (let val of arr) {
+                if (val > maxVal) maxVal = val;
+                if (val < minVal) minVal = val;
+            }
+        }
+        if (maxVal === minVal) {
+            maxVal = maxVal + 0.1;
+            minVal = minVal - 0.1;
+        }
+        const margin = (maxVal - minVal) * 0.1;
+        let upper = maxVal + margin;
+        let lower = minVal - margin;
+        if (lower > 0) lower = 0;
+        if (upper < 0) upper = 0;
+        const range = Math.max(Math.abs(upper), Math.abs(lower));
+        if (range > 0) {
+            upper = Math.max(upper, range * 1.1);
+            lower = Math.min(lower, -range * 1.1);
+        }
+        return { max: upper, min: lower };
+    }
+
+    // Update charts
+    function updateCharts() {
+        const { Vm, f, R, L, tau, L_mH } = getParams();
+        updateParamDisplays();
+
+        const times = generateTimeAxis(f);
+        const { v_in, i_L_mA } = computeRLResponse(times, Vm, f, R, L);
+
+        const vinPoints = times.map((t, idx) => ({ x: t, y: v_in[idx] }));
+        const iLPoints = times.map((t, idx) => ({ x: t, y: i_L_mA[idx] }));
+
+        // Y-axis range: voltage 0~Vm, current 0~Imax_mA, with margin
+        const Imax_mA = (Vm / R) * 1000;
+        const yMinVoltage = -0.2;
+        const yMaxVoltage = Vm + 0.2;
+        const yMinCurrent = -Imax_mA * 0.1;
+        const yMaxCurrent = Imax_mA * 1.1;
+        // Merge ranges, take max/min of voltage and current
+        const yMin = Math.min(yMinVoltage, yMinCurrent);
+        const yMax = Math.max(yMaxVoltage, yMaxCurrent);
+
+        const commonOptions = (yMin, yMax) => ({
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            let val = context.raw.y;
+                            if (label.includes('Current')) {
+                                return `${label}: ${val.toFixed(2)} mA @ t = ${context.raw.x.toFixed(4)} s`;
+                            } else {
+                                return `${label}: ${val.toFixed(3)} V @ t = ${context.raw.x.toFixed(4)} s`;
+                            }
+                        }
+                    },
+                    backgroundColor: 'rgba(0,0,0,0.7)',
+                },
+                legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } } }
+            },
+            scales: {
+                x: {
+                    type: 'linear',
+                    title: { display: true, text: 'Time t (s)', font: { weight: 'bold', size: 11 } },
+                    ticks: { callback: (val) => val.toFixed(3) + 's', maxTicksLimit: 6 },
+                    min: 0,
+                    max: times[times.length-1],
+                    grid: { color: '#eef2ff' }
+                },
+                y: {
+                    title: { display: true, text: 'Amplitude (V or mA)', font: { weight: 'bold', size: 11 } },
+                    min: yMin,
+                    max: yMax,
+                    ticks: { callback: (val) => val.toFixed(1) },
+                    grid: { color: '#eef2ff' }
+                }
+            },
+            elements: { point: { radius: 0, hitRadius: 6, hoverRadius: 3 }, line: { tension: 0.2, borderWidth: 2.2 } }
+        });
+
+        if (chart) {
+            chart.data.datasets[0].data = vinPoints;
+            chart.data.datasets[1].data = iLPoints;
+            chart.options.scales.y.min = yMin;
+            chart.options.scales.y.max = yMax;
+            chart.options.scales.x.max = times[times.length-1];
+            chart.update();
+        } else {
+            chart = new Chart(canvas, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Input Square Wave v_in(t) (V)',
+                            data: vinPoints,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2.2,
+                            pointRadius: 0,
+                            tension: 0,
+                            stepped: 'before'
+                        },
+                        {
+                            label: 'Inductor Current i_L(t) (mA)',
+                            data: iLPoints,
+                            borderColor: '#f97316',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2.5,
+                            pointRadius: 0,
+                            tension: 0.2,
+                            borderDash: [5, 3]
+                        }
+                    ]
+                },
+                options: commonOptions(yMin, yMax)
+            });
+        }
+    }
+
+    // Reset parameters
+    function resetParams() {
+        vmSlider.value = DEFAULTS.Vm;
+        fSlider.value = DEFAULTS.f;
+        rSlider.value = DEFAULTS.R_ohm;
+        lSlider.value = DEFAULTS.L_mH;
+        updateCharts();
+    }
+
+    // Event binding
+    function bindEvents() {
+        vmSlider.addEventListener('input', () => updateCharts());
+        fSlider.addEventListener('input', () => updateCharts());
+        rSlider.addEventListener('input', () => updateCharts());
+        lSlider.addEventListener('input', () => updateCharts());
+        resetBtn.addEventListener('click', () => resetParams());
+        window.addEventListener('resize', () => {
+            if (chart) chart.resize();
+        });
+    }
+
+    // Initialize: render charts + KaTeX
+    function init() {
+        bindEvents();
+        updateCharts();
+        window.addEventListener('load', function() {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            } else {
+                console.warn('KaTeX auto-render not loaded');
+            }
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>

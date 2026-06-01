@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Superposition Theorem | Decomposition and Synthesis of Multi-Source Linear Circuits</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #2563eb;
+            transform: scale(1.15);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15);
+        }
+        .tab-btn {
+            transition: all 0.2s ease;
+        }
+        .tab-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px -2px rgba(0,0,0,0.1);
+        }
+        .tab-btn.active {
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.4);
+            transform: scale(1.03);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- Back to Home button -->
+    <div class="flex justify-start mb-4">
+        <a href="../index.html"
+        class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Home
+        </a>
+    </div>
+
+    <!-- Title section -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            Superposition Theorem: Decomposition and Synthesis of Multi-Source Linear Circuits
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            Linear circuit with voltage source \(U_s\) and current source \(I_s\) | Individual contributions | Superposition verification \(U_{out} = U_{out1} + U_{out2}\)
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left control panel -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- Parameter card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    Circuit Parameters
+                </h3>
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Voltage Source \(U_s\)</label>
+                        <span class="text-blue-600 font-mono" id="vs_display">24 V</span>
+                    </div>
+                    <input type="range" id="vs_slider" min="5" max="50" step="1" value="24" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1"><span>5 V</span><span>50 V</span></div>
+                </div>
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Current Source \(I_s\)</label>
+                        <span class="text-blue-600 font-mono" id="is_display">0.10 A</span>
+                    </div>
+                    <input type="range" id="is_slider" min="0.01" max="0.5" step="0.01" value="0.1" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1"><span>0.01 A</span><span>0.50 A</span></div>
+                </div>
+                <div class="border-t border-slate-100 my-3"></div>
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>\(R_1\) </label>
+                        <span class="text-blue-600 font-mono" id="r1_display">100 Ω</span>
+                    </div>
+                    <input type="range" id="r1_slider" min="10" max="1000" step="10" value="100" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1"><span>10 Ω</span><span>1000 Ω</span></div>
+                </div>
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>\(R_2\) </label>
+                        <span class="text-blue-600 font-mono" id="r2_display">200 Ω</span>
+                    </div>
+                    <input type="range" id="r2_slider" min="10" max="1000" step="10" value="200" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1"><span>10 Ω</span><span>1000 Ω</span></div>
+                </div>
+            </div>
+
+            <!-- View toggle -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-purple-500 rounded-full"></span>
+                    Analysis View
+                </h3>
+                <div class="flex flex-col gap-2">
+                    <button id="tabVs" class="tab-btn active py-2.5 px-4 rounded-full text-sm font-bold bg-blue-500 text-white">\(U_s\) acting alone</button>
+                    <button id="tabIs" class="tab-btn py-2.5 px-4 rounded-full text-sm font-bold bg-orange-400 text-white">\(I_s\) acting alone</button>
+                    <button id="tabSuper" class="tab-btn py-2.5 px-4 rounded-full text-sm font-bold bg-green-500 text-white">Superposition result</button>
+                </div>
+            </div>
+
+            <!-- Value display card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-amber-500 rounded-full"></span>
+                    Output Voltage \(U_{out}\) (Voltage between a and b)
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center p-2 bg-blue-50 rounded-lg">
+                        <span class="text-sm text-blue-700 font-semibold">\(U_{out1}\) (\(U_s\) contribution)</span>
+                        <span class="font-mono font-bold text-blue-600 text-lg" id="vout1_display">0.00 V</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-orange-50 rounded-lg">
+                        <span class="text-sm text-orange-700 font-semibold">\(U_{out2}\) (\(I_s\) contribution)</span>
+                        <span class="font-mono font-bold text-orange-500 text-lg" id="vout2_display">0.00 V</span>
+                    </div>
+                    <div class="border-t border-slate-100"></div>
+                    <div class="flex justify-between items-center p-2 bg-green-50 rounded-lg">
+                        <span class="text-sm text-green-700 font-semibold">\(U_{out}\) (Total)</span>
+                        <span class="font-mono font-bold text-green-600 text-lg" id="vout_total_display">0.00 V</span>
+                    </div>
+                    <div class="text-center mt-2">
+                        <span class="text-xs font-mono text-slate-500" id="verification_text">\(U_out\)(total) = \(U_out1\) + \(U_out2\) = 0.00 V</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right chart area -->
+        <div class="lg:col-span-8 space-y-5">
+            <!-- Main chart -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="flex flex-wrap justify-between items-center mb-3 px-2">
+                    <div class="flex items-center gap-4 text-sm">
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-3 rounded-sm" style="background:#3b82f6;"></div><span class="font-medium">\(U_s\) contribution \(U_{out1}\)</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-3 rounded-sm" style="background:#f97316;"></div><span class="font-medium">\(I_s\) contribution \(U_{out2}\)</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-3 rounded-sm" style="background:#22c55e;"></div><span class="font-medium">Total \(U_{out}\)</span></div>
+                    </div>
+                </div>
+                <div class="relative">
+                    <canvas id="mainChart" width="700" height="350" style="width:100%; height:auto; max-height:380px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-2">
+                    Superposition Theorem Verification: Total Response = Sum of Individual Independent Source Contributions
+                </div>
+            </div>
+
+            <!-- Circuit diagrams -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-blue-700 text-sm mb-2">\(U_s\) acting alone</h4>
+                    <div class="bg-slate-50 rounded-lg p-2 flex items-center justify-center">
+                        <img src="./img/superposition-Us.jpg" alt="U_s acting alone" class="max-w-full h-auto rounded-lg">
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-orange-600 text-sm mb-2">\(I_s\) acting alone</h4>
+                    <div class="bg-slate-50 rounded-lg p-2 flex items-center justify-center">
+                        <img src="./img/superposition-Is.jpg" alt="I_s acting alone" class="max-w-full h-auto rounded-lg">
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-green-600 text-sm mb-2">Complete Circuit (Superposition)</h4>
+                    <div class="bg-slate-50 rounded-lg p-2 flex items-center justify-center">
+                        <img src="./img/superposition-origin.jpg" alt="Complete circuit" class="max-w-full h-auto rounded-lg">
+                    </div>
+                    <p class="text-sm text-slate-600 text-center mt-2">Output voltage \(U_{out}\) (Voltage between a and b)</p>
+                </div>
+            </div>
+
+            <!-- Theory description -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">Theoretical Basis</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        In a linear circuit, the response (voltage or current) at any point equals the sum of the responses produced by each independent source acting alone.<br>
+                        When \(U_s\) acts alone, \(I_s\) is open-circuited; when \(I_s\) acts alone, \(U_s\) is short-circuited.<br>
+                        \(U_{out1} = U_s \cdot \frac{R_2}{R1 + R_2}\)<br>
+                        \(U_{out2} = I_s \cdot (R_1 \parallel R_2)\)
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">Superposition Properties</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Zeroing a voltage source -> replace with a short circuit (wire).<br>
+                        Zeroing a current source -> replace with an open circuit (disconnection).<br>
+                        The superposition theorem applies only to linear circuits (linear resistors, linear dependent sources, independent sources).<br>
+                        Power cannot be directly superposed (since power is a quadratic function of voltage/current).
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // DOM elements
+    const vsSlider = document.getElementById('vs_slider');
+    const isSlider = document.getElementById('is_slider');
+    const r1Slider = document.getElementById('r1_slider');
+    const r2Slider = document.getElementById('r2_slider');
+    const tabVs = document.getElementById('tabVs');
+    const tabIs = document.getElementById('tabIs');
+    const tabSuper = document.getElementById('tabSuper');
+
+    const vsDisplay = document.getElementById('vs_display');
+    const isDisplay = document.getElementById('is_display');
+    const r1Display = document.getElementById('r1_display');
+    const r2Display = document.getElementById('r2_display');
+    const vout1Display = document.getElementById('vout1_display');
+    const vout2Display = document.getElementById('vout2_display');
+    const voutTotalDisplay = document.getElementById('vout_total_display');
+    const verificationText = document.getElementById('verification_text');
+    const viewTitle = document.getElementById('view_title');
+    const viewDetail = document.getElementById('view_detail');
+
+    const canvas = document.getElementById('mainChart');
+    let chartInstance = null;
+    let currentTab = 'vs'; // 'vs', 'is', 'super'
+
+    function getParams() {
+        return {
+            Vs: parseFloat(vsSlider.value),
+            Is: parseFloat(isSlider.value),
+            R1: parseFloat(r1Slider.value),
+            R2: parseFloat(r2Slider.value)
+        };
+    }
+
+    // parallel helper
+    function par(a, b) {
+        if (a <= 0 || b <= 0) return 0;
+        return (a * b) / (a + b);
+    }
+
+    function computeAll(Vs, Is, R1, R2) {
+        // U_s alone: U_s -> R1 -> R2 -> GND, output across R2
+        const Vout1 = Vs * R2 / (R1 + R2);
+
+        // I_s alone: I_s across R1||R2
+        const Req = par(R1, R2);
+        const Vout2 = Is * Req;
+
+        const Vout_total = Vout1 + Vout2;
+
+        // Branch currents for full circuit
+        const Gsum = 1/R1 + 1/R2;
+        const Va = (Vs/R1 + Is) / Gsum;
+        const I_R1 = (Vs - Va) / R1;
+        const I_R2 = Va / R2;
+        const Vout_full = Va;
+
+        return { Vout1, Vout2, Vout_total, Vout_full, I_R1, I_R2 };
+    }
+
+    function updateDisplay() {
+        const { Vs, Is, R1, R2 } = getParams();
+        const c = computeAll(Vs, Is, R1, R2);
+
+        vsDisplay.innerText = Vs.toFixed(1) + ' V';
+        isDisplay.innerText = Is.toFixed(2) + ' A';
+        r1Display.innerText = R1 + ' Ω';
+        r2Display.innerText = R2 + ' Ω';
+
+        vout1Display.innerText = c.Vout1.toFixed(3) + ' V';
+        vout2Display.innerText = c.Vout2.toFixed(3) + ' V';
+        voutTotalDisplay.innerText = c.Vout_total.toFixed(3) + ' V';
+        verificationText.innerText = 'U_out(total) = ' + c.Vout1.toFixed(3) + ' + ' + c.Vout2.toFixed(3) + ' = ' + c.Vout_total.toFixed(3) + ' V';
+
+        updateChart(c);
+    }
+
+    function updateChart(c) {
+        const options = {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            return ctx.dataset.label + ': ' + ctx.raw.toFixed(3) + ' V';
+                        }
+                    },
+                    backgroundColor: 'rgba(0,0,0,0.7)'
+                },
+                legend: {
+                    position: 'top',
+                    labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } }
+                }
+            },
+            scales: {
+                x: {
+                    title: { display: true, text: 'Output Voltage Contribution', font: { weight: 'bold', size: 12 } },
+                    grid: { color: '#eef2ff' }
+                },
+                y: {
+                    title: { display: true, text: 'Voltage (V)', font: { weight: 'bold', size: 11 } },
+                    min: 0,
+                    max: Math.max(Math.abs(c.Vout1) + Math.abs(c.Vout2) + 1, 5),
+                    ticks: { callback: v => v.toFixed(1) + ' V' },
+                    grid: { color: '#eef2ff' }
+                }
+            }
+        };
+
+        // Stack Vout1 and Vout2 for the total bar
+        const datasets = [
+            {
+                label: 'U_s contribution U_out1',
+                data: [c.Vout1, 0, c.Vout1],
+                backgroundColor: '#3b82f6',
+                borderColor: '#3b82f6',
+                borderWidth: 1,
+                borderRadius: 6,
+                barPercentage: 0.6,
+                categoryPercentage: 0.7,
+                stack: 'total',
+                order: 1
+            },
+            {
+                label: 'I_s contribution U_out2',
+                data: [0, c.Vout2, c.Vout2],
+                backgroundColor: '#f97316',
+                borderColor: '#f97316',
+                borderWidth: 1,
+                borderRadius: 6,
+                barPercentage: 0.6,
+                categoryPercentage: 0.7,
+                stack: 'total',
+                order: 1
+            },
+            {
+                label: 'Total U_out',
+                data: [null, null, c.Vout_total],
+                backgroundColor: 'rgba(34,197,94,0.15)',
+                borderColor: '#22c55e',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                borderRadius: 6,
+                barPercentage: 0.6,
+                categoryPercentage: 0.7,
+                order: 2
+            }
+        ];
+
+        const labels = ['U_s acting alone', 'I_s acting alone', 'Superposition result'];
+
+        if (chartInstance) {
+            chartInstance.data.datasets[0].data = [c.Vout1, 0, c.Vout1];
+            chartInstance.data.datasets[1].data = [0, c.Vout2, c.Vout2];
+            chartInstance.data.datasets[2].data = [null, null, c.Vout_total];
+            chartInstance.options.scales.y.max = Math.max(Math.abs(c.Vout1) + Math.abs(c.Vout2) + 1, 5);
+            chartInstance.update();
+        } else {
+            chartInstance = new Chart(canvas, {
+                type: 'bar',
+                data: { labels, datasets },
+                options: options
+            });
+        }
+
+        // Highlight active tab bar
+        const totalBar = c.Vout1 + c.Vout2;
+    }
+
+    function switchTab(tab) {
+        currentTab = tab;
+        // Reset all buttons
+        tabVs.classList.remove('active');
+        tabVs.classList.remove('bg-blue-600');
+        tabVs.classList.add('bg-blue-400');
+        tabIs.classList.remove('active');
+        tabIs.classList.remove('bg-orange-500');
+        tabIs.classList.add('bg-orange-300');
+        tabSuper.classList.remove('active');
+        tabSuper.classList.remove('bg-green-600');
+        tabSuper.classList.add('bg-green-400');
+
+        if (tab === 'vs') {
+            tabVs.classList.add('active');
+            tabVs.classList.remove('bg-blue-400');
+            tabVs.classList.add('bg-blue-600');
+            viewTitle.innerText = 'U_s acting alone';
+            viewDetail.innerText = 'Voltage source U_s is connected to the circuit, current source I_s is zeroed (open-circuited). Only U_s produces output.';
+        } else if (tab === 'is') {
+            tabIs.classList.add('active');
+            tabIs.classList.remove('bg-orange-300');
+            tabIs.classList.add('bg-orange-500');
+            viewTitle.innerText = 'I_s acting alone';
+            viewDetail.innerText = 'Current source I_s is connected to the circuit, voltage source U_s is zeroed (short-circuited). Only I_s produces output.';
+        } else {
+            tabSuper.classList.add('active');
+            tabSuper.classList.remove('bg-green-400');
+            tabSuper.classList.add('bg-green-600');
+            viewTitle.innerText = 'Superposition result';
+            viewDetail.innerText = 'U_s and I_s both active simultaneously, total output = U_out1 + U_out2. Verifies the superposition theorem.';
+        }
+        updateDisplay();
+    }
+
+    function bindEvents() {
+        vsSlider.addEventListener('input', updateDisplay);
+        isSlider.addEventListener('input', updateDisplay);
+        r1Slider.addEventListener('input', updateDisplay);
+        r2Slider.addEventListener('input', updateDisplay);
+
+        tabVs.addEventListener('click', () => switchTab('vs'));
+        tabIs.addEventListener('click', () => switchTab('is'));
+        tabSuper.addEventListener('click', () => switchTab('super'));
+        window.addEventListener('resize', () => {
+            if (chartInstance) chartInstance.resize();
+        });
+    }
+
+    function init() {
+        bindEvents();
+        updateDisplay();
+        window.addEventListener('load', function() {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>

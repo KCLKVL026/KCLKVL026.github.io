@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unit 02: Sinusoidal Steady-State Analysis - Fundamentals of Circuit Analysis</title>
+<link rel="stylesheet" href="./css/back-button.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<style>
+  :root {
+    --font-body: 'Noto Sans SC', 'Inter', -apple-system, sans-serif;
+    --font-mono: 'SF Mono', 'Fira Code', Consolas, monospace;
+    --c-bg: #fefcfa;
+    --c-surface: #ffffff;
+    --c-sidebar: rgba(255,255,255,0.85);
+    --c-text: #3d3d3d;
+    --c-text-dim: #8a8a8a;
+    --c-text-head: #2c2c2c;
+    --c-border: #ede8e3;
+    --c-lavender: #e8e0f0;
+    --c-lavender-deep: #9b8ec4;
+    --c-peach: #fde8d8;
+    --c-peach-deep: #e8956a;
+    --c-sky: #dce8f8;
+    --c-sky-deep: #6a9fd8;
+    --c-mint: #daf0e8;
+    --c-mint-deep: #5aaf8a;
+    --c-rose: #f8dce0;
+    --c-rose-deep: #d87088;
+    --c-amber: #f8ecd0;
+    --c-amber-deep: #c89a40;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --sidebar-w: 260px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --c-bg: #1a1a24;
+      --c-surface: #24243a;
+      --c-sidebar: rgba(26,26,36,0.92);
+      --c-text: #d4d4d4;
+      --c-text-dim: #7a7a8e;
+      --c-text-head: #eee;
+      --c-border: #3a3a52;
+      --c-lavender: #2e2840;
+      --c-lavender-deep: #b8a8e0;
+      --c-peach: #3a2820;
+      --c-peach-deep: #f0a878;
+      --c-sky: #1e2838;
+      --c-sky-deep: #88b8f0;
+      --c-mint: #1e3028;
+      --c-mint-deep: #70d0a0;
+      --c-rose: #382028;
+      --c-rose-deep: #f08898;
+      --c-amber: #302818;
+      --c-amber-deep: #e8c060;
+    }
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-body);
+    color: var(--c-text);
+    background: var(--c-bg);
+    background-image:
+      radial-gradient(ellipse 600px 400px at 10% 20%, rgba(232,224,240,0.5) 0%, transparent 70%),
+      radial-gradient(ellipse 500px 500px at 90% 70%, rgba(253,232,216,0.4) 0%, transparent 70%),
+      radial-gradient(ellipse 400px 300px at 50% 90%, rgba(220,232,248,0.3) 0%, transparent 70%);
+    font-size: 15.5px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    position: fixed;
+    top: 1.5rem; left: 1.5rem; bottom: 1.5rem;
+    width: var(--sidebar-w);
+    background: var(--c-sidebar);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.75rem 1.25rem;
+    overflow-y: auto;
+    z-index: 100;
+    transition: transform 0.35s cubic-bezier(.4,0,.2,1);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+  }
+  .sidebar-brand {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--c-lavender-deep);
+    margin-bottom: 0.5rem;
+  }
+  .sidebar-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--c-border);
+  }
+  /* ── Sidebar Tree Nav ── */
+  .sidebar nav {
+    font-size: 0.82rem;
+  }
+  .sidebar nav ul {
+    list-style: none;
+    margin: 0; padding: 0;
+  }
+  .sidebar nav ul ul {
+    padding-left: 0;
+    margin-left: 0.6rem;
+    border-left: 1px dashed var(--c-border);
+  }
+  .sidebar nav li {
+    position: relative;
+    margin-bottom: 1px;
+  }
+  .sidebar nav a {
+    display: block;
+    padding: 0.3rem 0.55rem;
+    color: var(--c-text-dim);
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s;
+    line-height: 1.55;
+  }
+  .sidebar nav a:hover {
+    color: var(--c-text-head);
+    background: var(--c-lavender);
+  }
+  .sidebar nav a.active {
+    color: var(--c-lavender-deep);
+    background: var(--c-lavender);
+    font-weight: 600;
+  }
+  .sidebar nav .nav-chapter {
+    font-weight: 600;
+    color: var(--c-text-head);
+    font-size: 0.83rem;
+    padding: 0.35rem 0.55rem;
+    margin-top: 0.3rem;
+    cursor: pointer;
+    position: relative;
+    padding-right: 1.6rem;
+  }
+  .sidebar nav .nav-chapter::after {
+    content: '\25BE';
+    position: absolute;
+    right: 0.55rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.7rem;
+    color: var(--c-text-dim);
+    transition: transform 0.25s ease;
+  }
+  .sidebar nav li.collapsed > .nav-chapter::after {
+    transform: translateY(-50%) rotate(-90deg);
+  }
+  .sidebar nav li.collapsed > ul {
+    display: none;
+  }
+  .sidebar nav .nav-chapter:first-child { margin-top: 0; }
+  .sidebar nav .nav-section {
+    font-size: 0.78rem;
+    padding-left: 0.55rem;
+  }
+  .sidebar nav .nav-sub {
+    font-size: 0.75rem;
+    padding-left: 0.35rem;
+    color: var(--c-text-dim);
+  }
+
+  /* ── Main ── */
+  .main {
+    margin-left: calc(var(--sidebar-w) + 3rem);
+    padding: 2.5rem 0;
+    max-width: 780px;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    position: relative;
+    background: linear-gradient(135deg, var(--c-lavender) 0%, var(--c-sky) 50%, var(--c-peach) 100%);
+    border-radius: var(--radius);
+    padding: 3rem 2.5rem 2.5rem;
+    margin-bottom: 3rem;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 50%;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -30px; left: 30%;
+    width: 100px; height: 100px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 50%;
+  }
+  .hero h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    position: relative;
+    z-index: 1;
+  }
+  .hero .sub {
+    color: var(--c-text-dim);
+    font-size: 0.95rem;
+    margin-top: 0.4rem;
+    position: relative;
+    z-index: 1;
+  }
+  .hero .tags {
+    margin-top: 1rem;
+    position: relative;
+    z-index: 1;
+  }
+  .tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.6);
+    backdrop-filter: blur(8px);
+    padding: 0.2rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.73rem;
+    font-weight: 600;
+    color: var(--c-text);
+    margin-right: 0.4rem;
+    border: 1px solid rgba(255,255,255,0.5);
+  }
+
+  /* ── Tree Card ── */
+  .tree-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.75rem 2rem;
+    margin-bottom: 3rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+  }
+  .tree-card h2 {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--c-lavender-deep);
+    margin-bottom: 1rem;
+  }
+  .tree-card pre {
+    font-family: var(--font-mono);
+    font-size: 0.83rem;
+    line-height: 1.9;
+    color: var(--c-text-dim);
+    overflow-x: auto;
+  }
+
+  /* ── Section ── */
+  section { margin-bottom: 2.5rem; }
+
+  .section-label {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    margin-bottom: 0.6rem;
+  }
+  .section-label.ch5 { background: var(--c-lavender); color: var(--c-lavender-deep); }
+  .section-label.ch6 { background: var(--c-peach); color: var(--c-peach-deep); }
+
+  h2.sec-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    margin-bottom: 1.25rem;
+  }
+  h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--c-text-head);
+    margin: 1.75rem 0 0.75rem;
+  }
+  h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--c-text);
+    margin: 1.25rem 0 0.5rem;
+  }
+  p { margin-bottom: 0.7rem; }
+  ul, ol { margin: 0.4rem 0 1rem 1.2rem; }
+  li { margin-bottom: 0.3rem; }
+  li ul, li ol { margin-top: 0.25rem; margin-bottom: 0; }
+  strong { font-weight: 600; }
+
+  /* ── Param Cards ── */
+  .param-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.25rem 0;
+  }
+  .param-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  }
+  .param-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  }
+  .param-card .badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .param-card.z-card .badge { background: var(--c-lavender); color: var(--c-lavender-deep); }
+  .param-card.y-card .badge { background: var(--c-sky); color: var(--c-sky-deep); }
+  .param-card.t-card .badge { background: var(--c-peach); color: var(--c-peach-deep); }
+  .param-card.h-card .badge { background: var(--c-mint); color: var(--c-mint-deep); }
+  .param-card.p-card .badge { background: var(--c-rose); color: var(--c-rose-deep); }
+  .param-card.a-card .badge { background: var(--c-amber); color: var(--c-amber-deep); }
+
+  .param-card .card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+    margin-bottom: 0.6rem;
+  }
+  .param-card .desc {
+    font-size: 0.83rem;
+    color: var(--c-text-dim);
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
+  }
+  .param-card .formula-mini {
+    background: var(--c-bg);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.88rem;
+    overflow-x: auto;
+  }
+  .param-card .conditions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .param-card .cond-chip {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    background: var(--c-bg);
+    border: 1px solid var(--c-border);
+    color: var(--c-text-dim);
+  }
+
+  /* ── Full-width param detail ── */
+  .param-detail {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.75rem 2rem;
+    margin: 1.25rem 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  }
+  .param-detail .detail-head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  .param-detail .detail-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    flex-shrink: 0;
+  }
+  .param-detail .detail-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--c-text-head);
+  }
+  .param-detail .formula-block {
+    background: var(--c-bg);
+    border-radius: var(--radius-sm);
+    padding: 1.25rem 1.5rem;
+    margin: 0.75rem 0;
+    overflow-x: auto;
+    border-left: 3px solid var(--c-border);
+  }
+  .param-detail .meaning-list {
+    list-style: none;
+    margin: 0.75rem 0 0 0;
+    padding: 0;
+  }
+  .param-detail .meaning-list li {
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+  }
+  .param-detail .meaning-list li:nth-child(odd) { background: var(--c-bg); }
+  .param-detail .cond-row {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+  .param-detail .cond-pill {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.35rem 0.8rem;
+    border-radius: 20px;
+    border: 1px solid var(--c-border);
+  }
+  .z-accent { background: var(--c-lavender); color: var(--c-lavender-deep); border-color: var(--c-lavender) !important; }
+  .y-accent { background: var(--c-sky); color: var(--c-sky-deep); border-color: var(--c-sky) !important; }
+  .t-accent { background: var(--c-peach); color: var(--c-peach-deep); border-color: var(--c-peach) !important; }
+  .h-accent { background: var(--c-mint); color: var(--c-mint-deep); border-color: var(--c-mint) !important; }
+  .p-accent { background: var(--c-rose); color: var(--c-rose-deep); border-color: var(--c-rose) !important; }
+  .a-accent { background: var(--c-amber); color: var(--c-amber-deep); border-color: var(--c-amber) !important; }
+
+  /* ── Comparison Grid ── */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+  .compare-grid.compare-2col {
+    grid-template-columns: 1fr 1fr;
+  }
+  .compare-cell {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    text-align: center;
+    transition: transform 0.2s;
+  }
+  .compare-cell:hover { transform: translateY(-2px); }
+  .compare-cell .cell-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+  }
+  .compare-cell:nth-child(1) .cell-label { color: var(--c-lavender-deep); }
+  .compare-cell:nth-child(2) .cell-label { color: var(--c-sky-deep); }
+  .compare-cell:nth-child(3) .cell-label { color: var(--c-peach-deep); }
+  .compare-cell:nth-child(4) .cell-label { color: var(--c-mint-deep); }
+  .compare-cell .cell-letter {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+  .compare-cell:nth-child(1) { border-top: 3px solid var(--c-lavender-deep); }
+  .compare-cell:nth-child(2) { border-top: 3px solid var(--c-sky-deep); }
+  .compare-cell:nth-child(3) { border-top: 3px solid var(--c-peach-deep); }
+  .compare-cell:nth-child(4) { border-top: 3px solid var(--c-mint-deep); }
+  .compare-cell .cell-row {
+    font-size: 0.78rem;
+    color: var(--c-text-dim);
+    margin: 0.2rem 0;
+  }
+  .compare-cell .cell-row strong { color: var(--c-text); }
+
+  /* ── Connection cards ── */
+  .connect-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+  .connect-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.25rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+  }
+  .connect-card .cc-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+    color: var(--c-text-head);
+  }
+  .connect-card .cc-desc {
+    font-size: 0.8rem;
+    color: var(--c-text-dim);
+    margin-bottom: 0.4rem;
+  }
+  .connect-card .cc-formula {
+    font-size: 0.85rem;
+  }
+  .connect-card.full { grid-column: 1 / -1; }
+
+  /* ── Steps ── */
+  .step-flow {
+    display: flex;
+    gap: 0;
+    margin: 1.25rem 0;
+    align-items: stretch;
+  }
+  .step-item {
+    flex: 1;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    padding: 1.25rem 1rem;
+    text-align: center;
+    position: relative;
+    font-size: 0.85rem;
+  }
+  .step-item:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+  .step-item:last-child { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+  .step-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: -0.55rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0; height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-left: 8px solid var(--c-border);
+    z-index: 2;
+  }
+  .step-num {
+    width: 2rem; height: 2rem;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.5rem;
+  }
+  .step-item:nth-child(1) .step-num { background: var(--c-lavender-deep); }
+  .step-item:nth-child(2) .step-num { background: var(--c-sky-deep); }
+  .step-item:nth-child(3) .step-num { background: var(--c-peach-deep); }
+  .step-item:nth-child(4) .step-num { background: var(--c-mint-deep); }
+  .step-item:nth-child(5) .step-num { background: var(--c-rose-deep); }
+
+  /* ── Mobile ── */
+  .menu-btn {
+    display: none;
+    position: fixed;
+    top: 1rem; left: 1rem;
+    z-index: 200;
+    width: 44px; height: 44px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: 12px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    color: var(--c-text);
+  }
+  @media (max-width: 960px) {
+    .sidebar { transform: translateX(-110%); }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; padding: 1.5rem; padding-top: 4.5rem; }
+    .menu-btn { display: flex; align-items: center; justify-content: center; }
+    .param-grid, .connect-grid { grid-template-columns: 1fr; }
+    .compare-grid { grid-template-columns: 1fr 1fr; }
+    .step-flow { flex-direction: column; }
+    .step-item { border-radius: var(--radius-sm) !important; }
+    .step-item:not(:last-child)::after { display: none; }
+    .hero { padding: 2rem 1.5rem; }
+    .hero h1 { font-size: 1.5rem; }
+  }
+  @media print {
+    .sidebar, .menu-btn { display: none; }
+    .main { margin-left: 0; padding: 1rem; }
+    .hero { background: #f0f0f0 !important; }
+    .param-card:hover { transform: none; }
+  }
+  a:focus-visible, button:focus-visible {
+    outline: 3px solid var(--c-lavender-deep);
+    outline-offset: 2px;
+  }
+</style>
+</head>
+<body>
+
+<button class="menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('open')" aria-label="Toggle nav">&#9776;</button>
+
+<aside class="sidebar">
+  <div class="sidebar-brand">Fundamentals of Circuit Analysis</div>
+  <div class="sidebar-title">Unit 02: Sinusoidal Steady-State Analysis</div>
+  <nav>
+    <ul>
+      <li><a href="#overview">Knowledge Structure Overview</a></li>
+      <li>
+        <a href="#ch5-1" class="nav-chapter">5. Sinusoidal Steady-State Circuit Analysis</a>
+        <ul>
+          <li><a href="#ch5-1" class="nav-section">5.1 Basic Concepts of Sinusoidal Quantities</a></li>
+          <li><a href="#ch5-2" class="nav-section">5.2 Phasor Representation</a></li>
+          <li><a href="#ch5-3" class="nav-section">5.3 Phasor Form of Two Constraints</a></li>
+          <li><a href="#ch5-4" class="nav-section">5.4 Impedance and Admittance</a></li>
+          <li><a href="#ch5-5" class="nav-section">5.5 Phasor Method Analysis</a></li>
+          <li>
+            <a href="#ch5-6" class="nav-section">5.6 Power in Sinusoidal Circuits</a>
+            <ul>
+              <li><a href="#power-cards" class="nav-sub">Four Types of Power</a></li>
+              <li><a href="#power-factor" class="nav-sub">Power Factor Correction</a></li>
+              <li><a href="#max-power" class="nav-sub">Maximum Power Transfer</a></li>
+            </ul>
+          </li>
+          <li><a href="#ch5-7" class="nav-section">5.7 Frequency Response</a></li>
+          <li>
+            <a href="#ch5-8" class="nav-section">5.8 Resonance Circuits</a>
+            <ul>
+              <li><a href="#resonance-compare" class="nav-sub">Series vs. Parallel Resonance</a></li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="#ch6-1" class="nav-chapter">6. Coupled Inductors and Transformers</a>
+        <ul>
+          <li><a href="#ch6-1" class="nav-section">6.1 Coupled Inductors</a></li>
+          <li><a href="#ch6-2" class="nav-section">6.2 Circuits with Coupled Inductors</a></li>
+          <li><a href="#ch6-3" class="nav-section">6.3 Air-Core Transformers</a></li>
+          <li><a href="#ch6-4" class="nav-section">6.4 Ideal Transformers</a></li>
+        </ul>
+      </li>
+    </ul>
+  </nav>
+</aside>
+
+<main class="main">
+
+  <!-- Back to Home Button -->
+  <div class="back-btn-wrap">
+    <a href="index.html" class="back-btn">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+      </svg>
+      Back to Home
+    </a>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>Unit 02: Sinusoidal Steady-State Analysis</h1>
+    <p class="sub">Fundamentals of Circuit Analysis (2026) &middot; Chapters 5-6</p>
+    <div class="tags">
+      <span class="tag">Sinusoidal Steady-State</span>
+      <span class="tag">Phasor Method</span>
+      <span class="tag">Power</span>
+      <span class="tag">Resonance</span>
+      <span class="tag">Coupled Inductors</span>
+      <span class="tag">Transformers</span>
+    </div>
+  </div>
+
+  <!-- Tree -->
+  <div class="tree-card" id="overview">
+    <h2>Knowledge Structure Overview</h2>
+    <pre>
+Sinusoidal Steady-State Analysis
+&#9500;&#9472; 5. Sinusoidal Steady-State Circuit Analysis
+&#9474;   &#9500;&#9472; 5.1 Basic Concepts of Sinusoidal Quantities
+&#9474;   &#9474;   &#9500;&#9472; 5.1.1 Frequency and Period
+&#9474;   &#9474;   &#9500;&#9472; 5.1.2 Amplitude and RMS Value
+&#9474;   &#9474;   &#9492;&#9472; 5.1.3 Initial Phase
+&#9474;   &#9500;&#9472; 5.2 Phasor Representation of Sinusoidal Quantities
+&#9474;   &#9474;   &#9500;&#9472; 5.2.1 Complex Numbers and Operations
+&#9474;   &#9474;   &#9500;&#9472; 5.2.2 Concept of Phasors
+&#9474;   &#9474;   &#9500;&#9472; 5.2.3 Phasor Diagrams
+&#9474;   &#9474;   &#9492;&#9472; 5.2.4 Operational Properties of Phasors
+&#9474;   &#9500;&#9472; 5.3 Phasor Form of Two Constraints
+&#9474;   &#9474;   &#9500;&#9472; 5.3.1 Phasor Form of Kirchhoff's Laws
+&#9474;   &#9474;   &#9492;&#9472; 5.3.2 Phasor Form of Element V-I Relations
+&#9474;   &#9500;&#9472; 5.4 Impedance of Passive One-Port Networks
+&#9474;   &#9474;   &#9500;&#9472; 5.4.1 Concept of Impedance
+&#9474;   &#9474;   &#9500;&#9472; 5.4.2 Series and Parallel Impedance
+&#9474;   &#9474;   &#9492;&#9472; 5.4.3 Phasor Model of Circuits
+&#9474;   &#9500;&#9472; 5.5 Phasor Method Analysis of Sinusoidal Steady-State Circuits
+&#9474;   &#9474;   &#9500;&#9472; 5.5.1 Analysis of Simple AC Circuits
+&#9474;   &#9474;   &#9492;&#9472; 5.5.2 Mesh and Node Methods
+&#9474;   &#9500;&#9472; 5.6 Power in Sinusoidal AC Circuits
+&#9474;   &#9474;   &#9500;&#9472; 5.6.1 ~ 5.6.5 Four Types of Power
+&#9474;   &#9474;   &#9500;&#9472; 5.6.6 Power Factor Correction
+&#9474;   &#9474;   &#9492;&#9472; 5.6.7 Maximum Power Transfer
+&#9474;   &#9500;&#9472; 5.7 Circuit Frequency Response
+&#9474;   &#9474;   &#9500;&#9472; 5.7.1 Network Functions and Frequency Characteristics
+&#9474;   &#9474;   &#9500;&#9472; 5.7.2 RC Low-Pass Filter Circuit
+&#9474;   &#9474;   &#9492;&#9472; 5.7.3 RC High-Pass Filter Circuit
+&#9474;   &#9492;&#9472; 5.8 Resonance Circuits
+&#9474;       &#9500;&#9472; 5.8.1 Series Resonance
+&#9474;       &#9492;&#9472; 5.8.2 Parallel Resonance
+&#9492;&#9472; 6. Coupled Inductors and Ideal Transformers
+    &#9500;&#9472; 6.1 Coupled Inductors
+    &#9474;   &#9500;&#9472; 6.1.1 Mutual Inductance
+    &#9474;   &#9500;&#9472; 6.1.2 V-I Relations of Coupled Inductors
+    &#9474;   &#9500;&#9472; 6.1.3 Dot Convention
+    &#9474;   &#9492;&#9472; 6.1.4 Equivalent Circuit Models
+    &#9500;&#9472; 6.2 Analysis of Sinusoidal Steady-State Circuits with Coupled Inductors
+    &#9474;   &#9500;&#9472; 6.2.1 Direct Equation Method
+    &#9474;   &#9492;&#9472; 6.2.2 Decoupling Equivalent Analysis
+    &#9500;&#9472; 6.3 Air-Core Transformers
+    &#9492;&#9472; 6.4 Ideal Transformers
+        &#9500;&#9472; 6.4.1 Main Characteristics
+        &#9492;&#9472; 6.4.2 Circuit Analysis with Ideal Transformers</pre>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- Chapter 5: Sinusoidal Steady-State Circuit Analysis -->
+  <!-- ═══════════════════════════════════════════════════ -->
+
+  <!-- 5.1 Basic Concepts of Sinusoidal Quantities -->
+  <section id="ch5-1">
+    <span class="section-label ch5">Chapter 5</span>
+    <h2 class="sec-title">5.1 Basic Concepts of Sinusoidal Quantities</h2>
+
+    <h4>5.1.1 Frequency and Period</h4>
+    <ul>
+      <li><strong>Period T</strong>: The time required for a sinusoidal quantity to complete one cycle of periodic change, unit: second (s)</li>
+      <li><strong>Frequency f</strong>: The number of periodic cycles completed per unit time, $f = 1/T$, unit: Hertz (Hz)</li>
+      <li><strong>Angular Frequency &omega;</strong>: The rate of phase change of a sinusoidal quantity, $\omega = 2\pi f = 2\pi/T$, unit: radians/second (rad/s)</li>
+      <li><strong>Power Frequency</strong>: The standard frequency of power systems in China is 50Hz, i.e., $\omega = 100\pi \approx 314$ rad/s</li>
+    </ul>
+
+    <h4>5.1.2 Amplitude and RMS Value</h4>
+    <ul>
+      <li><strong>Instantaneous Value</strong>: $i(t) = I_m \sin(\omega t + \varphi)$</li>
+      <li><strong>Amplitude (Maximum Value)</strong> $I_m$: The maximum value of the sinusoidal quantity</li>
+      <li><strong>RMS Value (Effective Value)</strong>: The DC value that produces the same thermal effect as the sinusoidal quantity
+        $$I = \frac{I_m}{\sqrt{2}} \approx 0.707 I_m$$</li>
+      <li><strong>Significance of RMS</strong>: AC meter readings are typically RMS values; rated values of electrical equipment are also expressed in RMS</li>
+    </ul>
+
+    <h4>5.1.3 Initial Phase</h4>
+    <ul>
+      <li><strong>Phase</strong>: $\omega t + \varphi$, represents the state of a sinusoidal quantity at a given instant</li>
+      <li><strong>Initial Phase</strong> $\varphi$: The phase angle at $t=0$, $|\varphi| \leq \pi$</li>
+      <li><strong>Physical Meaning</strong>: Reflects the state of the sinusoidal quantity at the timing origin</li>
+      <li><strong>Phase Difference</strong>: The difference in initial phases between two sinusoidal quantities of the same frequency, $\varphi = \varphi_1 - \varphi_2$
+        <ul>
+          <li>$\varphi > 0$: u leads i (or i lags u)</li>
+          <li>$\varphi < 0$: u lags i (or i leads u)</li>
+          <li>$\varphi = 0$: u and i are in phase</li>
+          <li>$\varphi = \pi$: u and i are in opposite phase</li>
+        </ul>
+      </li>
+    </ul>
+  </section>
+
+  <!-- 5.2 Phasor Representation -->
+  <section id="ch5-2">
+    <span class="section-label ch5">Chapter 5</span>
+    <h2 class="sec-title">5.2 Phasor Representation of Sinusoidal Quantities</h2>
+
+    <h4>5.2.1 Complex Numbers and Operations</h4>
+    <ul>
+      <li><strong>Complex Number Representations</strong>:
+        <ul>
+          <li>Rectangular form: $A = a + jb$ ($j^2 = -1$)</li>
+          <li>Exponential form: $A = |A|e^{j\theta}$</li>
+          <li>Polar form: $A = |A|\angle\theta$</li>
+        </ul>
+      </li>
+      <li><strong>Basic Operations</strong>:
+        <ul>
+          <li>Addition/Subtraction: Add/subtract real parts and imaginary parts separately</li>
+          <li>Multiplication/Division: Multiply/divide magnitudes, add/subtract angles</li>
+          <li>Complex conjugate: $\bar{A} = a - jb = |A|\angle(-\theta)$</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h4>5.2.2 Concept of Phasors</h4>
+    <ul>
+      <li><strong>Definition</strong>: Using complex numbers to represent the amplitude (or RMS value) and initial phase of a sinusoidal quantity</li>
+      <li><strong>Amplitude Phasor</strong>: $\dot{I}_m = I_m e^{j\varphi} = I_m\angle\varphi$</li>
+      <li><strong>RMS Phasor</strong>: $\dot{I} = I e^{j\varphi} = I\angle\varphi$ (more commonly used in engineering)</li>
+      <li><strong>Correspondence</strong>: $i(t) = I_m \sin(\omega t + \varphi) \leftrightarrow \dot{I}_m = I_m\angle\varphi$</li>
+      <li><strong>Note</strong>: Phasors can only represent sinusoidal quantities of the same frequency; sinusoidal quantities of different frequencies cannot be represented by the same phasor</li>
+    </ul>
+
+    <h4>5.2.3 Phasor Diagrams</h4>
+    <ul>
+      <li><strong>Definition</strong>: A diagram representing phasors as directed line segments on the complex plane</li>
+      <li><strong>Drawing Method</strong>: Starting from the origin, length represents RMS value (or amplitude), angle represents initial phase</li>
+      <li><strong>Applications</strong>: Intuitively show phase relationships between sinusoidal quantities; assist in phasor addition and subtraction</li>
+    </ul>
+
+    <h4>5.2.4 Operational Properties of Phasors</h4>
+    <ul>
+      <li><strong>Time-domain differentiation corresponds to phasor multiplication</strong>: $\frac{d}{dt} \rightarrow j\omega$</li>
+      <li><strong>Time-domain integration corresponds to phasor division</strong>: $\int dt \rightarrow \frac{1}{j\omega}$</li>
+      <li><strong>Linear operations on same-frequency sinusoidal quantities</strong>: Can be performed directly using phasors</li>
+    </ul>
+  </section>
+
+  <!-- 5.3 Phasor Form of Two Constraints -->
+  <section id="ch5-3">
+    <span class="section-label ch5">Chapter 5</span>
+    <h2 class="sec-title">5.3 Phasor Form of Two Constraints</h2>
+
+    <h4>5.3.1 Phasor Form of Kirchhoff's Laws</h4>
+    <ul>
+      <li><strong>Phasor form of KCL</strong>: $\sum \dot{I} = 0$ (the sum of phasor currents entering a node is zero)</li>
+      <li><strong>Phasor form of KVL</strong>: $\sum \dot{U} = 0$ (the sum of phasor voltages around a loop is zero)</li>
+      <li><strong>Note</strong>: The phasor forms of KCL and KVL are identical in form to the DC circuit versions, but the operands are complex numbers</li>
+    </ul>
+
+    <h4>5.3.2 Phasor Form of Element V-I Relations</h4>
+    <div class="compare-grid">
+      <div class="compare-cell">
+        <div class="cell-label">Resistor R</div>
+        <div class="cell-letter">R</div>
+        <div class="cell-row">$\dot{U}_R = R\dot{I}_R$</div>
+        <div class="cell-row"><strong>Voltage and current are in phase</strong></div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">Inductor L</div>
+        <div class="cell-letter">L</div>
+        <div class="cell-row">$\dot{U}_L = j\omega L \cdot \dot{I}_L$</div>
+        <div class="cell-row"><strong>Voltage leads current by 90&deg;</strong></div>
+        <div class="cell-row">Inductive reactance $X_L = \omega L$</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">Capacitor C</div>
+        <div class="cell-letter">C</div>
+        <div class="cell-row">$\dot{U}_C = \frac{1}{j\omega C}\dot{I}_C$</div>
+        <div class="cell-row"><strong>Voltage lags current by 90&deg;</strong></div>
+        <div class="cell-row">Capacitive reactance $X_C = \frac{1}{\omega C}$</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5.4 Impedance of Passive One-Port Networks -->
+  <section id="ch5-4">
+    <span class="section-label ch5">Chapter 5</span>
+    <h2 class="sec-title">5.4 Impedance of Passive One-Port Networks</h2>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge z-accent">Impedance</span>
+        <span class="detail-title">5.4.1 Concept of Impedance</span>
+      </div>
+      <div class="formula-block">
+        $$Z = \frac{\dot{U}}{\dot{I}} = R + jX = |Z|\angle\varphi_z$$
+      </div>
+      <ul class="meaning-list">
+        <li>Resistance part (real): $R = |Z|\cos\varphi_z$</li>
+        <li>Reactance part (imaginary): $X = |Z|\sin\varphi_z$</li>
+        <li>Impedance magnitude: $|Z| = \sqrt{R^2 + X^2}$</li>
+        <li>Impedance angle: $\varphi_z = \arctan(X/R)$ (i.e., the angle by which voltage leads current)</li>
+      </ul>
+      <div class="cond-row">
+        <span class="cond-pill z-accent">Admittance: $Y = 1/Z = G + jB$</span>
+      </div>
+    </div>
+
+    <h4>5.4.2 Series and Parallel Impedance</h4>
+    <ul>
+      <li><strong>Series</strong>: $Z_{eq} = Z_1 + Z_2 + \cdots + Z_n$</li>
+      <li><strong>Parallel</strong>: $Y_{eq} = Y_1 + Y_2 + \cdots + Y_n$ (i.e., $\frac{1}{Z_{eq}} = \frac{1}{Z_1} + \frac{1}{Z_2} + \cdots + \frac{1}{Z_n}$)</li>
+      <li><strong>Voltage Divider Formula</strong>: $\dot{U}_k = \frac{Z_k}{Z_1+Z_2+\cdots+Z_n} \cdot \dot{U}$</li>
+      <li><strong>Current Divider Formula</strong>: $\dot{I}_k = \frac{Y_k}{Y_{eq}} \cdot \dot{I}$ (i.e., $\dot{I}_k = \frac{Z_{eq}}{Z_k} \cdot \dot{I}$)</li>
+    </ul>
+
+    <h4>5.4.3 Phasor Model of Circuits</h4>
+    <ul>
+      <li><strong>Construction Method</strong>: Replace each circuit element with its phasor model
+        <ul>
+          <li>Resistor &rarr; $R$</li>
+          <li>Inductor &rarr; $j\omega L$</li>
+          <li>Capacitor &rarr; $1/(j\omega C)$</li>
+          <li>Voltage source &rarr; $\dot{U}_s$, Current source &rarr; $\dot{I}_s$</li>
+        </ul>
+      </li>
+      <li><strong>Characteristic</strong>: All quantities in the phasor model are complex numbers; analysis methods are the same as for DC resistive circuits</li>
+    </ul>
+  </section>
+
+  <!-- 5.5 Phasor Method Analysis -->
+  <section id="ch5-5">
+    <span class="section-label ch5">Chapter 5</span>
+    <h2 class="sec-title">5.5 Phasor Method Analysis of Sinusoidal Steady-State Circuits</h2>
+
+    <h4>5.5.1 Analysis of Simple AC Circuits</h4>
+    <div class="step-flow">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div>Convert the time-domain circuit<br>to a phasor model</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div>Simplify the circuit using<br>impedance series/parallel</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div>Write equations using<br>KCL, KVL, and Ohm's law</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div>Solve for phasors and convert<br>back to time domain</div>
+      </div>
+    </div>
+
+    <h4>5.5.2 Mesh and Node Methods in AC Circuits</h4>
+    <ul>
+      <li><strong>Mesh Method</strong>: Same form as DC circuits, except impedance is complex
+        $$Z_{11}\dot{I}_{m1} + Z_{12}\dot{I}_{m2} + \cdots = \dot{U}_{s11}$$</li>
+      <li><strong>Node Method</strong>: Same form as DC circuits, except admittance is complex
+        $$Y_{11}\dot{U}_{n1} + Y_{12}\dot{U}_{n2} + \cdots = \dot{I}_{s11}$$</li>
+    </ul>
+  </section>
+
+  <!-- 5.6 Power in Sinusoidal AC Circuits -->
+  <section id="ch5-6">
+    <span class="section-label ch5">Chapter 5</span>
+    <h2 class="sec-title">5.6 Power in Sinusoidal AC Circuits</h2>
+
+    <h4>5.6.1 Instantaneous Power</h4>
+    <ul>
+      <li><strong>Definition</strong>: $p(t) = u(t) \cdot i(t)$</li>
+      <li><strong>Expression</strong>: $p(t) = UI\cos\varphi_z - UI\cos(2\omega t + \varphi_u + \varphi_i)$
+        <ul>
+          <li>Constant component (average power) + double-frequency oscillating component</li>
+        </ul>
+      </li>
+    </ul>
+  </section>
+
+  <!-- Four Types of Power Cards Overview -->
+  <section id="power-cards">
+    <span class="section-label ch5">Chapter 5</span>
+    <h2 class="sec-title">5.6 Four Types of Power at a Glance</h2>
+    <div class="param-grid">
+      <div class="param-card z-card">
+        <span class="badge">Active Power</span>
+        <div class="card-title">Average Power P</div>
+        <div class="desc">The power actually consumed by the circuit, unit: Watt (W)</div>
+        <div class="formula-mini">$P = UI\cos\varphi_z$</div>
+        <div class="conditions">
+          <span class="cond-chip">$\lambda = \cos\varphi_z$</span>
+          <span class="cond-chip">Reflects electrical energy utilization</span>
+        </div>
+      </div>
+      <div class="param-card y-card">
+        <span class="badge">Reactive Power</span>
+        <div class="card-title">Reactive Power Q</div>
+        <div class="desc">Reflects the scale of energy exchange between electric and magnetic fields, unit: volt-ampere reactive (var)</div>
+        <div class="formula-mini">$Q = UI\sin\varphi_z$</div>
+        <div class="conditions">
+          <span class="cond-chip">$Q > 0$: Inductive</span>
+          <span class="cond-chip">$Q < 0$: Capacitive</span>
+        </div>
+      </div>
+      <div class="param-card t-card">
+        <span class="badge">Apparent Power</span>
+        <div class="card-title">Apparent Power S</div>
+        <div class="desc">The product of RMS voltage and RMS current, unit: volt-ampere (VA)</div>
+        <div class="formula-mini">$S = UI = \sqrt{P^2 + Q^2}$</div>
+        <div class="conditions">
+          <span class="cond-chip">Equipment rated capacity</span>
+        </div>
+      </div>
+      <div class="param-card h-card">
+        <span class="badge">Complex Power</span>
+        <div class="card-title">Complex Power $\tilde{S}$</div>
+        <div class="desc">Unified representation of active and reactive power; complex power is conserved</div>
+        <div class="formula-mini">$\tilde{S} = \dot{U}\dot{I}^* = P + jQ$</div>
+        <div class="conditions">
+          <span class="cond-chip">$\sum \tilde{S} = 0$</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Power Factor Correction -->
+  <section id="power-factor">
+    <span class="section-label ch5">Chapter 5</span>
+    <h2 class="sec-title">5.6.6 Power Factor Correction</h2>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge p-accent">Power Factor</span>
+        <span class="detail-title">Shunt Capacitor Compensation</span>
+      </div>
+      <p><strong>Significance</strong>: Reduces line current, decreases transmission losses, and improves equipment utilization</p>
+      <p><strong>Method</strong>: Connect appropriate capacitors in parallel (compensate for reactive power of inductive loads)</p>
+      <div class="formula-block">
+        $$C = \frac{P(\tan\varphi_1 - \tan\varphi_2)}{\omega U^2}$$
+      </div>
+      <ul class="meaning-list">
+        <li>$\varphi_1$: Power factor angle before compensation</li>
+        <li>$\varphi_2$: Target power factor angle after compensation</li>
+        <li>$P$: Load active power</li>
+        <li>$U$: RMS source voltage</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Maximum Power Transfer -->
+  <section id="max-power">
+    <span class="section-label ch5">Chapter 5</span>
+    <h2 class="sec-title">5.6.7 Maximum Power Transfer</h2>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge a-accent">Max Power</span>
+        <span class="detail-title">Conjugate Matching Condition</span>
+      </div>
+      <div class="formula-block">
+        $$Z_L = Z_s^* \quad \Rightarrow \quad R_L = R_s, \; X_L = -X_s$$
+        $$P_{max} = \frac{|U_s|^2}{8R_s}$$
+      </div>
+      <ul class="meaning-list">
+        <li><strong>Condition</strong>: Load impedance equals the complex conjugate of the source internal impedance (conjugate matching)</li>
+        <li><strong>Maximum Power</strong>: $P_{max} = \dfrac{|U_s|^2}{8R_s}$</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 5.7 Frequency Response -->
+  <section id="ch5-7">
+    <span class="section-label ch5">Chapter 5</span>
+    <h2 class="sec-title">5.7 Circuit Frequency Response</h2>
+
+    <h4>5.7.1 Network Functions and Frequency Characteristics</h4>
+    <ul>
+      <li><strong>Network Function</strong>: $H(j\omega) = \dfrac{\dot{Y}(j\omega)}{\dot{X}(j\omega)}$ (ratio of output phasor to input phasor)</li>
+      <li><strong>Magnitude Response</strong>: The relationship between $|H(j\omega)|$ and frequency</li>
+      <li><strong>Phase Response</strong>: The relationship between $\arg H(j\omega)$ and frequency</li>
+    </ul>
+
+    <div class="connect-grid">
+      <div class="connect-card">
+        <div class="cc-name">RC Low-Pass Filter Circuit</div>
+        <div class="cc-desc">R in series, C in parallel for output</div>
+        <div class="cc-formula">$H(j\omega) = \dfrac{1}{1+j\omega RC}$</div>
+        <div class="cc-desc">Cutoff angular frequency: $\omega_c = 1/(RC)$</div>
+        <div class="cc-desc">Passes low frequencies, attenuates high frequencies</div>
+      </div>
+      <div class="connect-card">
+        <div class="cc-name">RC High-Pass Filter Circuit</div>
+        <div class="cc-desc">C in series, R in parallel for output</div>
+        <div class="cc-formula">$H(j\omega) = \dfrac{j\omega RC}{1+j\omega RC}$</div>
+        <div class="cc-desc">Cutoff angular frequency: $\omega_c = 1/(RC)$</div>
+        <div class="cc-desc">Passes high frequencies, attenuates low frequencies</div>
+      </div>
+    </div>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge y-accent">Frequency Response</span>
+        <span class="detail-title">RC Low-Pass Filter Analysis</span>
+      </div>
+      <ul class="meaning-list">
+        <li>$\omega \ll \omega_c$: $|H| \approx 1$, signal passes through</li>
+        <li>$\omega = \omega_c$: $|H| = 1/\sqrt{2}$ (-3dB point)</li>
+        <li>$\omega \gg \omega_c$: $|H| \to 0$, signal is suppressed</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 5.8 Resonance Circuits -->
+  <section id="ch5-8">
+    <span class="section-label ch5">Chapter 5</span>
+    <h2 class="sec-title">5.8 Resonance Circuits</h2>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge z-accent">Series Resonance</span>
+        <span class="detail-title">5.8.1 Series Resonance</span>
+      </div>
+      <p><strong>Definition</strong>: Resonance in an R-L-C series circuit when inductive reactance equals capacitive reactance</p>
+      <div class="formula-block">
+        $$\omega_0 L = \frac{1}{\omega_0 C} \quad \Rightarrow \quad \omega_0 = \frac{1}{\sqrt{LC}}$$
+      </div>
+      <ul class="meaning-list">
+        <li>Minimum impedance: $Z = R$ (purely resistive)</li>
+        <li>Maximum current: $I = U/R$</li>
+        <li>Voltage and current are in phase (power factor = 1)</li>
+        <li>Inductor voltage and capacitor voltage are equal in magnitude and opposite in direction; they can be much larger than the source voltage</li>
+        <li>Quality factor: $Q = \dfrac{\omega_0 L}{R} = \dfrac{1}{\omega_0 CR}$</li>
+        <li>Higher Q means a sharper resonance curve and better selectivity</li>
+      </ul>
+    </div>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge t-accent">Parallel Resonance</span>
+        <span class="detail-title">5.8.2 Parallel Resonance</span>
+      </div>
+      <p><strong>Definition</strong>: Resonance in an R-L-C parallel circuit</p>
+      <div class="formula-block">
+        $$\omega_0 = \frac{1}{\sqrt{LC}}$$
+      </div>
+      <ul class="meaning-list">
+        <li>Minimum admittance (maximum impedance)</li>
+        <li>Minimum total current</li>
+        <li>Branch currents may be much larger than total current</li>
+        <li>Circuit is purely resistive</li>
+        <li>Quality factor: $Q = R\sqrt{\dfrac{C}{L}} = \dfrac{R}{\omega_0 L} = \omega_0 RC$</li>
+      </ul>
+    </div>
+
+    <!-- Series vs. Parallel Resonance Comparison -->
+    <h3 id="resonance-compare">Series Resonance vs. Parallel Resonance</h3>
+    <div class="compare-grid compare-2col">
+      <div class="compare-cell">
+        <div class="cell-label">Series Resonance</div>
+        <div class="cell-letter">Series</div>
+        <div class="cell-row">Impedance: <strong>Minimum</strong> ($Z=R$)</div>
+        <div class="cell-row">Current: <strong>Maximum</strong></div>
+        <div class="cell-row">$Q = \dfrac{\omega_0 L}{R}$</div>
+        <div class="cell-row">Q is <strong>inversely proportional</strong> to R</div>
+        <div class="cell-row">Smaller R, less loss, higher Q</div>
+      </div>
+      <div class="compare-cell">
+        <div class="cell-label">Parallel Resonance</div>
+        <div class="cell-letter">Parallel</div>
+        <div class="cell-row">Impedance: <strong>Maximum</strong></div>
+        <div class="cell-row">Total current: <strong>Minimum</strong></div>
+        <div class="cell-row">$Q = \omega_0 RC$</div>
+        <div class="cell-row">Q is <strong>directly proportional</strong> to R</div>
+        <div class="cell-row">Larger R, less shunting, higher Q</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- Chapter 6: Coupled Inductors and Ideal Transformers -->
+  <!-- ═══════════════════════════════════════════════════ -->
+
+  <!-- 6.1 Coupled Inductors -->
+  <section id="ch6-1">
+    <span class="section-label ch6">Chapter 6</span>
+    <h2 class="sec-title">6.1 Coupled Inductors</h2>
+
+    <h4>6.1.1 Mutual Inductance</h4>
+    <ul>
+      <li><strong>Definition</strong>: When the current in one coil changes, it not only produces an induced voltage in that coil but also in an adjacent coil</li>
+      <li><strong>Mutual Inductance M</strong>: $M_{12} = M_{21} = M$</li>
+      <li><strong>Coupling Coefficient</strong>: $k = M/\sqrt{L_1 L_2}$, $0 \leq k \leq 1$
+        <ul>
+          <li>$k = 0$: No coupling</li>
+          <li>$k = 1$: Perfect coupling (ideal case)</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h4>6.1.2 V-I Relations of Coupled Inductors</h4>
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge t-accent">V-I Relations</span>
+        <span class="detail-title">Time-Domain and Phasor Forms</span>
+      </div>
+      <p><strong>Voltage Equations</strong>:</p>
+      <div class="formula-block">
+        $$u_1 = L_1\frac{di_1}{dt} \pm M\frac{di_2}{dt}$$
+        $$u_2 = L_2\frac{di_2}{dt} \pm M\frac{di_1}{dt}$$
+      </div>
+      <p>The sign before M depends on the relationship between current direction and dot convention (positive for same-side, negative for opposite-side)</p>
+      <p><strong>Phasor Form</strong>:</p>
+      <div class="formula-block">
+        $$\dot{U}_1 = j\omega L_1\dot{I}_1 \pm j\omega M\dot{I}_2$$
+        $$\dot{U}_2 = j\omega L_2\dot{I}_2 \pm j\omega M\dot{I}_1$$
+      </div>
+    </div>
+
+    <h4>6.1.3 Dot Convention of Coupled Inductors</h4>
+    <ul>
+      <li><strong>Definition</strong>: When currents in both coils simultaneously enter (or leave) the dotted terminals, the mutual flux and self-flux have the same direction</li>
+      <li><strong>Determination Methods</strong>:
+        <ul>
+          <li>Marking method: Mark the dotted terminals with "&bull;" or "*"</li>
+          <li>Right-hand screw rule: Determine based on winding direction</li>
+        </ul>
+      </li>
+      <li><strong>Purpose</strong>: To determine the sign of mutual inductance voltages</li>
+    </ul>
+
+    <h4>6.1.4 Equivalent Circuit Models of Coupled Inductors</h4>
+    <ul>
+      <li><strong>Decoupling Equivalent</strong>: Replacing coupled inductors with an equivalent circuit without mutual inductance</li>
+      <li><strong>T-Equivalent</strong> (when dotted terminals are connected): Equivalent inductances are $L_1-M$, $L_2-M$, and $M$</li>
+      <li><strong>Application</strong>: Converts circuits with mutual inductance into circuits without mutual inductance for easier analysis</li>
+    </ul>
+  </section>
+
+  <!-- 6.2 Analysis of Circuits with Coupled Inductors -->
+  <section id="ch6-2">
+    <span class="section-label ch6">Chapter 6</span>
+    <h2 class="sec-title">6.2 Analysis of Sinusoidal Steady-State Circuits with Coupled Inductors</h2>
+
+    <div class="connect-grid">
+      <div class="connect-card">
+        <div class="cc-name">6.2.1 Direct Equation Method</div>
+        <div class="cc-desc">Steps:</div>
+        <div class="cc-desc">1. Assign reference directions for each branch current</div>
+        <div class="cc-desc">2. Determine the sign of mutual inductance voltages based on dot convention</div>
+        <div class="cc-desc">3. Write KVL equations (include mutual inductance voltage terms)</div>
+        <div class="cc-desc">4. Solve simultaneously</div>
+      </div>
+      <div class="connect-card">
+        <div class="cc-name">6.2.2 Decoupling Equivalent Analysis</div>
+        <div class="cc-desc">Steps:</div>
+        <div class="cc-desc">1. Draw the decoupling equivalent circuit based on dot positions</div>
+        <div class="cc-desc">2. The equivalent circuit has no mutual inductance; analyze using standard methods</div>
+        <div class="cc-desc">3. After solving the equivalent circuit, return to the original circuit</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6.3 Air-Core Transformers -->
+  <section id="ch6-3">
+    <span class="section-label ch6">Chapter 6</span>
+    <h2 class="sec-title">6.3 Air-Core Transformers</h2>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge a-accent">Air-Core Transformer</span>
+        <span class="detail-title">Circuit Model and Reflected Impedance</span>
+      </div>
+      <p><strong>Structure</strong>: Two coupled coils wound on the same non-ferromagnetic core</p>
+      <ul class="meaning-list">
+        <li><strong>Primary</strong>: Voltage source $\dot{U}_s$, resistance $R_1$, inductance $L_1$</li>
+        <li><strong>Secondary</strong>: Resistance $R_2$, inductance $L_2$, mutual inductance $M$</li>
+        <li><strong>Reflected Impedance</strong>: The effect of the secondary on the primary can be represented by a reflected impedance $Z_r = (\omega M)^2/Z_{22}$</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 6.4 Ideal Transformers -->
+  <section id="ch6-4">
+    <span class="section-label ch6">Chapter 6</span>
+    <h2 class="sec-title">6.4 Ideal Transformers</h2>
+
+    <h4>6.4.1 Main Characteristics of Ideal Transformers</h4>
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge h-accent">Ideal Transformer</span>
+        <span class="detail-title">Main Performance Parameters</span>
+      </div>
+      <p><strong>Idealization Conditions</strong>: $k = 1$ (perfect coupling), $L_1, L_2 \to \infty$, lossless</p>
+      <div class="formula-block">
+        $$n = \frac{N_1}{N_2} \quad \text{(turns ratio)}$$
+      </div>
+      <ul class="meaning-list">
+        <li><strong>Voltage Relationship</strong>: $u_1/u_2 = n$</li>
+        <li><strong>Current Relationship</strong>: $i_1/i_2 = -1/n$ (negative sign indicates opposite current directions)</li>
+        <li><strong>Impedance Transformation</strong>: $Z_{in} = n^2 Z_L$ (secondary impedance $Z_L$ reflected to primary is $n^2 Z_L$)</li>
+        <li><strong>Power Relationship</strong>: Input power equals output power, $u_1 i_1 + u_2 i_2 = 0$</li>
+      </ul>
+    </div>
+
+    <h4>6.4.2 Circuit Analysis with Ideal Transformers</h4>
+    <div class="step-flow">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div>Determine turns ratio n<br>and dot convention</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div>Write voltage and current<br>relationship equations</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div>Impedance transformation:<br>reflect secondary to primary</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div>Combine with KCL/KVL<br>and solve simultaneously</div>
+      </div>
+    </div>
+
+    <div class="param-detail">
+      <div class="detail-head">
+        <span class="detail-badge t-accent">Analysis Methods</span>
+        <span class="detail-title">Two Analysis Methods</span>
+      </div>
+      <ul class="meaning-list">
+        <li><strong>Method 1</strong>: Use voltage-current relationships with KCL and KVL to write equations</li>
+        <li><strong>Method 2</strong>: Impedance transformation method (reflect secondary impedance to primary)</li>
+      </ul>
+      <div class="cond-row">
+        <span class="cond-pill t-accent">Note that dot convention affects voltage and current direction relationships</span>
+        <span class="cond-pill t-accent">Pay attention to dot positions during impedance transformation</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+const sections = document.querySelectorAll('[id]');
+const navLinks = document.querySelectorAll('.sidebar nav a');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(a => a.classList.remove('active'));
+      const link = document.querySelector(`.sidebar nav a[href="#${entry.target.id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-15% 0px -75% 0px' });
+sections.forEach(s => { if (s.closest('.main')) observer.observe(s); });
+navLinks.forEach(a => a.addEventListener('click', () => {
+  document.querySelector('.sidebar').classList.remove('open');
+}));
+
+// Chapter collapse/expand
+document.querySelectorAll('.sidebar .nav-chapter').forEach(ch => {
+  ch.addEventListener('click', e => {
+    e.preventDefault();
+    const li = ch.parentElement;
+    li.classList.toggle('collapsed');
+  });
+});
+</script>
+
+</body>
+</html>

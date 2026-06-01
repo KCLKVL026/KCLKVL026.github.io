@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Capacitor AC Characteristics | Voltage-Current Waveforms and Phase Difference</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- KaTeX math rendering (reliable CDN + auto-render) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;  /* Unified blue slider */
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #2563eb;
+            transform: scale(1.15);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15);
+        }
+        .wave-card {
+            transition: all 0.2s;
+        }
+        .phase-badge {
+            background: #eff6ff;   /* Light blue background */
+            border-radius: 20px;
+            padding: 0.2rem 0.7rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #1e40af;       /* Dark blue text */
+        }
+        .reset-btn {
+            transition: all 0.2s;
+        }
+        .reset-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- Back to home button (top left) -->
+    <div class="flex justify-start mb-4">
+        <a href="../index.html"
+        class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Home
+        </a>
+    </div>
+    <!-- Title area: unified blue gradient -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            Capacitor AC Characteristics &middot; Voltage-Current Phase Difference
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            Sinusoidal AC signal \(v(t) = V_m \sin(2\pi f t)\) applied to a capacitor | Observe the phase relationship between voltage \(u(t)\) and current \(i(t)\)<br>
+            <span class="text-xs text-indigo-500">Capacitor current unit: amperes (A)</span>
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left control panel -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- Parameter adjustment card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>   <!-- Blue vertical bar -->
+                    Signal Source &amp; Capacitor Parameters
+                </h3>
+
+                <!-- Voltage amplitude Vm -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Voltage Amplitude \(V_m\)</label>
+                        <span class="text-blue-600 font-mono" id="vm_display">1.00 V</span>
+                    </div>
+                    <input type="range" id="vm_slider" min="0.2" max="5" step="0.02" value="1.0" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>0.2 V</span><span>5 V</span>
+                    </div>
+                </div>
+
+                <!-- Frequency f -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Frequency \(f\)</label>
+                        <span class="text-blue-600 font-mono" id="f_display">50.0 Hz</span>
+                    </div>
+                    <input type="range" id="f_slider" min="10" max="500" step="1" value="50" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>10 Hz</span><span>500 Hz</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">Frequency affects capacitive reactance, changing current amplitude; phase difference remains at -90&deg;</p>
+                </div>
+
+                <div class="border-t border-slate-100 my-3"></div>
+
+                <!-- Capacitor C (uF) range 1000~5000 uF, default 2000 uF -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Capacitor \(C\)</label>
+                        <span class="text-blue-600 font-mono" id="c_val_display">2000 &mu;F</span>
+                    </div>
+                    <input type="range" id="c_slider" min="1000" max="5000" step="50" value="2000" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>1000 &mu;F</span><span>5000 &mu;F</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1">Current leads voltage by \(90^\circ\), amplitude \(I_m = V_m \cdot \omega C\) (A)</p>
+                </div>
+
+                <!-- Reset button: blue theme -->
+                <div class="mt-6 flex justify-center">
+                    <button id="resetBtn" class="reset-btn bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-full shadow-md transition flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        Reset Parameters
+                    </button>
+                </div>
+            </div>
+
+            <!-- Info card: Capacitor phase difference theory -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-blue-500 rounded-full"></span>
+                    Capacitor Phase Difference Theory
+                </h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
+                        <span class="font-medium">Capacitor \(C\)</span>
+                        <span class="font-mono text-emerald-600">\(\varphi = -90^\circ\)</span>
+                        <span class="text-xs text-slate-500">Current leads voltage by \(90^\circ\)</span>
+                    </div>
+                </div>
+                <!-- Background unified to indigo-50 (soft blue tone) -->
+                <div class="mt-3 text-xs text-slate-600 bg-indigo-50 p-2 rounded-lg">
+                    Expression: \(i_C = C\frac{dv}{dt}\)<br>
+                    In sinusoidal steady-state, current leads voltage by \(90^\circ\). <strong>Capacitor current unit: A</strong><br>
+                    Current amplitude: \(I_{Cm} = V_m \cdot 2\pi f C\ \text{(A)}\), Capacitive reactance \(X_C = \frac{1}{\omega C} = \frac{1}{2\pi f C}\).
+                </div>
+            </div>
+        </div>
+
+        <!-- Right waveform area: Capacitor component card -->
+        <div class="lg:col-span-8 space-y-6">
+            <!-- Capacitor component card (current A) -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 wave-card">
+                <div class="flex justify-between items-center flex-wrap mb-2">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-blue-500 rounded-full"></div>   <!-- Dot changed to blue -->
+                        <h3 class="font-bold text-slate-800 text-lg">Capacitor &middot; Voltage \(u_C(t)\) and Current \(i_C(t)\) (A)</h3>
+                    </div>
+                    <!-- Phase difference badge in unified blue style -->
+                    <div class="phase-badge">Phase Diff \(\Delta\varphi = -90^\circ\) (Current Leads)</div>
+                </div>
+                <div class="relative">
+                    <canvas id="chartC" width="700" height="400" style="width:100%; height:auto; max-height:420px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-1">Capacitive component: current leads voltage by 90&deg;, \(i_C(t)\) peak occurs \(\frac{T}{4}\) before voltage peak (current unit: A)</div>
+            </div>
+
+            <!-- Additional notes cards: title color changed to indigo-800 blue system -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">Waveform Observation Key Points</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        &bull; <strong>Capacitor</strong>: current \(i_C\) zero-crossing leads voltage \(u_C\) by \(90^\circ\).<br>
+                        &bull; Current is zero at voltage peak, voltage is zero at current peak.<br>
+                        &bull; Adjusting frequency \(f\) or capacitance \(C\) changes current amplitude, but phase difference remains at \(-90^\circ\).<br>
+                        &bull; <strong>Capacitor current unit: A</strong>, consistent with inductor current unit.
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">Effect of Parameters on Amplitude</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        \(I_{Cm} = V_m \cdot 2\pi f C\ \text{(A)}\)<br>
+                        Increase voltage \(V_m\) &rarr; current increases linearly;<br>
+                        Increase frequency \(f\) &rarr; current increases;<br>
+                        Increase capacitance \(C\) &rarr; current increases;<br>
+                        Capacitive reactance \(X_C = \frac{1}{\omega C}\) decreases with frequency.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // DOM element bindings
+    const vmSlider = document.getElementById('vm_slider');
+    const fSlider = document.getElementById('f_slider');
+    const cSlider = document.getElementById('c_slider');
+    const resetBtn = document.getElementById('resetBtn');
+
+    const vmDisplay = document.getElementById('vm_display');
+    const fDisplay = document.getElementById('f_display');
+    const cDisplay = document.getElementById('c_val_display');
+
+    // Canvas element
+    const canvasC = document.getElementById('chartC');
+
+    let chartC;
+
+    // Waveform display parameters
+    const PERIODS = 2.0;
+    const SAMPLE_POINTS = 500;
+
+    // Default values
+    const DEFAULTS = {
+        Vm: 1.0,
+        f: 50,
+        C_uF: 2000
+    };
+
+    // Get current parameters (SI units)
+    function getParams() {
+        const Vm = parseFloat(vmSlider.value);
+        const f = parseFloat(fSlider.value);
+        const C_uF = parseFloat(cSlider.value);
+        const C = C_uF * 1e-6;   // uF -> F
+        return { Vm, f, C, C_uF };
+    }
+
+    // Reset all parameters to defaults
+    function resetParams() {
+        vmSlider.value = DEFAULTS.Vm;
+        fSlider.value = DEFAULTS.f;
+        cSlider.value = DEFAULTS.C_uF;
+        updateAllCharts();
+    }
+
+    // Update left panel value displays
+    function updateParamDisplays() {
+        const { Vm, f, C_uF } = getParams();
+        vmDisplay.innerText = Vm.toFixed(2) + " V";
+        fDisplay.innerText = f.toFixed(1) + " Hz";
+        cDisplay.innerText = C_uF.toFixed(0) + " μF";
+    }
+
+    // Generate time axis (seconds)
+    function generateTimeAxis(f) {
+        const T = 1 / f;
+        const tMax = PERIODS * T;
+        const dt = tMax / (SAMPLE_POINTS - 1);
+        const times = [];
+        for (let i = 0; i < SAMPLE_POINTS; i++) {
+            times.push(i * dt);
+        }
+        return times;
+    }
+
+    // Capacitor: voltage Vm*sin(wt), current amplitude (Vm*w*C) amperes (A)
+    function computeCapacitorData(times, Vm, f, C) {
+        const omega = 2 * Math.PI * f;
+        const Im_A = Vm * omega * C;            // current amplitude (A)
+        const voltage = [];
+        const current_A = [];
+        for (let t of times) {
+            const v = Vm * Math.sin(omega * t);
+            const i_A = Im_A * Math.sin(omega * t + Math.PI / 2);
+            voltage.push(v);
+            current_A.push(i_A);
+        }
+        return { voltage, current_A };
+    }
+
+    // Helper function: get y-axis min/max with margin
+    function getYAxisMax(dataArrays) {
+        let maxVal = -Infinity;
+        let minVal = Infinity;
+        for (let arr of dataArrays) {
+            for (let val of arr) {
+                if (val > maxVal) maxVal = val;
+                if (val < minVal) minVal = val;
+            }
+        }
+        if (maxVal === minVal) {
+            maxVal = maxVal + 0.1;
+            minVal = minVal - 0.1;
+        }
+        const margin = (maxVal - minVal) * 0.1;
+        let upper = maxVal + margin;
+        let lower = minVal - margin;
+        if (lower > 0) lower = 0;
+        if (upper < 0) upper = 0;
+        const range = Math.max(Math.abs(upper), Math.abs(lower));
+        if (range > 0) {
+            upper = Math.max(upper, range * 1.1);
+            lower = Math.min(lower, -range * 1.1);
+        }
+        return { max: upper, min: lower };
+    }
+
+    // Update all charts
+    function updateAllCharts() {
+        const { Vm, f, C, C_uF } = getParams();
+        updateParamDisplays();
+
+        const times = generateTimeAxis(f);
+
+        // Capacitor data (current A)
+        const cData = computeCapacitorData(times, Vm, f, C);
+        const cVoltage = cData.voltage;
+        const cCurrent_A = cData.current_A;
+
+        // Build point arrays
+        const timePoints = times.map(t => t);
+        const cVoltagePoints = timePoints.map((t, idx) => ({ x: t, y: cVoltage[idx] }));
+        const cCurrentPoints = timePoints.map((t, idx) => ({ x: t, y: cCurrent_A[idx] }));
+
+        // Y-axis range
+        const cYrange = getYAxisMax([cVoltage, cCurrent_A]);
+
+        // Common options builder (y-axis label varies)
+        const commonOptions = (yMin, yMax, yLabel) => ({
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            let val = context.raw.y;
+                            if (label.includes('Current') || label.includes('current')) {
+                                return `${label}: ${val.toFixed(3)} A @ t = ${context.raw.x.toFixed(4)} s`;
+                            } else {
+                                return `${label}: ${val.toFixed(3)} V @ t = ${context.raw.x.toFixed(4)} s`;
+                            }
+                        }
+                    },
+                    backgroundColor: 'rgba(0,0,0,0.7)',
+                },
+                legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } } }
+            },
+            scales: {
+                x: {
+                    type: 'linear',
+                    title: { display: true, text: 'Time t (s)', font: { weight: 'bold', size: 11 } },
+                    ticks: { callback: (val) => val.toFixed(3) + 's', maxTicksLimit: 6 },
+                    min: 0,
+                    max: times[times.length-1],
+                    grid: { color: '#eef2ff' }
+                },
+                y: {
+                    title: { display: true, text: yLabel, font: { weight: 'bold', size: 11 } },
+                    min: yMin,
+                    max: yMax,
+                    ticks: { callback: (val) => val.toFixed(2) },
+                    grid: { color: '#eef2ff' }
+                }
+            },
+            elements: { point: { radius: 0, hitRadius: 6, hoverRadius: 3 }, line: { tension: 0.2, borderWidth: 2.2 } }
+        });
+
+        // Capacitor chart (current A) -- current curve retains original orange (#f97316)
+        if (chartC) {
+            chartC.data.datasets[0].data = cVoltagePoints;
+            chartC.data.datasets[1].data = cCurrentPoints;
+            chartC.options.scales.y.min = cYrange.min;
+            chartC.options.scales.y.max = cYrange.max;
+            chartC.options.scales.x.max = times[times.length-1];
+            chartC.update();
+        } else {
+            chartC = new Chart(canvasC, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        { label: 'Voltage u_C(t) (V)', data: cVoltagePoints, borderColor: '#3b82f6', backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: 0, tension: 0.2 },
+                        { label: 'Current i_C(t) (A)', data: cCurrentPoints, borderColor: '#f97316', backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: 0, tension: 0.2, borderDash: [5, 3] }
+                    ]
+                },
+                options: commonOptions(cYrange.min, cYrange.max, 'Amplitude (V / A)')
+            });
+        }
+    }
+
+    // Event bindings
+    function bindEvents() {
+        vmSlider.addEventListener('input', () => updateAllCharts());
+        fSlider.addEventListener('input', () => updateAllCharts());
+        cSlider.addEventListener('input', () => updateAllCharts());
+        resetBtn.addEventListener('click', () => resetParams());
+        window.addEventListener('resize', () => {
+            if (chartC) chartC.resize();
+        });
+    }
+
+    // Initialize: render charts, fix KaTeX
+    function init() {
+        bindEvents();
+        updateAllCharts();
+        window.addEventListener('load', function() {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            } else {
+                console.warn('KaTeX auto-render not loaded, formulas will display as text');
+            }
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>

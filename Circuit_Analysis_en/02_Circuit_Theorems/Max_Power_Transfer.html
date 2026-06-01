@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Maximum Power Transfer Theorem | Load Matching and Efficiency</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<!--   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>-->
+    <style>
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #2563eb;
+            transform: scale(1.15);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15);
+        }
+        .mode-btn {
+            transition: all 0.2s ease;
+        }
+        .mode-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px -2px rgba(0,0,0,0.15);
+        }
+        .mode-btn.active {
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.4);
+            transform: scale(1.03);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- Back to Home button -->
+    <div class="flex justify-start mb-4">
+        <a href="../index.html"
+        class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Home
+        </a>
+    </div>
+
+    <!-- Title section -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            Maximum Power Transfer Theorem: Load Matching and Efficiency
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            Thevenin equivalent source driving variable load \(R_L\) | Power-load curve | Maximum power point \(R_L = R_{th}\)
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left control panel -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- Parameter card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    Circuit Parameters
+                </h3>
+
+                <!-- Mode toggle -->
+                <div class="flex gap-2 mb-4">
+                    <button id="dcModeBtn" class="mode-btn active flex-1 py-2 px-3 rounded-full text-sm font-bold bg-blue-500 text-white">DC Mode</button>
+                    <button id="acModeBtn" class="mode-btn flex-1 py-2 px-3 rounded-full text-sm font-bold bg-slate-400 text-white">AC Mode</button>
+                </div>
+
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>\(U_{th}\) (Thevenin Voltage)</label>
+                        <span class="text-blue-600 font-mono" id="vth_display">12 V</span>
+                    </div>
+                    <input type="range" id="vth_slider" min="1" max="50" step="1" value="12" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1"><span>1 V</span><span>50 V</span></div>
+                </div>
+
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>\(R_{th}\) (Thevenin Resistance)</label>
+                        <span class="text-blue-600 font-mono" id="rth_display">50 Ω</span>
+                    </div>
+                    <input type="range" id="rth_slider" min="10" max="1000" step="10" value="50" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1"><span>10 Ω</span><span>1000 Ω</span></div>
+                </div>
+
+                <div class="border-t border-slate-100 my-3"></div>
+
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>\(R_L\) (Load Resistance)</label>
+                        <span class="text-blue-600 font-mono" id="rl_display">50 Ω</span>
+                    </div>
+                    <input type="range" id="rl_slider" min="1" max="2000" step="1" value="50" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1"><span>1 Ω</span><span>2000 Ω</span></div>
+                </div>
+
+                <div class="mb-4">
+                    <button id="matchBtn" class="w-full py-2.5 rounded-full text-sm font-bold bg-emerald-500 hover:bg-emerald-600 text-white transition-all duration-200 hover:shadow-lg">
+                        ⚡ Match Maximum Power
+                    </button>
+                </div>
+
+                <!-- AC mode controls (hidden by default) -->
+                <div id="acControls" style="display:none;">
+                    <div class="border-t border-slate-100 my-3"></div>
+                    <div class="mb-5">
+                        <div class="flex justify-between text-sm font-medium mb-1">
+                            <label>\(X_{th}\) (Source Reactance)</label>
+                            <span class="text-orange-600 font-mono" id="xth_display">0 Ω</span>
+                        </div>
+                        <input type="range" id="xth_slider" min="-500" max="500" step="10" value="0" class="w-full">
+                        <div class="flex justify-between text-xs text-slate-400 mt-1"><span>-500 Ω (Capacitive)</span><span>+500 Ω (Inductive)</span></div>
+                    </div>
+                    <div class="mb-5">
+                        <div class="flex justify-between text-sm font-medium mb-1">
+                            <label>\(X_L\) (Load Reactance)</label>
+                            <span class="text-orange-600 font-mono" id="xl_display">0 Ω</span>
+                        </div>
+                        <input type="range" id="xl_slider" min="-500" max="500" step="10" value="0" class="w-full">
+                        <div class="flex justify-between text-xs text-slate-400 mt-1"><span>-500 Ω (Capacitive)</span><span>+500 Ω (Inductive)</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Power and efficiency display -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-purple-500 rounded-full"></span>
+                    Power and Efficiency
+                </h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between items-center p-2 bg-blue-50 rounded-lg">
+                        <span class="text-slate-600">Current Load Power \(P_L\)</span>
+                        <span class="font-mono font-bold text-blue-600 text-lg" id="pl_display">0.00 W</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-red-50 rounded-lg">
+                        <span class="text-slate-600">Maximum Power \(P_{max}\)</span>
+                        <span class="font-mono font-bold text-red-500 text-lg" id="pmax_display">0.00 W</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">Efficiency \(\eta\)</span>
+                        <span class="font-mono font-bold text-slate-700" id="eta_display">0.0 %</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg" id="match_status_row">
+                        <span class="text-slate-600">Match Status</span>
+                        <span class="font-mono font-bold" id="match_display">—</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">\(R_L\) for Max Power</span>
+                        <span class="font-mono font-bold text-emerald-600" id="rl_peak_display">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Operating point info -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
+                <h4 class="font-bold text-sm text-slate-700 mb-2">Current Operating Point</h4>
+                <div class="text-xs text-slate-600 space-y-1">
+                    <div>Load Current: <span class="font-mono text-blue-600" id="iload_info">0.00 A</span></div>
+                    <div>Load Voltage: <span class="font-mono text-blue-600" id="vload_info">0.00 V</span></div>
+                    <div id="ac_extra_info" style="display:none;">
+                        <div>|Z_th|: <span class="font-mono text-orange-600" id="zth_info">—</span></div>
+                        <div>|Z_L|: <span class="font-mono text-orange-600" id="zl_info">—</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right chart area -->
+        <div class="lg:col-span-8 space-y-5">
+            <!-- Main chart -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="flex flex-wrap justify-between items-center mb-3 px-2">
+                    <div class="flex items-center gap-4 text-sm">
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 rounded-full" style="background:#3b82f6; height:3px;"></div><span class="font-medium">Power Curve \(P_L(R_L)\)</span></div>
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 rounded-full" style="background:#22c55e; height:3px; border-style:dashed;"></div><span class="font-medium">\(R_{th}\) Reference Line</span></div>
+                    </div>
+                </div>
+                <div class="relative">
+                    <canvas id="mainChart" width="700" height="400" style="width:100%; height:auto; max-height:420px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-2">
+                    Power-Load Curve | Red dot = Maximum power point | Orange dot = Current operating point | Green dashed line = R_th
+                </div>
+            </div>
+
+            <!-- Circuit diagram -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <h4 class="font-bold text-indigo-800 text-sm mb-3">Circuit Diagram</h4>
+                <img src="./img/Max_Power_Transfer.jpg" alt="Maximum power transfer circuit diagram" class="w-full h-auto rounded-lg">
+            </div>
+
+            <!-- Circuit diagram and theory -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1" id="theory_title">DC Maximum Power Transfer</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed" id="theory_text">
+                        The load receives maximum power when \(R_L\) equals \(R_{th}\):<br>
+                        \(P_{max} = \frac{U_{th}^2}{4 R_{th}}\)<br>
+                        At this point, efficiency \(\eta = 50\%\) (source internal resistance and load each consume half the power).<br>
+                        \(P_L = \frac{U_{th}^2 R_L}{(R_{th} + R_L)^2}\)
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1" id="character_title">Matching Properties</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed" id="character_text">
+                        When \(R_L\) deviates from \(R_{th}\), power decreases (parabolic shape).<br>
+                        Power first increases then decreases as \(R_L\) increases.<br>
+                        At the maximum power point, \(R_L = R_{th}\), and the power curve reaches its peak.<br>
+                        Switch to AC mode to observe the complex conjugate matching condition.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // DOM elements
+    const vthSlider = document.getElementById('vth_slider');
+    const rthSlider = document.getElementById('rth_slider');
+    const rlSlider = document.getElementById('rl_slider');
+    const xthSlider = document.getElementById('xth_slider');
+    const xlSlider = document.getElementById('xl_slider');
+    const dcModeBtn = document.getElementById('dcModeBtn');
+    const acModeBtn = document.getElementById('acModeBtn');
+    const matchBtn = document.getElementById('matchBtn');
+    const acControls = document.getElementById('acControls');
+    const acExtraInfo = document.getElementById('ac_extra_info');
+
+    const vthDisplay = document.getElementById('vth_display');
+    const rthDisplay = document.getElementById('rth_display');
+    const rlDisplay = document.getElementById('rl_display');
+    const xthDisplay = document.getElementById('xth_display');
+    const xlDisplay = document.getElementById('xl_display');
+    const plDisplay = document.getElementById('pl_display');
+    const pmaxDisplay = document.getElementById('pmax_display');
+    const etaDisplay = document.getElementById('eta_display');
+    const matchDisplay = document.getElementById('match_display');
+    const rlPeakDisplay = document.getElementById('rl_peak_display');
+    const iloadInfo = document.getElementById('iload_info');
+    const vloadInfo = document.getElementById('vload_info');
+    const zthInfo = document.getElementById('zth_info');
+    const zlInfo = document.getElementById('zl_info');
+
+    const canvas = document.getElementById('mainChart');
+    let chartInstance = null;
+    let currentMode = 'dc'; // 'dc' or 'ac'
+
+    function getParams() {
+        const p = {
+            Vth: parseFloat(vthSlider.value),
+            Rth: parseFloat(rthSlider.value),
+            RL: parseFloat(rlSlider.value),
+            Xth: parseFloat(xthSlider.value),
+            XL: parseFloat(xlSlider.value),
+            mode: currentMode
+        };
+        return p;
+    }
+
+    function computePower(Vth, Rth, RL, Xth, XL, mode) {
+        if (mode === 'dc') {
+            const I = Vth / (Rth + RL);
+            const PL = RL * I * I;
+            const Pmax = (Vth * Vth) / (4 * Rth);
+            const Ptotal = Vth * I;
+            const eta = Ptotal > 0 ? (PL / Ptotal) * 100 : 0;
+            const Vload = RL * I;
+            return { I, PL, Pmax, eta, Vload, R_match_ref: Rth };
+        } else {
+            // AC mode: Z_th = Rth + j*Xth, Z_L = RL + j*XL
+            const Rtotal = Rth + RL;
+            const Xtotal = Xth + XL;
+            const Zmag = Math.sqrt(Rtotal * Rtotal + Xtotal * Xtotal);
+            const I = Vth / Zmag;
+            const PL = RL * I * I;
+            // Pmax in AC: when Z_L = Rth - j*Xth (conjugate match), Pmax = Vth^2/(4*Rth)
+            const Pmax = (Vth * Vth) / (4 * Rth);
+            const Ptotal = Vth * I * (Rtotal / Zmag); // P_source = Vth * I * cos(phi)
+            const cosPhi = Rtotal / Zmag;
+            const P_source = Vth * I * cosPhi;
+            const eta = P_source > 0 ? (PL / P_source) * 100 : 0;
+            const Vload = RL * I;
+            const R_match_ref = Math.sqrt(Rth * Rth + Xth * Xth); // |Z_th| for matching criterion
+            return { I, PL, Pmax, eta, Vload, R_match_ref, Zth_mag: Math.sqrt(Rth*Rth + Xth*Xth), ZL_mag: Math.sqrt(RL*RL + XL*XL) };
+        }
+    }
+
+    function updateDisplay() {
+        const { Vth, Rth, RL, Xth, XL, mode } = getParams();
+        const c = computePower(Vth, Rth, RL, Xth, XL, mode);
+
+        vthDisplay.innerText = Vth + ' V';
+        rthDisplay.innerText = Rth + ' Ω';
+        rlDisplay.innerText = RL + ' Ω';
+        xthDisplay.innerText = (Xth >= 0 ? '+' : '') + Xth + ' Ω (j' + (Xth >= 0 ? '+' : '') + Xth + ')';
+        xlDisplay.innerText = (XL >= 0 ? '+' : '') + XL + ' Ω (j' + (XL >= 0 ? '+' : '') + XL + ')';
+
+        if (c.PL >= 1) {
+            plDisplay.innerText = c.PL.toFixed(2) + ' W';
+        } else {
+            plDisplay.innerText = (c.PL * 1000).toFixed(1) + ' mW';
+        }
+        if (c.Pmax >= 1) {
+            pmaxDisplay.innerText = c.Pmax.toFixed(2) + ' W';
+        } else {
+            pmaxDisplay.innerText = (c.Pmax * 1000).toFixed(1) + ' mW';
+        }
+        etaDisplay.innerText = c.eta.toFixed(1) + ' %';
+        iloadInfo.innerText = (c.I * 1000).toFixed(2) + ' mA';
+        vloadInfo.innerText = c.Vload.toFixed(2) + ' V';
+
+        if (mode === 'ac') {
+            zthInfo.innerText = c.Zth_mag.toFixed(1) + ' Ω';
+            zlInfo.innerText = c.ZL_mag.toFixed(1) + ' Ω';
+        }
+
+        // Match status
+        if (mode === 'dc') {
+            const matched = Math.abs(RL - Rth) < 0.5;
+            if (matched) {
+                matchDisplay.innerHTML = '<span class="text-emerald-600">\\(R_L = R_{th}\\) ✓</span>';
+            } else {
+                matchDisplay.innerHTML = '<span class="text-slate-500">\\(R_L = ' + RL + ' \\Omega\\) (\\(R_{th} = ' + Rth + ' \\Omega\\))</span>';
+            }
+            rlPeakDisplay.innerText = Rth + ' Ω';
+        } else {
+            const absMatch = Math.abs(Math.sqrt(RL*RL + XL*XL) - Math.sqrt(Rth*Rth + Xth*Xth)) < 1;
+            const conjMatch = Math.abs(RL - Rth) < 1 && Math.abs(XL + Xth) < 1;
+            if (conjMatch) {
+                matchDisplay.innerHTML = '<span class="text-emerald-600">\\(Z_L = Z_{th}^*\\) ✓ (Conjugate Match)</span>';
+            } else if (absMatch) {
+                matchDisplay.innerHTML = '<span class="text-amber-600">\\(|Z_L| \\approx |Z_{th}|\\) (Magnitude Match)</span>';
+            } else {
+                matchDisplay.innerHTML = '<span class="text-slate-500">\\(|Z_L| = ' + c.ZL_mag.toFixed(1) + ' \\Omega\\) (\\(|Z_{th}| = ' + c.Zth_mag.toFixed(1) + ' \\Omega\\))</span>';
+            }
+            rlPeakDisplay.innerHTML = '\\(Z_L = R_{th} - jX_{th} = ' + Rth + (Xth > 0 ? ' - j' + Xth : ' + j' + Math.abs(Xth)) + '\\)';
+        }
+
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(matchDisplay, {
+                delimiters: [
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '\\(', right: '\\)', display: false}
+                ],
+                throwOnError: false
+            });
+            renderMathInElement(rlPeakDisplay, {
+                delimiters: [
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '\\(', right: '\\)', display: false}
+                ],
+                throwOnError: false
+            });
+        }
+
+        updateChart(c, Vth, Rth, RL, Xth, XL, mode);
+    }
+
+    function updateChart(c, Vth, Rth, RL, Xth, XL, mode) {
+        // Generate power curve: sweep RL from 1 to 2000
+        const rlSweep = [];
+        const powerSweep = [];
+        const numPoints = 400;
+        const RL_MIN = 1;
+        const RL_MAX = 2000;
+
+        for (let i = 0; i < numPoints; i++) {
+            const rl = RL_MIN + (i / (numPoints - 1)) * (RL_MAX - RL_MIN);
+            rlSweep.push(rl);
+            const pc = computePower(Vth, Rth, rl, Xth, XL, mode);
+            powerSweep.push(pc.PL);
+        }
+
+        // Find max power point
+        let maxPower = 0;
+        let maxRl = Rth;
+        for (let i = 0; i < rlSweep.length; i++) {
+            if (powerSweep[i] > maxPower) {
+                maxPower = powerSweep[i];
+                maxRl = rlSweep[i];
+            }
+        }
+
+        const pointData = rlSweep.map((rl, i) => ({ x: rl, y: powerSweep[i] }));
+
+        const options = {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            let val = ctx.raw.y;
+                            let unit = val >= 1 ? 'W' : 'mW';
+                            let displayVal = val >= 1 ? val.toFixed(3) : (val * 1000).toFixed(1);
+                            return ctx.dataset.label + ': ' + displayVal + ' ' + unit + ' @ R_L=' + ctx.raw.x.toFixed(0) + ' Ω';
+                        }
+                    },
+                    backgroundColor: 'rgba(0,0,0,0.7)'
+                },
+                legend: {
+                    position: 'top',
+                    labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } }
+                }
+            },
+            scales: {
+                x: {
+                    type: 'linear',
+                    title: { display: true, text: 'Load Resistance R_L (Ω)', font: { weight: 'bold', size: 12 } },
+                    min: 0,
+                    max: RL_MAX,
+                    ticks: { callback: v => v + ' Ω', maxTicksLimit: 10 },
+                    grid: { color: '#eef2ff' }
+                },
+                y: {
+                    title: { display: true, text: 'Load Power P_L (W)', font: { weight: 'bold', size: 11 } },
+                    min: 0,
+                    max: Math.max(maxPower * 1.2, 0.1),
+                    ticks: {
+                        callback: v => v >= 1 ? v.toFixed(1) + ' W' : (v * 1000).toFixed(0) + ' mW'
+                    },
+                    grid: { color: '#eef2ff' }
+                }
+            }
+        };
+
+        // Current operating point power
+        const opPower = c.PL;
+
+        const datasets = [
+            {
+                label: 'P_L(R_L)',
+                data: pointData,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59,130,246,0.08)',
+                borderWidth: 2.5,
+                pointRadius: 0,
+                tension: 0.3,
+                fill: true,
+                order: 2
+            },
+            {
+                label: 'Maximum Power Point P_max',
+                data: [{ x: maxRl, y: maxPower }],
+                backgroundColor: '#ef4444',
+                borderColor: '#ef4444',
+                pointRadius: 8,
+                pointHoverRadius: 10,
+                pointStyle: 'circle',
+                showLine: false,
+                order: 1
+            },
+            {
+                label: 'Current Operating Point',
+                data: [{ x: RL, y: opPower }],
+                backgroundColor: '#f97316',
+                borderColor: '#f97316',
+                pointRadius: 7,
+                pointHoverRadius: 9,
+                pointStyle: 'circle',
+                showLine: false,
+                order: 1
+            }
+        ];
+
+        if (chartInstance) {
+            chartInstance.data.datasets[0].data = pointData;
+            chartInstance.data.datasets[1].data = [{ x: maxRl, y: maxPower }];
+            chartInstance.data.datasets[2].data = [{ x: RL, y: opPower }];
+            chartInstance.options.scales.y.max = Math.max(maxPower * 1.2, 0.1);
+            // Store current params so the plugin can read them
+            chartInstance.$rth = Rth;
+            chartInstance.update('none');
+        } else {
+            chartInstance = new Chart(canvas, {
+                type: 'line',
+                data: { datasets },
+                options: options,
+                plugins: [{
+                    id: 'rthLine',
+                    afterDraw(chart) {
+                        const { ctx, chartArea: { left, right, top, bottom }, scales } = chart;
+                        const currentRth = chart.$rth;
+                        const xPos = scales.x.getPixelForValue(currentRth);
+                        if (xPos >= left && xPos <= right) {
+                            ctx.save();
+                            ctx.beginPath();
+                            ctx.strokeStyle = '#22c55e';
+                            ctx.lineWidth = 2;
+                            ctx.setLineDash([6, 4]);
+                            ctx.moveTo(xPos, top);
+                            ctx.lineTo(xPos, bottom);
+                            ctx.stroke();
+                            ctx.setLineDash([]);
+                            // Label
+                            ctx.fillStyle = '#22c55e';
+                            ctx.font = 'bold 11px monospace';
+                            ctx.textAlign = 'center';
+                            ctx.fillText('R_th=' + currentRth + 'Ω', xPos, top + 14);
+                            ctx.restore();
+                        }
+                    }
+                }]
+            });
+            // Store initial Rth so the plugin can read it on first draw
+            chartInstance.$rth = Rth;
+        }
+    }
+
+    function switchMode(mode) {
+        currentMode = mode;
+        if (mode === 'dc') {
+            dcModeBtn.classList.add('active');
+            dcModeBtn.classList.remove('bg-slate-400');
+            dcModeBtn.classList.add('bg-blue-500');
+            acModeBtn.classList.remove('active');
+            acModeBtn.classList.remove('bg-orange-500');
+            acModeBtn.classList.add('bg-slate-400');
+            acControls.style.display = 'none';
+            acExtraInfo.style.display = 'none';
+            document.getElementById('theory_title').innerText = 'DC Maximum Power Transfer';
+            document.getElementById('theory_text').innerHTML = 'The load receives maximum power when \(R_L\) equals \(R_{th}\):<br>\(P_{max} = \\frac{U_{th}^2}{4 R_{th}}\)<br>At this point, efficiency \(\eta = 50\%\) (source internal resistance and load each consume half the power).<br>\(P_L = \\frac{U_{th}^2 R_L}{(R_{th} + R_L)^2}\)';
+            document.getElementById('character_title').innerText = 'Matching Properties';
+            document.getElementById('character_text').innerHTML = 'When \(R_L\) deviates from \(R_{th}\), power decreases (parabolic shape).<br>Power first increases then decreases as \(R_L\) increases.<br>At the maximum power point, \(R_L = R_{th}\), and the power curve reaches its peak.<br>Switch to AC mode to observe the complex conjugate matching condition.';
+            matchBtn.innerText = '⚡ Match Maximum Power (R_L = R_th)';
+        } else {
+            acModeBtn.classList.add('active');
+            acModeBtn.classList.remove('bg-slate-400');
+            acModeBtn.classList.add('bg-orange-500');
+            dcModeBtn.classList.remove('active');
+            dcModeBtn.classList.remove('bg-blue-500');
+            dcModeBtn.classList.add('bg-slate-400');
+            acControls.style.display = 'block';
+            acExtraInfo.style.display = 'block';
+            document.getElementById('theory_title').innerText = 'AC Maximum Power Transfer';
+            document.getElementById('theory_text').innerHTML = 'The load receives maximum power when \(Z_L = Z_{th}^*\) (complex conjugate match):<br>\(R_L = R_{th},\ X_L = -X_{th}\)<br>\(P_{max} = \\frac{U_{th}^2}{4 R_{th}}\)<br>If only magnitude-matched \(|Z_L| = |Z_{th}|\), power is still less than the maximum.';
+            document.getElementById('character_title').innerText = 'Complex Conjugate Matching';
+            document.getElementById('character_text').innerHTML = 'Inductive and capacitive loads have different effects.<br>Conjugate matching eliminates reactive power exchange.<br>Adjust \(X_L\) to equal \(-X_{th}\) for maximum power.<br>Adjust \(X_{th}\) and \(X_L\) to observe changes in the power curve.';
+            document.getElementById('match_status_row').querySelector('.text-slate-600').innerText = 'Match Status';
+            matchBtn.innerText = '⚡ Match Maximum Power (Z_L = Z_th^*)';
+        }
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(document.getElementById('theory_text'), {
+                delimiters: [
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '\\(', right: '\\)', display: false}
+                ],
+                throwOnError: false
+            });
+            renderMathInElement(document.getElementById('character_text'), {
+                delimiters: [
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '\\(', right: '\\)', display: false}
+                ],
+                throwOnError: false
+            });
+        }
+        updateDisplay();
+    }
+
+    function matchMaxPower() {
+        const { Vth, Rth, RL, Xth, XL, mode } = getParams();
+        if (mode === 'dc') {
+            rlSlider.value = Rth;
+        } else {
+            rlSlider.value = Rth;
+            xlSlider.value = -Xth;
+        }
+        updateDisplay();
+    }
+
+    function bindEvents() {
+        vthSlider.addEventListener('input', updateDisplay);
+        rthSlider.addEventListener('input', updateDisplay);
+        rlSlider.addEventListener('input', updateDisplay);
+        xthSlider.addEventListener('input', updateDisplay);
+        xlSlider.addEventListener('input', updateDisplay);
+        dcModeBtn.addEventListener('click', () => switchMode('dc'));
+        acModeBtn.addEventListener('click', () => switchMode('ac'));
+        matchBtn.addEventListener('click', matchMaxPower);
+        window.addEventListener('resize', () => {
+            if (chartInstance) chartInstance.resize();
+        });
+    }
+
+    function init() {
+        bindEvents();
+        updateDisplay();
+        window.addEventListener('load', function() {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+    }
+
+    init();
+</script>
+<!-- KaTeX scripts at the end of body -->
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof renderMathInElement === 'function') {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '\\[', right: '\\]', display: true},
+          {left: '\\(', right: '\\)', display: false}
+        ],
+        throwOnError: false
+      });
+    } else {
+      console.warn('renderMathInElement not loaded');
+    }
+  });
+</script>
+</body>
+</html>

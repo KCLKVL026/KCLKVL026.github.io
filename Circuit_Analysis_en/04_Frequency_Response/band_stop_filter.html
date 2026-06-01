@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>RLC Band-Stop Filter (Notch Filter) | Magnitude + Phase Simulation | Passband Marking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- KaTeX math formula rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #2563eb;
+            transform: scale(1.15);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15);
+        }
+        .jump-btn {
+            transition: all 0.15s ease;
+            background-color: #3b82f6;
+        }
+        .jump-btn:hover {
+            background-color: #2563eb;
+            transform: scale(1.02);
+        }
+        .jump-btn:active {
+            transform: scale(0.96);
+        }
+        .band-btn {
+            background-color: #10b981;
+        }
+        .band-btn:hover {
+            background-color: #059669;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- Back to Home button -->
+    <div class="flex justify-start mb-4">
+        <a href="../index.html"
+           class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Home
+        </a>
+    </div>
+
+    <!-- Title area -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            RLC Series Band-Stop Filter - Notch Response Simulation
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            Adjust resistance \(R\), inductance \(L\), and capacitance \(C\) to observe output voltage magnitude and phase response | Input voltage \(V_{in}=1\ \text{V}\) (peak)
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left Control Panel -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- Parameter Card: R, L, C -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    Circuit Parameter Adjustment
+                </h3>
+
+                <!-- Resistance R: 20Ohm ~ 20kOhm -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Resistance \(R\)</label>
+                        <span class="text-blue-600 font-mono" id="r_val_display">1.0 kΩ</span>
+                    </div>
+                    <input type="range" id="r_slider" min="20" max="20000" step="1" value="1000" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>20 Ω</span><span>20 kΩ</span>
+                    </div>
+                </div>
+
+                <!-- Inductance L: 0.1 mH ~ 100 mH -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Inductance \(L\)</label>
+                        <span class="text-blue-600 font-mono" id="l_val_display">10.0 mH</span>
+                    </div>
+                    <input type="range" id="l_slider" min="0.1" max="100" step="0.1" value="10" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>0.1 mH</span><span>100 mH</span>
+                    </div>
+                </div>
+
+                <!-- Capacitance C: 0.001uF ~ 1uF -->
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Capacitance \(C\)</label>
+                        <span class="text-blue-600 font-mono" id="c_val_display">0.100 μF</span>
+                    </div>
+                    <input type="range" id="c_slider" min="0.001" max="1" step="0.001" value="0.1" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>0.001 μF</span><span>1 μF</span>
+                    </div>
+                </div>
+
+                <!-- Marker frequency f: 1Hz ~ 1MHz -->
+                <div class="mb-3 pt-2 border-t border-slate-100">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Marker Frequency \(f\)</label>
+                        <span class="text-blue-600 font-mono" id="f_point_display">1.00 kHz</span>
+                    </div>
+                    <input type="range" id="f_point_slider" min="1" max="1000000" step="1" value="1000" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>1 Hz</span><span>1 MHz</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2 flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Purple vertical line marks the current frequency; both charts display values at this point synchronously
+                    </p>
+                </div>
+            </div>
+
+            <!-- Characteristic Parameters Card + Dual button group -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-purple-500 rounded-full"></span>
+                    Filter Characteristic Parameters
+                </h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">Notch Frequency \(f_0\)</span>
+                        <span class="font-mono font-bold text-indigo-700" id="f0_display">— Hz</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">Quality Factor \(Q\)</span>
+                        <span class="font-mono font-bold text-indigo-700" id="q_display">—</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">Notch Depth (Theoretical)</span>
+                        <span class="font-mono font-bold text-indigo-700">Ideal 0 V</span>
+                    </div>
+
+                    <!-- Stopband bandwidth & passband upper/lower limits -->
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">Stopband Bandwidth (-3dB)</span>
+                        <span class="font-mono font-bold text-emerald-700" id="bandwidth_display">— Hz</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg border-l-2 border-emerald-300">
+                        <span class="text-slate-600">Passband Lower Limit \(f_{L}\)</span>
+                        <span class="font-mono font-bold text-emerald-700" id="f_lower_display">— Hz</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg border-l-2 border-emerald-300">
+                        <span class="text-slate-600">Passband Upper Limit \(f_{H}\)</span>
+                        <span class="font-mono font-bold text-emerald-700" id="f_upper_display">— Hz</span>
+                    </div>
+
+                    <div class="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
+                        <!-- Mark Notch Frequency button -->
+                        <button id="jumpToF0Btn" class="jump-btn text-white text-sm font-medium px-5 py-2 rounded-full shadow-md flex items-center justify-center gap-1 transition focus:outline-none focus:ring-2 focus:ring-blue-300">
+                            Mark Notch Frequency
+                        </button>
+                        <!-- Mark Passband button (green style) -->
+                        <button id="markBandBtn" class="band-btn text-white text-sm font-medium px-5 py-2 rounded-full shadow-md flex items-center justify-center gap-2 transition focus:outline-none focus:ring-2 focus:ring-emerald-300">
+                            Mark Passband
+                        </button>
+                    </div>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-3 text-center">
+                    * Green dashed lines indicate passband upper/lower limits (-3dB attenuation points) | Purple dashed line indicates current marker frequency
+                </p>
+            </div>
+
+            <!-- Current frequency output characteristics card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-amber-500 rounded-full"></span>
+                    Output at Current Frequency \(f\)
+                </h3>
+                <div class="grid grid-cols-2 gap-3 text-center">
+                    <div class="bg-blue-50 p-3 rounded-xl">
+                        <div class="text-xs text-blue-700 font-semibold">Output Voltage \(V_{out}\)</div>
+                        <div class="text-xl font-bold text-blue-600" id="vout_point">0.00 V</div>
+                        <div class="text-[10px] text-blue-500 mt-1">Magnitude (Vin=1V)</div>
+                    </div>
+                    <div class="bg-emerald-50 p-3 rounded-xl">
+                        <div class="text-xs text-emerald-700 font-semibold">Phase Shift \(\varphi\)</div>
+                        <div class="text-xl font-bold text-emerald-600" id="phase_point">0.0°</div>
+                        <div class="text-[10px] text-emerald-500 mt-1">Output relative to input</div>
+                    </div>
+                </div>
+                <div class="mt-3 text-center text-xs text-slate-500 bg-slate-50 rounded-lg p-2">
+                    Transfer Function: \(H(s) = \dfrac{s^2 LC + 1}{s^2 LC + sRC + 1}\)
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Graph Area -->
+        <div class="lg:col-span-8 space-y-5">
+            <!-- Magnitude Response Chart -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 transition-all">
+                <div class="flex flex-wrap justify-between items-center mb-2 px-2">
+                    <div class="flex items-center gap-3 text-sm">
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-red-500 rounded-full"></div><span class="font-medium">Magnitude Response \(|H(f)|\)</span></div>
+                        <div class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Output Voltage / Input Voltage</div>
+                    </div>
+                    <div class="text-xs text-slate-400">X-axis: Logarithmic Frequency (Hz)</div>
+                </div>
+                <div class="relative">
+                    <canvas id="magChart" width="800" height="320" style="width:100%; height:auto; max-height: 320px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-1">
+                    Band-Stop Magnitude Response | Voltage approaches zero at notch frequency, passband on both sides | Green dashed lines: passband boundaries (-3dB)
+                </div>
+            </div>
+
+            <!-- Phase Response Chart -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4 transition-all">
+                <div class="flex flex-wrap justify-between items-center mb-2 px-2">
+                    <div class="flex items-center gap-3 text-sm">
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-indigo-500 rounded-full"></div><span class="font-medium">Phase Response \(\angle H(f)\)</span></div>
+                        <div class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Phase Response</div>
+                    </div>
+                    <div class="text-xs text-slate-400">X-axis: Logarithmic Frequency (Hz)</div>
+                </div>
+                <div class="relative">
+                    <canvas id="phaseChart" width="800" height="320" style="width:100%; height:auto; max-height: 320px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-1">
+                    Band-Stop Phase Response | Transitions from 0° to -180° | Green dashed lines correspond to passband boundary frequencies
+                </div>
+            </div>
+
+            <!-- Explanation Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">Theoretical Basis</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Series RLC circuit, output taken as the sum of inductor and capacitor voltages (total voltage minus resistor voltage):<br>
+                        \(H(s) = \dfrac{sL + 1/(sC)}{R + sL + 1/(sC)} = \dfrac{s^2 LC + 1}{s^2 LC + sRC + 1}\).<br>
+                        Notch frequency \(f_0 = \dfrac{1}{2\pi\sqrt{LC}}\), where gain is minimum.<br>
+                        Quality factor \(Q = \dfrac{1}{R}\sqrt{\dfrac{L}{C}}\), higher \(Q\) produces a sharper notch.<br>
+                        Passband boundaries (cutoff frequencies) are the frequency points where gain drops to \(1/\sqrt{2}\) (\(-3dB\)) of maximum gain.
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">Characteristic Interpretation</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        • Band-stop characteristic: signals near the notch frequency are strongly attenuated, while passband signals on both sides pass through.<br>
+                        • Phase undergoes a rapid jump at the notch frequency, with the range of change related to the \(Q\) value.<br>
+                        • Adjusting \(R, L, C\) changes the notch center frequency and notch width.<br>
+                        • Click "Mark Passband" to automatically position green dashed lines at the -3dB upper and lower boundary frequencies.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // DOM elements
+    const rSlider = document.getElementById('r_slider');
+    const lSlider = document.getElementById('l_slider');
+    const cSlider = document.getElementById('c_slider');
+    const fPointSlider = document.getElementById('f_point_slider');
+
+    const rDisplay = document.getElementById('r_val_display');
+    const lDisplay = document.getElementById('l_val_display');
+    const cDisplay = document.getElementById('c_val_display');
+    const fPointDisplay = document.getElementById('f_point_display');
+
+    const f0Display = document.getElementById('f0_display');
+    const qDisplay = document.getElementById('q_display');
+    const voutPointSpan = document.getElementById('vout_point');
+    const phasePointSpan = document.getElementById('phase_point');
+    // Bandwidth and passband upper/lower limit display
+    const bandwidthDisplay = document.getElementById('bandwidth_display');
+    const fLowerDisplay = document.getElementById('f_lower_display');
+    const fUpperDisplay = document.getElementById('f_upper_display');
+
+    const magCanvas = document.getElementById('magChart');
+    const phaseCanvas = document.getElementById('phaseChart');
+
+    let magChartInstance = null;
+    let phaseChartInstance = null;
+
+    const Vin = 1.0;
+    const F_MIN = 1;
+    const F_MAX = 1000000;
+    const NUM_POINTS = 700;     // Sufficient points for boundary precision
+
+    // Store currently calculated passband upper/lower limit frequencies
+    let currentBandLimits = { fLower: null, fUpper: null };
+
+    // Generate logarithmic frequency array
+    function generateLogFrequencies(minFreq, maxFreq, points) {
+        const freqs = [];
+        const minLog = Math.log10(minFreq);
+        const maxLog = Math.log10(maxFreq);
+        for (let i = 0; i < points; i++) {
+            const logVal = minLog + (i / (points - 1)) * (maxLog - minLog);
+            freqs.push(Math.pow(10, logVal));
+        }
+        return freqs;
+    }
+
+    // Band-stop transfer function: H = (s^2 LC + 1) / (s^2 LC + sRC + 1), s = j*omega
+    function computeNotchResponse(freq, R, L, C) {
+        const omega = 2 * Math.PI * freq;
+        const omega2 = omega * omega;
+        const LC = L * C;
+        const RC = R * C;
+        const numReal = 1 - omega2 * LC;
+        const numImag = 0;
+        const denReal = 1 - omega2 * LC;
+        const denImag = omega * RC;
+        const denominatorSq = denReal * denReal + denImag * denImag;
+        if (denominatorSq < 1e-12) return { mag: 0, phase: 0 };
+        const H_real = (numReal * denReal + numImag * denImag) / denominatorSq;
+        const H_imag = (numImag * denReal - numReal * denImag) / denominatorSq;
+        const mag = Math.sqrt(H_real * H_real + H_imag * H_imag);
+        let phase = Math.atan2(H_imag, H_real) * 180 / Math.PI;
+        return { mag: mag * Vin, phase: phase };
+    }
+
+    // Calculate notch frequency f0 and quality factor Q
+    function computeNotchParams(R, L, C) {
+        if (L <= 0 || C <= 0) return { f0: 0, Q: 0 };
+        const f0 = 1 / (2 * Math.PI * Math.sqrt(L * C));
+        const Q = (1 / R) * Math.sqrt(L / C);
+        return { f0, Q };
+    }
+
+    // Corrected passband upper/lower frequency algorithm: based on maximum gain (both-side passband) dropping 3dB (0.707x)
+    // Band-stop filter passband gain maximum approaches 1; find first point from low frequency to high frequency
+    // where magnitude <= 0.707 (left cutoff point), and first point from high frequency to low frequency
+    // where magnitude <= 0.707 (right cutoff point), ensuring both points are on opposite sides of the notch frequency.
+    function computeBandLimitsCorrected(R, L, C) {
+        if (L <= 0 || C <= 0) return { fLower: null, fUpper: null, bandwidth: null };
+        const freqs = generateLogFrequencies(F_MIN, F_MAX, NUM_POINTS);
+        const targetMag = 0.70710678;  // -3dB corresponds to 1/sqrt(2)
+        // Calculate magnitude at all frequency points (note: returns actual output voltage, but since Vin=1, magnitude = gain)
+        const mags = freqs.map(f => computeNotchResponse(f, R, L, C).mag);
+
+        // Find approximate notch frequency position (minimum gain point) for auxiliary left/right determination
+        let minMagIdx = 0;
+        for (let i = 1; i < mags.length; i++) {
+            if (mags[i] < mags[minMagIdx]) minMagIdx = i;
+        }
+        const notchFreq = freqs[minMagIdx];
+
+        // Left cutoff frequency: scan from lowest frequency to high frequency, find first point where mag <= targetMag
+        let fLower = null;
+        for (let i = 0; i < freqs.length; i++) {
+            if (mags[i] <= targetMag) {
+                // For better precision, perform linear interpolation
+                if (i > 0 && mags[i-1] > targetMag && mags[i] <= targetMag) {
+                    const ratio = (targetMag - mags[i-1]) / (mags[i] - mags[i-1]);
+                    if (ratio >= 0 && ratio <= 1) {
+                        fLower = freqs[i-1] + ratio * (freqs[i] - freqs[i-1]);
+                    } else {
+                        fLower = freqs[i];
+                    }
+                } else {
+                    fLower = freqs[i];
+                }
+                break;
+            }
+        }
+
+        // Right cutoff frequency: scan from highest frequency to low frequency, find first point where mag <= targetMag
+        let fUpper = null;
+        for (let i = freqs.length - 1; i >= 0; i--) {
+            if (mags[i] <= targetMag) {
+                if (i < freqs.length - 1 && mags[i+1] > targetMag && mags[i] <= targetMag) {
+                    const ratio = (targetMag - mags[i+1]) / (mags[i] - mags[i+1]);
+                    if (ratio >= 0 && ratio <= 1) {
+                        fUpper = freqs[i+1] + ratio * (freqs[i] - freqs[i+1]);
+                    } else {
+                        fUpper = freqs[i];
+                    }
+                } else {
+                    fUpper = freqs[i];
+                }
+                break;
+            }
+        }
+
+        // Ensure fLower < notchFreq < fUpper; if not, try swapping (to prevent numerical anomalies)
+        if (fLower && fUpper && fLower > fUpper) {
+            const temp = fLower; fLower = fUpper; fUpper = temp;
+        }
+        // Boundary validity: if high Q value causes left/right boundaries to coincide or be invalid,
+        // use theoretical approximation based on notch frequency and Q value
+        if (!fLower || !fUpper || fLower >= fUpper) {
+            const { f0, Q } = computeNotchParams(R, L, C);
+            if (f0 > 0 && Q > 0) {
+                // For band-stop filter, -3dB bandwidth is approximately f0 / Q, boundaries are f0 +/- BW/2
+                const bw = f0 / Q;
+                const approxLower = Math.max(F_MIN, f0 - bw/2);
+                const approxUpper = Math.min(F_MAX, f0 + bw/2);
+                if (!fLower) fLower = approxLower;
+                if (!fUpper) fUpper = approxUpper;
+                if (fLower >= fUpper) {
+                    fLower = f0 / Math.sqrt(2);
+                    fUpper = f0 * Math.sqrt(2);
+                }
+            } else {
+                fLower = null; fUpper = null;
+            }
+        }
+
+        // Ensure boundaries don't exceed simulation range
+        if (fLower) fLower = Math.min(Math.max(F_MIN, fLower), fUpper || F_MAX);
+        if (fUpper) fUpper = Math.min(Math.max(fLower || F_MIN, fUpper), F_MAX);
+
+        let bandwidth = (fLower && fUpper) ? (fUpper - fLower) : null;
+        return { fLower, fUpper, bandwidth };
+    }
+
+    // Format frequency display (keep one decimal place for values less than 1000Hz)
+    function formatFreqValue(freq) {
+        if (freq === null || !isFinite(freq)) return '—';
+        if (freq < 1000) return `${freq.toFixed(1)} Hz`;
+        if (freq < 1000000) return `${(freq/1000).toFixed(2)} kHz`;
+        return `${(freq/1000000).toFixed(2)} MHz`;
+    }
+
+    function getCurrentParams() {
+        let R = parseFloat(rSlider.value);
+        let L = parseFloat(lSlider.value) * 1e-3; // mH -> H
+        let C = parseFloat(cSlider.value) * 1e-6; // uF -> F
+        const f_marker = parseFloat(fPointSlider.value);
+        if (isNaN(R)) R = 1000;
+        if (isNaN(L)) L = 0.01;
+        if (isNaN(C)) C = 0.1e-6;
+        return { R, L, C, f_marker };
+    }
+
+    function updateParameterDisplays(R, L, C) {
+        if (R >= 1000) rDisplay.innerText = `${(R/1000).toFixed(1)} kΩ`;
+        else rDisplay.innerText = `${R.toFixed(0)} Ω`;
+        lDisplay.innerText = `${(L*1000).toFixed(1)} mH`;
+        const c_uF = C * 1e6;
+        if (c_uF >= 1) cDisplay.innerText = `${c_uF.toFixed(3)} μF`;
+        else cDisplay.innerText = `${(c_uF * 1000).toFixed(2)} nF`;
+    }
+
+    function updateCharDisplays(R, L, C) {
+        const { f0, Q } = computeNotchParams(R, L, C);
+        if (isFinite(f0) && f0 > 0) {
+            if (f0 >= 1000) f0Display.innerText = `${(f0/1000).toFixed(2)} kHz`;
+            else f0Display.innerText = `${f0.toFixed(1)} Hz`;
+            qDisplay.innerText = Q.toFixed(2);
+        } else {
+            f0Display.innerText = '—';
+            qDisplay.innerText = '—';
+        }
+    }
+
+    // Update passband upper/lower limit display and bandwidth (using corrected algorithm)
+    function updateBandDisplay(R, L, C) {
+        const { fLower, fUpper, bandwidth } = computeBandLimitsCorrected(R, L, C);
+        currentBandLimits = { fLower, fUpper };
+        if (fLower && fUpper && isFinite(fLower) && isFinite(fUpper)) {
+            fLowerDisplay.innerText = formatFreqValue(fLower);
+            fUpperDisplay.innerText = formatFreqValue(fUpper);
+            if (bandwidth !== null && isFinite(bandwidth)) {
+                if (bandwidth < 1000) bandwidthDisplay.innerText = `${bandwidth.toFixed(1)} Hz`;
+                else if (bandwidth < 1000000) bandwidthDisplay.innerText = `${(bandwidth/1000).toFixed(2)} kHz`;
+                else bandwidthDisplay.innerText = `${(bandwidth/1000000).toFixed(2)} MHz`;
+            } else bandwidthDisplay.innerText = '—';
+        } else {
+            fLowerDisplay.innerText = '—';
+            fUpperDisplay.innerText = '—';
+            bandwidthDisplay.innerText = '—';
+            currentBandLimits = { fLower: null, fUpper: null };
+        }
+    }
+
+    function updateMarkerValues(R, L, C, f_marker) {
+        const { mag, phase } = computeNotchResponse(f_marker, R, L, C);
+        voutPointSpan.innerText = `${mag.toFixed(3)} V`;
+        phasePointSpan.innerText = `${phase.toFixed(1)}°`;
+        if (f_marker >= 1000000) fPointDisplay.innerText = `${(f_marker/1000000).toFixed(2)} MHz`;
+        else if (f_marker >= 1000) fPointDisplay.innerText = `${(f_marker/1000).toFixed(2)} kHz`;
+        else fPointDisplay.innerText = `${f_marker.toFixed(0)} Hz`;
+    }
+
+    function buildMagPhaseData(R, L, C) {
+        const freqs = generateLogFrequencies(F_MIN, F_MAX, NUM_POINTS);
+        const magData = [];
+        const phaseData = [];
+        for (let i = 0; i < freqs.length; i++) {
+            const f = freqs[i];
+            const { mag, phase } = computeNotchResponse(f, R, L, C);
+            magData.push({ x: f, y: mag });
+            phaseData.push({ x: f, y: phase });
+        }
+        return { freqs, magData, phaseData };
+    }
+
+    // Combined plugin: draw purple marker line (current frequency) + green dashed lines (upper/lower passband boundaries)
+    function createCombinedMarkersPlugin(getMarkerFreq, getBandLimitsFunc) {
+        return {
+            id: 'combinedMarkers',
+            afterDraw(chart) {
+                const { ctx, chartArea: { left, right, top, bottom }, scales } = chart;
+                if (!scales.x) return;
+
+                // 1. Draw purple marker line (current frequency)
+                const markerFreq = getMarkerFreq();
+                if (markerFreq && scales.x) {
+                    const xPos = scales.x.getPixelForValue(markerFreq);
+                    if (xPos >= left && xPos <= right) {
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.strokeStyle = '#a855f7';
+                        ctx.lineWidth = 2;
+                        ctx.setLineDash([6, 8]);
+                        ctx.moveTo(xPos, top);
+                        ctx.lineTo(xPos, bottom);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                        ctx.beginPath();
+                        ctx.arc(xPos, top + 12, 4, 0, 2 * Math.PI);
+                        ctx.fillStyle = '#a855f7';
+                        ctx.fill();
+                        ctx.fillStyle = 'white';
+                        ctx.font = 'bold 10px "Segoe UI"';
+                        ctx.fillText('●', xPos-2, top+14);
+                        ctx.fillStyle = '#581c87';
+                        ctx.font = '10px monospace';
+                        let freqText = '';
+                        if (markerFreq >= 1000000) freqText = (markerFreq/1000000).toFixed(1)+'M';
+                        else if (markerFreq >= 1000) freqText = (markerFreq/1000).toFixed(1)+'k';
+                        else freqText = markerFreq+' Hz';
+                        ctx.fillText(`${freqText}`, xPos+5, top+16);
+                        ctx.restore();
+                    }
+                }
+
+                // 2. Draw green dashed lines: passband upper/lower limits
+                const limits = getBandLimitsFunc();
+                if (limits && limits.fLower && limits.fUpper && scales.x) {
+                    ctx.save();
+                    ctx.setLineDash([8, 6]);
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = '#10b981';
+                    // Lower limit vertical line
+                    const xLower = scales.x.getPixelForValue(limits.fLower);
+                    if (xLower >= left && xLower <= right) {
+                        ctx.beginPath();
+                        ctx.moveTo(xLower, top);
+                        ctx.lineTo(xLower, bottom);
+                        ctx.stroke();
+                        ctx.fillStyle = '#047857';
+                        ctx.font = 'bold 9px monospace';
+                        ctx.fillText(`↓${formatFreqValue(limits.fLower)}`, xLower+3, bottom-6);
+                    }
+                    // Upper limit vertical line
+                    const xUpper = scales.x.getPixelForValue(limits.fUpper);
+                    if (xUpper >= left && xUpper <= right) {
+                        ctx.beginPath();
+                        ctx.moveTo(xUpper, top);
+                        ctx.lineTo(xUpper, bottom);
+                        ctx.stroke();
+                        ctx.fillStyle = '#047857';
+                        ctx.fillText(`↑${formatFreqValue(limits.fUpper)}`, xUpper+3, bottom-6);
+                    }
+                    ctx.restore();
+                }
+            }
+        };
+    }
+
+    function getCurrentMarkerFreq() {
+        return parseFloat(fPointSlider.value);
+    }
+
+    function getCurrentBandLimits() {
+        return currentBandLimits;
+    }
+
+    function updateMagChart(R, L, C) {
+        const { magData } = buildMagPhaseData(R, L, C);
+        let maxMag = 0;
+        magData.forEach(p => { if (p.y > maxMag) maxMag = p.y; });
+        const yMax = Math.min(1.2, Math.max(1.05, maxMag * 1.05));
+
+        if (magChartInstance) {
+            // Refresh data
+            magChartInstance.data.datasets[0].data = magData;
+            // Update Y-axis range
+            magChartInstance.options.scales.y.max = yMax;
+            magChartInstance.update('none');
+        } else {
+            const options = {
+                responsive: true,
+                maintainAspectRatio: true,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Output Voltage: ${context.raw.y.toFixed(3)} V  @ ${context.raw.x.toFixed(1)} Hz`;
+                            }
+                        },
+                        backgroundColor: 'rgba(0,0,0,0.7)'
+                    },
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        type: 'logarithmic',
+                        title: { display: true, text: 'Frequency f (Hz)', font: { weight: 'bold', size: 12 } },
+                        ticks: {
+                            callback: (val) => {
+                                if (val >= 1000000) return (val/1000000).toFixed(0) + 'M';
+                                if (val >= 1000) return (val/1000).toFixed(0) + 'k';
+                                return val;
+                            },
+                            autoSkip: true,
+                            maxTicksLimit: 8
+                        },
+                        min: F_MIN,
+                        max: F_MAX,
+                        grid: { color: '#eef2ff' }
+                    },
+                    y: {
+                        title: { display: true, text: 'Output Voltage Magnitude (V)', font: { weight: 'bold', size: 12 } },
+                        min: 0,
+                        max: yMax,
+                        ticks: { stepSize: 0.2, callback: (val) => val.toFixed(1) + ' V' },
+                        grid: { color: '#eef2ff' }
+                    }
+                },
+                elements: { point: { radius: 0, hitRadius: 6 }, line: { borderWidth: 2.5, tension: 0.2 } }
+            };
+
+            const datasets = [{
+                label: '|H(f)| · Vin',
+                data: magData,
+                borderColor: '#ef4444',
+                backgroundColor: 'transparent',
+                borderWidth: 2.5,
+                pointRadius: 0,
+                fill: false
+            }];
+
+            magChartInstance = new Chart(magCanvas, {
+                type: 'line',
+                data: { datasets },
+                options: options,
+                plugins: [createCombinedMarkersPlugin(getCurrentMarkerFreq, getCurrentBandLimits)]
+            });
+        }
+    }
+
+    function updatePhaseChart(R, L, C) {
+        const { phaseData } = buildMagPhaseData(R, L, C);
+        let minPhase = 0, maxPhase = 0;
+        phaseData.forEach(p => {
+            if (p.y < minPhase) minPhase = p.y;
+            if (p.y > maxPhase) maxPhase = p.y;
+        });
+        const yMin = Math.min(-100, minPhase - 10);
+        const yMax = Math.max(100, maxPhase + 10);
+
+        if (phaseChartInstance) {
+            // Refresh data
+            phaseChartInstance.data.datasets[0].data = phaseData;
+            // Update Y-axis range
+            phaseChartInstance.options.scales.y.min = yMin;
+            phaseChartInstance.options.scales.y.max = yMax;
+            phaseChartInstance.update('none');
+        } else {
+            const options = {
+                responsive: true,
+                maintainAspectRatio: true,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Phase Angle: ${context.raw.y.toFixed(1)}°  @ ${context.raw.x.toFixed(1)} Hz`;
+                            }
+                        },
+                        backgroundColor: 'rgba(0,0,0,0.7)'
+                    },
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        type: 'logarithmic',
+                        title: { display: true, text: 'Frequency f (Hz)', font: { weight: 'bold', size: 12 } },
+                        ticks: {
+                            callback: (val) => {
+                                if (val >= 1000000) return (val/1000000).toFixed(0) + 'M';
+                                if (val >= 1000) return (val/1000).toFixed(0) + 'k';
+                                return val;
+                            },
+                            autoSkip: true,
+                            maxTicksLimit: 8
+                        },
+                        min: F_MIN,
+                        max: F_MAX,
+                        grid: { color: '#eef2ff' }
+                    },
+                    y: {
+                        title: { display: true, text: 'Phase Angle (degrees)', font: { weight: 'bold', size: 12 } },
+                        min: yMin,
+                        max: yMax,
+                        ticks: { stepSize: 30, callback: (val) => val + '°' },
+                        grid: { color: '#eef2ff' }
+                    }
+                },
+                elements: { point: { radius: 0, hitRadius: 6 }, line: { borderWidth: 2.5, borderColor: '#6366f1', tension: 0.2 } }
+            };
+
+            const datasets = [{
+                label: 'Phase ∠H(f)',
+                data: phaseData,
+                borderColor: '#6366f1',
+                backgroundColor: 'transparent',
+                borderWidth: 2.5,
+                pointRadius: 0,
+                fill: false
+            }];
+
+            phaseChartInstance = new Chart(phaseCanvas, {
+                type: 'line',
+                data: { datasets },
+                options: options,
+                plugins: [createCombinedMarkersPlugin(getCurrentMarkerFreq, getCurrentBandLimits)]
+            });
+        }
+    }
+
+    function refreshAll() {
+        const { R, L, C, f_marker } = getCurrentParams();
+        updateParameterDisplays(R, L, C);
+        updateCharDisplays(R, L, C);
+        updateBandDisplay(R, L, C);
+        updateMarkerValues(R, L, C, f_marker);
+        updateMagChart(R, L, C);
+        updatePhaseChart(R, L, C);
+    }
+
+    function jumpToNotchFrequency() {
+        const { R, L, C } = getCurrentParams();
+        if (L <= 0 || C <= 0) return;
+        const { f0 } = computeNotchParams(R, L, C);
+        if (!isFinite(f0) || f0 <= 0) return;
+        let targetFreq = Math.min(F_MAX, Math.max(F_MIN, f0));
+        targetFreq = Math.round(targetFreq);
+        fPointSlider.value = targetFreq;
+        // Synchronously update marker frequency display (ensure slider label matches notch frequency)
+        if (targetFreq >= 1000000) fPointDisplay.innerText = `${(targetFreq/1000000).toFixed(2)} MHz`;
+        else if (targetFreq >= 1000) fPointDisplay.innerText = `${(targetFreq/1000).toFixed(2)} kHz`;
+        else fPointDisplay.innerText = `${targetFreq.toFixed(0)} Hz`;
+        refreshAll();
+    }
+
+    function markBandCallback() {
+        refreshAll();  // Recalculate and draw green dashed lines
+    }
+
+    // Event binding
+    rSlider.addEventListener('input', refreshAll);
+    lSlider.addEventListener('input', refreshAll);
+    cSlider.addEventListener('input', refreshAll);
+    fPointSlider.addEventListener('input', refreshAll);
+    document.getElementById('jumpToF0Btn').addEventListener('click', (e) => {
+        e.preventDefault();
+        jumpToNotchFrequency();
+    });
+    document.getElementById('markBandBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        markBandCallback();
+    });
+
+    window.addEventListener('resize', () => {
+        if (magChartInstance) magChartInstance.resize();
+        if (phaseChartInstance) phaseChartInstance.resize();
+        refreshAll();
+    });
+
+    refreshAll();
+
+    document.addEventListener("DOMContentLoaded", function() {
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '\\(', right: '\\)', display: false},
+                ],
+                throwOnError: false
+            });
+        }
+    });
+
+    console.log('RLC Band-Stop Filter simulation | Passband boundaries correctly computed based on -3dB gain | Purple marker frequency | Green passband boundaries');
+</script>
+</body>
+</html>

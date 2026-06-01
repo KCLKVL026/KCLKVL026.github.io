@@ -1,5 +1,7 @@
 # 欢迎访问我的 GitHub Pages 主页
 
+[English README](README.md)
+
 你好！我是 **kclkvl026**，这里主要展示我在电路理论、信号分析与交互式仿真教学方面的开源项目。
 
 ## 🔌 电路分析基础辅助教学

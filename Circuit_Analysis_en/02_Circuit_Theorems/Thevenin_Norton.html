@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Thevenin & Norton Equivalent Theorems | Two-Terminal Network Simplification</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #2563eb;
+            transform: scale(1.15);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15);
+        }
+        .mode-btn {
+            transition: all 0.2s ease;
+        }
+        .mode-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px -2px rgba(0,0,0,0.15);
+        }
+        .mode-btn.active {
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.4);
+            transform: scale(1.03);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
+
+<div class="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <!-- Back to Home button -->
+    <div class="flex justify-start mb-4">
+        <a href="../index.html"
+        class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 rounded-full px-4 py-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Home
+        </a>
+    </div>
+
+    <!-- Title section -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            Thevenin & Norton Equivalent Theorems: Two-Terminal Network Simplification
+        </h1>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            Active two-terminal network on the left -> Thevenin/Norton equivalent -> connect the same load \(R_L\), verify that V/I at both terminals are exactly equal
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left control panel -->
+        <div class="lg:col-span-4 space-y-6">
+            <!-- Parameter card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4">
+                    <span class="w-1 h-6 bg-blue-500 rounded-full"></span>
+                    Circuit Parameters
+                </h3>
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>\(R_1\) (Source Series Resistance)</label>
+                        <span class="text-blue-600 font-mono" id="r1_display">100 Ω</span>
+                    </div>
+                    <input type="range" id="r1_slider" min="10" max="1000" step="10" value="100" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1"><span>10 Ω</span><span>1000 Ω</span></div>
+                </div>
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>\(R_2\) (Parallel Resistance)</label>
+                        <span class="text-blue-600 font-mono" id="r2_display">200 Ω</span>
+                    </div>
+                    <input type="range" id="r2_slider" min="10" max="1000" step="10" value="200" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1"><span>10 Ω</span><span>1000 Ω</span></div>
+                </div>
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>\(R_3\) (Output Series Resistance)</label>
+                        <span class="text-blue-600 font-mono" id="r3_display">50 Ω</span>
+                    </div>
+                    <input type="range" id="r3_slider" min="10" max="1000" step="10" value="50" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1"><span>10 Ω</span><span>1000 Ω</span></div>
+                </div>
+                <div class="border-t border-slate-100 my-3"></div>
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-medium mb-1">
+                        <label>Load \(R_L\)</label>
+                        <span class="text-blue-600 font-mono" id="rl_display">100 Ω</span>
+                    </div>
+                    <input type="range" id="rl_slider" min="10" max="2000" step="10" value="100" class="w-full">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1"><span>10 Ω</span><span>2000 Ω</span></div>
+                </div>
+
+                <!-- Mode switch buttons -->
+                <div class="border-t border-slate-100 my-3 pt-4">
+                    <label class="text-sm font-medium text-slate-600 mb-2 block">Equivalent View Toggle</label>
+                    <div class="flex gap-2">
+                        <button id="theveninBtn" class="mode-btn active flex-1 py-2 px-3 rounded-full text-sm font-bold bg-green-500 text-white">Thevenin Equivalent</button>
+                        <button id="nortonBtn" class="mode-btn flex-1 py-2 px-3 rounded-full text-sm font-bold bg-orange-400 text-white">Norton Equivalent</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Equivalent parameters display card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-purple-500 rounded-full"></span>
+                    Equivalent Parameters
+                </h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">Thevenin Voltage \(U_{th}\)</span>
+                        <span class="font-mono font-bold text-green-600" id="vth_display">— V</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">Thevenin Resistance \(R_{th}\)</span>
+                        <span class="font-mono font-bold text-green-600" id="rth_display">— Ω</span>
+                    </div>
+                    <div class="border-t border-slate-100 my-1"></div>
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">Norton Current \(I_N\)</span>
+                        <span class="font-mono font-bold text-orange-500" id="in_display">— A</span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                        <span class="text-slate-600">Norton Resistance \(R_N\)</span>
+                        <span class="font-mono font-bold text-orange-500" id="rn_display">— Ω</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Verification card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
+                <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-amber-500 rounded-full"></span>
+                    Equivalence Verification (Load \(R_L\))
+                </h3>
+                <div class="grid grid-cols-2 gap-3 text-center">
+                    <div class="bg-blue-50 p-3 rounded-xl">
+                        <div class="text-xs text-blue-700 font-semibold mb-1">Original \(U_{load}\)</div>
+                        <div class="text-lg font-bold text-blue-600 font-mono" id="vload_orig">0.00 V</div>
+                    </div>
+                    <div id="equiv_vload_box" class="bg-green-50 p-3 rounded-xl">
+                        <div class="text-xs text-green-700 font-semibold mb-1">Equivalent \(U_{load}\)</div>
+                        <div class="text-lg font-bold text-green-600 font-mono" id="vload_eq">0.00 V</div>
+                    </div>
+                    <div class="bg-blue-50 p-3 rounded-xl">
+                        <div class="text-xs text-blue-700 font-semibold mb-1">Original \(I_{load}\)</div>
+                        <div class="text-lg font-bold text-blue-600 font-mono" id="iload_orig">0.00 A</div>
+                    </div>
+                    <div id="equiv_iload_box" class="bg-green-50 p-3 rounded-xl">
+                        <div class="text-xs text-green-700 font-semibold mb-1">Equivalent \(I_{load}\)</div>
+                        <div class="text-lg font-bold text-green-600 font-mono" id="iload_eq">0.00 A</div>
+                    </div>
+                </div>
+                <div id="verification_badge" class="mt-3 text-center"></div>
+            </div>
+        </div>
+
+        <!-- Right chart area -->
+        <div class="lg:col-span-8 space-y-5">
+            <!-- Main chart -->
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
+                <div class="flex flex-wrap justify-between items-center mb-3 px-2">
+                    <div class="flex items-center gap-4 text-sm">
+                        <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 rounded-full" style="background:#3b82f6; height:3px;"></div><span class="font-medium">Original Circuit</span></div>
+                        <div class="flex items-center gap-1.5" id="equiv_legend_color"><div class="w-4 h-0.5 rounded-full" style="background:#22c55e; height:3px;"></div><span class="font-medium" id="equiv_legend_text">Thevenin Equivalent</span></div>
+                    </div>
+                </div>
+                <div class="relative">
+                    <canvas id="mainChart" width="700" height="350" style="width:100%; height:auto; max-height:380px;"></canvas>
+                </div>
+                <div class="text-center text-xs text-slate-400 mt-2">
+                    Voltage and current comparison between original and equivalent circuits under the same load
+                </div>
+            </div>
+
+            <!-- Circuit diagrams -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-blue-700 text-sm mb-2">Original Circuit Topology</h4>
+                    <div class="bg-slate-50 rounded-lg p-3 flex items-center justify-center">
+                        <img src="./img/Thevenin_Norton_Origin.jpg" alt="Original circuit topology" class="max-w-full h-auto rounded-lg">
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-green-700 text-sm mb-2" id="equiv_diagram_title">Thevenin Equivalent Circuit</h4>
+                    <div class="bg-slate-50 rounded-lg p-3 flex items-center justify-center" id="equiv_diagram_content">
+                        <img src="./img/Thevenin.jpg" alt="Thevenin equivalent circuit" class="max-w-full h-auto rounded-lg">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Theory description -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">Theoretical Basis</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Any two-terminal network composed of linear elements and independent sources can be replaced, from the perspective of an external load, by a voltage source in series with a resistance (Thevenin) or a current source in parallel with a resistance (Norton).<br>
+                        \(U_{th} = U_s \cdot \frac{R_2}{R_1+R_2}\)，\(R_{th} = R_3 + \frac{R_1 R_2}{R_1+R_2}\)，\(I_N = U_{th}/R_{th}\)。
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <h4 class="font-bold text-indigo-800 text-sm mb-1">Equivalence Properties</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Regardless of the load \(R_L\) connected, the original circuit and the equivalent circuit have identical V-I characteristics at the a-b terminals.<br>
+                        Thevenin and Norton are duals: \(U_{th} = I_N \cdot R_{th}\)，\(R_{th} = R_N\).<br>
+                        Adjust the sliders to observe that both sides always match, verifying the equivalence theorem.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // DOM elements
+    const r1Slider = document.getElementById('r1_slider');
+    const r2Slider = document.getElementById('r2_slider');
+    const r3Slider = document.getElementById('r3_slider');
+    const rlSlider = document.getElementById('rl_slider');
+    const theveninBtn = document.getElementById('theveninBtn');
+    const nortonBtn = document.getElementById('nortonBtn');
+
+    const r1Display = document.getElementById('r1_display');
+    const r2Display = document.getElementById('r2_display');
+    const r3Display = document.getElementById('r3_display');
+    const rlDisplay = document.getElementById('rl_display');
+    const vthDisplay = document.getElementById('vth_display');
+    const rthDisplay = document.getElementById('rth_display');
+    const inDisplay = document.getElementById('in_display');
+    const rnDisplay = document.getElementById('rn_display');
+    const vloadOrig = document.getElementById('vload_orig');
+    const vloadEq = document.getElementById('vload_eq');
+    const iloadOrig = document.getElementById('iload_orig');
+    const iloadEq = document.getElementById('iload_eq');
+    const verificationBadge = document.getElementById('verification_badge');
+
+    const canvas = document.getElementById('mainChart');
+    let chartInstance = null;
+
+    const Vs = 24;
+    let currentMode = 'thevenin'; // 'thevenin' or 'norton'
+
+    function getParams() {
+        return {
+            R1: parseFloat(r1Slider.value),
+            R2: parseFloat(r2Slider.value),
+            R3: parseFloat(r3Slider.value),
+            RL: parseFloat(rlSlider.value)
+        };
+    }
+
+    function computeAll(R1, R2, R3, RL) {
+        // Thevenin equivalents
+        const R1R2_parallel = (R1 * R2) / (R1 + R2);
+        const Vth = Vs * R2 / (R1 + R2);
+        const Rth = R3 + R1R2_parallel;
+        const IN = Vth / Rth;
+        const RN = Rth;
+
+        // Original circuit: Vs -> R1 -> node -> (R2 || (R3 + RL)) ...
+        // Actually: Vs -> R1 -> node A. From A: R2 to ground, R3 to output, RL from R3 to ground
+        // U_output = Vs * (R2 || (R3+RL)) / (R1 + R2 || (R3+RL)) * RL/(R3+RL)
+        const R3_RL = R3 + RL;
+        const R2_parallel_R3RL = (R2 * R3_RL) / (R2 + R3_RL);
+        const U_node = Vs * R2_parallel_R3RL / (R1 + R2_parallel_R3RL);
+        const Vload_orig = U_node * RL / R3_RL;
+        const Iload_orig = Vload_orig / RL;
+
+        // Equivalent circuit: Vth -> Rth -> RL
+        const Vload_eq = Vth * RL / (Rth + RL);
+        const Iload_eq = Vload_eq / RL;
+
+        return { Vth, Rth, IN, RN, Vload_orig, Iload_orig, Vload_eq, Iload_eq };
+    }
+
+    function updateDisplay() {
+        const { R1, R2, R3, RL } = getParams();
+        const c = computeAll(R1, R2, R3, RL);
+
+        r1Display.innerText = R1 + ' Ω';
+        r2Display.innerText = R2 + ' Ω';
+        r3Display.innerText = R3 + ' Ω';
+        rlDisplay.innerText = RL + ' Ω';
+        vthDisplay.innerText = c.Vth.toFixed(2) + ' V';
+        rthDisplay.innerText = c.Rth.toFixed(1) + ' Ω';
+        inDisplay.innerText = (c.IN * 1000).toFixed(2) + ' mA';
+        rnDisplay.innerText = c.RN.toFixed(1) + ' Ω';
+
+        vloadOrig.innerText = c.Vload_orig.toFixed(3) + ' V';
+        vloadEq.innerText = c.Vload_eq.toFixed(3) + ' V';
+        iloadOrig.innerText = (c.Iload_orig * 1000).toFixed(2) + ' mA';
+        iloadEq.innerText = (c.Iload_eq * 1000).toFixed(2) + ' mA';
+
+        // Verification badge
+        const vMatch = Math.abs(c.Vload_orig - c.Vload_eq) < 0.001;
+        const iMatch = Math.abs(c.Iload_orig - c.Iload_eq) < 0.001;
+        if (vMatch && iMatch) {
+            verificationBadge.innerHTML = '<span class="inline-flex items-center gap-1 text-sm font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full">Fully Equivalent</span>';
+        } else {
+            verificationBadge.innerHTML = '<span class="inline-flex items-center gap-1 text-sm font-bold text-red-500 bg-red-50 px-3 py-1.5 rounded-full">Calculating...</span>';
+        }
+
+        updateChart(c);
+    }
+
+    function updateChart(c) {
+        const isThev = currentMode === 'thevenin';
+        const eqColor = isThev ? '#22c55e' : '#f97316';
+        const eqLabel = isThev ? 'Thevenin Equivalent' : 'Norton Equivalent';
+
+        // Update legend
+        document.querySelector('#equiv_legend_color .w-4').style.background = eqColor;
+        document.getElementById('equiv_legend_text').innerText = eqLabel;
+
+        const options = {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            return ctx.dataset.label + ': ' + ctx.raw.toFixed(3) + (ctx.dataset.yAxisID === 'y' ? ' V' : ' mA');
+                        }
+                    },
+                    backgroundColor: 'rgba(0,0,0,0.7)'
+                },
+                legend: {
+                    position: 'top',
+                    labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } }
+                }
+            },
+            scales: {
+                x: {
+                    title: { display: true, text: 'Comparison Items', font: { weight: 'bold', size: 12 } },
+                    grid: { color: '#eef2ff' }
+                },
+                y: {
+                    type: 'linear',
+                    position: 'left',
+                    title: { display: true, text: 'Voltage (V)', font: { weight: 'bold', size: 11 } },
+                    min: 0,
+                    max: Math.max(c.Vload_orig * 1.5, 5),
+                    ticks: { callback: v => v.toFixed(1) + ' V' },
+                    grid: { color: '#eef2ff' }
+                },
+                y1: {
+                    type: 'linear',
+                    position: 'right',
+                    title: { display: true, text: 'Current (mA)', font: { weight: 'bold', size: 11 } },
+                    min: 0,
+                    max: Math.max(c.Iload_orig * 1000 * 1.5, 5),
+                    ticks: { callback: v => v.toFixed(1) + ' mA' },
+                    grid: { drawOnChartArea: false }
+                }
+            }
+        };
+
+        const labels = ['Load Voltage U_load', 'Load Current I_load'];
+        const origVoltage = [c.Vload_orig, null];
+        const eqVoltage = [c.Vload_eq, null];
+        const origCurrent = [null, c.Iload_orig * 1000];
+        const eqCurrent = [null, c.Iload_eq * 1000];
+
+        const datasets = [
+            {
+                label: 'Original Circuit',
+                data: [c.Vload_orig, c.Iload_orig * 1000],
+                backgroundColor: '#3b82f6',
+                borderColor: '#3b82f6',
+                borderWidth: 1,
+                borderRadius: 6,
+                barPercentage: 0.55,
+                categoryPercentage: 0.7,
+                yAxisID: 'y',
+                order: 2
+            },
+            {
+                label: eqLabel,
+                data: [c.Vload_eq, c.Iload_eq * 1000],
+                backgroundColor: eqColor,
+                borderColor: eqColor,
+                borderWidth: 1,
+                borderRadius: 6,
+                barPercentage: 0.55,
+                categoryPercentage: 0.7,
+                yAxisID: 'y',
+                order: 2
+            }
+        ];
+
+        // Add y1 datasets for proper dual-axis display
+        // We show both V and I on y axis, but use y1 axis range for I display
+        // Actually let me simplify: show V values on left y-axis, convert I to mA and show on same scale
+        // For clarity, just show both on primary y-axis with different unit labels
+
+        if (chartInstance) {
+            chartInstance.data.datasets[0].data = [c.Vload_orig, c.Iload_orig * 1000];
+            chartInstance.data.datasets[1].data = [c.Vload_eq, c.Iload_eq * 1000];
+            chartInstance.options.scales.y.max = Math.max(c.Vload_orig * 1.5, c.Iload_orig * 1000 * 1.5, 5);
+            chartInstance.update();
+        } else {
+            chartInstance = new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: ['Load Voltage U_load (V)', 'Load Current I_load (mA)'],
+                    datasets: datasets
+                },
+                options: options
+            });
+        }
+    }
+
+    function switchMode(mode) {
+        currentMode = mode;
+        if (mode === 'thevenin') {
+            theveninBtn.classList.add('active');
+            theveninBtn.classList.remove('bg-orange-400');
+            theveninBtn.classList.add('bg-green-500');
+            nortonBtn.classList.remove('active');
+            nortonBtn.classList.remove('bg-orange-500');
+            nortonBtn.classList.add('bg-orange-400');
+            document.getElementById('equiv_diagram_title').innerText = 'Thevenin Equivalent Circuit';
+            document.getElementById('equiv_diagram_content').innerHTML = '<img src="./img/Thevenin.jpg" alt="Thevenin equivalent circuit" class="max-w-full h-auto rounded-lg">';
+            document.getElementById('equiv_vload_box').className = 'bg-green-50 p-3 rounded-xl';
+            document.getElementById('equiv_iload_box').className = 'bg-green-50 p-3 rounded-xl';
+        } else {
+            nortonBtn.classList.add('active');
+            nortonBtn.classList.remove('bg-orange-400');
+            nortonBtn.classList.add('bg-orange-500');
+            theveninBtn.classList.remove('active');
+            theveninBtn.classList.remove('bg-green-500');
+            theveninBtn.classList.add('bg-green-400');
+            document.getElementById('equiv_diagram_title').innerText = 'Norton Equivalent Circuit';
+            document.getElementById('equiv_diagram_content').innerHTML = '<img src="./img/Norton.jpg" alt="Norton equivalent circuit" class="max-w-full h-auto rounded-lg">';
+            document.getElementById('equiv_vload_box').className = 'bg-orange-50 p-3 rounded-xl';
+            document.getElementById('equiv_iload_box').className = 'bg-orange-50 p-3 rounded-xl';
+        }
+        updateDisplay();
+    }
+
+    function bindEvents() {
+        r1Slider.addEventListener('input', updateDisplay);
+        r2Slider.addEventListener('input', updateDisplay);
+        r3Slider.addEventListener('input', updateDisplay);
+        rlSlider.addEventListener('input', updateDisplay);
+        theveninBtn.addEventListener('click', () => switchMode('thevenin'));
+        nortonBtn.addEventListener('click', () => switchMode('norton'));
+        window.addEventListener('resize', () => {
+            if (chartInstance) chartInstance.resize();
+        });
+    }
+
+    function init() {
+        bindEvents();
+        updateDisplay();
+        window.addEventListener('load', function() {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>
