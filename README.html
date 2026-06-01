@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>README - KCLKVL026</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    .markdown-body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      word-wrap: break-word;
+      color: #1f2328;
+    }
+    .markdown-body h1 {
+      padding-bottom: 0.3em;
+      font-size: 2em;
+      border-bottom: 1px solid #d1d9e0;
+      margin-top: 1.5em;
+      margin-bottom: 0.5em;
+      font-weight: 600;
+    }
+    .markdown-body h2 {
+      padding-bottom: 0.3em;
+      font-size: 1.5em;
+      border-bottom: 1px solid #d1d9e0;
+      margin-top: 1.2em;
+      margin-bottom: 0.5em;
+      font-weight: 600;
+    }
+    .markdown-body h3 {
+      font-size: 1.25em;
+      margin-top: 1em;
+      margin-bottom: 0.5em;
+      font-weight: 600;
+    }
+    .markdown-body p {
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
+    .markdown-body a {
+      color: #0969da;
+      text-decoration: none;
+    }
+    .markdown-body a:hover {
+      text-decoration: underline;
+    }
+    .markdown-body ul, .markdown-body ol {
+      padding-left: 2em;
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
+    .markdown-body li {
+      margin-top: 0.25em;
+    }
+    .markdown-body li + li {
+      margin-top: 0.25em;
+    }
+    .markdown-body strong {
+      font-weight: 600;
+    }
+    .markdown-body hr {
+      height: 0.25em;
+      padding: 0;
+      margin: 24px 0;
+      background-color: #d1d9e0;
+      border: 0;
+    }
+    .markdown-body code {
+      padding: 0.2em 0.4em;
+      margin: 0;
+      font-size: 85%;
+      background-color: #eff1f3;
+      border-radius: 6px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+    .markdown-body pre {
+      padding: 16px;
+      overflow: auto;
+      font-size: 85%;
+      line-height: 1.45;
+      background-color: #f6f8fa;
+      border-radius: 6px;
+      margin-bottom: 16px;
+    }
+    .markdown-body pre code {
+      padding: 0;
+      background: transparent;
+      font-size: 100%;
+    }
+    .markdown-body blockquote {
+      padding: 0 1em;
+      color: #656d76;
+      border-left: 0.25em solid #d1d9e0;
+      margin: 0 0 16px 0;
+    }
+    .markdown-body table {
+      border-collapse: collapse;
+      border-spacing: 0;
+      width: 100%;
+      margin-bottom: 16px;
+    }
+    .markdown-body table th, .markdown-body table td {
+      padding: 6px 13px;
+      border: 1px solid #d1d9e0;
+    }
+    .markdown-body table th {
+      font-weight: 600;
+      background-color: #f6f8fa;
+    }
+    .markdown-body table tr:nth-child(2n) {
+      background-color: #f6f8fa;
+    }
+    @media (prefers-color-scheme: dark) {
+      body { background-color: #0d1117; color: #e6edf3; }
+      .markdown-body { color: #e6edf3; }
+      .markdown-body h1, .markdown-body h2 { border-bottom-color: #30363d; }
+      .markdown-body a { color: #4493f8; }
+      .markdown-body code { background-color: #262c36; color: #e6edf3; }
+      .markdown-body pre { background-color: #161b22; }
+      .markdown-body blockquote { border-left-color: #30363d; color: #8b949e; }
+      .markdown-body table th, .markdown-body table td { border-color: #30363d; }
+      .markdown-body table th { background-color: #161b22; }
+      .markdown-body table tr:nth-child(2n) { background-color: #161b22; }
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Navigation -->
+    <nav class="mb-6 flex items-center justify-between">
+      <a href="index.html" class="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
+        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Back to Home
+      </a>
+      <!-- Language switch -->
+      <div class="flex gap-2">
+        <button id="btn-en" onclick="showLang('en')" class="px-3 py-1 text-sm rounded border border-blue-500 bg-blue-500 text-white">English</button>
+        <button id="btn-cn" onclick="showLang('cn')" class="px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">中文</button>
+      </div>
+    </nav>
+
+    <!-- Markdown content -->
+    <article class="markdown-body" id="content"></article>
+  </div>
+
+  <script>
+    // English README
+    const README_EN = `# Welcome to My GitHub Pages
+
+Hi! I'm **kclkvl026**. This site showcases my open-source projects in circuit theory, signal analysis, and interactive simulation-based teaching.
+
+## 🔌 Circuit Analysis Fundamentals — Interactive Teaching
+
+I developed a set of **interactive simulation teaching tools** for electrical, electronics, and automation students using Claude Code. The goal is to help understand core circuit concepts through dynamic visualization. All modules support real-time parameter adjustment and instant waveform/curve updates, making them suitable for classroom demonstrations and independent student exploration.
+
+👉 **Try it now**:
+
+[Circuit Analysis Fundamentals Homepage (English Version)](https://kclkvl026.github.io/Circuit_Analysis_en/)
+
+[Radio（Chinese Version）](https://kclkvl026.github.io/Radio/)
+
+[Analog Electronics (Chinese Version)](https://kclkvl026.github.io/Analog_Electronics/)
+
+[Digital Electronics (Chinese Version)](https://kclkvl026.github.io/Digital_Electronics/)
+
+Each module is a standalone HTML page built with modern web technologies (Chart.js, TailwindCSS, KaTeX, etc.), running smoothly on both desktop and tablet.
+
+## 🛠️ Tech Stack
+
+- HTML5 / CSS3 / JavaScript (ES6)
+- TailwindCSS (CSS framework)
+- Chart.js (chart plotting)
+- KaTeX (math formula rendering)
+
+## 📫 Contact & Feedback
+
+Feel free to share suggestions or report issues via GitHub Issues. If you're interested in circuit and analog electronics simulation-based teaching, you're welcome to connect!
+
+---
+
+*More projects will be added soon — stay tuned.*`;
+
+    // Chinese README
+    const README_CN = `# 欢迎访问我的 GitHub Pages 主页
+
+你好！我是 **kclkvl026**，这里主要展示我在电路理论、信号分析与交互式仿真教学方面的开源项目。
+
+## 🔌 电路分析基础辅助教学
+
+我用Claude code 开发了一套面向电气、电子、自动化等相关专业的**交互式仿真教学工具**，旨在通过动态可视化帮助理解电路核心概念。所有模块均支持参数实时调节、波形/曲线即时更新，适合课堂演示与学生自主探索。
+
+👉 **立即体验**：
+
+[电路分析基础辅助教学主页](https://kclkvl026.github.io/Circuit_Analysis/)
+
+[电路分析基础辅助教学主页本地css版](https://kclkvl026.github.io/Circuit_Analysis_localcss/)
+
+[Radio 电台](https://kclkvl026.github.io/Radio/)
+
+[模拟电子技术](https://kclkvl026.github.io/Analog_Electronics/)
+
+[数字电子技术](https://kclkvl026.github.io/Digital_Electronics/)
+
+每个模块均为独立 HTML 页面，使用现代 Web 技术（Chart.js、TailwindCSS、KaTeX 等），在电脑或平板上均可流畅运行。
+
+## 🛠️ 技术栈
+
+- HTML5 / CSS3 / JavaScript (ES6)
+- TailwindCSS (样式框架)
+- Chart.js (图表绘制)
+- KaTeX (数学公式渲染)
+
+## 📫 联系与反馈
+
+欢迎通过 GitHub Issues 提出建议或报告问题。如果你对电路、模电仿真教学感兴趣，也欢迎一起交流！
+
+---
+
+*更多项目将陆续更新，敬请期待。*`;
+
+    function showLang(lang) {
+      const btnEn = document.getElementById('btn-en');
+      const btnCn = document.getElementById('btn-cn');
+      const content = document.getElementById('content');
+
+      if (lang === 'en') {
+        content.innerHTML = marked.parse(README_EN);
+        btnEn.className = 'px-3 py-1 text-sm rounded border border-blue-500 bg-blue-500 text-white';
+        btnCn.className = 'px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800';
+      } else {
+        content.innerHTML = marked.parse(README_CN);
+        btnCn.className = 'px-3 py-1 text-sm rounded border border-blue-500 bg-blue-500 text-white';
+        btnEn.className = 'px-3 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800';
+      }
+    }
+
+    // Read ?lang= parameter from URL, default to English
+    const params = new URLSearchParams(window.location.search);
+    const langParam = params.get('lang');
+    showLang(langParam === 'cn' ? 'cn' : 'en');
+  </script>
+</body>
+</html>
