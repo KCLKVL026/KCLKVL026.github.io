@@ -110,15 +110,31 @@
     padding-bottom: 1rem;
     border-bottom: 1px solid var(--c-border);
   }
+  /* ── Sidebar Tree Nav ── */
+  .sidebar nav {
+    font-size: 0.82rem;
+  }
+  .sidebar nav ul {
+    list-style: none;
+    margin: 0; padding: 0;
+  }
+  .sidebar nav ul ul {
+    padding-left: 0;
+    margin-left: 0.6rem;
+    border-left: 1px dashed var(--c-border);
+  }
+  .sidebar nav li {
+    position: relative;
+    margin-bottom: 1px;
+  }
   .sidebar nav a {
     display: block;
-    padding: 0.4rem 0.7rem;
+    padding: 0.3rem 0.55rem;
     color: var(--c-text-dim);
     text-decoration: none;
-    font-size: 0.83rem;
     border-radius: var(--radius-sm);
-    margin-bottom: 2px;
     transition: all 0.2s;
+    line-height: 1.55;
   }
   .sidebar nav a:hover {
     color: var(--c-text-head);
@@ -129,8 +145,42 @@
     background: var(--c-lavender);
     font-weight: 600;
   }
-  .sidebar nav a.l2 { padding-left: 1.4rem; font-size: 0.78rem; }
-  .sidebar nav a.l3 { padding-left: 2.2rem; font-size: 0.75rem; }
+  .sidebar nav .nav-chapter {
+    font-weight: 600;
+    color: var(--c-text-head);
+    font-size: 0.83rem;
+    padding: 0.35rem 0.55rem;
+    margin-top: 0.3rem;
+    cursor: pointer;
+    position: relative;
+    padding-right: 1.6rem;
+  }
+  .sidebar nav .nav-chapter::after {
+    content: '▾';
+    position: absolute;
+    right: 0.55rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.7rem;
+    color: var(--c-text-dim);
+    transition: transform 0.25s ease;
+  }
+  .sidebar nav li.collapsed > .nav-chapter::after {
+    transform: translateY(-50%) rotate(-90deg);
+  }
+  .sidebar nav li.collapsed > ul {
+    display: none;
+  }
+  .sidebar nav .nav-chapter:first-child { margin-top: 0; }
+  .sidebar nav .nav-section {
+    font-size: 0.78rem;
+    padding-left: 0.55rem;
+  }
+  .sidebar nav .nav-sub {
+    font-size: 0.75rem;
+    padding-left: 0.35rem;
+    color: var(--c-text-dim);
+  }
 
   /* ── Main ── */
   .main {
@@ -563,24 +613,51 @@
   <div class="sidebar-brand">电路分析基础</div>
   <div class="sidebar-title">单元03：动态电路时域分析</div>
   <nav>
-    <a href="#overview">知识结构总览</a>
-    <a href="#sec-7-1" class="l2">7.1 暂态过程及换路定则</a>
-    <a href="#sec-7-1-1" class="l3">基本概念</a>
-    <a href="#sec-7-1-2" class="l3">换路定则</a>
-    <a href="#sec-7-2" class="l2">7.2 零输入响应</a>
-    <a href="#sec-7-2-1" class="l3">RC 零输入</a>
-    <a href="#sec-7-2-2" class="l3">RL 零输入</a>
-    <a href="#sec-7-3" class="l2">7.3 零状态响应</a>
-    <a href="#sec-7-3-1" class="l3">RC 零状态</a>
-    <a href="#sec-7-3-2" class="l3">RL 零状态</a>
-    <a href="#sec-7-4" class="l2">7.4 全响应与三要素法</a>
-    <a href="#sec-7-4-1" class="l3">全响应</a>
-    <a href="#sec-7-4-2" class="l3">三要素法</a>
-    <a href="#sec-7-5" class="l2">7.5 阶跃函数与响应</a>
-    <a href="#sec-7-6" class="l2">7.6 冲激函数与响应</a>
-    <a href="#sec-7-7" class="l2">7.7 二阶电路零输入</a>
-    <a href="#compare-rc-rl" class="l3">RC vs RL 对比</a>
-    <a href="#compare-response" class="l3">四种响应类型</a>
+    <ul>
+      <li><a href="#overview">知识结构总览</a></li>
+      <li>
+        <a href="#sec-7-1" class="nav-chapter">7. 动态电路时域分析</a>
+        <ul>
+          <li>
+            <a href="#sec-7-1" class="nav-section">7.1 暂态过程及换路定则</a>
+            <ul>
+              <li><a href="#sec-7-1-1" class="nav-sub">基本概念</a></li>
+              <li><a href="#sec-7-1-2" class="nav-sub">换路定则</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#sec-7-2" class="nav-section">7.2 零输入响应</a>
+            <ul>
+              <li><a href="#sec-7-2-1" class="nav-sub">RC 零输入</a></li>
+              <li><a href="#sec-7-2-2" class="nav-sub">RL 零输入</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#sec-7-3" class="nav-section">7.3 零状态响应</a>
+            <ul>
+              <li><a href="#sec-7-3-1" class="nav-sub">RC 零状态</a></li>
+              <li><a href="#sec-7-3-2" class="nav-sub">RL 零状态</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#sec-7-4" class="nav-section">7.4 全响应与三要素法</a>
+            <ul>
+              <li><a href="#sec-7-4-1" class="nav-sub">全响应</a></li>
+              <li><a href="#sec-7-4-2" class="nav-sub">三要素法</a></li>
+            </ul>
+          </li>
+          <li><a href="#sec-7-5" class="nav-section">7.5 阶跃函数与响应</a></li>
+          <li><a href="#sec-7-6" class="nav-section">7.6 冲激函数与响应</a></li>
+          <li>
+            <a href="#sec-7-7" class="nav-section">7.7 二阶电路零输入</a>
+            <ul>
+              <li><a href="#compare-rc-rl" class="nav-sub">RC vs RL 对比</a></li>
+              <li><a href="#compare-response" class="nav-sub">四种响应类型</a></li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
   </nav>
 </aside>
 
@@ -588,7 +665,7 @@
 
   <!-- 返回主页按钮 -->
   <div class="back-btn-wrap">
-    <a href="../index.html" class="back-btn">
+    <a href="index.html" class="back-btn">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
       </svg>
@@ -1070,6 +1147,15 @@ sections.forEach(s => { if (s.closest('.main')) observer.observe(s); });
 navLinks.forEach(a => a.addEventListener('click', () => {
   document.querySelector('.sidebar').classList.remove('open');
 }));
+
+// 章节折叠/展开
+document.querySelectorAll('.sidebar .nav-chapter').forEach(ch => {
+  ch.addEventListener('click', e => {
+    e.preventDefault();
+    const li = ch.parentElement;
+    li.classList.toggle('collapsed');
+  });
+});
 </script>
 
 </body>

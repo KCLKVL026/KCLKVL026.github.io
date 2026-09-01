@@ -123,18 +123,14 @@
                     </div>
                 </div>
 
-                <!-- 功率因数角 -->
-                <div class="mb-3">
-                    <div class="flex justify-between text-sm font-medium mb-1">
-                        <label>负载功率因数角 \(\varphi\)</label>
-                        <span class="text-blue-600 font-mono" id="phi_display">0°</span>
-                    </div>
-                    <input type="range" id="phi_slider" min="-90" max="90" step="5" value="0" class="w-full">
-                    <div class="flex justify-between text-xs text-slate-400 mt-1">
-                        <span>-90° (纯容性)</span><span>90° (纯感性)</span>
-                    </div>
-                    <p class="text-xs text-slate-500 mt-1" id="cosphi_display">cos φ = 1.00</p>
+                <!-- 重置按钮 -->
+                <div class="mt-4 flex justify-center">
+                    <button id="resetBtn" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-full shadow-md transition flex items-center gap-2 text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        重置参数
+                    </button>
                 </div>
+
             </div>
 
             <!-- Y接法参数卡片 -->
@@ -208,15 +204,15 @@
         <!-- 右侧图形区 -->
         <div class="lg:col-span-8 space-y-5">
             <!-- 两个波形图并排 -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-4">
                 <!-- Y接法波形 -->
                 <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
                     <div class="flex items-center gap-2 mb-2">
                         <span class="w-3 h-3 bg-red-400 rounded-full"></span>
                         <h3 class="font-bold text-slate-800 text-sm">星形(Y)接法 · 电压波形</h3>
                     </div>
-                    <div class="relative" style="height: 340px;">
-                        <canvas id="yChart" width="400" height="340" style="width:100%; height:100%;"></canvas>
+                    <div class="relative" style="height: 380px;">
+                        <canvas id="yChart" style="width:100%; height:100%;"></canvas>
                     </div>
                     <div class="flex flex-wrap justify-center gap-3 mt-2 text-xs">
                         <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-red-500 inline-block rounded"></span>A相</span>
@@ -232,8 +228,8 @@
                         <span class="w-3 h-3 bg-purple-400 rounded-full"></span>
                         <h3 class="font-bold text-slate-800 text-sm">三角形(Δ)接法 · 电压波形</h3>
                     </div>
-                    <div class="relative" style="height: 340px;">
-                        <canvas id="dChart" width="400" height="340" style="width:100%; height:100%;"></canvas>
+                    <div class="relative" style="height: 380px;">
+                        <canvas id="dChart" style="width:100%; height:100%;"></canvas>
                     </div>
                     <div class="flex flex-wrap justify-center gap-3 mt-2 text-xs">
                         <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-red-500 inline-block rounded"></span>AB相</span>
@@ -271,13 +267,10 @@
     const vpSlider = document.getElementById('vp_slider');
     const freqSlider = document.getElementById('freq_slider');
     const zSlider = document.getElementById('z_slider');
-    const phiSlider = document.getElementById('phi_slider');
 
     const vpDisplay = document.getElementById('vp_display');
     const freqDisplay = document.getElementById('freq_display');
     const zDisplay = document.getElementById('z_display');
-    const phiDisplay = document.getElementById('phi_display');
-    const cosphiDisplay = document.getElementById('cosphi_display');
 
     const yVline = document.getElementById('y_vline');
     const yIphase = document.getElementById('y_iphase');
@@ -300,9 +293,7 @@
         const Vp_rms = parseFloat(vpSlider.value);
         const f = parseFloat(freqSlider.value);
         const Zmag = parseFloat(zSlider.value);
-        const phi_deg = parseFloat(phiSlider.value);
-        const phi_rad = (phi_deg * Math.PI) / 180;
-        return { Vp_rms, f, Zmag, phi_deg, phi_rad };
+        return { Vp_rms, f, Zmag };
     }
 
     function generateTimeAxis(f, periods) {
@@ -318,13 +309,11 @@
     }
 
     function updateDisplay() {
-        const { Vp_rms, f, Zmag, phi_deg, phi_rad } = getParams();
+        const { Vp_rms, f, Zmag } = getParams();
 
         vpDisplay.innerText = Vp_rms + ' V';
         freqDisplay.innerText = f + ' Hz';
         zDisplay.innerText = Zmag + ' \u03A9';
-        phiDisplay.innerText = phi_deg + '\u00B0';
-        cosphiDisplay.innerText = 'cos \u03C6 = ' + Math.cos(phi_rad).toFixed(2);
 
         // Y connection
         const VlineY = SQRT3 * Vp_rms;
@@ -429,21 +418,30 @@
         const { duration, ptsA, ptsB, ptsC, ptsAB, Vline_m } = buildYDatasets(Vp_rms, f);
         const yMax = Math.ceil((Vline_m * 1.15) / 100) * 100;
 
-        const data = {
-            datasets: [
-                { label: 'V_AN (A相)', data: ptsA, borderColor: '#ef4444', borderWidth: 2.2, pointRadius: 0, tension: 0.2 },
-                { label: 'V_BN (B相)', data: ptsB, borderColor: '#22c55e', borderWidth: 2.2, pointRadius: 0, tension: 0.2 },
-                { label: 'V_CN (C相)', data: ptsC, borderColor: '#3b82f6', borderWidth: 2.2, pointRadius: 0, tension: 0.2 },
-                { label: 'V_AB (线电压)', data: ptsAB, borderColor: '#a855f7', borderWidth: 2.5, borderDash: [8, 4], pointRadius: 0, tension: 0.2 }
-            ]
-        };
-
-        if (yChartInstance) yChartInstance.destroy();
-        yChartInstance = new Chart(document.getElementById('yChart'), {
-            type: 'line',
-            data: data,
-            options: makeLineOptions(duration, yMax)
-        });
+        if (yChartInstance) {
+            yChartInstance.data.datasets[0].data = ptsA;
+            yChartInstance.data.datasets[1].data = ptsB;
+            yChartInstance.data.datasets[2].data = ptsC;
+            yChartInstance.data.datasets[3].data = ptsAB;
+            yChartInstance.options.scales.x.max = duration;
+            yChartInstance.options.scales.x.ticks.callback = v => v.toFixed(3) + 's';
+            yChartInstance.options.scales.y.max = yMax;
+            yChartInstance.options.scales.y.min = -yMax;
+            yChartInstance.update('none');
+        } else {
+            yChartInstance = new Chart(document.getElementById('yChart'), {
+                type: 'line',
+                data: {
+                    datasets: [
+                        { label: 'V_AN (A相)', data: ptsA, borderColor: '#ef4444', borderWidth: 2.2, pointRadius: 0, tension: 0.2 },
+                        { label: 'V_BN (B相)', data: ptsB, borderColor: '#22c55e', borderWidth: 2.2, pointRadius: 0, tension: 0.2 },
+                        { label: 'V_CN (C相)', data: ptsC, borderColor: '#3b82f6', borderWidth: 2.2, pointRadius: 0, tension: 0.2 },
+                        { label: 'V_AB (线电压)', data: ptsAB, borderColor: '#a855f7', borderWidth: 2.5, borderDash: [8, 4], pointRadius: 0, tension: 0.2 }
+                    ]
+                },
+                options: makeLineOptions(duration, yMax)
+            });
+        }
     }
 
     function updateDChart() {
@@ -451,20 +449,28 @@
         const { duration, ptsAB, ptsBC, ptsCA, Vline_m } = buildDDatasets(Vp_rms, f);
         const yMax = Math.ceil((Vline_m * 1.15) / 100) * 100;
 
-        const data = {
-            datasets: [
-                { label: 'V_AB (AB相)', data: ptsAB, borderColor: '#ef4444', borderWidth: 2.2, pointRadius: 0, tension: 0.2 },
-                { label: 'V_BC (BC相)', data: ptsBC, borderColor: '#22c55e', borderWidth: 2.2, pointRadius: 0, tension: 0.2 },
-                { label: 'V_CA (CA相)', data: ptsCA, borderColor: '#3b82f6', borderWidth: 2.2, pointRadius: 0, tension: 0.2 }
-            ]
-        };
-
-        if (dChartInstance) dChartInstance.destroy();
-        dChartInstance = new Chart(document.getElementById('dChart'), {
-            type: 'line',
-            data: data,
-            options: makeLineOptions(duration, yMax)
-        });
+        if (dChartInstance) {
+            dChartInstance.data.datasets[0].data = ptsAB;
+            dChartInstance.data.datasets[1].data = ptsBC;
+            dChartInstance.data.datasets[2].data = ptsCA;
+            dChartInstance.options.scales.x.max = duration;
+            dChartInstance.options.scales.x.ticks.callback = v => v.toFixed(3) + 's';
+            dChartInstance.options.scales.y.max = yMax;
+            dChartInstance.options.scales.y.min = -yMax;
+            dChartInstance.update('none');
+        } else {
+            dChartInstance = new Chart(document.getElementById('dChart'), {
+                type: 'line',
+                data: {
+                    datasets: [
+                        { label: 'V_AB (AB相)', data: ptsAB, borderColor: '#ef4444', borderWidth: 2.2, pointRadius: 0, tension: 0.2 },
+                        { label: 'V_BC (BC相)', data: ptsBC, borderColor: '#22c55e', borderWidth: 2.2, pointRadius: 0, tension: 0.2 },
+                        { label: 'V_CA (CA相)', data: ptsCA, borderColor: '#3b82f6', borderWidth: 2.2, pointRadius: 0, tension: 0.2 }
+                    ]
+                },
+                options: makeLineOptions(duration, yMax)
+            });
+        }
     }
 
     function refreshAll() {
@@ -473,10 +479,18 @@
         updateDChart();
     }
 
+    const DEFAULTS = { vp: 220, freq: 50, z: 50 };
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+        vpSlider.value = DEFAULTS.vp;
+        freqSlider.value = DEFAULTS.freq;
+        zSlider.value = DEFAULTS.z;
+        refreshAll();
+    });
+
     vpSlider.addEventListener('input', refreshAll);
     freqSlider.addEventListener('input', refreshAll);
     zSlider.addEventListener('input', refreshAll);
-    phiSlider.addEventListener('input', refreshAll);
 
     window.addEventListener('resize', () => {
         if (yChartInstance) yChartInstance.resize();

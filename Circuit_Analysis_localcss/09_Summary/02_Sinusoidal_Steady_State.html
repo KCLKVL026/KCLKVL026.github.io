@@ -110,15 +110,31 @@
     padding-bottom: 1rem;
     border-bottom: 1px solid var(--c-border);
   }
+  /* ── Sidebar Tree Nav ── */
+  .sidebar nav {
+    font-size: 0.82rem;
+  }
+  .sidebar nav ul {
+    list-style: none;
+    margin: 0; padding: 0;
+  }
+  .sidebar nav ul ul {
+    padding-left: 0;
+    margin-left: 0.6rem;
+    border-left: 1px dashed var(--c-border);
+  }
+  .sidebar nav li {
+    position: relative;
+    margin-bottom: 1px;
+  }
   .sidebar nav a {
     display: block;
-    padding: 0.4rem 0.7rem;
+    padding: 0.3rem 0.55rem;
     color: var(--c-text-dim);
     text-decoration: none;
-    font-size: 0.83rem;
     border-radius: var(--radius-sm);
-    margin-bottom: 2px;
     transition: all 0.2s;
+    line-height: 1.55;
   }
   .sidebar nav a:hover {
     color: var(--c-text-head);
@@ -129,8 +145,42 @@
     background: var(--c-lavender);
     font-weight: 600;
   }
-  .sidebar nav a.l2 { padding-left: 1.4rem; font-size: 0.78rem; }
-  .sidebar nav a.l3 { padding-left: 2.2rem; font-size: 0.75rem; }
+  .sidebar nav .nav-chapter {
+    font-weight: 600;
+    color: var(--c-text-head);
+    font-size: 0.83rem;
+    padding: 0.35rem 0.55rem;
+    margin-top: 0.3rem;
+    cursor: pointer;
+    position: relative;
+    padding-right: 1.6rem;
+  }
+  .sidebar nav .nav-chapter::after {
+    content: '▾';
+    position: absolute;
+    right: 0.55rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.7rem;
+    color: var(--c-text-dim);
+    transition: transform 0.25s ease;
+  }
+  .sidebar nav li.collapsed > .nav-chapter::after {
+    transform: translateY(-50%) rotate(-90deg);
+  }
+  .sidebar nav li.collapsed > ul {
+    display: none;
+  }
+  .sidebar nav .nav-chapter:first-child { margin-top: 0; }
+  .sidebar nav .nav-section {
+    font-size: 0.78rem;
+    padding-left: 0.55rem;
+  }
+  .sidebar nav .nav-sub {
+    font-size: 0.75rem;
+    padding-left: 0.35rem;
+    color: var(--c-text-dim);
+  }
 
   /* ── Main ── */
   .main {
@@ -572,23 +622,43 @@
   <div class="sidebar-brand">电路分析基础</div>
   <div class="sidebar-title">单元02：正弦稳态分析</div>
   <nav>
-    <a href="#overview">知识结构总览</a>
-    <a href="#ch5-1" class="l2">5.1 正弦量的基本概念</a>
-    <a href="#ch5-2" class="l2">5.2 相量表示法</a>
-    <a href="#ch5-3" class="l2">5.3 两类约束的相量形式</a>
-    <a href="#ch5-4" class="l2">5.4 阻抗与导纳</a>
-    <a href="#ch5-5" class="l2">5.5 相量法分析</a>
-    <a href="#ch5-6" class="l2">5.6 正弦电路的功率</a>
-    <a href="#power-cards" class="l3">四种功率</a>
-    <a href="#power-factor" class="l3">功率因数提高</a>
-    <a href="#max-power" class="l3">最大功率传输</a>
-    <a href="#ch5-7" class="l2">5.7 频率响应</a>
-    <a href="#ch5-8" class="l2">5.8 谐振电路</a>
-    <a href="#resonance-compare" class="l3">串并联谐振对比</a>
-    <a href="#ch6-1" class="l2">6.1 耦合电感</a>
-    <a href="#ch6-2" class="l2">6.2 含耦合电感电路</a>
-    <a href="#ch6-3" class="l2">6.3 空心变压器</a>
-    <a href="#ch6-4" class="l2">6.4 理想变压器</a>
+    <ul>
+      <li><a href="#overview">知识结构总览</a></li>
+      <li>
+        <a href="#ch5-1" class="nav-chapter">5. 正弦稳态电路分析</a>
+        <ul>
+          <li><a href="#ch5-1" class="nav-section">5.1 正弦量的基本概念</a></li>
+          <li><a href="#ch5-2" class="nav-section">5.2 相量表示法</a></li>
+          <li><a href="#ch5-3" class="nav-section">5.3 两类约束的相量形式</a></li>
+          <li><a href="#ch5-4" class="nav-section">5.4 阻抗与导纳</a></li>
+          <li><a href="#ch5-5" class="nav-section">5.5 相量法分析</a></li>
+          <li>
+            <a href="#ch5-6" class="nav-section">5.6 正弦电路的功率</a>
+            <ul>
+              <li><a href="#power-cards" class="nav-sub">四种功率</a></li>
+              <li><a href="#power-factor" class="nav-sub">功率因数提高</a></li>
+              <li><a href="#max-power" class="nav-sub">最大功率传输</a></li>
+            </ul>
+          </li>
+          <li><a href="#ch5-7" class="nav-section">5.7 频率响应</a></li>
+          <li>
+            <a href="#ch5-8" class="nav-section">5.8 谐振电路</a>
+            <ul>
+              <li><a href="#resonance-compare" class="nav-sub">串并联谐振对比</a></li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="#ch6-1" class="nav-chapter">6. 耦合电感与变压器</a>
+        <ul>
+          <li><a href="#ch6-1" class="nav-section">6.1 耦合电感</a></li>
+          <li><a href="#ch6-2" class="nav-section">6.2 含耦合电感电路</a></li>
+          <li><a href="#ch6-3" class="nav-section">6.3 空心变压器</a></li>
+          <li><a href="#ch6-4" class="nav-section">6.4 理想变压器</a></li>
+        </ul>
+      </li>
+    </ul>
   </nav>
 </aside>
 
@@ -596,7 +666,7 @@
 
   <!-- 返回主页按钮 -->
   <div class="back-btn-wrap">
-    <a href="../index.html" class="back-btn">
+    <a href="index.html" class="back-btn">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
       </svg>
@@ -822,9 +892,9 @@
     <h4>5.4.2 阻抗的串联与并联</h4>
     <ul>
       <li><strong>串联</strong>：$Z_{eq} = Z_1 + Z_2 + \cdots + Z_n$</li>
-      <li><strong>并联</strong>：$\frac{1}{Z_{eq}} = \frac{1}{Z_1} + \frac{1}{Z_2} + \cdots + \frac{1}{Z_n}$</li>
+      <li><strong>并联</strong>：$Y_{eq} = Y_1 + Y_2 + \cdots + Y_n$（即 $\frac{1}{Z_{eq}} = \frac{1}{Z_1} + \frac{1}{Z_2} + \cdots + \frac{1}{Z_n}$）</li>
       <li><strong>分压公式</strong>：$\dot{U}_k = \frac{Z_k}{Z_1+Z_2+\cdots+Z_n} \cdot \dot{U}$</li>
-      <li><strong>分流公式</strong>：$\dot{I}_k = \frac{Z_{eq}}{Z_k} \cdot \dot{I}$</li>
+      <li><strong>分流公式</strong>：$\dot{I}_k = \frac{Y_k}{Y_{eq}} \cdot \dot{I}$（即 $\dot{I}_k = \frac{Z_{eq}}{Z_k} \cdot \dot{I}$）</li>
     </ul>
 
     <h4>5.4.3 电路的相量模型</h4>
@@ -1270,6 +1340,15 @@ sections.forEach(s => { if (s.closest('.main')) observer.observe(s); });
 navLinks.forEach(a => a.addEventListener('click', () => {
   document.querySelector('.sidebar').classList.remove('open');
 }));
+
+// 章节折叠/展开
+document.querySelectorAll('.sidebar .nav-chapter').forEach(ch => {
+  ch.addEventListener('click', e => {
+    e.preventDefault();
+    const li = ch.parentElement;
+    li.classList.toggle('collapsed');
+  });
+});
 </script>
 
 </body>
