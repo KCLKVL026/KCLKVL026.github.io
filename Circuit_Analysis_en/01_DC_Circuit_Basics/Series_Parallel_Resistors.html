@@ -218,9 +218,9 @@
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
                     <h4 class="font-bold text-indigo-800 text-sm mb-1">Theoretical Basis</h4>
                     <p class="text-xs text-slate-600 leading-relaxed" id="theory_text">
-                        <strong>Series Voltage Division:</strong> \(U_1 = U_{in} \cdot \dfrac{R_1}{R_1+R_2}\)，\(U_2 = U_{in} \cdot \dfrac{R_2}{R_1+R_2}\)。<br>
-                        Same current: \(I = U_{in} / (R_1+R_2)\)。<br>
-                        Voltage ratio equals resistance ratio: \(U_1/U_2 = R_1/R_2\)。
+                        <strong>Series voltage division:</strong> \(U_1 = U_{in} \cdot \dfrac{R_1}{R_1+R_2}\), \(U_2 = U_{in} \cdot \dfrac{R_2}{R_1+R_2}\).<br>
+                        The same current flows through both resistors: \(I = U_{in} / (R_1+R_2)\).<br>
+                        The voltage ratio equals the resistance ratio: \(U_1/U_2 = R_1/R_2\).
                     </p>
                 </div>
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
@@ -387,13 +387,13 @@
             chartTitle.innerText = 'Series Voltage Division · Voltage Across Each Resistor';
             chartSubtitle.innerHTML = '\\(U_1\\), \\(U_2\\) comparison';
             chartHint.innerText = 'Series: Voltage divided proportionally by resistance | Higher resistance = higher voltage share';
-            theoryText.innerHTML = `<strong>Series Voltage Division:</strong> \\(U_1 = U_{in} \\cdot \\dfrac{R_1}{R_1+R_2}\\)，\\(U_2 = U_{in} \\cdot \\dfrac{R_2}{R_1+R_2}\\)。<br>Same current: \\(I = U_{in} / (R_1+R_2)\\)。<br>Voltage ratio equals resistance ratio: \\(U_1/U_2 = R_1/R_2\\)。`;
+            theoryText.innerHTML = `<strong>Series voltage division:</strong> \\(U_1 = U_{in} \\cdot \\dfrac{R_1}{R_1+R_2}\\), \\(U_2 = U_{in} \\cdot \\dfrac{R_2}{R_1+R_2}\\).<br>The same current flows through both resistors: \\(I = U_{in} / (R_1+R_2)\\).<br>The voltage ratio equals the resistance ratio: \\(U_1/U_2 = R_1/R_2\\).`;
             charText.innerHTML = `• When \\(R_1 = R_2\\), voltage is split equally (each \\(U_{in}/2\\)).<br>• When \\(R_1 \\gg R_2\\), \\(U_1 \\approx U_{in}\\) and \\(R_2\\) has a very small voltage share.<br>• When \\(R_1 \\ll R_2\\), \\(U_2 \\approx U_{in}\\) and \\(R_1\\) has a very small voltage share.<br>• Equivalent resistance \\(R_{eq}\\) approaches the larger resistor value.`;
         } else {
             chartTitle.innerText = 'Parallel Current Division · Current Through Each Resistor';
             chartSubtitle.innerHTML = '\\(I_1\\), \\(I_2\\) comparison';
             chartHint.innerText = 'Parallel: Current divided inversely proportional to resistance | Smaller resistance = larger current';
-            theoryText.innerHTML = `<strong>Parallel Current Division:</strong> \\(I_1 = U_{in} / R_1\\)，\\(I_2 = U_{in} / R_2\\)。<br>Total current: \\(I_{total} = I_1 + I_2 = U_{in} \\cdot \\left(\\frac{1}{R_1}+\\frac{1}{R_2}\\right)\\)。<br>Current ratio equals inverse resistance ratio: \\(I_1/I_2 = R_2/R_1\\)。`;
+            theoryText.innerHTML = `<strong>Parallel current division:</strong> \\(I_1 = U_{in} / R_1\\), \\(I_2 = U_{in} / R_2\\).<br>Total current: \\(I_{total} = I_1 + I_2 = U_{in} \\cdot \\left(\\frac{1}{R_1}+\\frac{1}{R_2}\\right)\\).<br>The current ratio is inversely proportional to the resistance ratio: \\(I_1/I_2 = R_2/R_1\\).`;
             charText.innerHTML = `• When \\(R_1 = R_2\\), current is split equally.<br>• When \\(R_1 \\gg R_2\\), \\(I_2 \\gg I_1\\), most current flows through \\(R_2\\).<br>• When \\(R_1 \\ll R_2\\), \\(I_1 \\gg I_2\\), most current flows through \\(R_1\\).<br>• Equivalent resistance \\(R_{eq}\\) approaches the smaller resistor value.`;
         }
 

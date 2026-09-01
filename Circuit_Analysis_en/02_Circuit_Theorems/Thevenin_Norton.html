@@ -83,7 +83,7 @@
             Thevenin & Norton Equivalent Theorems: Two-Terminal Network Simplification
         </h1>
         <p class="text-slate-600 max-w-2xl mx-auto">
-            Active two-terminal network on the left -> Thevenin/Norton equivalent -> connect the same load \(R_L\), verify that V/I at both terminals are exactly equal
+            Active two-terminal network → Thevenin or Norton equivalent → connect the same load \(R_L\) and verify identical terminal voltage and current
         </p>
     </div>
 
@@ -235,14 +235,14 @@
                     <h4 class="font-bold text-indigo-800 text-sm mb-1">Theoretical Basis</h4>
                     <p class="text-xs text-slate-600 leading-relaxed">
                         Any two-terminal network composed of linear elements and independent sources can be replaced, from the perspective of an external load, by a voltage source in series with a resistance (Thevenin) or a current source in parallel with a resistance (Norton).<br>
-                        \(U_{th} = U_s \cdot \frac{R_2}{R_1+R_2}\)，\(R_{th} = R_3 + \frac{R_1 R_2}{R_1+R_2}\)，\(I_N = U_{th}/R_{th}\)。
+                        \(U_{th} = U_s \cdot \frac{R_2}{R_1+R_2}\), \(R_{th} = R_3 + \frac{R_1 R_2}{R_1+R_2}\), \(I_N = U_{th}/R_{th}\).
                     </p>
                 </div>
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
                     <h4 class="font-bold text-indigo-800 text-sm mb-1">Equivalence Properties</h4>
                     <p class="text-xs text-slate-600 leading-relaxed">
                         Regardless of the load \(R_L\) connected, the original circuit and the equivalent circuit have identical V-I characteristics at the a-b terminals.<br>
-                        Thevenin and Norton are duals: \(U_{th} = I_N \cdot R_{th}\)，\(R_{th} = R_N\).<br>
+                        Thevenin and Norton forms are duals: \(U_{th} = I_N \cdot R_{th}\), \(R_{th} = R_N\).<br>
                         Adjust the sliders to observe that both sides always match, verifying the equivalence theorem.
                     </p>
                 </div>

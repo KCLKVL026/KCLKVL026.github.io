@@ -1,36 +1,34 @@
-# Welcome to My GitHub Pages
+# Welcome to kclkvl026's GitHub Pages
 
-Hi! I'm **kclkvl026**. This site showcases my open-source projects in circuit theory, signal analysis, and interactive simulation-based teaching.
+Hi, I'm **kclkvl026**. This site brings together open-source learning resources for circuit theory, signal analysis, and interactive simulation-based education.
 
 [简体中文 README](README-cn.md)
 
 ## 🔌 Circuit Analysis Fundamentals — Interactive Teaching
 
-I developed a set of **interactive simulation teaching tools** for electrical, electronics, and automation students using Claude Code. The goal is to help understand core circuit concepts through dynamic visualization. All modules support real-time parameter adjustment and instant waveform/curve updates, making them suitable for classroom demonstrations and independent student exploration.
+Built with Claude Code, these **interactive simulations** are designed for students of electrical engineering, electronics, and automation. They help learners build intuition for core circuit concepts through dynamic visualizations. Adjust a parameter and immediately see the corresponding waveform or curve update—ideal for classroom demonstrations and independent study.
 
-👉 **Try it now**:
+👉 **Explore the projects**:
 
-[Circuit Analysis Fundamentals Homepage (English Version)](https://kclkvl026.github.io/Circuit_Analysis_en/)
+[Circuit Analysis Fundamentals (English)](https://kclkvl026.github.io/Circuit_Analysis_en/)
 
-[Radio（Chinese Version）](https://kclkvl026.github.io/Radio/)
+[Analog Electronics (Chinese)](https://kclkvl026.github.io/Analog_Electronics/)
 
-[Analog Electronics (Chinese Version)](https://kclkvl026.github.io/Analog_Electronics/)
+[Digital Electronics (Chinese)](https://kclkvl026.github.io/Digital_Electronics/)
 
-[Digital Electronics (Chinese Version)](https://kclkvl026.github.io/Digital_Electronics/)
-
-Each module is a standalone HTML page built with modern web technologies (Chart.js, TailwindCSS, KaTeX, etc.), running smoothly on both desktop and tablet.
+Every module is a self-contained HTML page built with modern web technologies such as Chart.js, Tailwind CSS, and KaTeX. They run directly in a browser on desktop and tablet devices.
 
 ## 🛠️ Tech Stack
 
 - HTML5 / CSS3 / JavaScript (ES6)
-- TailwindCSS (CSS framework)
-- Chart.js (chart plotting)
-- KaTeX (math formula rendering)
+- Tailwind CSS (utility-first CSS framework)
+- Chart.js (interactive charts)
+- KaTeX (mathematical typesetting)
 
 ## 📫 Contact & Feedback
 
-Feel free to share suggestions or report issues via GitHub Issues. If you're interested in circuit and analog electronics simulation-based teaching, you're welcome to connect!
+Suggestions and bug reports are welcome through GitHub Issues. If you are interested in simulation-based teaching for circuit theory or analog electronics, I would be glad to connect.
 
 ---
 
-*More projects will be added soon — stay tuned.*
+*More projects are on the way—stay tuned.*

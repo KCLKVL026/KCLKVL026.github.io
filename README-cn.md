@@ -14,8 +14,6 @@
 
 [电路分析基础辅助教学主页本地css版](https://kclkvl026.github.io/Circuit_Analysis_localcss/)
 
-[Radio 电台](https://kclkvl026.github.io/Radio/)
-
 [模拟电子技术](https://kclkvl026.github.io/Analog_Electronics/)
 
 [数字电子技术](https://kclkvl026.github.io/Digital_Electronics/)

@@ -188,7 +188,7 @@
                 </div>
                 <div class="mt-2 text-xs text-slate-500 bg-white p-2 rounded border border-slate-100">
                     💡 Key observations: When period \(T \ll \tau\), current charging/discharging is incomplete, appearing as an approximate triangle wave; when \(T \gg \tau\), current can fully charge or discharge, waveform approaches a square wave.<br>
-                    <span class="text-blue-600">Current default parameters: R=500Ω, L=500mH → τ=0.001s, period T=0.02s, half-period 0.01s (10τ), charging/discharging ~99.995%, current nearly fully charges/discharges. Steady-state current \(I_{max}=V_m/R = 2\,\text{mA}\).</span>
+                    <span class="text-blue-600">With the default parameters, R = 500 Ω and L = 500 mH, so τ = 0.001 s. Each 0.01 s half-cycle lasts 10τ, allowing the current to settle to approximately 99.995% of its final value. The steady-state current is \(I_{max}=V_m/R = 2\,\text{mA}\).</span>
                 </div>
             </div>
         </div>
@@ -218,8 +218,8 @@
                     <p class="text-xs text-slate-600 leading-relaxed">
                         • Square wave rising edge: inductor current begins exponential rise toward \(V_m/R\) (mA).<br>
                         • Square wave falling edge: inductor discharges through resistor, current decays exponentially toward 0.<br>
-                        • Larger time constant \(\tau = L/R\) means slower charging/discharging, more "sluggish" waveform.<br>
-                        • Adjust frequency: at low frequencies, current can fully charge/discharge; at high frequencies, waveform appears as approximate triangle wave.
+                        • A larger time constant \(\tau = L/R\) produces slower current rise and decay, so the waveform changes more gradually.<br>
+                        • At low frequencies, the current can rise and decay fully; at high frequencies, it approaches a triangular waveform.
                     </p>
                 </div>
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">

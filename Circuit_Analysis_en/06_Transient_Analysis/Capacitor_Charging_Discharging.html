@@ -182,11 +182,11 @@
                     Discharging phase ( \(v_{\text{in}} = 0\) ):
                     \(v_C(t) = 0 + (V_0 - 0)e^{-t/\tau}\) <br>
                     <strong>\(\tau = RC\)</strong> determines transient speed: after \(1\tau\) rises/drops ~63.2%, after \(5\tau\) essentially reaches steady state.<br>
-                    The ratio of square wave frequency to \(\tau\) affects the capacitor voltage waveform shape (linear charging/exponential charging and discharging).
+                    The relationship between square-wave frequency and \(\tau\) determines the shape of the capacitor-voltage waveform.
                 </div>
                 <div class="mt-2 text-xs text-slate-500 bg-white p-2 rounded border border-slate-100">
                     💡 Key observations: When period \(T \ll \tau\), capacitor charging/discharging is incomplete, appearing as an approximate triangle wave; when \(T \gg \tau\), capacitor voltage can fully charge or discharge, waveform approaches a square wave.<br>
-                    <span class="text-blue-600">Current default parameters: R=1kΩ, C=2μF → τ=0.002s, period T=0.02s, half-period 0.01s, charging/discharging takes one time constant, waveform shows prominent exponential characteristics.</span>
+                    <span class="text-blue-600">With the default parameters, R = 1 kΩ and C = 10 μF, so τ = 0.01 s. The 0.02 s period leaves one time constant for each half-cycle, making the exponential response easy to observe.</span>
                 </div>
             </div>
         </div>
@@ -216,8 +216,8 @@
                     <p class="text-xs text-slate-600 leading-relaxed">
                         • Square wave rising edge: capacitor begins charging, voltage rises exponentially toward \(V_m\).<br>
                         • Square wave falling edge: capacitor discharges through resistor, voltage decays exponentially toward 0.<br>
-                        • Larger time constant \(\tau = RC\) means slower charging/discharging, more "sluggish" waveform.<br>
-                        • Adjust frequency: at low frequencies, capacitor can fully charge/discharge; at high frequencies, waveform shows linear triangle trend.
+                        • A larger time constant \(\tau = RC\) produces slower charging and discharging, so the waveform changes more gradually.<br>
+                        • At low frequencies, the capacitor can charge and discharge fully; at high frequencies, its voltage approaches a triangular waveform.
                     </p>
                 </div>
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">

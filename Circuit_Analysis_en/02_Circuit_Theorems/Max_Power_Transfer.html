@@ -83,7 +83,7 @@
             Maximum Power Transfer Theorem: Load Matching and Efficiency
         </h1>
         <p class="text-slate-600 max-w-2xl mx-auto">
-            Thevenin equivalent source driving variable load \(R_L\) | Power-load curve | Maximum power point \(R_L = R_{th}\)
+            A Thevenin equivalent source drives a variable load \(R_L\) | Power versus load resistance | Maximum-power condition \(R_L = R_{th}\)
         </p>
     </div>
 
@@ -134,7 +134,7 @@
 
                 <div class="mb-4">
                     <button id="matchBtn" class="w-full py-2.5 rounded-full text-sm font-bold bg-emerald-500 hover:bg-emerald-600 text-white transition-all duration-200 hover:shadow-lg">
-                        ⚡ Match Maximum Power
+                        ⚡ Match for Maximum Power
                     </button>
                 </div>
 
@@ -243,7 +243,7 @@
                     <h4 class="font-bold text-indigo-800 text-sm mb-1" id="character_title">Matching Properties</h4>
                     <p class="text-xs text-slate-600 leading-relaxed" id="character_text">
                         When \(R_L\) deviates from \(R_{th}\), power decreases (parabolic shape).<br>
-                        Power first increases then decreases as \(R_L\) increases.<br>
+                        As \(R_L\) increases, the power rises to a maximum and then falls.<br>
                         At the maximum power point, \(R_L = R_{th}\), and the power curve reaches its peak.<br>
                         Switch to AC mode to observe the complex conjugate matching condition.
                     </p>
@@ -562,8 +562,8 @@
             document.getElementById('theory_title').innerText = 'DC Maximum Power Transfer';
             document.getElementById('theory_text').innerHTML = 'The load receives maximum power when \(R_L\) equals \(R_{th}\):<br>\(P_{max} = \\frac{U_{th}^2}{4 R_{th}}\)<br>At this point, efficiency \(\eta = 50\%\) (source internal resistance and load each consume half the power).<br>\(P_L = \\frac{U_{th}^2 R_L}{(R_{th} + R_L)^2}\)';
             document.getElementById('character_title').innerText = 'Matching Properties';
-            document.getElementById('character_text').innerHTML = 'When \(R_L\) deviates from \(R_{th}\), power decreases (parabolic shape).<br>Power first increases then decreases as \(R_L\) increases.<br>At the maximum power point, \(R_L = R_{th}\), and the power curve reaches its peak.<br>Switch to AC mode to observe the complex conjugate matching condition.';
-            matchBtn.innerText = '⚡ Match Maximum Power (R_L = R_th)';
+            document.getElementById('character_text').innerHTML = 'When \(R_L\) differs from \(R_{th}\), the delivered power falls away from its peak.<br>As \(R_L\) increases, the power rises to a maximum and then falls.<br>At the maximum-power point, \(R_L = R_{th}\), and the curve reaches its peak.<br>Switch to AC mode to examine the complex-conjugate matching condition.';
+            matchBtn.innerText = '⚡ Match for Maximum Power (R_L = R_th)';
         } else {
             acModeBtn.classList.add('active');
             acModeBtn.classList.remove('bg-slate-400');
@@ -578,7 +578,7 @@
             document.getElementById('character_title').innerText = 'Complex Conjugate Matching';
             document.getElementById('character_text').innerHTML = 'Inductive and capacitive loads have different effects.<br>Conjugate matching eliminates reactive power exchange.<br>Adjust \(X_L\) to equal \(-X_{th}\) for maximum power.<br>Adjust \(X_{th}\) and \(X_L\) to observe changes in the power curve.';
             document.getElementById('match_status_row').querySelector('.text-slate-600').innerText = 'Match Status';
-            matchBtn.innerText = '⚡ Match Maximum Power (Z_L = Z_th^*)';
+            matchBtn.innerText = '⚡ Match for Maximum Power (Z_L = Z_th^*)';
         }
         if (typeof renderMathInElement !== 'undefined') {
             renderMathInElement(document.getElementById('theory_text'), {
