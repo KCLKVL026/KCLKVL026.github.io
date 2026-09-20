@@ -274,8 +274,10 @@
             return points;
         }
 
-        function computeOutputCharacteristicFamily(beta, V_A) {
-            const ibValues = [10e-6, 20e-6, 30e-6, 40e-6, 50e-6];
+        function computeOutputCharacteristicFamily(beta, V_A, qIb) {
+            const ibValues = [10e-6, 20e-6, 30e-6, 40e-6, 50e-6, qIb]
+                .filter((value, index, values) => value >= 0 && values.findIndex(v => Math.abs(v - value) < 0.25e-6) === index)
+                .sort((a, b) => a - b);
             const curves = [];
             const vceSteps = 200;
             const vceMax = 20;
@@ -293,7 +295,7 @@
                     }
                     points.push({ vce, ic });
                 }
-                curves.push({ ib, points, label: `I_B = ${(ib * 1e6).toFixed(0)} μA` });
+                curves.push({ ib, points, isQCurve: Math.abs(ib - qIb) < 0.25e-6, label: `I_B = ${(ib * 1e6).toFixed(0)} μA` });
             }
             return curves;
         }
@@ -342,18 +344,18 @@
         }
 
         function buildOutputDatasets(beta, V_A, V_CC, R_C, qIb, qVce, qIc) {
-            const curves = computeOutputCharacteristicFamily(beta, V_A);
+            const curves = computeOutputCharacteristicFamily(beta, V_A, qIb);
             const datasets = [];
             const colors = ['#93c5fd', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8'];
 
             curves.forEach((curve, idx) => {
                 const data = curve.points.map(p => ({ x: p.vce, y: p.ic * 1e3 }));
                 datasets.push({
-                    label: curve.label,
+                    label: curve.isQCurve ? `${curve.label}（Q点基极电流）` : curve.label,
                     data: data,
-                    borderColor: colors[idx],
-                    backgroundColor: colors[idx],
-                    borderWidth: idx === 1 ? 2.5 : 1.5,
+                    borderColor: curve.isQCurve ? '#f97316' : colors[idx % colors.length],
+                    backgroundColor: curve.isQCurve ? '#f97316' : colors[idx % colors.length],
+                    borderWidth: curve.isQCurve ? 2.8 : 1.5,
                     pointRadius: 0,
                     fill: false,
                     showLine: true,

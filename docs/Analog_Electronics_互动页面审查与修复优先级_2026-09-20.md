@@ -14,7 +14,7 @@
 
 ## 必须优先处理
 
-> 修复状态（2026-09-20）：下表唯一的 P0 已在分支 `codex/fix-multistage-nan` 修复并完成 CE-CE、CE-CC、差分模式的有限数值验证。全部 P1 已在分支 `codex/fix-analog-p1` 修复：工作点改为与负载线联立求解、功率/稳压边界加入物理约束、振荡与滤波状态改为一致的稳定性判定；仍待处理的是 P2/P3 项目。
+> 修复状态（2026-09-20）：下表唯一的 P0 已在分支 `codex/fix-multistage-nan` 修复并完成 CE-CE、CE-CC、差分模式的有限数值验证。全部 P1 已在分支 `codex/fix-analog-p1` 修复：工作点改为与负载线联立求解、功率/稳压边界加入物理约束、振荡与滤波状态改为一致的稳定性判定。全部 P2 已在分支 `codex/fix-analog-p2` 修复：跨数量级曲线可读性、参数与曲线族关联、非理想运放边界、小信号频响模型及对数柱状图均已落实；仍待处理的是 P3 项目。
 
 | 优先级 | 页面 | 问题与证据 | 影响 | 建议修复 |
 | --- | --- | --- | --- | --- |
@@ -35,16 +35,16 @@
 
 | 优先级 | 页面 | 问题与证据 | 建议修复 |
 | --- | --- | --- | --- |
-| P2 | `01_Semiconductor_Devices/PN_Junction_Diode.html` | 当 `V_D<-1 V` 时文案称“反向击穿区”（91–96 行），但电流仍只是被钳为 `-I_S`（119–122 行），没有击穿模型。高正向电压使用线性 y 轴会被巨大指数电流拉伸，反向/低电流段看起来近乎一条直线。 | 将状态改为“反向截止”或加入 `V_BR`、击穿电阻模型；增加半对数 y 轴/可切换局部视图，并对指数值作安全上限。 |
-| P2 | `01_Semiconductor_Devices/FET_Characteristics.html` | 输出特性族固定为 JFET `[-4,-3,-2,-1,0]` 和 MOS `[1,2,3,4,5]`（198 行），不随 `V_P/V_TH` 改变。例如 `V_P=-1 V` 时多条 JFET 曲线都是截止的 y=0 直线。 | 按当前阈值自动生成有效 `V_GS` 序列，并在截止曲线处注明“截止”或隐藏，避免多条重合直线。 |
-| P2 | `01_Semiconductor_Devices/BJT_Characteristics_V3.html` | 输出族的 `I_B` 固定在 10–50 μA（255 行），滑块允许 0–100 μA；Q 点可能不属于任何一条曲线。 | 把当前 `I_B` 纳入曲线族并高亮，或同步调整曲线序列。 |
-| P2 | `02_Basic_Amplifiers/Common_Collector_Amp.html`、`Common_Base_Amp.html` | 每个 `input` 事件均销毁并重建 400 点 Chart 实例（Common Collector 133、142 行；Common Base 129 行），还开启 150 ms 动画。连续拖动时会造成不必要的 GC/重绘，较慢设备容易掉帧。 | 首次创建图表，后续替换 `dataset.data` 并 `update('none')`；将滑块事件用 `requestAnimationFrame` 合并。可复用 `Common_Emitter_Amp.html` 的实例更新模式。 |
-| P2 | `03_Operational_Amplifiers/OpAmp_Linear_Apps.html` | 积分器、微分器及高增益差分/仪放从不考虑电源轨或带宽。极端 RC 和输入幅度可产生数百/数千伏；方波微分尖峰还强依赖采样步长。 | 增加可见的 `±V_CC`、GBW 和压摆率，统一限幅；对方波微分用有限带宽/RC 高通模型代替单采样数值差分。 |
-| P2 | `03_Operational_Amplifiers/OpAmp_Nonlinear_Apps.html` | 施密特“传输特性”只画出一个分支，中间阈值区总取 `+V_sat`（94 行附近），没有上扫/下扫两条迟滞路径。方波-三角波模式中图例把 `w`（方波）固定称 `V_in`，把 `wo`（三角波）称“方波”（174、201 行）。 | 用分别上扫、下扫的数据集画闭合迟滞环；生成器模式将图例明确改为“方波输出”“三角波/积分电容电压”。 |
-| P2 | `04_Feedback_Frequency/Power_Amplifier.html` | 所有滑块变化都销毁并重建两张图（146、154 行）；在此页面波形和柱状图数据量小但仍会造成拖动不平滑。 | 复用实例并关闭拖动期间动画；模型修复后再重设 y 轴范围，避免负耗散柱挤压正常数据。 |
-| P2 | `04_Feedback_Frequency/Freq_Response_Amp.html` | `I_C = V_T/(r_pi/A_M)*A_M`（85 行）量纲与物理含义不合理，且算出后没有真正参与模型；`g_m=A_M/R_L` 使多个可调参数只间接、甚至不参与频响。 | 删除死变量或从明确的晶体管小信号模型（`g_m`、`r_pi`、`β`、Miller 电容）重新推导，让每个滑块都对应可解释的物理量。 |
-| P2 | `04_Feedback_Frequency/Negative_Feedback_Amp.html` | “开环增益/闭环增益”使用线性柱状图（115 行）。默认约 10000 与 10，闭环柱视觉上几乎贴在零轴，反而看不出反馈后的值。 | 改用 dB、对数 y 轴或归一化比例；保留工具提示显示线性值。 |
-| P2 | `02_Basic_Amplifiers/Common_Emitter_Amp.html`、`Common_Collector_Amp.html`、`Common_Base_Amp.html` | 三页都用未加载的分压公式，忽略基极电流对 `R_B1/R_B2` 的拖载；在电阻高、β 低的可选端点误差会变大。 | 采用基极 Thevenin 等效：`I_B=(V_TH-V_BE)/(R_TH+(β+1)R_E)`，再推得 `I_C/I_E` 与工作区。 |
+| P2（已修复） | `01_Semiconductor_Devices/PN_Junction_Diode.html` | 反向状态现明确为“反向截止”；曲线改为有符号对数显示，提示框保留真实电流，并限制指数计算范围。 | 已修复。 |
+| P2（已修复） | `01_Semiconductor_Devices/FET_Characteristics.html` | 输出特性族现由当前 `V_P/V_TH` 动态生成有效 `V_GS` 序列，并以橙色突出 Q 点对应曲线。 | 已修复。 |
+| P2（已修复） | `01_Semiconductor_Devices/BJT_Characteristics_V3.html` | 输出特性族现加入当前 `I_B`，以标签和线宽突出 Q 点基极电流。 | 已修复。 |
+| P2（已修复） | `02_Basic_Amplifiers/Common_Collector_Amp.html`、`Common_Base_Amp.html` | 两页此前的销毁重建已改为 RAF 合并的图表实例原位更新。 | 已修复。 |
+| P2（已修复） | `03_Operational_Amplifiers/OpAmp_Linear_Apps.html` | 已显示并应用 ±13 V 输出摆幅、1 MHz GBW、0.5 V/μs 压摆率；微分器改为有限带宽 RC 高通。 | 已修复。 |
+| P2（已修复） | `03_Operational_Amplifiers/OpAmp_Nonlinear_Apps.html` | 施密特传输图已绘制上扫/下扫两条路径；发生器图例已改为“方波输出”“三角波（积分电容电压）”。 | 已修复。 |
+| P2（已修复） | `04_Feedback_Frequency/Power_Amplifier.html` | 此前销毁重建已改为 RAF 合并的图表实例原位更新。 | 已修复。 |
+| P2（已修复） | `04_Feedback_Frequency/Freq_Response_Amp.html` | 已使用一致的 `g_m=A_M/R_L'`、`β=g_mr_π`、`I_C=g_mV_T`、Miller 电容模型，并显示其计算结果。 | 已修复。 |
+| P2（已修复） | `04_Feedback_Frequency/Negative_Feedback_Amp.html` | 开环/闭环增益柱图已改为对数 y 轴，提示框仍显示线性值。 | 已修复。 |
+| P2（已修复） | `02_Basic_Amplifiers/Common_Emitter_Amp.html`、`Common_Collector_Amp.html`、`Common_Base_Amp.html` | 三页均已使用考虑基极电流拖载的 Thevenin 偏置求解。 | 已修复。 |
 
 ## 柱状图：颜色、间距与可读性结论
 

@@ -96,8 +96,11 @@
                         if(v>r.V_UTP) outState=-p.ssat; else if(v<r.V_LTP) outState=p.ssat;
                         vin.push({x:t*1000,y:v}); vout.push({x:t*1000,y:outState});
                     }
-                    const tc=[]; for(let i=0;i<=200;i++) { const vi=-15+30*i/200; let o=vi>r.V_UTP?-p.ssat:(vi<r.V_LTP?p.ssat:p.ssat); tc.push({x:vi,y:o}); }
-                    return { w:vin, wo:vout, tc, desc:`迟滞宽度 = ${r.hysteresis.toFixed(1)}V` };
+                    // Draw both sweep directions.  A Schmitt trigger is a
+                    // memory element, so a single transfer branch is misleading.
+                    const tcUp=[{x:-15,y:p.ssat},{x:r.V_UTP,y:p.ssat},{x:r.V_UTP,y:-p.ssat},{x:15,y:-p.ssat}];
+                    const tcDown=[{x:15,y:-p.ssat},{x:r.V_LTP,y:-p.ssat},{x:r.V_LTP,y:p.ssat},{x:-15,y:p.ssat}];
+                    return { w:vin, wo:vout, tcUp, tcDown, desc:`迟滞宽度 = ${r.hysteresis.toFixed(1)}V` };
                 }
             },
             gen: {
@@ -163,43 +166,43 @@
             // --- Chart 1: waveform ---
             if (chart1Inst && currentModeForChart === mode) {
                 chart1Inst.data.datasets[0].data = cd.w;
-                chart1Inst.data.datasets[0].label = 'V_in';
+                chart1Inst.data.datasets[0].label = mode==='gen' ? '方波输出' : 'V_in';
                 chart1Inst.data.datasets[1].data = cd.wo;
-                chart1Inst.data.datasets[1].label = mode==='gen' ? '方波' : 'V_out';
+                chart1Inst.data.datasets[1].label = mode==='gen' ? '三角波（积分电容电压）' : 'V_out';
                 chart1Inst.update('none');
             } else {
                 if (!chart1Inst) {
                     chart1Inst = new Chart(document.getElementById('chart1').getContext('2d'), {
                         type:'scatter', data:{ datasets:[
-                            { label:'V_in', data:cd.w, borderColor:'#3b82f6', borderWidth:1.5, pointRadius:0, showLine:true, tension:0.3 },
-                            { label:mode==='gen'?'方波':'V_out', data:cd.wo, borderColor:'#8b5cf6', borderWidth:2, pointRadius:0, showLine:true, tension:0.2 }
+                            { label:mode==='gen'?'方波输出':'V_in', data:cd.w, borderColor:'#3b82f6', borderWidth:1.5, pointRadius:0, showLine:true, tension:0.3 },
+                            { label:mode==='gen'?'三角波（积分电容电压）':'V_out', data:cd.wo, borderColor:'#8b5cf6', borderWidth:2, pointRadius:0, showLine:true, tension:0.2 }
                         ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:300},
                             plugins:{ legend:{position:'bottom',labels:{boxWidth:14,font:{size:10}}} },
                             scales:{ x:{title:{display:true,text:'时间 (ms)'}}, y:{title:{display:true,text:'V'}, grid:{color:'rgba(0,0,0,0.05)'}} } }
                     });
                 } else {
                     chart1Inst.data.datasets[0].data = cd.w;
-                    chart1Inst.data.datasets[0].label = 'V_in';
+                    chart1Inst.data.datasets[0].label = mode==='gen' ? '方波输出' : 'V_in';
                     chart1Inst.data.datasets[1].data = cd.wo;
-                    chart1Inst.data.datasets[1].label = mode==='gen' ? '方波' : 'V_out';
+                    chart1Inst.data.datasets[1].label = mode==='gen' ? '三角波（积分电容电压）' : 'V_out';
                     chart1Inst.update('none');
                 }
                 currentModeForChart = mode;
             }
 
             // --- Chart 2: transfer characteristic (Schmitt only) ---
-            if (cd.tc && mode==='sch') {
+            if (cd.tcUp && mode==='sch') {
                 if (chart2Inst) {
-                    chart2Inst.data.datasets[0].data = cd.tc;
-                    chart2Inst.data.datasets[1].data = [{ x:p.samp/10*0.5, y:0 }];
+                    chart2Inst.data.datasets[0].data = cd.tcUp;
+                    chart2Inst.data.datasets[1].data = cd.tcDown;
                     chart2Inst.update('none');
                 } else {
                     chart2Inst = new Chart(document.getElementById('chart2').getContext('2d'), {
                         type:'scatter', data:{ datasets:[
-                            { label:'V_out vs V_in', data:cd.tc, borderColor:'#8b5cf6', borderWidth:2, pointRadius:0, showLine:true, order:1 },
-                            { data:[{ x:p.samp/10*0.5, y:0 }], pointRadius:0, showLine:false }
+                            { label:'上扫', data:cd.tcUp, borderColor:'#8b5cf6', borderWidth:2, pointRadius:0, showLine:true, order:1 },
+                            { label:'下扫', data:cd.tcDown, borderColor:'#0ea5e9', borderWidth:2, borderDash:[5,3], pointRadius:0, showLine:true, order:1 }
                         ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:300},
-                            plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx => `V_in=${ctx.parsed.x.toFixed(1)}V, V_out=${ctx.parsed.y.toFixed(0)}V` } } },
+                            plugins:{ legend:{position:'bottom',labels:{boxWidth:14,font:{size:10}}}, tooltip:{ callbacks:{ label:ctx => `V_in=${ctx.parsed.x.toFixed(1)}V, V_out=${ctx.parsed.y.toFixed(0)}V` } } },
                             scales:{ x:{title:{display:true,text:'V_in (V)'}}, y:{title:{display:true,text:'V_out (V)'}, grid:{color:'rgba(0,0,0,0.05)'}} } }
                     });
                 }

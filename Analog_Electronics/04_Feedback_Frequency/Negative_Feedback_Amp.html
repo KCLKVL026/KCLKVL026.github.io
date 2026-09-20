@@ -130,7 +130,7 @@
                 { label:'线性值', data:[p.A, Af], backgroundColor:['#fbbf24','#f59e0b'], borderRadius:8 }
             ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
                 plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx => ctx.raw.toFixed(0)} } },
-                scales:{ y:{ title:{display:true,text:'增益'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
+                scales:{ y:{ type:'logarithmic', title:{display:true,text:'增益（对数刻度）'}, grid:{color:'rgba(0,0,0,0.05)'}, ticks:{ callback:value => Number(value).toLocaleString() } } } } };
             gainChartInst = updateChart(gainChartInst, 'gainChart', cfg);
 
             cfg = { type:'bar', data:{ labels:['Z_in 开环','Z_in 闭环','Z_out 开环','Z_out 闭环'], datasets:[

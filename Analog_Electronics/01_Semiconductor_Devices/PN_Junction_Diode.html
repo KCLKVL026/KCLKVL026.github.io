@@ -97,11 +97,21 @@
 
         function compute(p) {
             const V_T = k_over_q * (p.T + 273.15);
-            const I_D = p.I_S * (Math.exp(p.V_D / (p.n * V_T)) - 1);
+            // Keep the exponential in a representable range.  The chart spans a
+            // deliberately wide voltage range, whereas a real diode would be
+            // current-limited by the external circuit long before overflow.
+            const exponent = Math.min(80, Math.max(-80, p.V_D / (p.n * V_T)));
+            const I_D = p.I_S * (Math.exp(exponent) - 1);
             let bias = '正向导通';
-            if (p.V_D < -1.0) bias = '反向击穿区';
-            else if (p.V_D < 0) bias = '反向截止';
+            if (p.V_D < 0) bias = '反向截止';
             return { V_T, I_D, bias };
+        }
+
+        // A signed logarithmic display keeps reverse leakage and low-current
+        // forward conduction visible without pretending that a negative current
+        // can be drawn on an ordinary logarithmic axis.  Tooltips retain A.
+        function signedLogCurrent(current, reference) {
+            return Math.sign(current) * Math.log10(1 + Math.abs(current) / reference);
         }
 
         function updateAll() {
@@ -130,11 +140,12 @@
             const viPts = [];
             for (let i = 0; i <= 300; i++) {
                 const vd = -2 + 4 * i / 300;
-                let id = p.I_S * (Math.exp(vd / (p.n * r.V_T)) - 1);
+                const exponent = Math.min(80, Math.max(-80, vd / (p.n * r.V_T)));
+                let id = p.I_S * (Math.exp(exponent) - 1);
                 if (id < -p.I_S * 1.1) id = -p.I_S; // reverse leakage cap
-                viPts.push({ x: vd, y: id });
+                viPts.push({ x: vd, y: signedLogCurrent(id, p.I_S) });
             }
-            const qPt = { x: p.V_D, y: r.I_D };
+            const qPt = { x: p.V_D, y: signedLogCurrent(r.I_D, p.I_S) };
 
             if (!viChartInst) {
                 const cfg = {
@@ -151,15 +162,17 @@
                             legend: { display: false },
                             tooltip: {
                                 callbacks: {
-                                    label: ctx => ctx.datasetIndex === 0
-                                        ? `V_D=${ctx.parsed.x.toFixed(3)}V, I_D=${ctx.parsed.y.toExponential(1)}A`
-                                        : `Q点: V_D=${ctx.parsed.x.toFixed(3)}V, I_D=${ctx.parsed.y.toExponential(1)}A`
+                                    label: ctx => {
+                                        const raw = ctx.datasetIndex === 0 ? viPts[ctx.dataIndex].y : qPt.y;
+                                        const current = Math.sign(raw) * p.I_S * (Math.pow(10, Math.abs(raw)) - 1);
+                                        return `${ctx.datasetIndex === 0 ? '' : 'Q点: '}V_D=${ctx.parsed.x.toFixed(3)}V, I_D=${current.toExponential(1)}A`;
+                                    }
                                 }
                             }
                         },
                         scales: {
                             x: { title: { display: true, text: 'V_D (V)' }, grid: { color: 'rgba(0,0,0,0.05)' } },
-                            y: { title: { display: true, text: 'I_D (A)' }, grid: { color: 'rgba(0,0,0,0.05)' } }
+                            y: { title: { display: true, text: 'sgn(I_D) · log₁₀(1 + |I_D| / I_S)' }, grid: { color: 'rgba(0,0,0,0.05)' } }
                         }
                     }
                 };
