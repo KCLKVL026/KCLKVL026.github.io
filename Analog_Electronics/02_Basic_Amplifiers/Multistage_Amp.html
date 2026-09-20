@@ -85,6 +85,19 @@
     <script>
         const V_T = 0.02585;
         let topo = 'CECE', waveChartInst = null, gainChartInst = null;
+        let rafId = null, pendingUpdate = false;
+
+        // 合并拖动滑块时同一帧内的多次 input，避免重复计算和重复绘图。
+        function scheduleUpdate() {
+            pendingUpdate = true;
+            if (rafId !== null) return;
+            rafId = requestAnimationFrame(() => {
+                rafId = null;
+                if (!pendingUpdate) return;
+                pendingUpdate = false;
+                updateAll();
+            });
+        }
 
         function getParams() {
             return {
@@ -106,7 +119,7 @@
                 const s1 = computeCE(p.V_CC, p.R_C1, p.beta);
                 const s2 = computeCE(p.V_CC, p.R_C2, p.beta);
                 return {
-                    A_v1: s1.A_v, A_v2: s2.A_v * (s2.Z_in/(s1.R_C1 + s2.Z_in)),
+                    A_v1: s1.A_v, A_v2: s2.A_v * (s2.Z_in/(p.R_C1 + s2.Z_in)),
                     Z_in: s1.Z_in, Z_out: p.R_C2
                 };
             } else if (p.topo === 'CECC') {
@@ -115,7 +128,7 @@
                 const A_v2 = R_EL / (V_T/1.5e-3 + R_EL);
                 const Z_in2 = p.beta * (V_T/1.5e-3 + R_EL);
                 return {
-                    A_v1: s1.A_v, A_v2: A_v2 * (Z_in2/(s1.R_C1 + Z_in2)),
+                    A_v1: s1.A_v, A_v2: A_v2 * (Z_in2/(p.R_C1 + Z_in2)),
                     Z_in: s1.Z_in, Z_out: V_T/1.5e-3
                 };
             } else {
@@ -163,8 +176,14 @@
             ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
                 plugins:{ legend:{position:'bottom',labels:{boxWidth:14,font:{size:10}}} },
                 scales:{ x:{title:{display:true,text:'时间 (ms)'}}, y:{title:{display:true,text:'mV'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
-            if (waveChartInst) waveChartInst.destroy();
-            waveChartInst = new Chart(document.getElementById('waveChart').getContext('2d'), cfg);
+            if (waveChartInst) {
+                waveChartInst.data.datasets[0].data = vin;
+                waveChartInst.data.datasets[1].data = v1;
+                waveChartInst.data.datasets[2].data = v2;
+                waveChartInst.update('none');
+            } else {
+                waveChartInst = new Chart(document.getElementById('waveChart').getContext('2d'), cfg);
+            }
 
             // Gain bar chart
             cfg = { type:'bar', data:{ labels:['第1级增益','第2级增益','总增益'], datasets:[
@@ -173,8 +192,12 @@
             ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
                 plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx => ctx.raw.toFixed(1)+' dB' } } },
                 scales:{ y:{ title:{display:true,text:'增益 (dB)'}, grid:{color:'rgba(0,0,0,0.05)'} } } } };
-            if (gainChartInst) gainChartInst.destroy();
-            gainChartInst = new Chart(document.getElementById('gainChart').getContext('2d'), cfg);
+            if (gainChartInst) {
+                gainChartInst.data.datasets[0].data = [20*Math.log10(Math.abs(r.A_v1)), 20*Math.log10(Math.abs(r.A_v2)), A_v_dB];
+                gainChartInst.update('none');
+            } else {
+                gainChartInst = new Chart(document.getElementById('gainChart').getContext('2d'), cfg);
+            }
         }
 
         function setTopo(t) {
@@ -188,7 +211,7 @@
         document.getElementById('tabCECC').addEventListener('click', () => setTopo('CECC'));
         document.getElementById('tabDiff').addEventListener('click', () => setTopo('Diff'));
 
-        ['vccSlider','rc1Slider','rc2Slider','betaSlider','vsigSlider','fsigSlider'].forEach(id => document.getElementById(id).addEventListener('input', updateAll));
+        ['vccSlider','rc1Slider','rc2Slider','betaSlider','vsigSlider','fsigSlider'].forEach(id => document.getElementById(id).addEventListener('input', scheduleUpdate));
         updateAll();
         window.addEventListener('load', () => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); });
     </script>
