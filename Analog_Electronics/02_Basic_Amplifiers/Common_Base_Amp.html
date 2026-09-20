@@ -99,14 +99,22 @@
         }
 
         function compute(p) {
-            const V_B = p.V_CC * p.R_B2 / (p.R_B1 + p.R_B2), V_E = Math.max(0, V_B - 0.7);
-            const I_E = V_E / p.R_E, I_C = I_E * p.beta / (p.beta + 1);
-            const V_C = p.V_CC - I_C * p.R_C, V_CB = V_C - V_B;
-            const r_e = I_C > 0 ? V_T / I_C : 1e6;
-            const A_v = p.R_C / r_e;
+            const V_TH = p.V_CC * p.R_B2 / (p.R_B1 + p.R_B2);
+            const R_TH = p.R_B1 * p.R_B2 / (p.R_B1 + p.R_B2);
+            const I_B_active = Math.max(0, (V_TH - 0.7) / (R_TH + (p.beta + 1) * p.R_E));
+            const I_C_active = p.beta * I_B_active;
+            // Keep the Q point on the DC load line even if the requested base drive is excessive.
+            const I_C_max = Math.max(0, (p.V_CC - 0.2) / (p.R_C + p.R_E * (1 + 1 / p.beta)));
+            const I_C = Math.min(I_C_active, I_C_max);
+            const I_B = I_C / p.beta, I_E = I_C + I_B;
+            const V_E = I_E * p.R_E, V_B = V_E + (I_C > 0 ? 0.7 : 0), V_C = p.V_CC - I_C * p.R_C;
+            const V_CB = V_C - V_B;
+            const r_e = I_C > 1e-9 ? V_T / I_C : 1e6;
+            const region = I_C < 1e-9 ? '截止区' : (I_C_active > I_C_max || V_CB < 0.2 ? '饱和区' : '放大区');
+            const A_v = region === '放大区' ? p.R_C / r_e : 0;
             const Z_in = (r_e * p.R_E) / (r_e + p.R_E);
-            let region = '放大区'; if (V_CB < 0.3) region = '饱和区'; else if (I_C < 1e-9) region = '截止区';
-            return { I_C, V_CB, r_e, A_v, Z_in, region };
+            const posSwing = Math.max(0, p.V_CC - V_C), negSwing = Math.max(0, V_C - (V_E + 0.2));
+            return { I_C, V_CB, r_e, A_v, Z_in, region, V_C, V_E, posSwing, negSwing };
         }
 
         function updateAll() {
@@ -131,7 +139,8 @@
             for (let i = 0; i <= N; i++) {
                 const t = dur * i / N, vs = p.V_sig * Math.sin(2*Math.PI*p.f_sig*t);
                 vin.push({ x: t*1000, y: vs*1000 });
-                vout.push({ x: t*1000, y: vs * dc.A_v * 1000 });
+                const acOut = vs * dc.A_v;
+                vout.push({ x: t*1000, y: Math.min(dc.posSwing, Math.max(-dc.negSwing, acOut)) * 1000 });
             }
             const cfg = { type:'scatter', data:{ datasets:[
                 { label:'V_in (mV)', data:vin, borderColor:'#3b82f6', borderWidth:2, pointRadius:0, showLine:true, tension:0.3 },

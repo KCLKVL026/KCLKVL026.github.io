@@ -60,12 +60,12 @@
             sum: {
                 title: '反相加法器', subtitle: '\\(V_{out} = -R_f(V_1/R_1 + V_2/R_2 + V_3/R_3)\\)',
                 sliders: [
-                    {id:'v1',label:'V_1',val:10,min:0,max:50,step:0.5,unit:'0.5 V'},
-                    {id:'v2',label:'V_2',val:15,min:0,max:50,step:0.5,unit:'0.75 V'},
-                    {id:'v3',label:'V_3',val:5,min:0,max:50,step:0.5,unit:'0.25 V'},
-                    {id:'rf',label:'R_f',val:100,min:1,max:200,step:1,unit:'10 kΩ'}
+                    {id:'v1',label:'V_1',val:10,min:0,max:50,step:0.5,unit:'0.5 V',format:v=>(v/10).toFixed(2)+' V'},
+                    {id:'v2',label:'V_2',val:15,min:0,max:50,step:0.5,unit:'0.75 V',format:v=>(v/10).toFixed(2)+' V'},
+                    {id:'v3',label:'V_3',val:5,min:0,max:50,step:0.5,unit:'0.25 V',format:v=>(v/10).toFixed(2)+' V'},
+                    {id:'rf',label:'R_f（R_1=R_2=R_3=10 kΩ）',val:10,min:1,max:200,step:1,unit:'10 kΩ',format:v=>v.toFixed(0)+' kΩ'}
                 ],
-                compute(p) { return { result: -p.Rf/10000*(p.v1/10+p.v2/10+p.v3/10), info: `权重: R_f/R_1=${(p.Rf/10000).toFixed(0)}, R_f/R_2=${(p.Rf/10000).toFixed(0)}, R_f/R_3=${(p.Rf/10000).toFixed(0)}` }; },
+                compute(p) { const gain = p.rf / 10; return { result: -gain*(p.v1/10+p.v2/10+p.v3/10), info: `R_1=R_2=R_3=10 kΩ；每路权重 R_f/R_i=${gain.toFixed(2)}` }; },
                 chartData(p) {
                     const T = 0.002, N = 300, vin1 = [], vin2 = [], vin3 = [], vout = [];
                     for (let i = 0; i <= N; i++) {
@@ -74,7 +74,7 @@
                         const v2v = p.v2/10*Math.sin(2*Math.PI*1000*t);
                         const v3v = p.v3/10*Math.sin(2*Math.PI*250*t);
                         vin1.push({x:t*1000, y:v1v}); vin2.push({x:t*1000, y:v2v}); vin3.push({x:t*1000, y:v3v});
-                        vout.push({x:t*1000, y:-p.Rf/10000*(v1v+v2v+v3v)});
+                        vout.push({x:t*1000, y:-(p.rf/10)*(v1v+v2v+v3v)});
                     }
                     return { datasets:[
                         {label:'V1',data:vin1,borderColor:'#3b82f6',borderWidth:1,pointRadius:0,showLine:true,tension:0.3},
@@ -178,7 +178,7 @@
             cfg.sliders.forEach(s => { p[s.id] = parseFloat(document.getElementById(s.id+'Slider').value); });
             cfg.sliders.forEach(s => {
                 const el = document.getElementById(s.id+'Value');
-                if (el && s.type !== 'select') el.textContent = s.unit;
+                if (el && s.type !== 'select') el.textContent = s.format ? s.format(p[s.id]) : s.unit;
             });
             const r = cfg.compute(p);
             document.getElementById('resultDisplay').textContent = typeof r.result === 'number' ? r.result.toFixed(3) + ' V' : r.result;

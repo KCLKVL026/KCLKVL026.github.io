@@ -86,8 +86,9 @@
             const Vout_noZener = p.V_in * p.R_L / (p.R_S + p.R_L);
             // With Zener: if V_in high enough, Vout clamped to V_Z
             let V_out, I_Z, regulated;
-            const V_threshold = p.V_Z + I_Z_MIN * p.R_S;
-            if (p.V_in > V_threshold) {
+            const I_load_atVz = p.V_Z / p.R_L;
+            const V_threshold = p.V_Z + p.R_S * (I_Z_MIN + I_load_atVz);
+            if (p.V_in >= V_threshold) {
                 V_out = p.V_Z;
                 I_Z = (p.V_in - p.V_Z) / p.R_S - p.V_Z / p.R_L;
                 regulated = I_Z >= I_Z_MIN;
@@ -107,7 +108,8 @@
                 const vin = 20 * i / 200;
                 noZener.push({ x: vin, y: vin * p.R_L / (p.R_S + p.R_L) });
                 let vout;
-                if (vin > p.V_Z + I_Z_MIN * p.R_S) vout = p.V_Z;
+                const threshold = p.V_Z + p.R_S * (I_Z_MIN + p.V_Z / p.R_L);
+                if (vin >= threshold) vout = p.V_Z;
                 else vout = vin * p.R_L / (p.R_S + p.R_L);
                 withZener.push({ x: vin, y: vout });
             }

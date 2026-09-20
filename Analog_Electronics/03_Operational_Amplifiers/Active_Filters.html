@@ -91,9 +91,14 @@
         function computeResponse(p) {
             const f_c = 1 / (2 * Math.PI * Math.sqrt(p.R1 * p.R2 * p.C1 * p.C2));
             const denom = p.R2*p.C2 + p.R1*p.C2 + p.R1*p.C1*(1-p.K);
-            const Q = Math.sqrt(p.R1*p.R2*p.C1*p.C2) / Math.max(denom, 1e-30);
+            const stable = denom > 0;
+            const Q = stable ? Math.sqrt(p.R1*p.R2*p.C1*p.C2) / denom : null;
             const w_c = 2 * Math.PI * f_c;
             const freqs = [], mags = [], phases = [];
+            if (!stable) {
+                for (let f = 1; f <= 100000; f *= 1.05) { freqs.push(f); mags.push(null); phases.push(null); }
+                return { f_c, Q, freqs, mags, phases, stable };
+            }
             for (let f = 1; f <= 100000; f *= 1.05) {
                 const w = 2 * Math.PI * f;
                 let H;
@@ -111,14 +116,14 @@
                     H = { re: p.K*w_c/Q*w, im: 0 };
                     const den = { re: w_c*w_c - w*w, im: w_c*w/Q };
                     const d2 = den.re*den.re+den.im*den.im;
-                    H = { re: (H.re*den.im)/d2, im: (H.re*den.re)/d2 };
+                    H = { re: (H.re*den.re)/d2, im: (-H.re*den.im)/d2 };
                 }
                 const mag = Math.sqrt(H.re*H.re + H.im*H.im);
                 freqs.push(f);
                 mags.push(20*Math.log10(Math.max(mag, 1e-10)));
                 phases.push(Math.atan2(H.im, H.re) * 180 / Math.PI);
             }
-            return { f_c, Q, freqs, mags, phases };
+            return { f_c, Q, freqs, mags, phases, stable };
         }
 
         function updateAll() {
@@ -129,7 +134,9 @@
             document.getElementById('c2Value').textContent = (p.C2*1e9).toFixed(0) + ' nF';
             document.getElementById('kValue').textContent = p.K.toFixed(2);
             document.getElementById('fcDisplay').textContent = r.f_c >= 1000 ? (r.f_c/1000).toFixed(1)+' kHz' : r.f_c.toFixed(0)+' Hz';
-            document.getElementById('qDisplay').textContent = r.Q.toFixed(2);
+            const qDisplay = document.getElementById('qDisplay');
+            qDisplay.textContent = r.stable ? r.Q.toFixed(2) : '不稳定';
+            qDisplay.className = r.stable ? 'text-lg font-bold text-blue-600 font-mono' : 'text-lg font-bold text-rose-600';
             document.getElementById('gainDisplay').textContent = (20*Math.log10(p.K)).toFixed(1)+' dB';
             const rolloff = filtType === 'BP' ? '-20 dB/dec' : '-40 dB/dec';
             document.getElementById('rolloffDisplay').textContent = rolloff;

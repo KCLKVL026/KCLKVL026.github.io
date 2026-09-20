@@ -103,29 +103,26 @@
         }
 
         function compute(p) {
-            let P_out, P_DC, P_diss, eta, V_out_peak;
+            let P_out, P_DC, P_diss, eta, V_out_peak, deadZone = 0;
             if (p.ampClass === 'A') {
-                V_out_peak = Math.min(p.V_in, p.V_CC * 0.9);
-                P_out = V_out_peak * V_out_peak / (2 * p.R_L);
                 P_DC = p.V_CC * p.I_CQ;
-                P_diss = P_DC - P_out;
-                eta = P_out / P_DC * 100;
+                // A single-ended stage must have enough quiescent current and DC power for the requested swing.
+                V_out_peak = Math.min(p.V_in, p.V_CC * 0.9, p.I_CQ * p.R_L, Math.sqrt(2 * p.R_L * P_DC));
             } else if (p.ampClass === 'B') {
-                V_out_peak = Math.min(p.V_in, p.V_CC - 0.7);
-                const V_p = V_out_peak;
-                P_out = V_p * V_p / (2 * p.R_L);
-                P_DC = 2 * p.V_CC * V_p / (Math.PI * p.R_L);
-                P_diss = P_DC - P_out;
-                eta = P_out / P_DC * 100;
+                deadZone = 0.7;
+                V_out_peak = Math.min(Math.max(0, p.V_in - deadZone), p.V_CC - 0.7);
+                P_DC = V_out_peak > 0 ? 2 * p.V_CC * V_out_peak / (Math.PI * p.R_L) : 0;
             } else {
-                V_out_peak = Math.min(p.V_in, p.V_CC - 0.3);
-                const V_p = V_out_peak;
-                P_out = V_p * V_p / (2 * p.R_L);
-                P_DC = 2 * p.V_CC * V_p / (Math.PI * p.R_L) + p.V_CC * 0.02;
-                P_diss = P_DC - P_out;
-                eta = P_out / P_DC * 100;
+                // V_BB reduces the crossover dead zone and also establishes a small idle current.
+                deadZone = Math.max(0, 0.7 - p.V_BB);
+                V_out_peak = Math.min(Math.max(0, p.V_in - deadZone), p.V_CC - 0.3);
+                const I_idle = Math.max(0, p.V_BB - 0.6) / 50;
+                P_DC = (V_out_peak > 0 ? 2 * p.V_CC * V_out_peak / (Math.PI * p.R_L) : 0) + 2 * p.V_CC * I_idle;
             }
-            return { P_out, P_DC, P_diss, eta, V_out_peak };
+            P_out = V_out_peak * V_out_peak / (2 * p.R_L);
+            P_diss = Math.max(0, P_DC - P_out);
+            eta = P_DC > 0 ? Math.min(100, P_out / P_DC * 100) : 0;
+            return { P_out, P_DC, P_diss, eta, V_out_peak, deadZone };
         }
 
         function updateAll() {
@@ -148,9 +145,8 @@
                 const t = T*i/N, v_in = p.V_in * Math.sin(2*Math.PI*500*t);
                 let vo;
                 if (p.ampClass === 'A') vo = v_in;
-                else if (p.ampClass === 'B') vo = v_in > 0 ? v_in : 0;
-                else vo = v_in > 0.1 ? v_in : v_in < -0.1 ? v_in : 0.1 * Math.sign(v_in);
-                vout.push({ x: t*1000, y: Math.min(p.V_CC*0.9, Math.max(-p.V_CC*0.9, vo)) });
+                else vo = Math.sign(v_in) * Math.max(0, Math.abs(v_in) - r.deadZone);
+                vout.push({ x: t*1000, y: Math.min(r.V_out_peak, Math.max(-r.V_out_peak, vo)) });
             }
             let cfg = { type:'scatter', data:{ datasets:[
                 { label:'V_out', data:vout, borderColor:'#f59e0b', borderWidth:2, pointRadius:0, showLine:true, tension:0.3 }
