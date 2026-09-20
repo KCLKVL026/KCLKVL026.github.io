@@ -11,8 +11,8 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     <style>
         input[type=range] { height: 5px; -webkit-appearance: none; background: #e2e8f0; border-radius: 5px; outline: none; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #6366f1; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-        input[type=range]::-webkit-slider-thumb:hover { background: #4f46e5; transform: scale(1.15); }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #3b82f6; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb:hover { background: #2563eb; transform: scale(1.15); }
         ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .card-hover { transition: all 0.2s ease; } .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15); }
     </style>
@@ -42,12 +42,12 @@
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                     <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>稳压参数</h2>
                     <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(V_{out}\)</div><div id="voutDisplay" class="text-lg font-bold text-emerald-600 font-mono">5.6 V</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(I_Z\)</div><div id="izDisplay" class="text-lg font-bold text-emerald-600 font-mono">8.0 mA</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(V_{out}\)</div><div id="voutDisplay" class="text-lg font-bold text-blue-600 font-mono">5.6 V</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(I_Z\)</div><div id="izDisplay" class="text-lg font-bold text-blue-600 font-mono">8.0 mA</div></div>
                         <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(I_L\)</div><div id="ilDisplay" class="text-lg font-bold text-indigo-600 font-mono">5.6 mA</div></div>
                         <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(P_Z\)</div><div id="pzDisplay" class="text-lg font-bold text-indigo-600 font-mono">45 mW</div></div>
                     </div>
-                    <div class="mt-3 bg-slate-50 rounded-xl p-3 text-center"><div id="regStatus" class="text-lg font-bold text-emerald-600">稳压正常</div></div>
+                    <div class="mt-3 bg-slate-50 rounded-xl p-3 text-center"><div id="regStatus" class="text-lg font-bold text-blue-600">稳压正常</div></div>
                 </div>
             </div>
             <div class="lg:col-span-8 space-y-5">
@@ -125,7 +125,7 @@
             document.getElementById('pzDisplay').textContent = (r.P_Z*1000).toFixed(0) + ' mW';
 
             const statusEl = document.getElementById('regStatus');
-            if (r.regulated) { statusEl.textContent = '稳压正常'; statusEl.className = 'text-lg font-bold text-emerald-600'; }
+            if (r.regulated) { statusEl.textContent = '稳压正常'; statusEl.className = 'text-lg font-bold text-blue-600'; }
             else if (p.V_in < p.V_Z) { statusEl.textContent = '输入电压不足'; statusEl.className = 'text-lg font-bold text-slate-500'; }
             else { statusEl.textContent = '未进入稳压区 (I_Z < 5mA)'; statusEl.className = 'text-lg font-bold text-amber-600'; }
         }

@@ -11,11 +11,11 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     <style>
         input[type=range] { height: 5px; -webkit-appearance: none; background: #e2e8f0; border-radius: 5px; outline: none; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #6366f1; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-        input[type=range]::-webkit-slider-thumb:hover { background: #4f46e5; transform: scale(1.15); }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #3b82f6; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb:hover { background: #2563eb; transform: scale(1.15); }
         ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .card-hover { transition: all 0.2s ease; } .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15); }
-        .dev-tab { cursor: pointer; transition: all 0.2s; } .dev-tab.active { background: #6366f1; color: white; } .dev-tab:not(.active):hover { background: #eef2ff; }
+        .dev-tab { cursor: pointer; transition: all 0.2s; } .dev-tab.active { background: #3b82f6; color: white; } .dev-tab:not(.active):hover { background: #eff6ff; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
@@ -49,10 +49,10 @@
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                     <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>工作点参数</h2>
                     <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(I_D\)</div><div id="idDisplay" class="text-lg font-bold text-emerald-600 font-mono">2.5 mA</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(V_{DS}\)</div><div id="vdsqDisplay" class="text-lg font-bold text-emerald-600 font-mono">10.0 V</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(I_D\)</div><div id="idDisplay" class="text-lg font-bold text-blue-600 font-mono">2.5 mA</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(V_{DS}\)</div><div id="vdsqDisplay" class="text-lg font-bold text-blue-600 font-mono">10.0 V</div></div>
                         <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(g_m\)</div><div id="gmDisplay" class="text-lg font-bold text-indigo-600 font-mono">2.5 mS</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">工作区域</div><div id="regionDisplay" class="text-lg font-bold text-emerald-600">饱和区</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">工作区域</div><div id="regionDisplay" class="text-lg font-bold text-blue-600">饱和区</div></div>
                     </div>
                 </div>
             </div>
@@ -245,9 +245,7 @@
             document.getElementById('param2Label').innerHTML = type === 'JFET' ? '\\(V_P\\)' : '\\(V_{TH}\\)';
             if (type === 'JFET') { vgsSlider.min = -60; vgsSlider.max = 0; vgsSlider.value = -20; param1Slider.value = 10; param2Slider.min = -6; param2Slider.max = -1; param2Slider.value = -4; }
             else { vgsSlider.min = 0; vgsSlider.max = 80; vgsSlider.value = 30; param1Slider.value = 2; param2Slider.min = 0.5; param2Slider.max = 4; param2Slider.value = 2; }
-            // Destroy chart instances on device switch so they reinitialize with new scales
-            if (transferChartInst) { transferChartInst.destroy(); transferChartInst = null; }
-            if (outputChartInst) { outputChartInst.destroy(); outputChartInst = null; }
+            // Both charts use generic axes, so keep their instances and update their data in place.
             updateAll();
             setTimeout(() => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); }, 80);
         }

@@ -11,10 +11,10 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     <style>
         input[type=range] { height: 5px; -webkit-appearance: none; background: #e2e8f0; border-radius: 5px; outline: none; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #f59e0b; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-        input[type=range]::-webkit-slider-thumb:hover { background: #d97706; transform: scale(1.15); }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #3b82f6; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb:hover { background: #2563eb; transform: scale(1.15); }
         ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .class-tab { cursor: pointer; transition: all 0.2s; } .class-tab.active { background: #f59e0b; color: white; } .class-tab:not(.active):hover { background: #fffbeb; }
+        .class-tab { cursor: pointer; transition: all 0.2s; } .class-tab.active { background: #3b82f6; color: white; } .class-tab:not(.active):hover { background: #eff6ff; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
@@ -48,10 +48,10 @@
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                     <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>功率特性</h2>
                     <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(P_{out}\)</div><div id="poutDisplay" class="text-lg font-bold text-emerald-600 font-mono">1.56 W</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(P_{out}\)</div><div id="poutDisplay" class="text-lg font-bold text-blue-600 font-mono">1.56 W</div></div>
                         <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(P_{DC}\)</div><div id="pdcDisplay" class="text-lg font-bold text-amber-600 font-mono">6.00 W</div></div>
                         <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(P_{diss}\)</div><div id="pdissDisplay" class="text-lg font-bold text-rose-600 font-mono">4.44 W</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">效率 \(\eta\)</div><div id="effDisplay" class="text-lg font-bold text-emerald-600 font-mono">26.0%</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">效率 \(\eta\)</div><div id="effDisplay" class="text-lg font-bold text-blue-600 font-mono">26.0%</div></div>
                     </div>
                 </div>
             </div>
@@ -75,7 +75,21 @@
     </div>
 
     <script>
-        let ampClass = 'A', waveChartInst = null, powerChartInst = null;
+        let ampClass = 'A', waveChartInst = null, powerChartInst = null, updateFrame = null;
+
+        function updateChart(instance, canvasId, config) {
+            if (!instance) return new Chart(document.getElementById(canvasId).getContext('2d'), config);
+            instance.data.labels = config.data.labels;
+            instance.data.datasets = config.data.datasets;
+            instance.options = config.options;
+            instance.update('none');
+            return instance;
+        }
+
+        function scheduleUpdate() {
+            if (updateFrame !== null) return;
+            updateFrame = requestAnimationFrame(() => { updateFrame = null; updateAll(); });
+        }
 
         function getParams() {
             return {
@@ -143,16 +157,14 @@
             ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
                 plugins:{ legend:{position:'bottom',labels:{boxWidth:14}} },
                 scales:{ x:{title:{display:true,text:'时间 (ms)'}}, y:{title:{display:true,text:'V_out (V)'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
-            if (waveChartInst) waveChartInst.destroy();
-            waveChartInst = new Chart(document.getElementById('waveChart').getContext('2d'), cfg);
+            waveChartInst = updateChart(waveChartInst, 'waveChart', cfg);
 
             cfg = { type:'bar', data:{ labels:['P_DC (直流功率)','P_out (交流输出)','P_diss (耗散热量)'], datasets:[
                 { data:[r.P_DC, r.P_out, r.P_diss], backgroundColor:['#fbbf24','#10b981','#ef4444'], borderRadius:8 }
             ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
                 plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx => ctx.raw.toFixed(2)+' W' } } },
                 scales:{ y:{ title:{display:true,text:'功率 (W)'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
-            if (powerChartInst) powerChartInst.destroy();
-            powerChartInst = new Chart(document.getElementById('powerChart').getContext('2d'), cfg);
+            powerChartInst = updateChart(powerChartInst, 'powerChart', cfg);
         }
 
         function setClass(c) {
@@ -165,7 +177,7 @@
         document.getElementById('tabB').addEventListener('click', ()=>setClass('B'));
         document.getElementById('tabAB').addEventListener('click', ()=>setClass('AB'));
 
-        ['vccSlider','rlSlider','vinSlider','iqSlider','vbbSlider'].forEach(id => document.getElementById(id).addEventListener('input', updateAll));
+        ['vccSlider','rlSlider','vinSlider','iqSlider','vbbSlider'].forEach(id => document.getElementById(id).addEventListener('input', scheduleUpdate));
         updateAll();
         window.addEventListener('load', () => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); });
     </script>

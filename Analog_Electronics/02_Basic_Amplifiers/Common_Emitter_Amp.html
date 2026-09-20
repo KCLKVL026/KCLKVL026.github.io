@@ -21,14 +21,14 @@
             -webkit-appearance: none;
             width: 18px;
             height: 18px;
-            background: #10b981;
+            background: #3b82f6;
             border-radius: 50%;
             cursor: pointer;
             transition: 0.1s;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
         }
         input[type=range]::-webkit-slider-thumb:hover {
-            background: #059669;
+            background: #2563eb;
             transform: scale(1.15);
         }
         ::-webkit-scrollbar {
@@ -51,7 +51,7 @@
             box-shadow: 0 12px 20px -12px rgba(0, 0, 0, 0.15);
         }
 
-        /* 预设按钮样式 - emerald 主题 */
+        /* 预设按钮样式 - 与 Circuit Analysis 一致的蓝色主控色 */
         .preset-btn {
             padding: 7px 10px;
             border-radius: 10px;
@@ -66,17 +66,17 @@
             letter-spacing: 0.01em;
         }
         .preset-btn:hover {
-            border-color: rgba(16, 185, 129, 0.5);
-            color: #10b981;
-            background: rgba(16, 185, 129, 0.04);
+            border-color: rgba(59, 130, 246, 0.5);
+            color: #3b82f6;
+            background: rgba(59, 130, 246, 0.04);
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.08);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08);
         }
         .preset-btn.active {
-            border-color: #10b981;
-            color: #059669;
-            background: rgba(16, 185, 129, 0.1);
-            box-shadow: 0 0 14px rgba(16, 185, 129, 0.12);
+            border-color: #3b82f6;
+            color: #2563eb;
+            background: rgba(59, 130, 246, 0.1);
+            box-shadow: 0 0 14px rgba(59, 130, 246, 0.12);
             font-weight: 700;
         }
         .preset-dot {
@@ -90,7 +90,7 @@
             top: -1px;
         }
         .preset-dot.green {
-            background: #10b981;
+            background: #3b82f6;
         }
         .preset-dot.purple {
             background: #8b5cf6;
@@ -162,57 +162,57 @@
                     <div class="space-y-4">
                         <div>
                             <div class="flex justify-between text-sm text-slate-600 mb-1"><span>电源电压 \(V_{CC}\)</span><span id="vccValue"
-                                    class="font-mono font-bold text-emerald-600">15 V</span></div>
+                                    class="font-mono font-bold text-blue-600">15 V</span></div>
                             <input type="range" id="vccSlider" min="5" max="30" value="15" step="1" class="w-full"
                                 aria-label="电源电压 V_CC，单位伏特">
                         </div>
                         <div>
                             <div class="flex justify-between text-sm text-slate-600 mb-1"><span>上偏电阻 \(R_{B1}\)</span><span id="rb1Value"
-                                    class="font-mono font-bold text-emerald-600">100 kΩ</span></div>
+                                    class="font-mono font-bold text-blue-600">100 kΩ</span></div>
                             <input type="range" id="rb1Slider" min="10" max="500" value="100" step="1" class="w-full"
                                 aria-label="上偏电阻 R_B1，单位千欧">
                         </div>
                         <div>
                             <div class="flex justify-between text-sm text-slate-600 mb-1"><span>下偏电阻 \(R_{B2}\)</span><span id="rb2Value"
-                                    class="font-mono font-bold text-emerald-600">22 kΩ</span></div>
+                                    class="font-mono font-bold text-blue-600">22 kΩ</span></div>
                             <input type="range" id="rb2Slider" min="1" max="50" value="22" step="1" class="w-full"
                                 aria-label="下偏电阻 R_B2，单位千欧">
                         </div>
                         <div>
                             <div class="flex justify-between text-sm text-slate-600 mb-1"><span>集电极电阻 \(R_C\)</span><span id="rcValue"
-                                    class="font-mono font-bold text-emerald-600">4.7 kΩ</span></div>
+                                    class="font-mono font-bold text-blue-600">4.7 kΩ</span></div>
                             <input type="range" id="rcSlider" min="1" max="50" value="47" step="1" class="w-full"
                                 aria-label="集电极电阻 R_C，每格代表100欧">
                         </div>
                         <div>
                             <div class="flex justify-between text-sm text-slate-600 mb-1"><span>射极电阻 \(R_E\)</span><span id="reValue"
-                                    class="font-mono font-bold text-emerald-600">1.0 kΩ</span></div>
+                                    class="font-mono font-bold text-blue-600">1.0 kΩ</span></div>
                             <input type="range" id="reSlider" min="1" max="50" value="10" step="1" class="w-full"
                                 aria-label="射极电阻 R_E，每格代表100欧">
                         </div>
                         <div>
                             <div class="flex justify-between text-sm text-slate-600 mb-1"><span>信号幅度 \(V_{sig}\)</span><span id="vsigValue"
-                                    class="font-mono font-bold text-emerald-600">50 mV</span></div>
+                                    class="font-mono font-bold text-blue-600">50 mV</span></div>
                             <input type="range" id="vsigSlider" min="1" max="500" value="50" step="1" class="w-full"
                                 aria-label="信号幅度 V_sig，单位毫伏">
                         </div>
                         <div>
                             <div class="flex justify-between text-sm text-slate-600 mb-1"><span>信号频率 \(f_{sig}\)</span><span id="fsigValue"
-                                    class="font-mono font-bold text-emerald-600">1.0 kHz</span></div>
+                                    class="font-mono font-bold text-blue-600">1.0 kHz</span></div>
                             <input type="range" id="fsigSlider" min="1" max="100" value="10" step="1" class="w-full"
                                 aria-label="信号频率 f_sig，每格代表100赫兹">
                         </div>
                         <div>
                             <div class="flex justify-between text-sm text-slate-600 mb-1"><span>电流增益 \(\beta\)</span><span id="betaValue"
-                                    class="font-mono font-bold text-emerald-600">150</span></div>
+                                    class="font-mono font-bold text-blue-600">150</span></div>
                             <input type="range" id="betaSlider" min="50" max="300" value="150" step="1" class="w-full"
                                 aria-label="电流增益 beta">
                         </div>
                         <div class="flex items-center gap-3 pt-1">
                             <span class="text-sm text-slate-600">射极旁路电容</span>
-                            <input type="checkbox" id="bypassToggle" checked class="w-4 h-4 text-emerald-600"
+                            <input type="checkbox" id="bypassToggle" checked class="w-4 h-4 text-blue-600"
                                 aria-label="射极旁路电容开关，勾选表示已旁路">
-                            <span id="bypassLabel" class="text-sm font-bold text-emerald-600">已旁路</span>
+                            <span id="bypassLabel" class="text-sm font-bold text-blue-600">已旁路</span>
                         </div>
                     </div>
                 </div>
@@ -225,27 +225,27 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div class="bg-slate-50 rounded-xl p-3 text-center">
                             <div class="text-xs text-slate-500 mb-1">\(I_{CQ}\)</div>
-                            <div id="icqDisplay" class="text-lg font-bold text-emerald-600 font-mono">1.45 mA</div>
+                            <div id="icqDisplay" class="text-lg font-bold text-blue-600 font-mono">1.45 mA</div>
                         </div>
                         <div class="bg-slate-50 rounded-xl p-3 text-center">
                             <div class="text-xs text-slate-500 mb-1">\(V_{CEQ}\)</div>
-                            <div id="vceqDisplay" class="text-lg font-bold text-emerald-600 font-mono">6.7 V</div>
+                            <div id="vceqDisplay" class="text-lg font-bold text-blue-600 font-mono">6.7 V</div>
                         </div>
                         <div class="bg-slate-50 rounded-xl p-3 text-center">
                             <div class="text-xs text-slate-500 mb-1">\(A_v\)</div>
-                            <div id="avDisplay" class="text-lg font-bold text-emerald-600 font-mono">-98</div>
+                            <div id="avDisplay" class="text-lg font-bold text-blue-600 font-mono">-98</div>
                         </div>
                         <div class="bg-slate-50 rounded-xl p-3 text-center">
                             <div class="text-xs text-slate-500 mb-1">\(Z_{in}\)</div>
-                            <div id="zinDisplay" class="text-lg font-bold text-emerald-600 font-mono">2.5 kΩ</div>
+                            <div id="zinDisplay" class="text-lg font-bold text-blue-600 font-mono">2.5 kΩ</div>
                         </div>
                         <div class="bg-slate-50 rounded-xl p-3 text-center">
                             <div class="text-xs text-slate-500 mb-1">\(Z_{out}\)</div>
-                            <div id="zoutDisplay" class="text-lg font-bold text-emerald-600 font-mono">4.7 kΩ</div>
+                            <div id="zoutDisplay" class="text-lg font-bold text-blue-600 font-mono">4.7 kΩ</div>
                         </div>
                         <div class="bg-slate-50 rounded-xl p-3 text-center">
                             <div class="text-xs text-slate-500 mb-1">工作区域</div>
-                            <div id="regionDisplay" class="text-lg font-bold text-emerald-600">放大区</div>
+                            <div id="regionDisplay" class="text-lg font-bold text-blue-600">放大区</div>
                         </div>
                         <div class="bg-slate-50 rounded-xl p-3 text-center">
                             <div class="text-xs text-slate-500 mb-1">\(V_C\) 上限</div>
@@ -725,7 +725,7 @@
                 // 工作区域及颜色
                 regionDisplay.textContent = dc.region;
                 regionDisplay.className = 'text-lg font-bold ' + (
-                    dc.region === '放大区' ? 'text-emerald-600' :
+                    dc.region === '放大区' ? 'text-blue-600' :
                     dc.region === '饱和区' ? 'text-amber-600' : 'text-slate-500'
                 );
 

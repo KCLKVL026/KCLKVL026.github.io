@@ -11,8 +11,8 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     <style>
         input[type=range] { height: 5px; -webkit-appearance: none; background: #e2e8f0; border-radius: 5px; outline: none; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #6366f1; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-        input[type=range]::-webkit-slider-thumb:hover { background: #4f46e5; transform: scale(1.15); }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #3b82f6; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb:hover { background: #2563eb; transform: scale(1.15); }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -110,11 +110,11 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div class="bg-slate-50 rounded-xl p-3 text-center">
                             <div class="text-xs text-slate-500 mb-1">\(I_{CQ}\)</div>
-                            <div id="icqDisplay" class="text-lg font-bold text-emerald-600 font-mono">2.00 mA</div>
+                            <div id="icqDisplay" class="text-lg font-bold text-blue-600 font-mono">2.00 mA</div>
                         </div>
                         <div class="bg-slate-50 rounded-xl p-3 text-center">
                             <div class="text-xs text-slate-500 mb-1">\(V_{CEQ}\)</div>
-                            <div id="vceqDisplay" class="text-lg font-bold text-emerald-600 font-mono">6.0 V</div>
+                            <div id="vceqDisplay" class="text-lg font-bold text-blue-600 font-mono">6.0 V</div>
                         </div>
                         <div class="bg-slate-50 rounded-xl p-3 text-center">
                             <div class="text-xs text-slate-500 mb-1">\(I_{EQ}\)</div>
@@ -541,7 +541,7 @@
             regionDisplay.textContent = q.region;
 
             if (q.region.includes('放大')) {
-                regionDisplay.className = 'text-lg font-bold text-emerald-600';
+                regionDisplay.className = 'text-lg font-bold text-blue-600';
             } else if (q.region.includes('饱和')) {
                 regionDisplay.className = 'text-lg font-bold text-amber-600';
             } else {
