@@ -11,8 +11,8 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     <style>
         input[type=range] { height: 5px; -webkit-appearance: none; background: #e2e8f0; border-radius: 5px; outline: none; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #f59e0b; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-        input[type=range]::-webkit-slider-thumb:hover { background: #d97706; transform: scale(1.15); }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #3b82f6; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb:hover { background: #2563eb; transform: scale(1.15); }
         ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
     </style>
 </head>
@@ -43,10 +43,10 @@
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                     <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>频率特性</h2>
                     <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(f_L\)</div><div id="fLDisplay" class="text-lg font-bold text-emerald-600 font-mono">100 Hz</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(f_H\)</div><div id="fHDisplay" class="text-lg font-bold text-emerald-600 font-mono">1.2 MHz</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(BW\)</div><div id="bwDisplay" class="text-lg font-bold text-emerald-600 font-mono">1.2 MHz</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(GBW\)</div><div id="gbwDisplay" class="text-lg font-bold text-emerald-600 font-mono">240 MHz</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(f_L\)</div><div id="fLDisplay" class="text-lg font-bold text-blue-600 font-mono">100 Hz</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(f_H\)</div><div id="fHDisplay" class="text-lg font-bold text-blue-600 font-mono">1.2 MHz</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(BW\)</div><div id="bwDisplay" class="text-lg font-bold text-blue-600 font-mono">1.2 MHz</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(GBW\)</div><div id="gbwDisplay" class="text-lg font-bold text-blue-600 font-mono">240 MHz</div></div>
                     </div>
                 </div>
             </div>
@@ -71,7 +71,21 @@
 
     <script>
         const V_T = 0.02585;
-        let magChartInst = null, phaseChartInst = null;
+        let magChartInst = null, phaseChartInst = null, updateFrame = null;
+
+        function updateChart(instance, canvasId, config) {
+            if (!instance) return new Chart(document.getElementById(canvasId).getContext('2d'), config);
+            instance.data.labels = config.data.labels;
+            instance.data.datasets = config.data.datasets;
+            instance.options = config.options;
+            instance.update('none');
+            return instance;
+        }
+
+        function scheduleUpdate() {
+            if (updateFrame !== null) return;
+            updateFrame = requestAnimationFrame(() => { updateFrame = null; updateAll(); });
+        }
 
         function getParams() {
             return {
@@ -121,17 +135,15 @@
             ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
                 plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx => `f=${ctx.parsed.x.toFixed(0)}Hz, Gain=${ctx.parsed.y.toFixed(1)}dB` } } },
                 scales:{ x:{type:'logarithmic', title:{display:true,text:'频率 (Hz)'}}, y:{title:{display:true,text:'增益 (dB)'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
-            if (magChartInst) magChartInst.destroy();
-            magChartInst = new Chart(document.getElementById('magChart').getContext('2d'), cfg);
+            magChartInst = updateChart(magChartInst, 'magChart', cfg);
 
             cfg.data.datasets = [{ data:freqs.map((f,i)=>({x:f,y:phases[i]})), borderColor:'#f97316', borderWidth:2, pointRadius:0, showLine:true }];
             cfg.options.plugins.tooltip.callbacks.label = ctx => `f=${ctx.parsed.x.toFixed(0)}Hz, Phase=${ctx.parsed.y.toFixed(1)}°`;
             cfg.options.scales.y.title.text = '相位 (°)';
-            if (phaseChartInst) phaseChartInst.destroy();
-            phaseChartInst = new Chart(document.getElementById('phaseChart').getContext('2d'), cfg);
+            phaseChartInst = updateChart(phaseChartInst, 'phaseChart', cfg);
         }
 
-        ['amSlider','cpiSlider','cmuSlider','rpiSlider','rlSlider','flSlider'].forEach(id => document.getElementById(id).addEventListener('input', updateAll));
+        ['amSlider','cpiSlider','cmuSlider','rpiSlider','rlSlider','flSlider'].forEach(id => document.getElementById(id).addEventListener('input', scheduleUpdate));
         updateAll();
         window.addEventListener('load', () => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); });
     </script>

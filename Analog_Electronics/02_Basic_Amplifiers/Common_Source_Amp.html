@@ -11,13 +11,13 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     <style>
         input[type=range] { height: 5px; -webkit-appearance: none; background: #e2e8f0; border-radius: 5px; outline: none; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #10b981; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-        input[type=range]::-webkit-slider-thumb:hover { background: #059669; transform: scale(1.15); }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #3b82f6; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb:hover { background: #2563eb; transform: scale(1.15); }
         ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .card-hover { transition: all 0.2s ease; } .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15); }
         .dev-tab { cursor: pointer; transition: all 0.2s; }
-        .dev-tab.active { background: #10b981; color: white; }
-        .dev-tab:not(.active):hover { background: #ecfdf5; }
+        .dev-tab.active { background: #3b82f6; color: white; }
+        .dev-tab:not(.active):hover { background: #eff6ff; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
@@ -40,26 +40,26 @@
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                     <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>电路参数</h2>
                     <div class="space-y-4">
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(V_{DD}\)</span><span id="vddValue" class="font-mono font-bold text-emerald-600">15 V</span></div><input type="range" id="vddSlider" min="5" max="30" value="15" step="1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_{G1}\)</span><span id="rg1Value" class="font-mono font-bold text-emerald-600">1.0 MΩ</span></div><input type="range" id="rg1Slider" min="1" max="20" value="10" step="1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_{G2}\)</span><span id="rg2Value" class="font-mono font-bold text-emerald-600">220 kΩ</span></div><input type="range" id="rg2Slider" min="1" max="10" value="2.2" step="0.1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_D\)</span><span id="rdValue" class="font-mono font-bold text-emerald-600">4.7 kΩ</span></div><input type="range" id="rdSlider" min="1" max="50" value="47" step="1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_S\)</span><span id="rsValue" class="font-mono font-bold text-emerald-600">1.0 kΩ</span></div><input type="range" id="rsSlider" min="1" max="50" value="10" step="1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span id="param1Label">\(I_{DSS}\)</span><span id="param1Value" class="font-mono font-bold text-emerald-600">10 mA</span></div><input type="range" id="param1Slider" min="1" max="20" value="10" step="0.5" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span id="param2Label">\(V_P\)</span><span id="param2Value" class="font-mono font-bold text-emerald-600">-4.0 V</span></div><input type="range" id="param2Slider" min="-6" max="-1" value="-4" step="0.5" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(V_{sig}\)</span><span id="vsigValue" class="font-mono font-bold text-emerald-600">100 mV</span></div><input type="range" id="vsigSlider" min="1" max="500" value="100" step="1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(f_{sig}\)</span><span id="fsigValue" class="font-mono font-bold text-emerald-600">1.0 kHz</span></div><input type="range" id="fsigSlider" min="1" max="100" value="10" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(V_{DD}\)</span><span id="vddValue" class="font-mono font-bold text-blue-600">15 V</span></div><input type="range" id="vddSlider" min="5" max="30" value="15" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_{G1}\)</span><span id="rg1Value" class="font-mono font-bold text-blue-600">1.0 MΩ</span></div><input type="range" id="rg1Slider" min="1" max="20" value="10" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_{G2}\)</span><span id="rg2Value" class="font-mono font-bold text-blue-600">220 kΩ</span></div><input type="range" id="rg2Slider" min="1" max="10" value="2.2" step="0.1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_D\)</span><span id="rdValue" class="font-mono font-bold text-blue-600">4.7 kΩ</span></div><input type="range" id="rdSlider" min="1" max="50" value="47" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_S\)</span><span id="rsValue" class="font-mono font-bold text-blue-600">1.0 kΩ</span></div><input type="range" id="rsSlider" min="1" max="50" value="10" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span id="param1Label">\(I_{DSS}\)</span><span id="param1Value" class="font-mono font-bold text-blue-600">10 mA</span></div><input type="range" id="param1Slider" min="1" max="20" value="10" step="0.5" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span id="param2Label">\(V_P\)</span><span id="param2Value" class="font-mono font-bold text-blue-600">-4.0 V</span></div><input type="range" id="param2Slider" min="-6" max="-1" value="-4" step="0.5" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(V_{sig}\)</span><span id="vsigValue" class="font-mono font-bold text-blue-600">100 mV</span></div><input type="range" id="vsigSlider" min="1" max="500" value="100" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(f_{sig}\)</span><span id="fsigValue" class="font-mono font-bold text-blue-600">1.0 kHz</span></div><input type="range" id="fsigSlider" min="1" max="100" value="10" step="1" class="w-full"></div>
                     </div>
                 </div>
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                     <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>工作点参数</h2>
                     <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(I_{D}\)</div><div id="idDisplay" class="text-lg font-bold text-emerald-600 font-mono">2.0 mA</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(V_{GS}\)</div><div id="vgsDisplay" class="text-lg font-bold text-emerald-600 font-mono">-2.0 V</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(g_m\)</div><div id="gmDisplay" class="text-lg font-bold text-emerald-600 font-mono">2.5 mS</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(A_v\)</div><div id="avDisplay" class="text-lg font-bold text-emerald-600 font-mono">-11.8</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(Z_{in}\)</div><div id="zinDisplay" class="text-lg font-bold text-emerald-600 font-mono">180 kΩ</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">工作区域</div><div id="regionDisplay" class="text-lg font-bold text-emerald-600">饱和区</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(I_{D}\)</div><div id="idDisplay" class="text-lg font-bold text-blue-600 font-mono">2.0 mA</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(V_{GS}\)</div><div id="vgsDisplay" class="text-lg font-bold text-blue-600 font-mono">-2.0 V</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(g_m\)</div><div id="gmDisplay" class="text-lg font-bold text-blue-600 font-mono">2.5 mS</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(A_v\)</div><div id="avDisplay" class="text-lg font-bold text-blue-600 font-mono">-11.8</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(Z_{in}\)</div><div id="zinDisplay" class="text-lg font-bold text-blue-600 font-mono">180 kΩ</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">工作区域</div><div id="regionDisplay" class="text-lg font-bold text-blue-600">饱和区</div></div>
                     </div>
                 </div>
             </div>
@@ -86,7 +86,21 @@
     </div>
 
     <script>
-        let devType = 'JFET', transferChartInst = null, waveChartInst = null;
+        let devType = 'JFET', transferChartInst = null, waveChartInst = null, updateFrame = null;
+
+        function updateChart(instance, canvasId, config) {
+            if (!instance) return new Chart(document.getElementById(canvasId).getContext('2d'), config);
+            instance.data.labels = config.data.labels;
+            instance.data.datasets = config.data.datasets;
+            instance.options = config.options;
+            instance.update('none');
+            return instance;
+        }
+
+        function scheduleUpdate() {
+            if (updateFrame !== null) return;
+            updateFrame = requestAnimationFrame(() => { updateFrame = null; updateAll(); });
+        }
 
         function getParams() {
             return {
@@ -169,8 +183,7 @@
             ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
                 plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx => ctx.datasetIndex===0 ? `V_GS=${ctx.parsed.x.toFixed(2)}V, I_D=${ctx.parsed.y.toFixed(2)}mA` : `Q点: V_GS=${ctx.parsed.x.toFixed(2)}V, I_D=${ctx.parsed.y.toFixed(2)}mA` } } },
                 scales:{ x:{title:{display:true,text:'V_GS (V)'}}, y:{title:{display:true,text:'I_D (mA)'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
-            if (transferChartInst) transferChartInst.destroy();
-            transferChartInst = new Chart(document.getElementById('transferChart').getContext('2d'), cfg);
+            transferChartInst = updateChart(transferChartInst, 'transferChart', cfg);
 
             // Waveform
             const T = 1/p.f_sig, dur = 2*T, N = 400;
@@ -186,8 +199,7 @@
             ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
                 plugins:{ legend:{position:'bottom',labels:{boxWidth:14,font:{size:10}}} },
                 scales:{ x:{title:{display:true,text:'时间 (ms)'}}, y:{title:{display:true,text:'mV'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
-            if (waveChartInst) waveChartInst.destroy();
-            waveChartInst = new Chart(document.getElementById('waveChart').getContext('2d'), cfg);
+            waveChartInst = updateChart(waveChartInst, 'waveChart', cfg);
         }
 
         function setDevice(type) {
@@ -205,7 +217,7 @@
         document.getElementById('tabJFET').addEventListener('click', () => setDevice('JFET'));
         document.getElementById('tabMOS').addEventListener('click', () => setDevice('MOS'));
 
-        ['vddSlider','rg1Slider','rg2Slider','rdSlider','rsSlider','param1Slider','param2Slider','vsigSlider','fsigSlider'].forEach(id => document.getElementById(id).addEventListener('input', updateAll));
+        ['vddSlider','rg1Slider','rg2Slider','rdSlider','rsSlider','param1Slider','param2Slider','vsigSlider','fsigSlider'].forEach(id => document.getElementById(id).addEventListener('input', scheduleUpdate));
         updateAll();
         window.addEventListener('load', () => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); });
     </script>

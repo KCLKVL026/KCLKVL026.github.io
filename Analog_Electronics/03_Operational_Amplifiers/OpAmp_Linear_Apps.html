@@ -11,11 +11,11 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     <style>
         input[type=range] { height: 5px; -webkit-appearance: none; background: #e2e8f0; border-radius: 5px; outline: none; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #8b5cf6; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-        input[type=range]::-webkit-slider-thumb:hover { background: #7c3aed; transform: scale(1.15); }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #3b82f6; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb:hover { background: #2563eb; transform: scale(1.15); }
         ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .card-hover { transition: all 0.2s ease; } .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15); }
-        .app-tab { cursor: pointer; transition: all 0.2s; } .app-tab.active { background: #8b5cf6; color: white; } .app-tab:not(.active):hover { background: #f3e8ff; }
+        .app-tab { cursor: pointer; transition: all 0.2s; } .app-tab.active { background: #3b82f6; color: white; } .app-tab:not(.active):hover { background: #eff6ff; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
@@ -49,7 +49,12 @@
     </div>
 
     <script>
-        let app = 'sum', mainChartInst = null, currentAppForChart = null;
+        let app = 'sum', mainChartInst = null, currentAppForChart = null, updateFrame = null;
+
+        function scheduleUpdate() {
+            if (updateFrame !== null) return;
+            updateFrame = requestAnimationFrame(() => { updateFrame = null; updateAll(); });
+        }
 
         const apps = {
             sum: {
@@ -192,15 +197,18 @@
                         mainChartInst.data.datasets.push({ label: ds.label, data: ds.data, borderColor: ds.borderColor, borderWidth: ds.borderWidth, pointRadius: ds.pointRadius || 0, showLine: true, tension: ds.tension || 0.3 });
                     }
                 });
-                mainChartInst.update();
+                mainChartInst.update('none');
             } else {
-                // Different app — destroy and recreate with new dataset structure
-                if (mainChartInst) mainChartInst.destroy();
-                mainChartInst = new Chart(document.getElementById('mainChart').getContext('2d'), {
-                    type:'scatter', data:{ datasets:cd.datasets }, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:300},
-                        plugins:{ legend:{position:'bottom',labels:{boxWidth:14,font:{size:10}}} },
-                        scales:{ x:{title:{display:true,text:'时间 (ms)'}}, y:{title:{display:true,text:'V'}, grid:{color:'rgba(0,0,0,0.05)'}} } }
-                });
+                if (!mainChartInst) {
+                    mainChartInst = new Chart(document.getElementById('mainChart').getContext('2d'), {
+                        type:'scatter', data:{ datasets:cd.datasets }, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:300},
+                            plugins:{ legend:{position:'bottom',labels:{boxWidth:14,font:{size:10}}} },
+                            scales:{ x:{title:{display:true,text:'时间 (ms)'}}, y:{title:{display:true,text:'V'}, grid:{color:'rgba(0,0,0,0.05)'}} } }
+                    });
+                } else {
+                    mainChartInst.data.datasets = cd.datasets;
+                    mainChartInst.update('none');
+                }
                 currentAppForChart = app;
             }
         }
@@ -217,7 +225,7 @@
             setTimeout(() => {
                 apps[a].sliders.forEach(s => {
                     const el = document.getElementById(s.id+'Slider');
-                    if (el) el.addEventListener('input', updateAll);
+                    if (el) el.addEventListener('input', scheduleUpdate);
                 });
             }, 0);
             setTimeout(updateAll, 50);

@@ -11,8 +11,8 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     <style>
         input[type=range] { height: 5px; -webkit-appearance: none; background: #e2e8f0; border-radius: 5px; outline: none; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #10b981; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-        input[type=range]::-webkit-slider-thumb:hover { background: #059669; transform: scale(1.15); }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #3b82f6; border-radius: 50%; cursor: pointer; transition: 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb:hover { background: #2563eb; transform: scale(1.15); }
         ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .card-hover { transition: all 0.2s ease; } .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15); }
     </style>
@@ -33,25 +33,25 @@
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                     <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>电路参数</h2>
                     <div class="space-y-4">
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>电源电压 \(V_{CC}\)</span><span id="vccValue" class="font-mono font-bold text-emerald-600">15 V</span></div><input type="range" id="vccSlider" min="5" max="30" value="15" step="1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>上偏电阻 \(R_{B1}\)</span><span id="rb1Value" class="font-mono font-bold text-emerald-600">100 kΩ</span></div><input type="range" id="rb1Slider" min="10" max="500" value="100" step="1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>下偏电阻 \(R_{B2}\)</span><span id="rb2Value" class="font-mono font-bold text-emerald-600">22 kΩ</span></div><input type="range" id="rb2Slider" min="1" max="50" value="22" step="1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>射极电阻 \(R_E\)</span><span id="reValue" class="font-mono font-bold text-emerald-600">2.2 kΩ</span></div><input type="range" id="reSlider" min="1" max="50" value="22" step="1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>负载电阻 \(R_L\)</span><span id="rlValue" class="font-mono font-bold text-emerald-600">10 kΩ</span></div><input type="range" id="rlSlider" min="1" max="100" value="100" step="1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>信号幅度 \(V_{sig}\)</span><span id="vsigValue" class="font-mono font-bold text-emerald-600">100 mV</span></div><input type="range" id="vsigSlider" min="1" max="500" value="100" step="1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>信号频率 \(f_{sig}\)</span><span id="fsigValue" class="font-mono font-bold text-emerald-600">1.0 kHz</span></div><input type="range" id="fsigSlider" min="1" max="100" value="10" step="1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>电流增益 \(\beta\)</span><span id="betaLabel" class="font-mono font-bold text-emerald-600">150</span></div><input type="range" id="betaSlider" min="50" max="300" value="150" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>电源电压 \(V_{CC}\)</span><span id="vccValue" class="font-mono font-bold text-blue-600">15 V</span></div><input type="range" id="vccSlider" min="5" max="30" value="15" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>上偏电阻 \(R_{B1}\)</span><span id="rb1Value" class="font-mono font-bold text-blue-600">100 kΩ</span></div><input type="range" id="rb1Slider" min="10" max="500" value="100" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>下偏电阻 \(R_{B2}\)</span><span id="rb2Value" class="font-mono font-bold text-blue-600">22 kΩ</span></div><input type="range" id="rb2Slider" min="1" max="50" value="22" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>射极电阻 \(R_E\)</span><span id="reValue" class="font-mono font-bold text-blue-600">2.2 kΩ</span></div><input type="range" id="reSlider" min="1" max="50" value="22" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>负载电阻 \(R_L\)</span><span id="rlValue" class="font-mono font-bold text-blue-600">10 kΩ</span></div><input type="range" id="rlSlider" min="1" max="100" value="100" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>信号幅度 \(V_{sig}\)</span><span id="vsigValue" class="font-mono font-bold text-blue-600">100 mV</span></div><input type="range" id="vsigSlider" min="1" max="500" value="100" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>信号频率 \(f_{sig}\)</span><span id="fsigValue" class="font-mono font-bold text-blue-600">1.0 kHz</span></div><input type="range" id="fsigSlider" min="1" max="100" value="10" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>电流增益 \(\beta\)</span><span id="betaLabel" class="font-mono font-bold text-blue-600">150</span></div><input type="range" id="betaSlider" min="50" max="300" value="150" step="1" class="w-full"></div>
                     </div>
                 </div>
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                     <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>电路性能</h2>
                     <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(I_{CQ}\)</div><div id="icqDisplay" class="text-lg font-bold text-emerald-600 font-mono">1.45 mA</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(V_{CEQ}\)</div><div id="vceqDisplay" class="text-lg font-bold text-emerald-600 font-mono">11.8 V</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(A_v\)</div><div id="avDisplay" class="text-lg font-bold text-emerald-600 font-mono">0.98</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(Z_{in}\)</div><div id="zinDisplay" class="text-lg font-bold text-emerald-600 font-mono">52 kΩ</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(Z_{out}\)</div><div id="zoutDisplay" class="text-lg font-bold text-emerald-600 font-mono">18 Ω</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">工作区域</div><div id="regionDisplay" class="text-lg font-bold text-emerald-600">放大区</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(I_{CQ}\)</div><div id="icqDisplay" class="text-lg font-bold text-blue-600 font-mono">1.45 mA</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(V_{CEQ}\)</div><div id="vceqDisplay" class="text-lg font-bold text-blue-600 font-mono">11.8 V</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(A_v\)</div><div id="avDisplay" class="text-lg font-bold text-blue-600 font-mono">0.98</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(Z_{in}\)</div><div id="zinDisplay" class="text-lg font-bold text-blue-600 font-mono">52 kΩ</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(Z_{out}\)</div><div id="zoutDisplay" class="text-lg font-bold text-blue-600 font-mono">18 Ω</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">工作区域</div><div id="regionDisplay" class="text-lg font-bold text-blue-600">放大区</div></div>
                     </div>
                 </div>
             </div>
@@ -78,7 +78,21 @@
 
     <script>
         const V_T = 0.02585;
-        let waveChartInst = null, impChartInst = null;
+        let waveChartInst = null, impChartInst = null, updateFrame = null;
+
+        function updateChart(instance, canvasId, config) {
+            if (!instance) return new Chart(document.getElementById(canvasId).getContext('2d'), config);
+            instance.data.labels = config.data.labels;
+            instance.data.datasets = config.data.datasets;
+            instance.options = config.options;
+            instance.update('none');
+            return instance;
+        }
+
+        function scheduleUpdate() {
+            if (updateFrame !== null) return;
+            updateFrame = requestAnimationFrame(() => { updateFrame = null; updateAll(); });
+        }
 
         function getParams() {
             return {
@@ -130,8 +144,7 @@
             ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
                 plugins:{ legend:{position:'bottom',labels:{boxWidth:14,font:{size:10}}} },
                 scales:{ x:{title:{display:true,text:'时间 (ms)'}}, y:{title:{display:true,text:'mV'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
-            if (waveChartInst) waveChartInst.destroy();
-            waveChartInst = new Chart(document.getElementById('waveChart').getContext('2d'), cfg);
+            waveChartInst = updateChart(waveChartInst, 'waveChart', cfg);
 
             cfg = { type:'bar', data:{ labels:['输入阻抗 Z_in','输出阻抗 Z_out'], datasets:[
                 { label:'Ω', data:[dc.Z_in, dc.Z_out], backgroundColor:['#10b981','#f59e0b'], borderRadius:8 }
@@ -139,11 +152,10 @@
                 plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx => ctx.raw > 1000 ? (ctx.raw/1000).toFixed(0)+' kΩ' : ctx.raw.toFixed(0)+' Ω' } } },
                 scales:{ y:{ title:{display:true,text:'阻抗 (Ω)'}, grid:{color:'rgba(0,0,0,0.05)'}, type:'logarithmic',
                     ticks:{ callback:v => v>=1000?(v/1000).toFixed(0)+'k':v.toFixed(0) } } } } };
-            if (impChartInst) impChartInst.destroy();
-            impChartInst = new Chart(document.getElementById('impChart').getContext('2d'), cfg);
+            impChartInst = updateChart(impChartInst, 'impChart', cfg);
         }
 
-        ['vccSlider','rb1Slider','rb2Slider','reSlider','rlSlider','vsigSlider','fsigSlider','betaSlider'].forEach(id => document.getElementById(id).addEventListener('input', updateAll));
+        ['vccSlider','rb1Slider','rb2Slider','reSlider','rlSlider','vsigSlider','fsigSlider','betaSlider'].forEach(id => document.getElementById(id).addEventListener('input', scheduleUpdate));
         updateAll();
         window.addEventListener('load', () => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); });
         console.log('共集电极放大电路仿真已启动');
