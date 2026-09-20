@@ -60,10 +60,10 @@
                         </div>
                         <div>
                             <div class="flex justify-between text-sm text-slate-600 mb-1">
-                                <span>集射极电压 \(V_{CE}\)</span>
+                                <span>集射极电压 \(V_{CE}\)（由负载线求得）</span>
                                 <span id="vceValue" class="font-mono font-bold text-indigo-600">6.0 V</span>
                             </div>
-                            <input type="range" id="vceSlider" min="0" max="200" value="60" step="1" class="w-full">
+                            <input type="range" id="vceSlider" min="0" max="200" value="60" step="1" class="w-full opacity-40" disabled>
                             <div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>0 V</span><span>20 V</span></div>
                         </div>
                         <div>
@@ -306,7 +306,10 @@
         }
 
         function computeQPoint(I_B, V_CE, beta, V_A, V_CC, R_C) {
-            const ic = beta * I_B * (1 + V_CE / V_A);
+            const icActive = beta * I_B * (1 + V_CC / V_A) / (1 + beta * I_B * R_C / V_A);
+            const icSat = Math.max(0, (V_CC - 0.2) / R_C);
+            const ic = Math.min(icActive, icSat);
+            const vce = Math.max(0.2, V_CC - ic * R_C);
             const ie = I_B + ic;
             const vbe = computeVbeFromIb(I_B, beta);
             const gm = ic / V_T;
@@ -315,17 +318,17 @@
             let region;
             if (I_B <= 0 || ic <= 1e-9) {
                 region = '截止区 (Cutoff)';
-            } else if (V_CE < 0.3) {
+            } else if (icActive > icSat || vce < 0.3) {
                 region = '饱和区 (Saturation)';
             } else {
                 region = '放大区 (Active)';
             }
             const icMax = V_CC / R_C;
-            if (V_CE >= V_CC - 0.5 && ic < icMax * 0.1) {
+            if (vce >= V_CC - 0.5 && ic < icMax * 0.1) {
                 region = '截止区 (Cutoff)';
             }
 
-            return { ic, ie, vbe, gm, alpha, region, vce: V_CE };
+            return { ic, ie, vbe, gm, alpha, region, vce };
         }
 
         // ==================== BUILD CHART DATA ====================
@@ -338,7 +341,7 @@
             return { data, qPoint };
         }
 
-        function buildOutputDatasets(beta, V_A, V_CC, R_C, qIb, qVce) {
+        function buildOutputDatasets(beta, V_A, V_CC, R_C, qIb, qVce, qIc) {
             const curves = computeOutputCharacteristicFamily(beta, V_A);
             const datasets = [];
             const colors = ['#93c5fd', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8'];
@@ -373,7 +376,6 @@
                 order: 1
             });
 
-            const qIc = beta * qIb * (1 + qVce / V_A);
             datasets.push({
                 label: 'Q 点 (工作点)',
                 data: [{ x: qVce, y: qIc * 1e3 }],
@@ -503,8 +505,8 @@
             }
         }
 
-        function updateOutputChart(beta, V_A, V_CC, R_C, qIb, qVce) {
-            const datasets = buildOutputDatasets(beta, V_A, V_CC, R_C, qIb, qVce);
+        function updateOutputChart(beta, V_A, V_CC, R_C, qIb, qVce, qIc) {
+            const datasets = buildOutputDatasets(beta, V_A, V_CC, R_C, qIb, qVce, qIc);
 
             if (!outputChartInstance) {
                 const config = JSON.parse(JSON.stringify(OUTPUT_CHART_CONFIG));
@@ -526,7 +528,8 @@
 
             // Update display labels
             iBValue.textContent = (p.I_B * 1e6).toFixed(0) + ' μA';
-            vceValue.textContent = p.V_CE.toFixed(1) + ' V';
+            vceSlider.value = Math.round(q.vce * 10);
+            vceValue.textContent = q.vce.toFixed(1) + ' V';
             betaValue.textContent = p.beta;
             vaValue.textContent = p.V_A + ' V';
             vccValue.textContent = p.V_CC + ' V';
@@ -549,11 +552,11 @@
             }
 
             updateInputChart(p.beta, p.I_B, p.beta);
-            updateOutputChart(p.beta, p.V_A, p.V_CC, p.R_C, p.I_B, p.V_CE);
+            updateOutputChart(p.beta, p.V_A, p.V_CC, p.R_C, p.I_B, q.vce, q.ic);
         }
 
         // ==================== EVENT LISTENERS (RAF-throttled) ====================
-        [iBSlider, vceSlider, betaSlider, vaSlider, vccSlider, rcSlider].forEach(slider => {
+        [iBSlider, betaSlider, vaSlider, vccSlider, rcSlider].forEach(slider => {
             slider.addEventListener('input', scheduleUpdate);
         });
 

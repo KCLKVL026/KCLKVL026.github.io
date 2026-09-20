@@ -125,8 +125,8 @@
             document.getElementById('r2Div').style.display = p.genType==='Tri' ? 'none' : 'block';
             document.getElementById('freqDisplay').textContent = f >= 1000 ? (f/1000).toFixed(2)+' kHz' : f.toFixed(1)+' Hz';
             document.getElementById('dutyDisplay').textContent = duty.toFixed(1)+'%';
-            document.getElementById('thDisplay').textContent = tH >= 0.001 ? tH.toFixed(3)+' ms' : (tH*1e6).toFixed(1)+' μs';
-            document.getElementById('tlDisplay').textContent = tL >= 0.001 ? tL.toFixed(3)+' ms' : (tL*1e6).toFixed(1)+' μs';
+            document.getElementById('thDisplay').textContent = tH >= 0.001 ? (tH*1e3).toFixed(3)+' ms' : (tH*1e6).toFixed(1)+' μs';
+            document.getElementById('tlDisplay').textContent = tL >= 0.001 ? (tL*1e3).toFixed(3)+' ms' : (tL*1e6).toFixed(1)+' μs';
 
             document.getElementById('formulaContent').innerHTML = p.genType === '555' ?
                 '\[f = \\frac{1.44}{(R_1 + 2R_2)C} \\qquad t_H = 0.693(R_1+R_2)C \\qquad t_L = 0.693R_2C\]' :
@@ -137,19 +137,21 @@
             // Simulate waveform
             const T_period = 1/f, dur = T_period * 3, N = 500;
             const out = [], cv = [];
-            let state = 5, vcap = 0;
+            // For the op-amp oscillators state is a dimensionless ±1 comparator state.
+            // Vsat is applied exactly once when calculating voltages.
+            let state = p.genType === '555' ? 5 : 1, vcap = 0;
 
             for (let i = 0; i <= N; i++) {
                 const t = dur * i / N;
-                out.push({ x: t*1000, y: state });
+                out.push({ x: t*1000, y: p.genType === '555' ? (state > 0 ? 5 : 0) : state * 5 });
                 cv.push({ x: t*1000, y: vcap });
 
                 if (p.genType === 'Square') {
                     const Vsat = 5, beta = p.R1/(p.R1+p.R2);
                     const dv = (state*Vsat - vcap)/(p.R*p.C) * (dur/N);
                     vcap += dv;
-                    if (state > 0 && vcap >= beta*Vsat) state = -Vsat;
-                    else if (state < 0 && vcap <= -beta*Vsat) state = Vsat;
+                    if (state > 0 && vcap >= beta*Vsat) state = -1;
+                    else if (state < 0 && vcap <= -beta*Vsat) state = 1;
                 } else if (p.genType === 'Tri') {
                     const Vsat = 5, beta = p.R1/(p.R1+p.R2);
                     const dv = state*Vsat/(p.R*p.C) * (dur/N);

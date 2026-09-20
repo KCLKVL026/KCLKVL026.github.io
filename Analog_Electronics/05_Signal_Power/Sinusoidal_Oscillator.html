@@ -40,7 +40,7 @@
                     <div class="space-y-4" id="sliderPanel">
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R\)</span><span id="rValue" class="font-mono font-bold text-cyan-600">10 kΩ</span></div><input type="range" id="rSlider" min="1" max="100" value="10" step="1" class="w-full"></div>
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(C\)</span><span id="cValue" class="font-mono font-bold text-cyan-600">10 nF</span></div><input type="range" id="cSlider" min="1" max="100" value="10" step="1" class="w-full"></div>
-                        <div id="r2Panel"><div class="flex justify-between text-sm text-slate-600 mb-1"><span>增益设置 \(R_f/R_g\)</span><span id="gainValue" class="font-mono font-bold text-cyan-600">3.1</span></div><input type="range" id="gainSlider" min="20" max="50" value="31" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>2.0</span><span>5.0</span></div></div>
+                        <div id="r2Panel"><div class="flex justify-between text-sm text-slate-600 mb-1"><span>增益设置 \(R_f/R_g\)</span><span id="gainValue" class="font-mono font-bold text-cyan-600">3.1</span></div><input type="range" id="gainSlider" min="20" max="500" value="31" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>2.0</span><span>50.0</span></div></div>
                     </div>
                 </div>
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
@@ -97,20 +97,22 @@
 
         function updateAll() {
             const p = getParams();
-            let f_osc, barkStatus;
+            let f_osc, requiredGain, barkStatus;
             if (p.oscType === 'Wien') {
                 f_osc = 1 / (2 * Math.PI * p.R * p.C);
-                barkStatus = p.gain >= 3 ? '满足 (增益≥3)' : '不满足 (增益<3)';
+                requiredGain = 3;
             } else if (p.oscType === 'RC') {
                 f_osc = 1 / (2 * Math.PI * p.R * p.C * Math.sqrt(6));
-                barkStatus = p.gain >= 29 ? '满足 (增益≥29)' : '不满足 (增益<29)';
+                requiredGain = 29;
             } else {
                 const C1 = p.C, C2 = p.C * 2;
                 const C_eq = C1 * C2 / (C1 + C2);
                 f_osc = 1 / (2 * Math.PI * Math.sqrt((p.R * 0.01) * C_eq));
                 const beta = C1 / (C1 + C2);
-                barkStatus = p.gain >= 1/beta ? '满足' : '不满足';
+                requiredGain = 1 / beta;
             }
+            const starts = p.gain >= requiredGain;
+            barkStatus = starts ? `满足 (增益≥${requiredGain.toFixed(1)})` : `不满足 (增益<${requiredGain.toFixed(1)})`;
 
             document.getElementById('rValue').textContent = (p.R/1000).toFixed(0) + ' kΩ';
             document.getElementById('cValue').textContent = (p.C*1e9).toFixed(0) + ' nF';
@@ -119,19 +121,19 @@
             document.getElementById('periodDisplay').textContent = (1/f_osc*1000).toFixed(2)+' ms';
             const barkEl = document.getElementById('barkDisplay');
             barkEl.textContent = 'Barkhausen: ' + barkStatus;
-            barkEl.className = barkStatus.includes('满足') ? 'text-lg font-bold text-blue-600' : 'text-lg font-bold text-rose-600';
+            barkEl.className = starts ? 'text-lg font-bold text-blue-600' : 'text-lg font-bold text-rose-600';
 
             // Simulate startup transient
             const T_osc = 1/f_osc, dur = T_osc * 15, N = 600;
             const osc = [];
-            const growth = p.gain >= 3 ? 1 : -1; // positive: growing, negative: decaying
+            const growth = starts ? 1 : -1;
             let amplitude = 0.01; // start from noise
             for (let i = 0; i <= N; i++) {
                 const t = dur * i / N;
                 if (growth > 0) {
                     amplitude = 0.01 + (5 - 0.01) * (1 - Math.exp(-t / (T_osc * 3)));
                 } else {
-                    amplitude = 5 * Math.exp(-t / (T_osc * 3)) + 0.01;
+                    amplitude = 0.01 * Math.exp(-t / (T_osc * 3));
                 }
                 const v = amplitude * Math.sin(2 * Math.PI * f_osc * t);
                 osc.push({ x: t * 1000, y: v });
