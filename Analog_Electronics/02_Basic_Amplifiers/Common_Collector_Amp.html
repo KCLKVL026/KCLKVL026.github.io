@@ -103,8 +103,15 @@
         }
 
         function compute(p) {
-            const V_B = p.V_CC * p.R_B2 / (p.R_B1 + p.R_B2), V_E = Math.max(0, V_B - 0.7);
-            const I_E = V_E / p.R_E, I_C = I_E * p.beta / (p.beta + 1), V_CE = p.V_CC - I_E * p.R_E;
+            // Account for base-current loading with a Thevenin bias source.
+            const R_TH = p.R_B1 * p.R_B2 / (p.R_B1 + p.R_B2);
+            const V_TH = p.V_CC * p.R_B2 / (p.R_B1 + p.R_B2);
+            const I_B_active = Math.max(0, (V_TH - 0.7) / (R_TH + (p.beta + 1) * p.R_E));
+            const I_E_active = (p.beta + 1) * I_B_active;
+            const I_E = Math.min(I_E_active, Math.max(0, (p.V_CC - 0.2) / p.R_E));
+            const I_C = I_E * p.beta / (p.beta + 1);
+            const V_E = I_E * p.R_E, V_B = I_E > 0 ? V_E + 0.7 : V_TH;
+            const V_CE = p.V_CC - V_E;
             const r_e = I_C > 0 ? V_T / I_C : 1e6;
             const R_EL = (p.R_E * p.R_L) / (p.R_E + p.R_L);
             const A_v = R_EL / (r_e + R_EL);

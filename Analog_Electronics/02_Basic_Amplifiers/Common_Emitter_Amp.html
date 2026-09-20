@@ -441,14 +441,17 @@
 
             // ===================== 直流工作点与线性范围计算 =====================
             function computeDC(p) {
-                // 基极电压：分压公式
-                var V_B = p.V_CC * p.R_B2 / (p.R_B1 + p.R_B2);
-                // 射极电压：V_B 减去 BE 结压降
-                var V_E = Math.max(0, V_B - DEFAULTS.V_BE);
-                // 射极电流
-                var I_E = V_E / p.R_E;
-                // 集电极电流：α = β/(β+1)
-                var I_C = I_E * p.beta / (p.beta + 1);
+                // 分压网络要计入基极电流拖载：使用 Thevenin 等效求解。
+                var R_TH = p.R_B1 * p.R_B2 / (p.R_B1 + p.R_B2);
+                var V_TH = p.V_CC * p.R_B2 / (p.R_B1 + p.R_B2);
+                var I_B_active = Math.max(0, (V_TH - DEFAULTS.V_BE) / (R_TH + (p.beta + 1) * p.R_E));
+                var I_C_active = p.beta * I_B_active;
+                var I_C_limit = Math.max(0, (p.V_CC - DEFAULTS.V_CE_SAT) / (p.R_C + p.R_E * (p.beta + 1) / p.beta));
+                var I_C = Math.min(I_C_active, I_C_limit);
+                var I_B = I_C / p.beta;
+                var I_E = (p.beta + 1) * I_B;
+                var V_E = I_E * p.R_E;
+                var V_B = I_E > 0 ? V_E + DEFAULTS.V_BE : V_TH;
                 // V_CE = V_CC - I_C·R_C - I_E·R_E
                 var V_CE = p.V_CC - I_C * p.R_C - I_E * p.R_E;
                 // 动态射极电阻 r_e' = V_T / I_C

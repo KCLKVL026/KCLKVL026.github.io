@@ -50,6 +50,23 @@
 
     <script>
         let app = 'sum', mainChartInst = null, currentAppForChart = null, updateFrame = null;
+        // A compact, explicit non-ideal op-amp model shared by every application.
+        const OPAMP_LIMITS = { rail: 13, gbw: 1e6, slewRate: 0.5e6 };
+
+        function applyOpAmpLimits(datasets) {
+            const output = datasets.find(ds => ds.label === 'V_out');
+            if (!output) return;
+            let previous = 0, previousTime = null;
+            output.data = output.data.map(point => {
+                const requested = Math.max(-OPAMP_LIMITS.rail, Math.min(OPAMP_LIMITS.rail, point.y));
+                const dt = previousTime === null ? 0 : Math.max(0, (point.x - previousTime) / 1000);
+                const maxDelta = OPAMP_LIMITS.slewRate * dt;
+                const value = previousTime === null ? requested : Math.max(previous - maxDelta, Math.min(previous + maxDelta, requested));
+                previous = value;
+                previousTime = point.x;
+                return { x: point.x, y: value };
+            });
+        }
 
         function scheduleUpdate() {
             if (updateFrame !== null) return;
@@ -127,13 +144,18 @@
                 ],
                 compute(p) { const tau = p.derc*1e-7 * p.derr*1000; return { result: tau, info: `时间常数 τ = RC = ${(tau*1e6).toFixed(1)} μs` }; },
                 chartData(p) {
-                    const T=0.004,N=400,RC=p.derc*1e-7*p.derr*1000; const vi=[],vo=[]; let prev=0;
+                    const T=0.004,N=400,RC=p.derc*1e-7*p.derr*1000; const vi=[],vo=[]; let prev=0, highPass=0;
                     for(let i=0;i<=N;i++) { const t=T*i/N,dt=T/N; let sv; const wt=2*Math.PI*500*t;
                         if(p.dewave==0) sv=Math.sin(wt); else if(p.dewave==1) sv=Math.sin(wt)>=0?1:-1; else sv=2*Math.abs(2*(t*500-Math.floor(t*500+0.5)))-1;
-                        const dv = i===0 ? 0 : (sv*p.deamp/10-prev)/dt;
-                        vi.push({x:t*1000,y:sv*p.deamp/10}); vo.push({x:t*1000,y:-RC*dv}); prev=sv*p.deamp/10;
+                        const input = sv*p.deamp/10;
+                        // Practical differentiator: RC high-pass response.  It
+                        // has a finite gain at high frequency, so a square-wave
+                        // edge does not turn into a sample-step-dependent spike.
+                        const alpha = RC / (RC + dt);
+                        highPass = i === 0 ? 0 : alpha * (highPass + input - prev);
+                        vi.push({x:t*1000,y:input}); vo.push({x:t*1000,y:-highPass}); prev=input;
                     }
-                    return { datasets:[{label:'V_in',data:vi,borderColor:'#3b82f6',borderWidth:1,pointRadius:0,showLine:true},{label:'V_out',data:vo,borderColor:'#8b5cf6',borderWidth:2,pointRadius:0,showLine:true}], desc:'方波→尖峰脉冲；三角波→方波；正弦→余弦' };
+                    return { datasets:[{label:'V_in',data:vi,borderColor:'#3b82f6',borderWidth:1,pointRadius:0,showLine:true},{label:'V_out',data:vo,borderColor:'#8b5cf6',borderWidth:2,pointRadius:0,showLine:true}], desc:'有限带宽 RC 高通微分：方波→有限宽度脉冲；三角波→近似方波' };
                 }
             },
             ins: {
@@ -167,7 +189,7 @@
             });
             html += `</div></div><div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                 <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>计算结果</h2>
-                <div class="bg-slate-50 rounded-xl p-4 text-center"><div id="resultDisplay" class="text-xl font-bold text-violet-600 font-mono"></div><div id="infoDisplay" class="text-sm text-slate-500 mt-1"></div></div></div>`;
+                <div class="bg-slate-50 rounded-xl p-4 text-center"><div id="resultDisplay" class="text-xl font-bold text-violet-600 font-mono"></div><div id="infoDisplay" class="text-sm text-slate-500 mt-1"></div><div class="text-xs text-slate-400 mt-2">非理想模型：±${OPAMP_LIMITS.rail} V 输出摆幅、GBW ${OPAMP_LIMITS.gbw/1e6} MHz、压摆率 ${OPAMP_LIMITS.slewRate/1e6} V/μs</div></div></div>`;
             document.getElementById('controlPanel').innerHTML = html;
             document.getElementById('chartTitle').textContent = cfg.title + ' - 波形';
             document.getElementById('formulaCard').innerHTML = `<h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>关键公式</h2><div class="text-sm bg-slate-50 rounded-xl p-4 text-center">${cfg.subtitle}</div>`;
@@ -185,6 +207,7 @@
             document.getElementById('infoDisplay').textContent = r.info;
 
             const cd = cfg.chartData(p);
+            applyOpAmpLimits(cd.datasets);
             if (mainChartInst && currentAppForChart === app) {
                 // Same app — update datasets in place for smooth animation
                 while (mainChartInst.data.datasets.length > cd.datasets.length) {

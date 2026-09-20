@@ -213,7 +213,14 @@
             }
 
             // Output characteristic family
-            const vgsValues = p.devType === 'JFET' ? [-4, -3, -2, -1, 0] : [1, 2, 3, 4, 5];
+            // Generate useful, non-cutoff curves from the currently selected
+            // pinch-off/threshold voltage.  This avoids a family of overlapping
+            // zero-current lines when the threshold slider is moved.
+            const vgsValues = p.devType === 'JFET'
+                ? [0.8, 0.6, 0.4, 0.2, 0].map(f => p.param2 * f)
+                : [0.25, 0.75, 1.5, 2.5, 3.5].map(offset => p.param2 + offset);
+            if (!vgsValues.some(v => Math.abs(v - p.V_GS) < 0.05)) vgsValues.push(p.V_GS);
+            vgsValues.sort((a, b) => a - b);
             const colors = ['#93c5fd','#60a5fa','#3b82f6','#2563eb','#1d4ed8'];
             const datasets = vgsValues.map((vgs, idx) => {
                 const pts = [];
@@ -222,7 +229,8 @@
                     const id = calcOutputId(vgs, vds, p);
                     pts.push({ x: vds, y: id * 1000 });
                 }
-                return { label: `V_GS=${vgs}V`, data: pts, borderColor: colors[idx], borderWidth: 1.5, pointRadius: 0, showLine: true, order: 2 };
+                const isQCurve = Math.abs(vgs - p.V_GS) < 0.05;
+                return { label: `V_GS=${vgs.toFixed(1)}V${isQCurve ? '（Q点）' : ''}`, data: pts, borderColor: isQCurve ? '#f97316' : colors[idx % colors.length], borderWidth: isQCurve ? 2.5 : 1.5, pointRadius: 0, showLine: true, order: 2 };
             });
             // Load line
             const ll = [{ x: 0, y: p.V_DD / p.R_D * 1000 }, { x: p.V_DD, y: 0 }];

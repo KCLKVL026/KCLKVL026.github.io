@@ -48,6 +48,7 @@
                         <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(BW\)</div><div id="bwDisplay" class="text-lg font-bold text-blue-600 font-mono">1.2 MHz</div></div>
                         <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(GBW\)</div><div id="gbwDisplay" class="text-lg font-bold text-blue-600 font-mono">240 MHz</div></div>
                     </div>
+                    <p id="modelDisplay" class="text-xs text-slate-500 mt-3 text-center"></p>
                 </div>
             </div>
             <div class="lg:col-span-8 space-y-5">
@@ -62,7 +63,7 @@
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                     <h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>关键公式</h2>
                     <div class="text-sm bg-slate-50 rounded-xl p-4 text-center">
-                        \[C_M = C_\mu(1 + g_m R_L') \quad f_H \approx \frac{1}{2\pi(C_\pi + C_M)r_\pi} \quad \text{GBW} = A_M \cdot f_H\]
+                        \[g_m = \frac{A_M}{R_L'} \quad \beta = g_m r_\pi \quad I_C = g_m V_T \quad C_M = C_\mu(1+A_M) \quad f_H \approx \frac{1}{2\pi(C_\pi+C_M)r_\pi}\]
                     </div>
                 </div>
             </div>
@@ -97,9 +98,13 @@
 
         function updateAll() {
             const p = getParams();
-            const I_C = V_T / (p.r_pi / p.A_M) * p.A_M; // approximate
-            const g_m = I_C > 0 ? p.A_M / p.R_L : 0.04;
-            const C_M = p.C_mu * (1 + g_m * p.R_L);
+            // Consistent common-emitter small-signal model.  A_M is the
+            // mid-band voltage gain magnitude (g_m R_L'); r_pi then defines β,
+            // and the resulting g_m defines the collector bias current.
+            const g_m = p.A_M / p.R_L;
+            const beta = g_m * p.r_pi;
+            const I_C = g_m * V_T;
+            const C_M = p.C_mu * (1 + p.A_M);
             const f_H = 1 / (2 * Math.PI * (p.C_pi + C_M) * p.r_pi);
             const f_L = p.f_L_ref;
             const BW = f_H - f_L;
@@ -116,6 +121,7 @@
             document.getElementById('fHDisplay').textContent = f_H >= 1e6 ? (f_H/1e6).toFixed(1)+' MHz' : (f_H/1000).toFixed(0)+' kHz';
             document.getElementById('bwDisplay').textContent = BW >= 1e6 ? (BW/1e6).toFixed(1)+' MHz' : (BW/1000).toFixed(0)+' kHz';
             document.getElementById('gbwDisplay').textContent = GBW >= 1e6 ? (GBW/1e6).toFixed(0)+' MHz' : (GBW/1000).toFixed(0)+' kHz';
+            document.getElementById('modelDisplay').textContent = `小信号模型：gₘ=${(g_m*1000).toFixed(2)} mS，β≈${beta.toFixed(0)}，I_C≈${(I_C*1000).toFixed(2)} mA`;
 
             const freqs = [], mags = [], phases = [];
             for (let f = 1; f <= 10e6; f *= 1.05) {
