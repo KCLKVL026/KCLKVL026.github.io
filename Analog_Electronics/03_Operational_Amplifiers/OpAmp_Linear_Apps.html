@@ -50,8 +50,8 @@
 
     <script>
         let app = 'sum', mainChartInst = null, currentAppForChart = null, updateFrame = null;
-        // A compact, explicit non-ideal op-amp model shared by every application.
-        const OPAMP_LIMITS = { rail: 13, gbw: 1e6, slewRate: 0.5e6 };
+        // A compact non-ideal model: output swing and slew rate are applied to every output waveform.
+        const OPAMP_LIMITS = { rail: 13, slewRate: 0.5e6 };
 
         function applyOpAmpLimits(datasets) {
             const output = datasets.find(ds => ds.label === 'V_out');
@@ -77,14 +77,14 @@
             sum: {
                 title: '反相加法器', subtitle: '\\(V_{out} = -R_f(V_1/R_1 + V_2/R_2 + V_3/R_3)\\)',
                 sliders: [
-                    {id:'v1',label:'V_1',val:10,min:0,max:50,step:0.5,unit:'0.5 V',format:v=>(v/10).toFixed(2)+' V'},
-                    {id:'v2',label:'V_2',val:15,min:0,max:50,step:0.5,unit:'0.75 V',format:v=>(v/10).toFixed(2)+' V'},
-                    {id:'v3',label:'V_3',val:5,min:0,max:50,step:0.5,unit:'0.25 V',format:v=>(v/10).toFixed(2)+' V'},
-                    {id:'rf',label:'R_f（R_1=R_2=R_3=10 kΩ）',val:10,min:1,max:200,step:1,unit:'10 kΩ',format:v=>v.toFixed(0)+' kΩ'}
+                    {id:'v1',label:'V_1',val:10,min:0,max:30,step:0.5,unit:'1.00 V',format:v=>(v/10).toFixed(2)+' V'},
+                    {id:'v2',label:'V_2',val:15,min:0,max:30,step:0.5,unit:'1.50 V',format:v=>(v/10).toFixed(2)+' V'},
+                    {id:'v3',label:'V_3',val:5,min:0,max:30,step:0.5,unit:'0.50 V',format:v=>(v/10).toFixed(2)+' V'},
+                    {id:'rf',label:'R_f（R_1=R_2=R_3=10 kΩ）',val:10,min:1,max:100,step:1,unit:'10 kΩ',format:v=>v.toFixed(0)+' kΩ'}
                 ],
-                compute(p) { const gain = p.rf / 10; return { result: -gain*(p.v1/10+p.v2/10+p.v3/10), info: `R_1=R_2=R_3=10 kΩ；每路权重 R_f/R_i=${gain.toFixed(2)}` }; },
+                compute(p) { const gain = p.rf / 10, result = -gain*(p.v1/10+p.v2/10+p.v3/10); return { resultText: `${result.toFixed(3)} V`, info: `直流输入下的理论输出；每路权重 R_f/R_i=${gain.toFixed(2)}` }; },
                 chartData(p) {
-                    const T = 0.002, N = 300, vin1 = [], vin2 = [], vin3 = [], vout = [];
+                    const T = 0.004, N = 400, vin1 = [], vin2 = [], vin3 = [], vout = [];
                     for (let i = 0; i <= N; i++) {
                         const t = T*i/N;
                         const v1v = p.v1/10*Math.sin(2*Math.PI*500*t);
@@ -104,12 +104,12 @@
             diff: {
                 title: '差分放大器', subtitle: '\\(V_{out} = (R_2/R_1)(V_2 - V_1)\\)',
                 sliders: [
-                    {id:'dv1',label:'V_1',val:10,min:0,max:50,step:0.5,unit:'1.0 V'},
-                    {id:'dv2',label:'V_2',val:20,min:0,max:50,step:0.5,unit:'2.0 V'},
-                    {id:'dr1',label:'R_1=R_3',val:10,min:1,max:100,step:1,unit:'10 kΩ'},
-                    {id:'dr2',label:'R_2=R_4',val:100,min:1,max:200,step:1,unit:'100 kΩ'}
+                    {id:'dv1',label:'V_1',val:10,min:0,max:30,step:0.5,unit:'1.00 V',format:v=>(v/10).toFixed(2)+' V'},
+                    {id:'dv2',label:'V_2',val:20,min:0,max:30,step:0.5,unit:'2.00 V',format:v=>(v/10).toFixed(2)+' V'},
+                    {id:'dr1',label:'R_1=R_3',val:10,min:5,max:100,step:1,unit:'10 kΩ',format:v=>v.toFixed(0)+' kΩ'},
+                    {id:'dr2',label:'R_2=R_4',val:100,min:5,max:100,step:1,unit:'100 kΩ',format:v=>v.toFixed(0)+' kΩ'}
                 ],
-                compute(p) { const g = p.dr2/p.dr1; return { result: g*(p.dv2/10-p.dv1/10), info: `增益 = R_2/R_1 = ${g.toFixed(0)}, CMRR→∞ (理想匹配)` }; },
+                compute(p) { const g = p.dr2/p.dr1, result = g*(p.dv2/10-p.dv1/10); return { resultText: `${result.toFixed(3)} V`, info: `直流输入下的理论输出；增益 R_2/R_1=${g.toFixed(2)}（假定电阻比理想匹配）` }; },
                 chartData(p) {
                     const T=0.004,N=400,g=p.dr2/p.dr1; const v1=[],v2=[],vo=[];
                     for(let i=0;i<=N;i++) { const t=T*i/N; const v1v=p.dv1/10*Math.sin(2*Math.PI*500*t),v2v=p.dv2/10*Math.sin(2*Math.PI*500*t); v1.push({x:t*1000,y:v1v}); v2.push({x:t*1000,y:v2v}); vo.push({x:t*1000,y:g*(v2v-v1v)}); }
@@ -119,14 +119,14 @@
             int: {
                 title: '积分器', subtitle: '\\(V_{out} = -\\frac{1}{RC}\\int V_{in}\\,dt\\)',
                 sliders: [
-                    {id:'ir',label:'R',val:100,min:1,max:200,step:1,unit:'100 kΩ'},
-                    {id:'ic',label:'C',val:1,min:0.1,max:10,step:0.1,unit:'0.1 μF'},
-                    {id:'iamp',label:'V_in幅度',val:10,min:1,max:50,step:1,unit:'1.0 V'},
+                    {id:'ir',label:'R',val:100,min:10,max:200,step:1,unit:'100 kΩ',format:v=>v.toFixed(0)+' kΩ'},
+                    {id:'ic',label:'C',val:100,min:10,max:1000,step:10,unit:'100 nF',format:v=>v.toFixed(0)+' nF'},
+                    {id:'iamp',label:'V_in幅度',val:10,min:1,max:20,step:1,unit:'1.0 V',format:v=>(v/10).toFixed(1)+' V'},
                     {id:'iwave',label:'输入波形',val:1,min:0,max:2,step:1,unit:'正弦', type:'select', options:['正弦','方波','三角波']}
                 ],
-                compute(p) { const tau = p.ir*1000 * p.ic*1e-7; return { result: tau, info: `时间常数 τ = RC = ${(tau*1e6).toFixed(1)} μs` }; },
+                compute(p) { const tau = p.ir*1000*p.ic*1e-9; return { resultText: formatTimeConstant(tau), info: '显示值为积分时间常数 τ=RC；波形按 500 Hz 输入计算' }; },
                 chartData(p) {
-                    const T=0.004,N=400,tau=p.ir*1000*p.ic*1e-7; const vi=[],vo=[]; let integral=0;
+                    const T=0.004,N=400,tau=p.ir*1000*p.ic*1e-9; const vi=[],vo=[]; let integral=0;
                     for(let i=0;i<=N;i++) { const t=T*i/N,dt=T/N; let sv; const wt=2*Math.PI*500*t;
                         if(p.iwave==0) sv=Math.sin(wt); else if(p.iwave==1) sv=Math.sin(wt)>=0?1:-1; else sv=2*Math.abs(2*(t*500-Math.floor(t*500+0.5)))-1;
                         integral += sv*p.iamp/10*dt; vi.push({x:t*1000,y:sv*p.iamp/10}); vo.push({x:t*1000,y:-integral/tau});
@@ -135,16 +135,16 @@
                 }
             },
             der: {
-                title: '微分器', subtitle: '\\(V_{out} = -RC\\frac{dV_{in}}{dt}\\)',
+                title: '实用微分器', subtitle: '\\(H(s)=-\\frac{sRC}{1+sRC},\\quad V_{out}\\approx-RC\\frac{dV_{in}}{dt}\\;（\\omega RC\\ll1）\\)（取输入串联电阻与反馈电阻均为 \\(R\\)）',
                 sliders: [
-                    {id:'derc',label:'C',val:1,min:0.1,max:10,step:0.1,unit:'0.1 μF'},
-                    {id:'derr',label:'R',val:100,min:1,max:200,step:1,unit:'100 kΩ'},
-                    {id:'deamp',label:'V_in幅度',val:10,min:1,max:50,step:1,unit:'1.0 V'},
+                    {id:'derc',label:'C',val:10,min:1,max:100,step:1,unit:'10 nF',format:v=>v.toFixed(0)+' nF'},
+                    {id:'derr',label:'R',val:10,min:1,max:100,step:1,unit:'10 kΩ',format:v=>v.toFixed(0)+' kΩ'},
+                    {id:'deamp',label:'V_in幅度',val:10,min:1,max:20,step:1,unit:'1.0 V',format:v=>(v/10).toFixed(1)+' V'},
                     {id:'dewave',label:'输入波形',val:0,min:0,max:2,step:1,unit:'正弦', type:'select', options:['正弦','方波','三角波']}
                 ],
-                compute(p) { const tau = p.derc*1e-7 * p.derr*1000; return { result: tau, info: `时间常数 τ = RC = ${(tau*1e6).toFixed(1)} μs` }; },
+                compute(p) { const tau = p.derc*1e-9*p.derr*1000, ratio=2*Math.PI*500*tau; return { resultText: formatTimeConstant(tau), info: `500 Hz 时 ωRC=${ratio.toFixed(3)}；远小于 1 时才近似理想微分` }; },
                 chartData(p) {
-                    const T=0.004,N=400,RC=p.derc*1e-7*p.derr*1000; const vi=[],vo=[]; let prev=0, highPass=0;
+                    const T=0.004,N=400,RC=p.derc*1e-9*p.derr*1000; const vi=[],vo=[]; let prev=0, highPass=0;
                     for(let i=0;i<=N;i++) { const t=T*i/N,dt=T/N; let sv; const wt=2*Math.PI*500*t;
                         if(p.dewave==0) sv=Math.sin(wt); else if(p.dewave==1) sv=Math.sin(wt)>=0?1:-1; else sv=2*Math.abs(2*(t*500-Math.floor(t*500+0.5)))-1;
                         const input = sv*p.deamp/10;
@@ -161,11 +161,11 @@
             ins: {
                 title: '仪表放大器', subtitle: '\\(V_{out} = (1 + 2R/R_g)(V_2 - V_1)\\)',
                 sliders: [
-                    {id:'inv1',label:'V_1',val:5,min:0,max:20,step:0.5,unit:'0.5 V'},
-                    {id:'inv2',label:'V_2',val:10,min:0,max:20,step:0.5,unit:'1.0 V'},
-                    {id:'irg',label:'R_gain',val:10,min:1,max:50,step:1,unit:'1.0 kΩ'}
+                    {id:'inv1',label:'V_1',val:5,min:0,max:20,step:0.5,unit:'0.50 V',format:v=>(v/10).toFixed(2)+' V'},
+                    {id:'inv2',label:'V_2',val:10,min:0,max:20,step:0.5,unit:'1.00 V',format:v=>(v/10).toFixed(2)+' V'},
+                    {id:'irg',label:'R_gain',val:10,min:2,max:50,step:1,unit:'10 kΩ',format:v=>v.toFixed(0)+' kΩ'}
                 ],
-                compute(p) { const g = 1+20000/(p.irg*1000); return { result: g*(p.inv2/10-p.inv1/10), info: `增益 = 1+2R/R_g = ${g.toFixed(1)}, 极高CMRR, 极高Z_in` }; },
+                compute(p) { const g = 1+20000/(p.irg*1000), result=g*(p.inv2/10-p.inv1/10); return { resultText: `${result.toFixed(3)} V`, info: `直流输入下的理论输出；R=10 kΩ，增益 1+2R/R_g=${g.toFixed(2)}` }; },
                 chartData(p) {
                     const T=0.004,N=400,g=1+20000/(p.irg*1000); const v1=[],v2=[],vo=[];
                     for(let i=0;i<=N;i++) { const t=T*i/N; const v1v=p.inv1/10*Math.sin(2*Math.PI*500*t),v2v=p.inv2/10*Math.sin(2*Math.PI*500*t); v1.push({x:t*1000,y:v1v}); v2.push({x:t*1000,y:v2v}); vo.push({x:t*1000,y:g*(v2v-v1v)}); }
@@ -173,6 +173,10 @@
                 }
             }
         };
+
+        function formatTimeConstant(seconds) {
+            return seconds >= 1e-3 ? `τ = ${(seconds*1e3).toFixed(3)} ms` : `τ = ${(seconds*1e6).toFixed(1)} μs`;
+        }
 
         function buildUI(a) {
             const cfg = apps[a];
@@ -189,7 +193,7 @@
             });
             html += `</div></div><div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                 <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>计算结果</h2>
-                <div class="bg-slate-50 rounded-xl p-4 text-center"><div id="resultDisplay" class="text-xl font-bold text-violet-600 font-mono"></div><div id="infoDisplay" class="text-sm text-slate-500 mt-1"></div><div class="text-xs text-slate-400 mt-2">非理想模型：±${OPAMP_LIMITS.rail} V 输出摆幅、GBW ${OPAMP_LIMITS.gbw/1e6} MHz、压摆率 ${OPAMP_LIMITS.slewRate/1e6} V/μs</div></div></div>`;
+                <div class="bg-slate-50 rounded-xl p-4 text-center"><div id="resultDisplay" class="text-xl font-bold text-violet-600 font-mono"></div><div id="infoDisplay" class="text-sm text-slate-500 mt-1"></div><div class="text-xs text-slate-400 mt-2">波形模型：±${OPAMP_LIMITS.rail} V 输出摆幅、压摆率 ${OPAMP_LIMITS.slewRate/1e6} V/μs；未模拟开环增益和 GBW</div></div></div>`;
             document.getElementById('controlPanel').innerHTML = html;
             document.getElementById('chartTitle').textContent = cfg.title + ' - 波形';
             document.getElementById('formulaCard').innerHTML = `<h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>关键公式</h2><div class="text-sm bg-slate-50 rounded-xl p-4 text-center">${cfg.subtitle}</div>`;
@@ -203,7 +207,7 @@
                 if (el && s.type !== 'select') el.textContent = s.format ? s.format(p[s.id]) : s.unit;
             });
             const r = cfg.compute(p);
-            document.getElementById('resultDisplay').textContent = typeof r.result === 'number' ? r.result.toFixed(3) + ' V' : r.result;
+            document.getElementById('resultDisplay').textContent = r.resultText;
             document.getElementById('infoDisplay').textContent = r.info;
 
             const cd = cfg.chartData(p);

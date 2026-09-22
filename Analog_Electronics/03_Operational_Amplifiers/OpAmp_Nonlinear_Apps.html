@@ -62,67 +62,70 @@
             comp: {
                 title: '比较器', formula: '\\[V_{out} = +V_{sat} \\text{ (}V_{in} > V_{ref}\\text{)} \\qquad V_{out} = -V_{sat} \\text{ (}V_{in} < V_{ref}\\text{)}\\]',
                 sliders: [
-                    {id:'ref',label:'V_ref',val:0,min:-100,max:100,step:1,unit:'0 V'},
-                    {id:'amp',label:'V_in 幅度',val:50,min:1,max:150,step:1,unit:'5.0 V'},
-                    {id:'freq',label:'频率',val:5,min:1,max:50,step:1,unit:'500 Hz'},
-                    {id:'sat',label:'±V_sat',val:13,min:5,max:15,step:1,unit:'±13 V'}
+                    {id:'ref',label:'V_ref',val:0,min:-50,max:50,step:1,unit:'0.0 V',format:v=>(v/10).toFixed(1)+' V'},
+                    {id:'amp',label:'V_in 幅度',val:50,min:1,max:120,step:1,unit:'5.0 V',format:v=>(v/10).toFixed(1)+' V'},
+                    {id:'freq',label:'频率',val:5,min:1,max:50,step:1,unit:'500 Hz',format:v=>(v*100).toFixed(0)+' Hz'},
+                    {id:'sat',label:'±V_sat',val:13,min:5,max:15,step:1,unit:'±13 V',format:v=>'±'+v.toFixed(0)+' V'}
                 ],
-                compute(p) { return { V_UTP: p.ref/10, V_LTP: p.ref/10, hysteresis: 0 }; },
+                compute(p) { const threshold=p.ref/10; return { V_UTP:threshold, V_LTP:threshold, hysteresis:0, reachable:p.amp/10>=Math.abs(threshold) }; },
                 chartData(p) {
-                    const T=0.004,N=400,vin=[],vout=[]; const Vref=p.ref/10,Vsat=p.sat;
-                    for(let i=0;i<=N;i++) { const t=T*i/N, v=p.amp/10*Math.sin(2*Math.PI*p.freq*100*t); vin.push({x:t*1000,y:v}); vout.push({x:t*1000,y:v>Vref?Vsat:Vref>=v?-Vsat:Vsat}); }
-                    return { w:vin, wo:vout, desc:'无迟滞，信号过零切换' };
+                    const T=2/(p.freq*100),N=400,vin=[],vout=[]; const Vref=p.ref/10,Vsat=p.sat;
+                    for(let i=0;i<=N;i++) { const t=T*i/N, v=p.amp/10*Math.sin(2*Math.PI*p.freq*100*t); vin.push({x:t*1000,y:v}); vout.push({x:t*1000,y:v>Vref?Vsat:-Vsat}); }
+                    const span=Math.max(p.amp/10*1.2,Math.abs(Vref)+1);
+                    const tc=[{x:-span,y:-Vsat},{x:Vref,y:-Vsat},{x:Vref,y:Vsat},{x:span,y:Vsat}];
+                    return { w:vin, wo:vout, tc, desc:`比较阈值 ${Vref.toFixed(1)} V` };
                 }
             },
             sch: {
                 title: '施密特触发器', formula: '\\[V_{UTP} = V_{ref} + \\frac{R_1}{R_1+R_2}V_{sat} \\qquad V_{LTP} = V_{ref} - \\frac{R_1}{R_1+R_2}V_{sat} \\qquad \\Delta V = V_{UTP} - V_{LTP}\\]',
                 sliders: [
-                    {id:'sref',label:'V_ref',val:20,min:-50,max:50,step:1,unit:'2.0 V'},
-                    {id:'sr1',label:'R_1',val:10,min:1,max:50,step:1,unit:'10 kΩ'},
-                    {id:'sr2',label:'R_2',val:10,min:1,max:50,step:1,unit:'10 kΩ'},
-                    {id:'samp',label:'V_in 幅度',val:80,min:10,max:150,step:1,unit:'8.0 V'},
-                    {id:'sfreq',label:'频率',val:5,min:1,max:50,step:1,unit:'500 Hz'},
-                    {id:'ssat',label:'±V_sat',val:13,min:5,max:15,step:1,unit:'±13 V'},
-                    {id:'noise',label:'噪声',val:0,min:0,max:10,step:1,unit:'关闭'}
+                    {id:'sref',label:'V_ref',val:20,min:-30,max:30,step:1,unit:'2.0 V',format:v=>(v/10).toFixed(1)+' V'},
+                    {id:'sr1',label:'R_1',val:10,min:5,max:50,step:1,unit:'10 kΩ',format:v=>v.toFixed(0)+' kΩ'},
+                    {id:'sr2',label:'R_2',val:10,min:5,max:50,step:1,unit:'10 kΩ',format:v=>v.toFixed(0)+' kΩ'},
+                    {id:'samp',label:'V_in 幅度',val:100,min:10,max:150,step:1,unit:'10.0 V',format:v=>(v/10).toFixed(1)+' V'},
+                    {id:'sfreq',label:'频率',val:5,min:1,max:50,step:1,unit:'500 Hz',format:v=>(v*100).toFixed(0)+' Hz'},
+                    {id:'ssat',label:'±V_sat',val:13,min:5,max:15,step:1,unit:'±13 V',format:v=>'±'+v.toFixed(0)+' V'},
+                    {id:'noise',label:'噪声（峰峰值）',val:0,min:0,max:10,step:1,unit:'关闭',format:v=>v===0?'关闭':(v/50).toFixed(2)+' Vpp'}
                 ],
                 compute(p) {
                     const beta = p.sr1/(p.sr1+p.sr2), Vref = p.sref/10, Vsat = p.ssat;
                     const V_UTP = Vref + beta*Vsat, V_LTP = Vref - beta*Vsat;
-                    return { V_UTP, V_LTP, hysteresis: V_UTP-V_LTP };
+                    return { V_UTP, V_LTP, hysteresis: V_UTP-V_LTP, reachable:p.samp/10>=Math.max(Math.abs(V_UTP),Math.abs(V_LTP)) };
                 },
                 chartData(p) {
-                    const T=0.004,N=400,vin=[],vout=[]; const r=this.compute(p); let outState = p.ssat;
+                    const T=2/(p.sfreq*100),N=400,vin=[],vout=[]; const r=this.compute(p); let outState = p.ssat;
                     for(let i=0;i<=N;i++) { const t=T*i/N; let v=p.samp/10*Math.sin(2*Math.PI*p.sfreq*100*t); if(p.noise>0) v+=(Math.random()-0.5)*p.noise/50;
                         if(v>r.V_UTP) outState=-p.ssat; else if(v<r.V_LTP) outState=p.ssat;
                         vin.push({x:t*1000,y:v}); vout.push({x:t*1000,y:outState});
                     }
                     // Draw both sweep directions.  A Schmitt trigger is a
                     // memory element, so a single transfer branch is misleading.
-                    const tcUp=[{x:-15,y:p.ssat},{x:r.V_UTP,y:p.ssat},{x:r.V_UTP,y:-p.ssat},{x:15,y:-p.ssat}];
-                    const tcDown=[{x:15,y:-p.ssat},{x:r.V_LTP,y:-p.ssat},{x:r.V_LTP,y:p.ssat},{x:-15,y:p.ssat}];
+                    const span=Math.max(p.samp/10*1.2,Math.abs(r.V_UTP)+1,Math.abs(r.V_LTP)+1);
+                    const tcUp=[{x:-span,y:p.ssat},{x:r.V_UTP,y:p.ssat},{x:r.V_UTP,y:-p.ssat},{x:span,y:-p.ssat}];
+                    const tcDown=[{x:span,y:-p.ssat},{x:r.V_LTP,y:-p.ssat},{x:r.V_LTP,y:p.ssat},{x:-span,y:p.ssat}];
                     return { w:vin, wo:vout, tcUp, tcDown, desc:`迟滞宽度 = ${r.hysteresis.toFixed(1)}V` };
                 }
             },
             gen: {
-                title: '方波-三角波发生器', formula: '\\[f = \\frac{1}{2RC\\,\\ln(1+2R_1/R_2)} \\qquad V_{tri,pk} = \\frac{R_1}{R_1+R_2}V_{sat}\\]',
+                title: '方波-三角波发生器', formula: '\\[\\beta=\\frac{R_1}{R_1+R_2},\\qquad f=\\frac{1}{4\\beta RC},\\qquad V_{tri,pk}=\\beta V_{sat}\\]',
                 sliders: [
-                    {id:'gR',label:'R',val:100,min:1,max:200,step:1,unit:'10 kΩ'},
-                    {id:'gC',label:'C',val:10,min:1,max:100,step:1,unit:'10 nF'},
-                    {id:'gR1',label:'R_1',val:10,min:1,max:50,step:1,unit:'10 kΩ'},
-                    {id:'gR2',label:'R_2',val:10,min:1,max:50,step:1,unit:'10 kΩ'},
-                    {id:'gsat',label:'±V_sat',val:13,min:5,max:15,step:1,unit:'±13 V'}
+                    {id:'gR',label:'积分电阻 R',val:100,min:10,max:200,step:1,unit:'100 kΩ',format:v=>v.toFixed(0)+' kΩ'},
+                    {id:'gC',label:'积分电容 C',val:10,min:10,max:100,step:1,unit:'10 nF',format:v=>v.toFixed(0)+' nF'},
+                    {id:'gR1',label:'R_1',val:10,min:5,max:50,step:1,unit:'10 kΩ',format:v=>v.toFixed(0)+' kΩ'},
+                    {id:'gR2',label:'R_2',val:10,min:5,max:50,step:1,unit:'10 kΩ',format:v=>v.toFixed(0)+' kΩ'},
+                    {id:'gsat',label:'±V_sat',val:13,min:5,max:15,step:1,unit:'±13 V',format:v=>'±'+v.toFixed(0)+' V'}
                 ],
                 compute(p) {
                     const R = p.gR*1000, C = p.gC*1e-9, beta = p.gR1/(p.gR1+p.gR2);
-                    const f = 1/(2*R*C*Math.log(1+2*p.gR1/p.gR2));
+                    const f = 1/(4*beta*R*C);
                     return { f, V_tri_pk: beta*p.gsat, info: `f = ${f<1000?f.toFixed(0)+' Hz':(f/1000).toFixed(1)+' kHz'}` };
                 },
                 chartData(p) {
                     const r=this.compute(p), T_period=1/r.f, dur=T_period*2.5, N=600;
-                    const sq=[], tri=[]; const beta=p.gR1/(p.gR1+p.gR2); let vcap=0, sqState=p.gsat;
+                    const sq=[], tri=[]; const beta=p.gR1/(p.gR1+p.gR2); let vcap=-beta*p.gsat, sqState=p.gsat;
                     const R=p.gR*1000, C=p.gC*1e-9;
                     for(let i=0;i<=N;i++) { const t=dur*i/N; sq.push({x:t*1000,y:sqState}); tri.push({x:t*1000,y:vcap});
-                        const dv = (sqState-vcap)/(R*C)*(dur/N);
+                        const dv = sqState/(R*C)*(dur/N);
                         vcap += dv;
                         if(sqState>0 && vcap>=beta*p.gsat) sqState=-p.gsat;
                         else if(sqState<0 && vcap<=-beta*p.gsat) sqState=p.gsat;
@@ -148,6 +151,7 @@
             document.getElementById('chart1Title').textContent = cfg.title + ' - 波形';
             document.getElementById('formulaCard').innerHTML = `<h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>关键公式</h2><div class="text-sm bg-slate-50 rounded-xl p-4 text-center">${cfg.formula}</div>`;
             document.getElementById('chart2Container').style.display = m==='gen' ? 'none' : 'block';
+            document.getElementById('chart2Title').textContent = m==='sch' ? '迟滞传输特性' : '传输特性';
             if (m==='gen') { document.getElementById('p1Label').textContent='振荡频率'; document.getElementById('p2Label').textContent='三角波幅值'; }
             else { document.getElementById('p1Label').textContent='状态'; document.getElementById('p2Label').textContent=m==='comp'?'阈值':'迟滞宽度'; }
         }
@@ -155,10 +159,10 @@
         function updateAll() {
             const cfg = modes[mode], p = {};
             cfg.sliders.forEach(s => { p[s.id] = parseFloat(document.getElementById(s.id+'Slider').value); });
-            cfg.sliders.forEach(s => { const el=document.getElementById(s.id+'Value'); if(el) el.textContent=s.unit; });
+            cfg.sliders.forEach(s => { const el=document.getElementById(s.id+'Value'); if(el) el.textContent=s.format?s.format(p[s.id]):s.unit; });
             const r = cfg.compute(p);
-            if (mode==='comp') { document.getElementById('p1Display').textContent='比较器'; document.getElementById('p2Display').textContent = p.ref/10+' V'; }
-            else if (mode==='sch') { document.getElementById('p1Display').textContent='施密特'; document.getElementById('p2Display').textContent=r.hysteresis.toFixed(1)+' V'; }
+            if (mode==='comp') { document.getElementById('p1Display').textContent=r.reachable?'可翻转':'阈值不可达'; document.getElementById('p2Display').textContent = (p.ref/10).toFixed(1)+' V'; }
+            else if (mode==='sch') { document.getElementById('p1Display').textContent=r.reachable?'可跨越双阈值':'双阈值不可达'; document.getElementById('p2Display').textContent=r.hysteresis.toFixed(1)+' V'; }
             else { document.getElementById('p1Display').textContent=r.info; document.getElementById('p2Display').textContent=r.V_tri_pk.toFixed(1)+' V'; }
 
             const cd = cfg.chartData(p);
@@ -190,18 +194,20 @@
                 currentModeForChart = mode;
             }
 
-            // --- Chart 2: transfer characteristic (Schmitt only) ---
-            if (cd.tcUp && mode==='sch') {
+            // --- Chart 2: comparator step or Schmitt hysteresis loop ---
+            if (mode!=='gen') {
+                const transferDatasets = mode==='comp' ? [
+                    { label:'比较器', data:cd.tc, borderColor:'#8b5cf6', borderWidth:2, pointRadius:0, showLine:true }
+                ] : [
+                    { label:'输入上扫', data:cd.tcUp, borderColor:'#8b5cf6', borderWidth:2, pointRadius:0, showLine:true },
+                    { label:'输入下扫', data:cd.tcDown, borderColor:'#0ea5e9', borderWidth:2, borderDash:[5,3], pointRadius:0, showLine:true }
+                ];
                 if (chart2Inst) {
-                    chart2Inst.data.datasets[0].data = cd.tcUp;
-                    chart2Inst.data.datasets[1].data = cd.tcDown;
+                    chart2Inst.data.datasets = transferDatasets;
                     chart2Inst.update('none');
                 } else {
                     chart2Inst = new Chart(document.getElementById('chart2').getContext('2d'), {
-                        type:'scatter', data:{ datasets:[
-                            { label:'上扫', data:cd.tcUp, borderColor:'#8b5cf6', borderWidth:2, pointRadius:0, showLine:true, order:1 },
-                            { label:'下扫', data:cd.tcDown, borderColor:'#0ea5e9', borderWidth:2, borderDash:[5,3], pointRadius:0, showLine:true, order:1 }
-                        ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:300},
+                        type:'scatter', data:{ datasets:transferDatasets }, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:300},
                             plugins:{ legend:{position:'bottom',labels:{boxWidth:14,font:{size:10}}}, tooltip:{ callbacks:{ label:ctx => `V_in=${ctx.parsed.x.toFixed(1)}V, V_out=${ctx.parsed.y.toFixed(0)}V` } } },
                             scales:{ x:{title:{display:true,text:'V_in (V)'}}, y:{title:{display:true,text:'V_out (V)'}, grid:{color:'rgba(0,0,0,0.05)'}} } }
                     });
