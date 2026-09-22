@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>直流稳压电源 | 模拟电子技术辅助教学</title>
+    <title>整流滤波直流电源 | 模拟电子技术辅助教学</title>
     <link rel="stylesheet" href="../css/tailwind-local.css">
     <script src="../css/lib/chart.umd.min.js"></script>
     <link rel="stylesheet" href="../css/lib/katex.min.css">
@@ -25,8 +25,8 @@
             </a>
         </div>
         <div class="text-center mb-6">
-            <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">直流稳压电源</h1>
-            <p class="text-slate-600 max-w-2xl mx-auto">变压器 → 整流 → 滤波 → 稳压 四阶段分析</p>
+            <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">整流滤波直流电源</h1>
+            <p class="text-slate-600 max-w-2xl mx-auto">变压器 → 整流 → 电容滤波三阶段分析（未包含稳压器）</p>
         </div>
         <div class="flex justify-center gap-2 mb-6">
             <button id="tabHalf" class="rect-tab active px-4 py-2 rounded-full text-xs font-medium border border-slate-300 bg-cyan-500 text-white">半波整流</button>
@@ -37,7 +37,7 @@
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                     <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-cyan-500 rounded-full"></span>电源参数</h2>
                     <div class="space-y-4">
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>变压器变比 \(n\)</span><span id="nValue" class="font-mono font-bold text-cyan-600">10</span></div><input type="range" id="nSlider" min="2" max="30" value="10" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>2</span><span>30</span></div></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>变压器变比 \(n=N_1/N_2\)</span><span id="nValue" class="font-mono font-bold text-cyan-600">10</span></div><input type="range" id="nSlider" min="6" max="30" value="10" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>6</span><span>30</span></div></div>
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>二极管 \(V_F\)</span><span id="vfValue" class="font-mono font-bold text-cyan-600">0.7 V</span></div><input type="range" id="vfSlider" min="0.5" max="1.0" value="0.7" step="0.05" class="w-full"></div>
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>滤波电容 \(C\)</span><span id="cValue" class="font-mono font-bold text-cyan-600">1000 μF</span></div><input type="range" id="cSlider" min="1" max="50" value="10" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>100 μF</span><span>5000 μF</span></div></div>
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>负载电流 \(I_L\)</span><span id="ilValue" class="font-mono font-bold text-cyan-600">100 mA</span></div><input type="range" id="ilSlider" min="1" max="50" value="10" step="0.5" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>10 mA</span><span>500 mA</span></div></div>
@@ -46,12 +46,12 @@
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                     <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>输出特性</h2>
                     <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(V_{DC}\)</div><div id="vdcDisplay" class="text-lg font-bold text-blue-600 font-mono">28.7 V</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(V_{ripple}\)</div><div id="vripDisplay" class="text-lg font-bold text-amber-600 font-mono">1.0 V</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(V_{DC}\)</div><div id="vdcDisplay" class="text-lg font-bold text-blue-600 font-mono">29.4 V</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(V_{ripple,pp}\)</div><div id="vripDisplay" class="text-lg font-bold text-amber-600 font-mono">2.0 V</div></div>
                         <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(V_{peak}\)</div><div id="vpkDisplay" class="text-lg font-bold text-cyan-600 font-mono">30.4 V</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">电压利用率 \(\eta\)</div><div id="effDisplay" class="text-lg font-bold text-blue-600 font-mono">74%</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">峰值保持率 \(V_{DC}/V_{sec,pk}\)</div><div id="effDisplay" class="text-lg font-bold text-blue-600 font-mono">95%</div></div>
                     </div>
-                    <div id="filterStatus" class="mt-3 text-center text-sm font-medium text-blue-600">滤波工作正常</div>
+                    <div id="filterStatus" class="mt-3 text-center text-sm font-medium text-blue-600">小纹波近似有效</div>
                 </div>
             </div>
             <div class="lg:col-span-8 space-y-5">
@@ -63,11 +63,13 @@
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
                     <h2 class="text-base font-bold text-slate-800 mb-2">纹波电压 vs 负载电流</h2>
                     <div class="relative" style="height: 240px;"><canvas id="rippleChart"></canvas></div>
+                    <p class="text-xs text-slate-400 mt-1 text-center">只绘制 \(V_{ripple,pp}/V_{peak}\leq20\%\) 的小纹波近似有效区</p>
                 </div>
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                     <h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>关键公式</h2>
                     <div class="text-sm bg-slate-50 rounded-xl p-4 text-center space-y-2">
-                        \[V_{peak} = V_{rms}\sqrt{2} - n_{diodes}V_F \qquad V_{ripple} \approx \frac{I_L}{f_{ripple} \cdot C} \qquad V_{DC} \approx V_{peak} - \frac{V_{ripple}}{2}\]
+                        \[V_{peak} = V_{sec,rms}\sqrt{2} - n_{diodes}V_F\]
+                        \[V_{ripple,pp} \approx \frac{I_L}{f_{ripple}C},\qquad V_{DC} \approx V_{peak} - \frac{V_{ripple,pp}}{2}\quad\left(V_{ripple,pp}\ll V_{peak}\right)\]
                     </div>
                 </div>
             </div>
@@ -110,24 +112,24 @@
             const f_ripple = p.rectType === 'full' ? 2 * F_LINE : F_LINE;
             const V_peak = Math.max(0, V_sec_peak - nDiodes * p.V_F);
             const V_ripple_ideal = p.I_L / (f_ripple * p.C);
-            // The capacitor-discharge approximation is valid only while the ripple is below the peak.
-            // Beyond that point the supply enters discontinuous conduction; do not display negative voltage.
+            const rippleRatio = V_peak > 0 ? V_ripple_ideal / V_peak : Infinity;
             const filterFailed = V_ripple_ideal >= V_peak;
-            const V_ripple = Math.min(V_ripple_ideal, V_peak);
-            const V_DC = Math.max(0, V_peak - V_ripple / 2);
-            const eta = V_sec_peak > 0 ? V_DC / V_sec_peak * 100 : 0;
+            const approximationValid = rippleRatio <= 0.2;
+            const V_ripple = approximationValid ? V_ripple_ideal : NaN;
+            const V_DC = approximationValid ? V_peak - V_ripple / 2 : NaN;
+            const eta = approximationValid && V_sec_peak > 0 ? V_DC / V_sec_peak * 100 : NaN;
 
             document.getElementById('nValue').textContent = p.n;
             document.getElementById('vfValue').textContent = p.V_F.toFixed(2)+' V';
             document.getElementById('cValue').textContent = (p.C*1e6).toFixed(0)+' μF';
             document.getElementById('ilValue').textContent = (p.I_L*1000).toFixed(0)+' mA';
-            document.getElementById('vdcDisplay').textContent = V_DC.toFixed(1)+' V';
-            document.getElementById('vripDisplay').textContent = V_ripple.toFixed(2)+' V';
+            document.getElementById('vdcDisplay').textContent = Number.isFinite(V_DC) ? V_DC.toFixed(1)+' V' : '—';
+            document.getElementById('vripDisplay').textContent = Number.isFinite(V_ripple) ? V_ripple.toFixed(2)+' V' : '—';
             document.getElementById('vpkDisplay').textContent = V_peak.toFixed(1)+' V';
-            document.getElementById('effDisplay').textContent = Math.min(eta, 100).toFixed(0)+'%';
+            document.getElementById('effDisplay').textContent = Number.isFinite(eta) ? Math.min(eta, 100).toFixed(0)+'%' : '—';
             const statusEl = document.getElementById('filterStatus');
-            statusEl.textContent = filterFailed ? '滤波失效：电容在下一次充电前已放空' : '滤波工作正常（纹波近似有效）';
-            statusEl.className = filterFailed ? 'mt-3 text-center text-sm font-medium text-rose-600' : 'mt-3 text-center text-sm font-medium text-blue-600';
+            statusEl.textContent = approximationValid ? '小纹波近似有效' : filterFailed ? '滤波失效：电容在下一次充电前已放空' : '纹波过大：已超出小纹波公式的有效范围';
+            statusEl.className = approximationValid ? 'mt-3 text-center text-sm font-medium text-blue-600' : 'mt-3 text-center text-sm font-medium text-rose-600';
 
             // Waveforms
             const T_ac = 1/F_LINE, dur = T_ac * 2, N = 500;
@@ -160,16 +162,16 @@
             waveChartInst = updateChart(waveChartInst, 'waveChart', cfg);
 
             // Ripple vs load current
-            const iLoads = [], ripples = [], ripplesNoReg = [];
+            const ripplePoints = [];
             for (let il = 0.01; il <= 0.5; il += 0.01) {
-                iLoads.push(il*1000);
-                ripples.push(il/(f_ripple*p.C)*1000);
+                const ripple = il / (f_ripple * p.C);
+                if (V_peak > 0 && ripple / V_peak <= 0.2) ripplePoints.push({x:il*1000, y:ripple*1000});
             }
             cfg = { type:'scatter', data:{ datasets:[
-                { label:'V_ripple (mV)', data:iLoads.map((il,i)=>({x:il,y:ripples[i]})), borderColor:'#06b6d4', borderWidth:2, pointRadius:0, showLine:true }
+                { label:'V_ripple,pp (mV)', data:ripplePoints, borderColor:'#06b6d4', borderWidth:2, pointRadius:0, showLine:true }
             ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
                 plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx => `I_L=${ctx.parsed.x.toFixed(0)}mA, V_ripple=${ctx.parsed.y.toFixed(1)}mV` } } },
-                scales:{ x:{title:{display:true,text:'I_L (mA)'}}, y:{title:{display:true,text:'V_ripple (mV)'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
+                scales:{ x:{min:0,max:500,title:{display:true,text:'I_L (mA)'}}, y:{beginAtZero:true,title:{display:true,text:'V_ripple,pp (mV)'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
             rippleChartInst = updateChart(rippleChartInst, 'rippleChart', cfg);
         }
 

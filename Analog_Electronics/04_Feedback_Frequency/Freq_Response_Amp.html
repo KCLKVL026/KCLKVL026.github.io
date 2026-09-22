@@ -25,17 +25,17 @@
         </div>
         <div class="text-center mb-6">
             <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">放大电路频率响应</h1>
-            <p class="text-slate-600 max-w-2xl mx-auto">伯德图、米勒效应与增益带宽积</p>
+            <p class="text-slate-600 max-w-2xl mx-auto">共射放大器伯德图、米勒效应与高频截止特性</p>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div class="lg:col-span-4 space-y-5">
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                     <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>放大器参数</h2>
                     <div class="space-y-4">
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>中频增益 \(A_M\)</span><span id="amValue" class="font-mono font-bold text-amber-600">200</span></div><input type="range" id="amSlider" min="10" max="1000" value="200" step="10" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>中频增益幅值 \(A_M\)</span><span id="amValue" class="font-mono font-bold text-amber-600">200</span></div><input type="range" id="amSlider" min="10" max="500" value="200" step="10" class="w-full"></div>
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(C_\pi\) (BE结电容)</span><span id="cpiValue" class="font-mono font-bold text-amber-600">10 pF</span></div><input type="range" id="cpiSlider" min="1" max="50" value="10" step="1" class="w-full"></div>
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(C_\mu\) (BC结电容)</span><span id="cmuValue" class="font-mono font-bold text-amber-600">2.0 pF</span></div><input type="range" id="cmuSlider" min="0.5" max="10" value="2" step="0.5" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(r_\pi\)</span><span id="rpiValue" class="font-mono font-bold text-amber-600">2.0 kΩ</span></div><input type="range" id="rpiSlider" min="5" max="50" value="20" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>晶体管电流增益 \(\beta_{BJT}\)</span><span id="betaValue" class="font-mono font-bold text-amber-600">125</span></div><input type="range" id="betaSlider" min="50" max="300" value="125" step="5" class="w-full"></div>
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_L'\) (等效负载)</span><span id="rlValue" class="font-mono font-bold text-amber-600">3.2 kΩ</span></div><input type="range" id="rlSlider" min="10" max="100" value="32" step="1" class="w-full"></div>
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>耦合电容 \(f_L\)</span><span id="flValue" class="font-mono font-bold text-amber-600">100 Hz</span></div><input type="range" id="flSlider" min="1" max="100" value="10" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>10 Hz</span><span>1 kHz</span></div></div>
                     </div>
@@ -44,9 +44,9 @@
                     <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>频率特性</h2>
                     <div class="grid grid-cols-2 gap-3">
                         <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(f_L\)</div><div id="fLDisplay" class="text-lg font-bold text-blue-600 font-mono">100 Hz</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(f_H\)</div><div id="fHDisplay" class="text-lg font-bold text-blue-600 font-mono">1.2 MHz</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(BW\)</div><div id="bwDisplay" class="text-lg font-bold text-blue-600 font-mono">1.2 MHz</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(GBW\)</div><div id="gbwDisplay" class="text-lg font-bold text-blue-600 font-mono">240 MHz</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(f_H\)</div><div id="fHDisplay" class="text-lg font-bold text-blue-600 font-mono">193 kHz</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(BW=f_H-f_L\)</div><div id="bwDisplay" class="text-lg font-bold text-blue-600 font-mono">193 kHz</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(A_M f_H\)</div><div id="gbwDisplay" class="text-lg font-bold text-blue-600 font-mono">38.6 MHz</div></div>
                     </div>
                     <p id="modelDisplay" class="text-xs text-slate-500 mt-3 text-center"></p>
                 </div>
@@ -63,7 +63,9 @@
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                     <h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>关键公式</h2>
                     <div class="text-sm bg-slate-50 rounded-xl p-4 text-center">
-                        \[g_m = \frac{A_M}{R_L'} \quad \beta = g_m r_\pi \quad I_C = g_m V_T \quad C_M = C_\mu(1+A_M) \quad f_H \approx \frac{1}{2\pi(C_\pi+C_M)r_\pi}\]
+                        <div>\[g_m=\frac{A_M}{R_L'},\qquad r_\pi=\frac{\beta_{BJT}}{g_m},\qquad I_C=g_mV_T,\qquad C_M=C_\mu(1+A_M)\]</div>
+                        <div>\[f_H\approx\frac{1}{2\pi(C_\pi+C_M)r_\pi},\qquad H(s)=-A_M\frac{s/\omega_L}{1+s/\omega_L}\frac{1}{1+s/\omega_H}\]</div>
+                        <p class="mt-2 text-slate-500 text-xs">本页采用米勒输入极点占主导、输入端等效电阻近似为 \(r_\pi\)、输出极点可忽略的简化共射模型；完整相位包含共射反相的 −180°。</p>
                     </div>
                 </div>
             </div>
@@ -88,68 +90,75 @@
             updateFrame = requestAnimationFrame(() => { updateFrame = null; updateAll(); });
         }
 
+        function formatFrequency(f) {
+            if (f >= 1e6) return (f/1e6).toFixed(f < 10e6 ? 2 : 1)+' MHz';
+            if (f >= 1e3) return (f/1e3).toFixed(f < 10e3 ? 2 : 0)+' kHz';
+            return f.toFixed(0)+' Hz';
+        }
+
         function getParams() {
             return {
                 A_M: parseFloat(amSlider.value), C_pi: parseFloat(cpiSlider.value)*1e-12,
-                C_mu: parseFloat(cmuSlider.value)*1e-12, r_pi: parseFloat(rpiSlider.value)*100,
+                C_mu: parseFloat(cmuSlider.value)*1e-12, beta_BJT: parseFloat(betaSlider.value),
                 R_L: parseFloat(rlSlider.value)*100, f_L_ref: parseFloat(flSlider.value)*10
             };
         }
 
         function updateAll() {
             const p = getParams();
-            // Consistent common-emitter small-signal model.  A_M is the
-            // mid-band voltage gain magnitude (g_m R_L'); r_pi then defines β,
-            // and the resulting g_m defines the collector bias current.
+            // Consistent common-emitter small-signal model: beta_BJT is kept
+            // in a realistic range and r_pi is derived rather than independent.
             const g_m = p.A_M / p.R_L;
-            const beta = g_m * p.r_pi;
+            const r_pi = p.beta_BJT/g_m;
             const I_C = g_m * V_T;
             const C_M = p.C_mu * (1 + p.A_M);
-            const f_H = 1 / (2 * Math.PI * (p.C_pi + C_M) * p.r_pi);
+            const f_H = 1 / (2 * Math.PI * (p.C_pi + C_M) * r_pi);
             const f_L = p.f_L_ref;
-            const BW = f_H - f_L;
-            const GBW = p.A_M * f_H;
-            const A_M_dB = 20 * Math.log10(p.A_M);
+            const BW = Math.max(0, f_H - f_L);
+            const gainBandwidthProduct = p.A_M * f_H;
 
             document.getElementById('amValue').textContent = p.A_M;
             document.getElementById('cpiValue').textContent = (p.C_pi*1e12).toFixed(0)+' pF';
             document.getElementById('cmuValue').textContent = (p.C_mu*1e12).toFixed(1)+' pF';
-            document.getElementById('rpiValue').textContent = (p.r_pi/1000).toFixed(1)+' kΩ';
+            document.getElementById('betaValue').textContent = p.beta_BJT.toFixed(0);
             document.getElementById('rlValue').textContent = (p.R_L/1000).toFixed(1)+' kΩ';
             document.getElementById('flValue').textContent = p.f_L_ref.toFixed(0)+' Hz';
-            document.getElementById('fLDisplay').textContent = f_L.toFixed(0)+' Hz';
-            document.getElementById('fHDisplay').textContent = f_H >= 1e6 ? (f_H/1e6).toFixed(1)+' MHz' : (f_H/1000).toFixed(0)+' kHz';
-            document.getElementById('bwDisplay').textContent = BW >= 1e6 ? (BW/1e6).toFixed(1)+' MHz' : (BW/1000).toFixed(0)+' kHz';
-            document.getElementById('gbwDisplay').textContent = GBW >= 1e6 ? (GBW/1e6).toFixed(0)+' MHz' : (GBW/1000).toFixed(0)+' kHz';
-            document.getElementById('modelDisplay').textContent = `小信号模型：gₘ=${(g_m*1000).toFixed(2)} mS，β≈${beta.toFixed(0)}，I_C≈${(I_C*1000).toFixed(2)} mA`;
+            document.getElementById('fLDisplay').textContent = formatFrequency(f_L);
+            document.getElementById('fHDisplay').textContent = formatFrequency(f_H);
+            document.getElementById('bwDisplay').textContent = formatFrequency(BW);
+            document.getElementById('gbwDisplay').textContent = formatFrequency(gainBandwidthProduct);
+            document.getElementById('modelDisplay').textContent = `小信号模型：gₘ=${(g_m*1000).toFixed(2)} mS，rπ=${(r_pi/1000).toFixed(2)} kΩ，I_C≈${(I_C*1000).toFixed(2)} mA`;
 
             const freqs = [], mags = [], phases = [];
-            for (let f = 1; f <= 10e6; f *= 1.05) {
-                const w = 2*Math.PI*f;
+            const fMin = Math.max(0.1, f_L/100), fMax = Math.max(f_L, f_H)*100;
+            for (let i = 0; i <= 280; i++) {
+                const f = fMin*Math.pow(fMax/fMin, i/280);
                 // Simplified transfer: low-freq pole at f_L, high-freq pole at f_H, midband gain A_M
                 const H_low = (f > 0.1) ? f / Math.sqrt(f*f + f_L*f_L) : 0.01;
                 const H_high = 1 / Math.sqrt(1 + (f/f_H)*(f/f_H));
                 const H = p.A_M * H_low * H_high;
-                const phase = -Math.atan(f_L/Math.max(f,0.1)) * 180/Math.PI - Math.atan(f/f_H) * 180/Math.PI;
+                const phase = -180 + Math.atan(f_L/Math.max(f,0.1))*180/Math.PI - Math.atan(f/f_H)*180/Math.PI;
                 freqs.push(f);
                 mags.push(20*Math.log10(Math.max(H, 0.001)));
                 phases.push(phase);
             }
 
-            let cfg = { type:'scatter', data:{ datasets:[
+            const magCfg = { type:'scatter', data:{ datasets:[
                 { data:freqs.map((f,i)=>({x:f,y:mags[i]})), borderColor:'#f59e0b', borderWidth:2, pointRadius:0, showLine:true }
             ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
                 plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx => `f=${ctx.parsed.x.toFixed(0)}Hz, Gain=${ctx.parsed.y.toFixed(1)}dB` } } },
                 scales:{ x:{type:'logarithmic', title:{display:true,text:'频率 (Hz)'}}, y:{title:{display:true,text:'增益 (dB)'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
-            magChartInst = updateChart(magChartInst, 'magChart', cfg);
+            magChartInst = updateChart(magChartInst, 'magChart', magCfg);
 
-            cfg.data.datasets = [{ data:freqs.map((f,i)=>({x:f,y:phases[i]})), borderColor:'#f97316', borderWidth:2, pointRadius:0, showLine:true }];
-            cfg.options.plugins.tooltip.callbacks.label = ctx => `f=${ctx.parsed.x.toFixed(0)}Hz, Phase=${ctx.parsed.y.toFixed(1)}°`;
-            cfg.options.scales.y.title.text = '相位 (°)';
-            phaseChartInst = updateChart(phaseChartInst, 'phaseChart', cfg);
+            const phaseCfg = { type:'scatter', data:{ datasets:[
+                { data:freqs.map((f,i)=>({x:f,y:phases[i]})), borderColor:'#f97316', borderWidth:2, pointRadius:0, showLine:true }
+            ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
+                plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx => `f=${ctx.parsed.x.toFixed(0)}Hz, Phase=${ctx.parsed.y.toFixed(1)}°` } } },
+                scales:{ x:{type:'logarithmic', title:{display:true,text:'频率 (Hz)'}}, y:{title:{display:true,text:'相位 (°)'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
+            phaseChartInst = updateChart(phaseChartInst, 'phaseChart', phaseCfg);
         }
 
-        ['amSlider','cpiSlider','cmuSlider','rpiSlider','rlSlider','flSlider'].forEach(id => document.getElementById(id).addEventListener('input', scheduleUpdate));
+        ['amSlider','cpiSlider','cmuSlider','betaSlider','rlSlider','flSlider'].forEach(id => document.getElementById(id).addEventListener('input', scheduleUpdate));
         updateAll();
         window.addEventListener('load', () => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); });
     </script>

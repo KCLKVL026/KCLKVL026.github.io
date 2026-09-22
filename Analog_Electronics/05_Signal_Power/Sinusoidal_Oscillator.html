@@ -38,31 +38,34 @@
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                     <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-cyan-500 rounded-full"></span>振荡器参数</h2>
                     <div class="space-y-4" id="sliderPanel">
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R\)</span><span id="rValue" class="font-mono font-bold text-cyan-600">10 kΩ</span></div><input type="range" id="rSlider" min="1" max="100" value="10" step="1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(C\)</span><span id="cValue" class="font-mono font-bold text-cyan-600">10 nF</span></div><input type="range" id="cSlider" min="1" max="100" value="10" step="1" class="w-full"></div>
-                        <div id="r2Panel"><div class="flex justify-between text-sm text-slate-600 mb-1"><span>增益设置 \(R_f/R_g\)</span><span id="gainValue" class="font-mono font-bold text-cyan-600">3.1</span></div><input type="range" id="gainSlider" min="20" max="500" value="31" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>2.0</span><span>50.0</span></div></div>
+                        <div id="rPanel"><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R\)</span><span id="rValue" class="font-mono font-bold text-cyan-600">10 kΩ</span></div><input type="range" id="rSlider" min="1" max="100" value="10" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span id="cLabel">\(C\)</span><span id="cValue" class="font-mono font-bold text-cyan-600">10 nF</span></div><input type="range" id="cSlider" min="1" max="100" value="10" step="1" class="w-full"></div>
+                        <div id="lPanel" class="hidden"><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(L\)</span><span id="lValue" class="font-mono font-bold text-cyan-600">10 mH</span></div><input type="range" id="lSlider" min="1" max="200" value="10" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>1 mH</span><span>200 mH</span></div></div>
+                        <div id="c2Panel" class="hidden"><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(C_2\)</span><span id="c2Value" class="font-mono font-bold text-cyan-600">20 nF</span></div><input type="range" id="c2Slider" min="1" max="100" value="20" step="1" class="w-full"></div>
+                        <div id="gainPanel"><div class="flex justify-between text-sm text-slate-600 mb-1"><span>放大器电压增益 \(|A|\)</span><span id="gainValue" class="font-mono font-bold text-cyan-600">3.1</span></div><input type="range" id="gainSlider" min="20" max="40" value="31" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span id="gainMinLabel">2.0</span><span id="gainMaxLabel">4.0</span></div></div>
                     </div>
                 </div>
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                     <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>振荡特性</h2>
                     <div class="grid grid-cols-2 gap-3">
                         <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(f_{osc}\)</div><div id="foscDisplay" class="text-lg font-bold text-blue-600 font-mono">1.59 kHz</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">T = 2πRC</div><div id="periodDisplay" class="text-lg font-bold text-blue-600 font-mono">0.63 ms</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">周期 \(T=1/f_{osc}\)</div><div id="periodDisplay" class="text-lg font-bold text-blue-600 font-mono">0.63 ms</div></div>
                     </div>
                     <div class="mt-3 bg-slate-50 rounded-xl p-3 text-center"><div id="barkDisplay" class="text-lg font-bold text-blue-600">Barkhausen: 满足</div></div>
                 </div>
             </div>
             <div class="lg:col-span-8 space-y-5">
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
-                    <h2 class="text-base font-bold text-slate-800 mb-2">起振瞬态波形（幅度从小增长至稳态）</h2>
+                    <h2 id="chartTitle" class="text-base font-bold text-slate-800 mb-2">起振、维持与衰减示意波形</h2>
                     <div class="relative" style="height: 320px;"><canvas id="oscChart"></canvas></div>
-                    <p class="text-xs text-slate-400 mt-1 text-center">增益>3 → 指数增长；增益=3 → 稳幅振荡；增益&lt;3 → 衰减</p>
+                    <p id="chartNote" class="text-xs text-slate-400 mt-1 text-center">文氏桥：A&gt;3 时起振，A=3 时仅能维持已有振荡，A&lt;3 时衰减；稳态幅度为非线性限幅示意</p>
                 </div>
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                     <h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>关键公式</h2>
                     <div class="text-sm bg-slate-50 rounded-xl p-4 text-center">
-                        \[f_{osc} = \frac{1}{2\pi RC}\;\text{(文氏桥)} \qquad f_{osc} = \frac{1}{2\pi RC\sqrt{6}}\;\text{(RC移相)} \qquad f_{osc} = \frac{1}{2\pi\sqrt{LC_{eq}}}\;\text{(Colpitts)}\]
-                        \[|A\beta| \geq 1 \qquad \angle A\beta = 0^\circ\;\text{or}\;360^\circ \quad\text{(Barkhausen判据)}\]
+                        \[f_{osc} = \frac{1}{2\pi RC}\;\text{(文氏桥)} \qquad f_{osc} = \frac{1}{2\pi RC\sqrt{6}}\;\text{(三节等值RC移相)}\]
+                        \[C_{eq}=\frac{C_1C_2}{C_1+C_2},\qquad f_{osc} = \frac{1}{2\pi\sqrt{LC_{eq}}}\;\text{(Colpitts谐振频率)}\]
+                        \[|A\beta|>1\;\text{起振},\qquad |A\beta|=1\;\text{维持稳态},\qquad \angle A\beta=0^\circ\;\text{或}\;360^\circ\]
                     </div>
                 </div>
             </div>
@@ -90,6 +93,8 @@
             return {
                 R: parseFloat(rSlider.value) * 1000,
                 C: parseFloat(cSlider.value) * 1e-9,
+                L: parseFloat(lSlider.value) * 1e-3,
+                C2: parseFloat(c2Slider.value) * 1e-9,
                 gain: parseFloat(gainSlider.value) / 10,
                 oscType
             };
@@ -97,7 +102,7 @@
 
         function updateAll() {
             const p = getParams();
-            let f_osc, requiredGain, barkStatus;
+            let f_osc, requiredGain = null, barkStatus, oscState;
             if (p.oscType === 'Wien') {
                 f_osc = 1 / (2 * Math.PI * p.R * p.C);
                 requiredGain = 3;
@@ -105,35 +110,49 @@
                 f_osc = 1 / (2 * Math.PI * p.R * p.C * Math.sqrt(6));
                 requiredGain = 29;
             } else {
-                const C1 = p.C, C2 = p.C * 2;
-                const C_eq = C1 * C2 / (C1 + C2);
-                f_osc = 1 / (2 * Math.PI * Math.sqrt((p.R * 0.01) * C_eq));
-                const beta = C1 / (C1 + C2);
-                requiredGain = 1 / beta;
+                const C_eq = p.C * p.C2 / (p.C + p.C2);
+                f_osc = 1 / (2 * Math.PI * Math.sqrt(p.L * C_eq));
             }
-            const starts = p.gain >= requiredGain;
-            barkStatus = starts ? `满足 (增益≥${requiredGain.toFixed(1)})` : `不满足 (增益<${requiredGain.toFixed(1)})`;
+            if (p.oscType === 'Colp') {
+                oscState = 'ideal';
+                barkStatus = '未判定（需指定有源器件与反馈拓扑）';
+            } else if (p.gain > requiredGain) {
+                oscState = 'grow';
+                barkStatus = `满足起振条件 (|A|>${requiredGain.toFixed(1)})`;
+            } else if (p.gain < requiredGain) {
+                oscState = 'decay';
+                barkStatus = `不满足起振条件 (|A|<${requiredGain.toFixed(1)})`;
+            } else {
+                oscState = 'neutral';
+                barkStatus = `临界状态 (|A|=${requiredGain.toFixed(1)})`;
+            }
 
             document.getElementById('rValue').textContent = (p.R/1000).toFixed(0) + ' kΩ';
             document.getElementById('cValue').textContent = (p.C*1e9).toFixed(0) + ' nF';
+            document.getElementById('lValue').textContent = (p.L*1e3).toFixed(0) + ' mH';
+            document.getElementById('c2Value').textContent = (p.C2*1e9).toFixed(0) + ' nF';
             document.getElementById('gainValue').textContent = p.gain.toFixed(1);
             document.getElementById('foscDisplay').textContent = f_osc >= 1000 ? (f_osc/1000).toFixed(2)+' kHz' : f_osc.toFixed(1)+' Hz';
             document.getElementById('periodDisplay').textContent = (1/f_osc*1000).toFixed(2)+' ms';
             const barkEl = document.getElementById('barkDisplay');
             barkEl.textContent = 'Barkhausen: ' + barkStatus;
-            barkEl.className = starts ? 'text-lg font-bold text-blue-600' : 'text-lg font-bold text-rose-600';
+            barkEl.className = oscState === 'grow' ? 'text-lg font-bold text-blue-600' : oscState === 'decay' ? 'text-lg font-bold text-rose-600' : 'text-lg font-bold text-amber-600';
 
             // Simulate startup transient
             const T_osc = 1/f_osc, dur = T_osc * 15, N = 600;
             const osc = [];
-            const growth = starts ? 1 : -1;
-            let amplitude = 0.01; // start from noise
+            let amplitude = 0.01;
             for (let i = 0; i <= N; i++) {
                 const t = dur * i / N;
-                if (growth > 0) {
-                    amplitude = 0.01 + (5 - 0.01) * (1 - Math.exp(-t / (T_osc * 3)));
-                } else {
+                if (oscState === 'grow') {
+                    const excess = Math.max(0.05, p.gain / requiredGain - 1);
+                    amplitude = 0.01 + (5 - 0.01) * (1 - Math.exp(-excess * t / (T_osc * 0.35)));
+                } else if (oscState === 'decay') {
                     amplitude = 0.01 * Math.exp(-t / (T_osc * 3));
+                } else if (oscState === 'neutral') {
+                    amplitude = 1;
+                } else {
+                    amplitude = 2;
                 }
                 const v = amplitude * Math.sin(2 * Math.PI * f_osc * t);
                 osc.push({ x: t * 1000, y: v });
@@ -150,16 +169,33 @@
             oscType = t;
             ['Wien','RC','Colp'].forEach(tb => { document.getElementById('tab'+tb).classList.remove('active','bg-cyan-500','text-white'); document.getElementById('tab'+tb).classList.add('bg-white','text-slate-600'); });
             document.getElementById('tab'+t).classList.add('active','bg-cyan-500','text-white'); document.getElementById('tab'+t).classList.remove('bg-white','text-slate-600');
-            document.getElementById('r2Panel').style.display = t === 'Colp' ? 'none' : 'block';
-            if (t === 'RC') document.getElementById('gainSlider').value = 290;
-            else if (t === 'Wien') document.getElementById('gainSlider').value = 31;
+            const isColp = t === 'Colp';
+            document.getElementById('rPanel').style.display = isColp ? 'none' : 'block';
+            document.getElementById('lPanel').style.display = isColp ? 'block' : 'none';
+            document.getElementById('c2Panel').style.display = isColp ? 'block' : 'none';
+            document.getElementById('gainPanel').style.display = isColp ? 'none' : 'block';
+            document.getElementById('cLabel').textContent = isColp ? 'C₁' : 'C';
+            if (t === 'RC') {
+                gainSlider.min = 200; gainSlider.max = 400; gainSlider.value = 300;
+                gainMinLabel.textContent = '20.0'; gainMaxLabel.textContent = '40.0';
+                chartNote.textContent = '三节等值RC网络：|A|>29 时起振，|A|=29 时仅能维持已有振荡；忽略级间负载效应';
+                chartTitle.textContent = 'RC移相振荡器起振、维持与衰减示意';
+            } else if (t === 'Wien') {
+                gainSlider.min = 20; gainSlider.max = 40; gainSlider.value = 31;
+                gainMinLabel.textContent = '2.0'; gainMaxLabel.textContent = '4.0';
+                chartNote.textContent = '文氏桥：A>3 时起振，A=3 时仅能维持已有振荡，A<3 时衰减；稳态幅度为非线性限幅示意';
+                chartTitle.textContent = '文氏桥起振、维持与衰减示意';
+            } else {
+                chartNote.textContent = '这里只计算LC网络的谐振频率；起振条件取决于晶体管跨导、负载和电容接法，未作统一假设';
+                chartTitle.textContent = 'Colpitts理想稳态波形（未建模起振环路）';
+            }
             updateAll();
         }
         document.getElementById('tabWien').addEventListener('click', ()=>setType('Wien'));
         document.getElementById('tabRC').addEventListener('click', ()=>setType('RC'));
         document.getElementById('tabColp').addEventListener('click', ()=>setType('Colp'));
 
-        ['rSlider','cSlider','gainSlider'].forEach(id => document.getElementById(id).addEventListener('input', scheduleUpdate));
+        ['rSlider','cSlider','lSlider','c2Slider','gainSlider'].forEach(id => document.getElementById(id).addEventListener('input', scheduleUpdate));
         updateAll();
         window.addEventListener('load', () => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); });
     </script>

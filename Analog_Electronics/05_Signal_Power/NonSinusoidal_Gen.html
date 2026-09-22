@@ -38,19 +38,19 @@
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                     <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-cyan-500 rounded-full"></span>参数控制</h2>
                     <div class="space-y-4" id="sliderPanel">
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R\)</span><span id="rValue" class="font-mono font-bold text-cyan-600">10 kΩ</span></div><input type="range" id="rSlider" min="1" max="100" value="10" step="1" class="w-full"></div>
+                        <div id="rDiv"><div class="flex justify-between text-sm text-slate-600 mb-1"><span>积分/充放电电阻 \(R\)</span><span id="rValue" class="font-mono font-bold text-cyan-600">10 kΩ</span></div><input type="range" id="rSlider" min="10" max="100" value="10" step="1" class="w-full"></div>
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(C\)</span><span id="cValue" class="font-mono font-bold text-cyan-600">100 nF</span></div><input type="range" id="cSlider" min="1" max="100" value="10" step="1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_1\)</span><span id="r1Value" class="font-mono font-bold text-cyan-600">10 kΩ</span></div><input type="range" id="r1Slider" min="1" max="50" value="10" step="1" class="w-full"></div>
-                        <div id="r2Div"><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_2\)</span><span id="r2Value" class="font-mono font-bold text-cyan-600">10 kΩ</span></div><input type="range" id="r2Slider" min="1" max="50" value="10" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_1\)</span><span id="r1Value" class="font-mono font-bold text-cyan-600">10 kΩ</span></div><input type="range" id="r1Slider" min="10" max="50" value="10" step="1" class="w-full"></div>
+                        <div id="r2Div"><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_2\)</span><span id="r2Value" class="font-mono font-bold text-cyan-600">10 kΩ</span></div><input type="range" id="r2Slider" min="10" max="50" value="10" step="1" class="w-full"></div>
                     </div>
                 </div>
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                     <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>输出特性</h2>
                     <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">频率 \(f\)</div><div id="freqDisplay" class="text-lg font-bold text-blue-600 font-mono">4.54 kHz</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">频率 \(f\)</div><div id="freqDisplay" class="text-lg font-bold text-blue-600 font-mono">455 Hz</div></div>
                         <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">占空比</div><div id="dutyDisplay" class="text-lg font-bold text-blue-600 font-mono">50%</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(t_H\)</div><div id="thDisplay" class="text-lg font-bold text-cyan-600 font-mono">0.11 ms</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(t_L\)</div><div id="tlDisplay" class="text-lg font-bold text-cyan-600 font-mono">0.11 ms</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(t_H\)</div><div id="thDisplay" class="text-lg font-bold text-cyan-600 font-mono">1.10 ms</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(t_L\)</div><div id="tlDisplay" class="text-lg font-bold text-cyan-600 font-mono">1.10 ms</div></div>
                     </div>
                 </div>
             </div>
@@ -107,7 +107,7 @@
                 tH = 1/(2*f); tL = 1/(2*f);
             } else if (p.genType === 'Tri') {
                 const beta = p.R1 / (p.R1 + p.R2);
-                f = beta / (4 * p.R * p.C);
+                f = 1 / (4 * beta * p.R * p.C);
                 duty = 50;
                 tH = 1/(2*f); tL = 1/(2*f);
             } else {
@@ -122,17 +122,18 @@
             document.getElementById('cValue').textContent = p.genType==='555' ? (p.C*1e6).toFixed(1)+' μF' : (p.C*1e9).toFixed(0)+' nF';
             document.getElementById('r1Value').textContent = (p.R1/1000).toFixed(0)+' kΩ';
             document.getElementById('r2Value').textContent = (p.R2/1000).toFixed(0)+' kΩ';
-            document.getElementById('r2Div').style.display = p.genType==='Tri' ? 'none' : 'block';
+            document.getElementById('rDiv').style.display = p.genType === '555' ? 'none' : 'block';
+            document.getElementById('r2Div').style.display = 'block';
             document.getElementById('freqDisplay').textContent = f >= 1000 ? (f/1000).toFixed(2)+' kHz' : f.toFixed(1)+' Hz';
             document.getElementById('dutyDisplay').textContent = duty.toFixed(1)+'%';
             document.getElementById('thDisplay').textContent = tH >= 0.001 ? (tH*1e3).toFixed(3)+' ms' : (tH*1e6).toFixed(1)+' μs';
             document.getElementById('tlDisplay').textContent = tL >= 0.001 ? (tL*1e3).toFixed(3)+' ms' : (tL*1e6).toFixed(1)+' μs';
 
             document.getElementById('formulaContent').innerHTML = p.genType === '555' ?
-                '\[f = \\frac{1.44}{(R_1 + 2R_2)C} \\qquad t_H = 0.693(R_1+R_2)C \\qquad t_L = 0.693R_2C\]' :
+                '\\[f = \\frac{1.44}{(R_1 + 2R_2)C} \\qquad t_H = 0.693(R_1+R_2)C \\qquad t_L = 0.693R_2C\\]' :
                 p.genType === 'Tri' ?
-                '\[f = \\frac{\\beta}{4RC} \\quad \\beta = \\frac{R_1}{R_1+R_2} \\qquad V_{tri,pp} = 2\\beta V_{sat}\]' :
-                '\[f = \\frac{1}{2RC\\,\\ln(1 + 2R_1/R_2)} \\qquad T = t_H + t_L\]';
+                '\\[f = \\frac{1}{4\\beta RC} \\quad \\beta = \\frac{R_1}{R_1+R_2} \\qquad V_{tri,pp} = 2\\beta V_{sat}\\]' :
+                '\\[f = \\frac{1}{2RC\\,\\ln(1 + 2R_1/R_2)} \\qquad T = t_H + t_L\\]';
 
             // Simulate waveform
             const T_period = 1/f, dur = T_period * 3, N = 500;

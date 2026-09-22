@@ -26,7 +26,7 @@
         </div>
         <div class="text-center mb-6">
             <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">功率放大电路</h1>
-            <p class="text-slate-600 max-w-2xl mx-auto">A类/B类/AB类功放效率与失真分析</p>
+            <p class="text-slate-600 max-w-2xl mx-auto">变压器耦合 A 类与互补 B/AB 类功放的效率及失真分析</p>
         </div>
         <div class="flex justify-center gap-2 mb-6">
             <button id="tabA" class="class-tab active px-5 py-2 rounded-full text-sm font-medium border border-slate-300 bg-amber-500 text-white">A类</button>
@@ -38,26 +38,26 @@
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                     <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>功放参数</h2>
                     <div class="space-y-4">
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>电源 \(V_{CC}\)</span><span id="vccValue" class="font-mono font-bold text-amber-600">12 V</span></div><input type="range" id="vccSlider" min="5" max="30" value="12" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>电源 \(V_{CC}\)（B/AB 为双电源）</span><span id="vccValue" class="font-mono font-bold text-amber-600">12 V</span></div><input type="range" id="vccSlider" min="5" max="30" value="12" step="1" class="w-full"></div>
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>负载 \(R_L\)</span><span id="rlValue" class="font-mono font-bold text-amber-600">8 Ω</span></div><input type="range" id="rlSlider" min="4" max="32" value="8" step="1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>输入幅度 \(V_{in}\)</span><span id="vinValue" class="font-mono font-bold text-amber-600">5.0 V</span></div><input type="range" id="vinSlider" min="1" max="120" value="50" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>0.1 V</span><span>12 V</span></div></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>输入幅度 \(V_{in}\)</span><span id="vinValue" class="font-mono font-bold text-amber-600">5.0 V</span></div><input type="range" id="vinSlider" min="1" max="360" value="50" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>0.1 V</span><span>36 V</span></div></div>
                         <div id="iqDiv"><div class="flex justify-between text-sm text-slate-600 mb-1"><span>静态电流 \(I_{CQ}\) (A类)</span><span id="iqValue" class="font-mono font-bold text-amber-600">0.50 A</span></div><input type="range" id="iqSlider" min="1" max="20" value="5" step="0.5" class="w-full"></div>
-                        <div id="vbbDiv" style="display:none"><div class="flex justify-between text-sm text-slate-600 mb-1"><span>偏置电压 \(V_{BB}\) (AB类)</span><span id="vbbValue" class="font-mono font-bold text-amber-600">1.4 V</span></div><input type="range" id="vbbSlider" min="10" max="18" value="14" step="0.5" class="w-full"></div>
+                        <div id="vbbDiv" style="display:none"><div class="flex justify-between text-sm text-slate-600 mb-1"><span>两基极间偏置 \(V_{BB}\) (AB类)</span><span id="vbbValue" class="font-mono font-bold text-amber-600">1.45 V</span></div><input type="range" id="vbbSlider" min="100" max="160" value="145" step="5" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>1.00 V</span><span>1.60 V</span></div></div>
                     </div>
                 </div>
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                     <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>功率特性</h2>
                     <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(P_{out}\)</div><div id="poutDisplay" class="text-lg font-bold text-blue-600 font-mono">1.56 W</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(P_{out}\)</div><div id="poutDisplay" class="text-lg font-bold text-blue-600 font-mono">1.00 W</div></div>
                         <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(P_{DC}\)</div><div id="pdcDisplay" class="text-lg font-bold text-amber-600 font-mono">6.00 W</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(P_{diss}\)</div><div id="pdissDisplay" class="text-lg font-bold text-rose-600 font-mono">4.44 W</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">效率 \(\eta\)</div><div id="effDisplay" class="text-lg font-bold text-blue-600 font-mono">26.0%</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(P_{diss}\)</div><div id="pdissDisplay" class="text-lg font-bold text-rose-600 font-mono">5.00 W</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">效率 \(\eta\)</div><div id="effDisplay" class="text-lg font-bold text-blue-600 font-mono">16.7%</div></div>
                     </div>
                 </div>
             </div>
             <div class="lg:col-span-8 space-y-5">
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
-                    <h2 class="text-base font-bold text-slate-800 mb-2">输出波形（\(V_{out}\) vs t，2个周期）</h2>
+                    <h2 class="text-base font-bold text-slate-800 mb-2">输出波形（\(V_{out}\) vs t，2 个周期）</h2>
                     <div class="relative" style="height: 280px;"><canvas id="waveChart"></canvas></div>
                 </div>
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
@@ -67,7 +67,10 @@
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                     <h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>关键公式</h2>
                     <div class="text-sm bg-slate-50 rounded-xl p-4 text-center space-y-2">
-                        \[\eta_A \leq 25\%\text{(阻性)}, \approx 50\%\text{(变压器)} \qquad \eta_B = \frac{\pi}{4}\frac{V_p}{V_{CC}} \leq 78.5\% \qquad \eta_{AB} \approx \eta_B\]
+                        <div>\[P_{DC,A}=V_{CC}I_{CQ},\qquad \eta_A\leq50\%\quad\text{（本页采用变压器耦合 A 类模型）}\]</div>
+                        <div>\[P_{out}=\frac{V_{out,rms}^2}{R_L},\quad P_{DC,B}=\frac{V_{CC}}{R_L}\langle|v_o|\rangle,\quad P_{DC,AB}\approx P_{DC,B}+2V_{CC}I_Q\]</div>
+                        <div>\[V_D=\max\!\left(0,V_{BE}-\frac{V_{BB}}{2}\right),\quad I_Q\approx\max\!\left(0,\frac{V_{BB}-2V_{BE}}{2R_E}\right)\]</div>
+                        <p class="text-xs text-slate-500">取 \(V_{BE}=0.70\text{ V}\)、\(R_E=1.0\,\Omega\)。B 类仅在未失真正弦输出时满足 \(\eta_B=(\pi/4)(V_p/V_{CC})\le78.5\%\)；AB 类在大信号时才逐渐接近该效率。</p>
                     </div>
                 </div>
             </div>
@@ -75,6 +78,7 @@
     </div>
 
     <script>
+        const V_BE = 0.70, R_E = 1.0;
         let ampClass = 'A', waveChartInst = null, powerChartInst = null, updateFrame = null;
 
         function updateChart(instance, canvasId, config) {
@@ -97,41 +101,64 @@
                 R_L: parseFloat(rlSlider.value),
                 V_in: parseFloat(vinSlider.value) / 10,
                 I_CQ: parseFloat(iqSlider.value) / 10,
-                V_BB: parseFloat(vbbSlider.value) / 10,
+                V_BB: parseFloat(vbbSlider.value) / 100,
                 ampClass
             };
         }
 
+        function outputVoltage(p, vIn, model) {
+            if (p.ampClass === 'A') {
+                // Keep the class-A calculation in its specified undistorted sinusoidal regime.
+                const gain = p.V_in > 0 ? Math.min(1, model.swingLimit/p.V_in) : 0;
+                return gain*vIn;
+            }
+            const unclipped = Math.sign(vIn) * Math.max(0, Math.abs(vIn) - model.deadZone);
+            return Math.max(-model.swingLimit, Math.min(model.swingLimit, unclipped));
+        }
+
         function compute(p) {
-            let P_out, P_DC, P_diss, eta, V_out_peak, deadZone = 0;
+            let P_DC, deadZone = 0, I_idle = 0, swingLimit;
             if (p.ampClass === 'A') {
                 P_DC = p.V_CC * p.I_CQ;
-                // A single-ended stage must have enough quiescent current and DC power for the requested swing.
-                V_out_peak = Math.min(p.V_in, p.V_CC * 0.9, p.I_CQ * p.R_L, Math.sqrt(2 * p.R_L * P_DC));
+                // Transformer-coupled class A: both voltage and current swing limit the AC load voltage.
+                swingLimit = Math.min(0.9 * p.V_CC, p.I_CQ * p.R_L);
             } else if (p.ampClass === 'B') {
-                deadZone = 0.7;
-                V_out_peak = Math.min(Math.max(0, p.V_in - deadZone), p.V_CC - 0.7);
-                P_DC = V_out_peak > 0 ? 2 * p.V_CC * V_out_peak / (Math.PI * p.R_L) : 0;
+                deadZone = V_BE;
+                swingLimit = Math.max(0, p.V_CC - 0.3);
             } else {
-                // V_BB reduces the crossover dead zone and also establishes a small idle current.
-                deadZone = Math.max(0, 0.7 - p.V_BB);
-                V_out_peak = Math.min(Math.max(0, p.V_in - deadZone), p.V_CC - 0.3);
-                const I_idle = Math.max(0, p.V_BB - 0.6) / 50;
-                P_DC = (V_out_peak > 0 ? 2 * p.V_CC * V_out_peak / (Math.PI * p.R_L) : 0) + 2 * p.V_CC * I_idle;
+                // V_BB is the total base-to-base bias of the complementary pair.
+                deadZone = Math.max(0, V_BE - p.V_BB/2);
+                I_idle = Math.max(0, (p.V_BB - 2*V_BE)/(2*R_E));
+                swingLimit = Math.max(0, p.V_CC - 0.3);
             }
-            P_out = V_out_peak * V_out_peak / (2 * p.R_L);
-            P_diss = Math.max(0, P_DC - P_out);
-            eta = P_DC > 0 ? Math.min(100, P_out / P_DC * 100) : 0;
-            return { P_out, P_DC, P_diss, eta, V_out_peak, deadZone };
+
+            // Integrate the same possibly distorted waveform that is shown in the chart.
+            const samples = 2400;
+            let sumSquare = 0, sumAbs = 0, V_out_peak = 0;
+            const model = { deadZone, swingLimit };
+            for (let i = 0; i < samples; i++) {
+                const vIn = p.V_in * Math.sin(2*Math.PI*(i+0.5)/samples);
+                const vo = outputVoltage(p, vIn, model);
+                sumSquare += vo*vo;
+                sumAbs += Math.abs(vo);
+                V_out_peak = Math.max(V_out_peak, Math.abs(vo));
+            }
+            const V_out_rms = Math.sqrt(sumSquare/samples);
+            const P_out = V_out_rms*V_out_rms/p.R_L;
+            if (p.ampClass === 'B') P_DC = p.V_CC*(sumAbs/samples)/p.R_L;
+            else if (p.ampClass === 'AB') P_DC = p.V_CC*(sumAbs/samples)/p.R_L + 2*p.V_CC*I_idle;
+            const P_diss = Math.max(0, P_DC-P_out);
+            const eta = P_DC > 0 ? P_out/P_DC*100 : 0;
+            return { P_out, P_DC, P_diss, eta, V_out_peak, V_out_rms, deadZone, swingLimit, I_idle };
         }
 
         function updateAll() {
             const p = getParams(), r = compute(p);
-            document.getElementById('vccValue').textContent = p.V_CC + ' V';
+            document.getElementById('vccValue').textContent = (p.ampClass === 'A' ? '' : '±') + p.V_CC + ' V';
             document.getElementById('rlValue').textContent = p.R_L + ' Ω';
             document.getElementById('vinValue').textContent = p.V_in.toFixed(1) + ' V';
             document.getElementById('iqValue').textContent = p.I_CQ.toFixed(2) + ' A';
-            document.getElementById('vbbValue').textContent = p.V_BB.toFixed(1) + ' V';
+            document.getElementById('vbbValue').textContent = p.V_BB.toFixed(2) + ' V';
             document.getElementById('poutDisplay').textContent = r.P_out.toFixed(2) + ' W';
             document.getElementById('pdcDisplay').textContent = r.P_DC.toFixed(2) + ' W';
             document.getElementById('pdissDisplay').textContent = r.P_diss.toFixed(2) + ' W';
@@ -140,13 +167,10 @@
             document.getElementById('vbbDiv').style.display = p.ampClass === 'AB' ? 'block' : 'none';
 
             // Waveform
-            const T = 0.002, N = 400, vout = [];
+            const T = 0.004, N = 500, vout = [];
             for (let i = 0; i <= N; i++) {
                 const t = T*i/N, v_in = p.V_in * Math.sin(2*Math.PI*500*t);
-                let vo;
-                if (p.ampClass === 'A') vo = v_in;
-                else vo = Math.sign(v_in) * Math.max(0, Math.abs(v_in) - r.deadZone);
-                vout.push({ x: t*1000, y: Math.min(r.V_out_peak, Math.max(-r.V_out_peak, vo)) });
+                vout.push({ x: t*1000, y: outputVoltage(p, v_in, r) });
             }
             let cfg = { type:'scatter', data:{ datasets:[
                 { label:'V_out', data:vout, borderColor:'#f59e0b', borderWidth:2, pointRadius:0, showLine:true, tension:0.3 }
