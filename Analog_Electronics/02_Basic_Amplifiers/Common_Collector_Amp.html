@@ -36,9 +36,10 @@
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>电源电压 \(V_{CC}\)</span><span id="vccValue" class="font-mono font-bold text-blue-600">15 V</span></div><input type="range" id="vccSlider" min="5" max="30" value="15" step="1" class="w-full"></div>
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>上偏电阻 \(R_{B1}\)</span><span id="rb1Value" class="font-mono font-bold text-blue-600">100 kΩ</span></div><input type="range" id="rb1Slider" min="10" max="500" value="100" step="1" class="w-full"></div>
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>下偏电阻 \(R_{B2}\)</span><span id="rb2Value" class="font-mono font-bold text-blue-600">22 kΩ</span></div><input type="range" id="rb2Slider" min="1" max="50" value="22" step="1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>射极电阻 \(R_E\)</span><span id="reValue" class="font-mono font-bold text-blue-600">2.2 kΩ</span></div><input type="range" id="reSlider" min="1" max="50" value="22" step="1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>负载电阻 \(R_L\)</span><span id="rlValue" class="font-mono font-bold text-blue-600">10 kΩ</span></div><input type="range" id="rlSlider" min="1" max="100" value="100" step="1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>信号幅度 \(V_{sig}\)</span><span id="vsigValue" class="font-mono font-bold text-blue-600">100 mV</span></div><input type="range" id="vsigSlider" min="1" max="500" value="100" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>射极电阻 \(R_E\)</span><span id="reValue" class="font-mono font-bold text-blue-600">2.2 kΩ</span></div><input type="range" id="reSlider" min="5" max="50" value="22" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>交流负载 \(R_L\)</span><span id="rlValue" class="font-mono font-bold text-blue-600">10.0 kΩ</span></div><input type="range" id="rlSlider" min="5" max="100" value="100" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>信号源内阻 \(R_s\)</span><span id="rsValue" class="font-mono font-bold text-blue-600">0.6 kΩ</span></div><input type="range" id="rsSlider" min="0" max="50" value="6" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>基极输入幅度 \(V_{in}\)</span><span id="vsigValue" class="font-mono font-bold text-blue-600">100 mV</span></div><input type="range" id="vsigSlider" min="1" max="500" value="100" step="1" class="w-full"></div>
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>信号频率 \(f_{sig}\)</span><span id="fsigValue" class="font-mono font-bold text-blue-600">1.0 kHz</span></div><input type="range" id="fsigSlider" min="1" max="100" value="10" step="1" class="w-full"></div>
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>电流增益 \(\beta\)</span><span id="betaLabel" class="font-mono font-bold text-blue-600">150</span></div><input type="range" id="betaSlider" min="50" max="300" value="150" step="1" class="w-full"></div>
                     </div>
@@ -69,7 +70,9 @@
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                     <h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>关键公式</h2>
                     <div class="text-sm bg-slate-50 rounded-xl p-4 text-center space-y-2">
-                        \[A_v = \frac{R_E \parallel R_L}{r_e' + (R_E \parallel R_L)} \approx 1 \qquad Z_{in} = R_{B1}\parallel R_{B2}\parallel \beta(r_e' + R_E\parallel R_L) \qquad Z_{out} = R_E \parallel \frac{r_e' + R_{B1}\parallel R_{B2}\parallel R_s}{\beta}\]
+                        \[A_v \approx \frac{R_E \parallel R_L}{r_e' + (R_E \parallel R_L)} \qquad Z_{in}\approx R_{B1}\parallel R_{B2}\parallel\left[r_\pi+(\beta+1)(R_E\parallel R_L)\right]\]
+                        \[Z_{out}\approx R_E\parallel\left[r_e'+\frac{R_s\parallel R_{B1}\parallel R_{B2}}{\beta+1}\right]\]
+                        <p class="text-xs text-slate-500">采用中频小信号近似，频率滑块只改变显示周期。</p>
                     </div>
                 </div>
             </div>
@@ -97,7 +100,8 @@
         function getParams() {
             return {
                 V_CC: +vccSlider.value, R_B1: +rb1Slider.value * 1000, R_B2: +rb2Slider.value * 1000,
-                R_E: +reSlider.value * 100, R_L: +rlSlider.value * 100, V_sig: +vsigSlider.value / 1000,
+                R_E: +reSlider.value * 100, R_L: +rlSlider.value * 100, R_s: +rsSlider.value * 100,
+                V_sig: +vsigSlider.value / 1000,
                 f_sig: +fsigSlider.value * 100, beta: +betaSlider.value
             };
         }
@@ -108,17 +112,26 @@
             const V_TH = p.V_CC * p.R_B2 / (p.R_B1 + p.R_B2);
             const I_B_active = Math.max(0, (V_TH - 0.7) / (R_TH + (p.beta + 1) * p.R_E));
             const I_E_active = (p.beta + 1) * I_B_active;
-            const I_E = Math.min(I_E_active, Math.max(0, (p.V_CC - 0.2) / p.R_E));
+            const I_E_max = Math.max(0, (p.V_CC - 0.2) / p.R_E);
+            const I_E = Math.min(I_E_active, I_E_max);
             const I_C = I_E * p.beta / (p.beta + 1);
             const V_E = I_E * p.R_E, V_B = I_E > 0 ? V_E + 0.7 : V_TH;
             const V_CE = p.V_CC - V_E;
             const r_e = I_C > 0 ? V_T / I_C : 1e6;
             const R_EL = (p.R_E * p.R_L) / (p.R_E + p.R_L);
-            const A_v = R_EL / (r_e + R_EL);
-            const Z_in = 1 / (1/p.R_B1 + 1/p.R_B2 + 1/(p.beta * (r_e + R_EL)));
-            const Z_out = 1 / (1/p.R_E + 1/r_e);
-            let region = '放大区'; if (V_CE < 0.3) region = '饱和区'; else if (I_C < 1e-9) region = '截止区';
-            return { V_B, V_E, I_C, I_E, V_CE, r_e, A_v, Z_in, Z_out, region };
+            let region = '放大区';
+            if (I_C < 1e-9) region = '截止区';
+            else if (I_E_active > I_E_max || V_CE < 0.3) region = '饱和区';
+            const A_v = region === '放大区' ? R_EL / (r_e + R_EL) : 0;
+            const r_pi = p.beta * r_e;
+            const Z_in_transistor = r_pi + (p.beta + 1) * R_EL;
+            const Z_in = 1 / (1/p.R_B1 + 1/p.R_B2 + 1/Z_in_transistor);
+            const R_drive = p.R_s <= 0 ? 0 : 1 / (1/p.R_s + 1/p.R_B1 + 1/p.R_B2);
+            const Z_emitter = r_e + R_drive / (p.beta + 1);
+            const Z_out = 1 / (1/p.R_E + 1/Z_emitter);
+            const posSwing = Math.max(0, p.V_CC - 0.2 - V_E);
+            const negSwing = Math.max(0, V_E);
+            return { V_B, V_E, I_C, I_E, V_CE, r_e, A_v, Z_in, Z_out, region, posSwing, negSwing };
         }
 
         function updateAll() {
@@ -127,7 +140,8 @@
             document.getElementById('rb1Value').textContent = (p.R_B1/1000).toFixed(0) + ' kΩ';
             document.getElementById('rb2Value').textContent = (p.R_B2/1000).toFixed(1) + ' kΩ';
             document.getElementById('reValue').textContent = (p.R_E/1000).toFixed(1) + ' kΩ';
-            document.getElementById('rlValue').textContent = (p.R_L/1000).toFixed(0) + ' kΩ';
+            document.getElementById('rlValue').textContent = (p.R_L/1000).toFixed(1) + ' kΩ';
+            document.getElementById('rsValue').textContent = (p.R_s/1000).toFixed(1) + ' kΩ';
             document.getElementById('vsigValue').textContent = (p.V_sig*1000).toFixed(0) + ' mV';
             document.getElementById('fsigValue').textContent = (p.f_sig/1000).toFixed(1) + ' kHz';
             document.getElementById('betaLabel').textContent = p.beta;
@@ -143,7 +157,8 @@
             for (let i = 0; i <= N; i++) {
                 const t = dur * i / N, vs = p.V_sig * Math.sin(2*Math.PI*p.f_sig*t);
                 vin.push({ x: t*1000, y: vs*1000 });
-                vout.push({ x: t*1000, y: vs * dc.A_v * 1000 });
+                const acOut = vs * dc.A_v;
+                vout.push({ x: t*1000, y: Math.min(dc.posSwing, Math.max(-dc.negSwing, acOut)) * 1000 });
             }
             let cfg = { type:'scatter', data:{ datasets:[
                 { label:'V_in (mV)', data:vin, borderColor:'#3b82f6', borderWidth:2, pointRadius:0, showLine:true, tension:0.3 },
@@ -162,7 +177,7 @@
             impChartInst = updateChart(impChartInst, 'impChart', cfg);
         }
 
-        ['vccSlider','rb1Slider','rb2Slider','reSlider','rlSlider','vsigSlider','fsigSlider','betaSlider'].forEach(id => document.getElementById(id).addEventListener('input', scheduleUpdate));
+        ['vccSlider','rb1Slider','rb2Slider','reSlider','rlSlider','rsSlider','vsigSlider','fsigSlider','betaSlider'].forEach(id => document.getElementById(id).addEventListener('input', scheduleUpdate));
         updateAll();
         window.addEventListener('load', () => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); });
         console.log('共集电极放大电路仿真已启动');

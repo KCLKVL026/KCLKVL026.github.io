@@ -181,19 +181,19 @@
                         <div>
                             <div class="flex justify-between text-sm text-slate-600 mb-1"><span>集电极电阻 \(R_C\)</span><span id="rcValue"
                                     class="font-mono font-bold text-blue-600">4.7 kΩ</span></div>
-                            <input type="range" id="rcSlider" min="1" max="50" value="47" step="1" class="w-full"
+                            <input type="range" id="rcSlider" min="5" max="50" value="47" step="1" class="w-full"
                                 aria-label="集电极电阻 R_C，每格代表100欧">
                         </div>
                         <div>
                             <div class="flex justify-between text-sm text-slate-600 mb-1"><span>射极电阻 \(R_E\)</span><span id="reValue"
                                     class="font-mono font-bold text-blue-600">1.0 kΩ</span></div>
-                            <input type="range" id="reSlider" min="1" max="50" value="10" step="1" class="w-full"
+                            <input type="range" id="reSlider" min="5" max="50" value="10" step="1" class="w-full"
                                 aria-label="射极电阻 R_E，每格代表100欧">
                         </div>
                         <div>
                             <div class="flex justify-between text-sm text-slate-600 mb-1"><span>信号幅度 \(V_{sig}\)</span><span id="vsigValue"
                                     class="font-mono font-bold text-blue-600">50 mV</span></div>
-                            <input type="range" id="vsigSlider" min="1" max="500" value="50" step="1" class="w-full"
+                            <input type="range" id="vsigSlider" min="1" max="200" value="50" step="1" class="w-full"
                                 aria-label="信号幅度 V_sig，单位毫伏">
                         </div>
                         <div>
@@ -281,9 +281,13 @@
                         关键公式
                     </h2>
                     <div class="space-y-2 text-sm bg-slate-50 rounded-xl p-4 text-center">
-                        \[V_B = V_{CC}\frac{R_{B2}}{R_{B1}+R_{B2}} \qquad V_E = V_B - V_{BE} \qquad I_C \approx I_E = \frac{V_E}{R_E}\]
-                        \[r_e' = \frac{V_T}{I_C} \approx \frac{26\text{mV}}{I_C} \qquad A_v = -\frac{R_C}{r_e'+R_E}\;\text{(未旁路)} \qquad A_v = -\frac{R_C}{r_e'}\;\text{(旁路)}\]
-                        \[V_{C,\max} \approx V_{CC}-V_E \quad (\text{旁路})\qquad V_{C,\min} \approx V_{CE(sat)}+V_E\]
+                        \[V_{TH}=V_{CC}\frac{R_{B2}}{R_{B1}+R_{B2}},\quad R_{TH}=R_{B1}\parallel R_{B2},\quad I_B=\frac{V_{TH}-V_{BE}}{R_{TH}+(\beta+1)R_E},\quad I_C=\beta I_B\]
+                        \[r_\pi=\frac{\beta V_T}{I_C}=\beta r_e'\qquad r_{be}=r_{bb'}+r_\pi=300\,\Omega+\frac{\beta V_T}{I_C}\]
+                        \[r_e'=\frac{V_T}{I_C}\approx\frac{26\text{mV}}{I_C}\qquad r_{bb'}\text{ 固定采用典型值 }300\,\Omega\]
+                        \[A_v=-\frac{\beta R_C}{r_{be}+(\beta+1)R_E}\;\text{(未旁路)}\qquad A_v=-\frac{\beta R_C}{r_{be}}\;\text{(旁路)}\]
+                        \[Z_{in}=R_{B1}\parallel R_{B2}\parallel\left[r_{be}+(\beta+1)R_E\right]\;\text{(未旁路)}\qquad Z_{in}=R_{B1}\parallel R_{B2}\parallel r_{be}\;\text{(旁路)}\]
+                        \[V_{C,\max}=V_{CC}\quad(\text{截止边界})\qquad V_{C,\min}\approx V_{CE(sat)}+V_E\quad(\text{旁路})\]
+                        <p class="text-xs text-slate-500">采用中频近似；频率滑块只改变显示周期，不计算耦合电容与器件高频效应。</p>
                     </div>
                 </div>
             </div>
@@ -309,6 +313,7 @@
                 bypassed: true
             };
             var V_T = 0.02585; // 热电压 ≈ 26mV @ 室温
+            var R_BB = 300;    // 基区体电阻 r_bb' 的典型值，单位 Ω
 
             // 工作区判断阈值（提取自 computeDC 中的魔法数字）
             var V_CE_SAT_THRESHOLD = 0.3;      // V_CE 低于此值 → 饱和区
@@ -457,29 +462,33 @@
                 // 动态射极电阻 r_e' = V_T / I_C
                 var r_e = (I_C > 1e-12) ? V_T / I_C : 1e6;
 
-                // 交流小信号参数
-                var A_v, Z_in, Z_out;
-                if (p.bypassed) {
-                    // 旁路时：A_v = -R_C / r_e'
-                    A_v = -p.R_C / r_e;
-                    Z_in = 1 / (1 / p.R_B1 + 1 / p.R_B2 + 1 / (p.beta * r_e));
-                } else {
-                    // 未旁路时：A_v = -R_C / (r_e' + R_E)，射极电阻引入负反馈
-                    A_v = -p.R_C / (r_e + p.R_E);
-                    Z_in = 1 / (1 / p.R_B1 + 1 / p.R_B2 + 1 / (p.beta * (r_e + p.R_E)));
-                }
-                Z_out = p.R_C;
-
-                // 判断工作区域
+                // 判断工作区域。只有放大区的小信号增益才有物理意义。
                 var region = '放大区';
-                var icMax = p.V_CC / (p.R_C + p.R_E);
-                if (V_CE < V_CE_SAT_THRESHOLD) {
-                    region = '饱和区';
-                } else if (I_C < I_C_CUTOFF_THRESHOLD) {
+                var icMax = p.V_CC / (p.R_C + p.R_E * (p.beta + 1) / p.beta);
+                if (I_C < I_C_CUTOFF_THRESHOLD) {
                     region = '截止区';
+                } else if (I_C_active > I_C_limit || V_CE < V_CE_SAT_THRESHOLD) {
+                    region = '饱和区';
                 } else if (V_CE >= p.V_CC - V_CE_CUTOFF_MARGIN && I_C < icMax * IC_CUTOFF_RATIO) {
                     region = '截止区';
                 }
+
+                // 交流小信号参数：r_π 是本征输入电阻，r_be 还包含基区体电阻 r_bb'。
+                var r_pi = p.beta * r_e;
+                var r_be = R_BB + r_pi;
+                var A_v, Z_in, Z_out;
+                if (p.bypassed) {
+                    // 旁路时：A_v = -βR_C/r_be
+                    A_v = -p.beta * p.R_C / r_be;
+                    Z_in = 1 / (1 / p.R_B1 + 1 / p.R_B2 + 1 / r_be);
+                } else {
+                    // 未旁路时：A_v = -βR_C/[r_be+(β+1)R_E]
+                    var r_in_base = r_be + (p.beta + 1) * p.R_E;
+                    A_v = -p.beta * p.R_C / r_in_base;
+                    Z_in = 1 / (1 / p.R_B1 + 1 / p.R_B2 + 1 / r_in_base);
+                }
+                if (region !== '放大区') A_v = 0;
+                Z_out = p.R_C;
 
                 // 集电极直流电压 V_CQ = V_CC - I_C · R_C
                 var V_CQ = p.V_CC - I_C * p.R_C;
@@ -487,9 +496,9 @@
                 // 计算集电极电压 V_C 的线性摆动范围
                 var v_c_max, v_c_min;
                 if (p.bypassed) {
-                    // 旁路时：V_C 上限受射极直流压降限制，下限受 V_CE(sat) 限制
+                    // 截止时集电极回到 V_CC；下限受 V_CE(sat) 限制。
                     var V_E_dc = I_E * p.R_E;
-                    v_c_max = p.V_CC - V_E_dc;
+                    v_c_max = p.V_CC;
                     v_c_min = DEFAULTS.V_CE_SAT + V_E_dc;
                 } else {
                     // 未旁路时：V_C 可以摆到 V_CC（截止时），下限由饱和电流决定
@@ -518,7 +527,7 @@
 
                 return {
                     V_B: V_B, V_E: V_E, I_C: I_C, I_E: I_E,
-                    V_CE: V_CE, V_CQ: V_CQ, r_e: r_e,
+                    V_CE: V_CE, V_CQ: V_CQ, r_e: r_e, r_pi: r_pi, r_be: r_be,
                     A_v: A_v, Z_in: Z_in, Z_out: Z_out,
                     region: region, icMax: icMax,
                     v_c_max: v_c_max, v_c_min: v_c_min,

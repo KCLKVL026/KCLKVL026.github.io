@@ -42,20 +42,20 @@
                     <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>电路参数</h2>
                     <div class="space-y-4" id="sliderPanel">
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(V_{CC}\)</span><span id="vccValue" class="font-mono font-bold text-blue-600">15 V</span></div><input type="range" id="vccSlider" min="5" max="30" value="15" step="1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_{C1}\) (第1级)</span><span id="rc1Value" class="font-mono font-bold text-blue-600">4.7 kΩ</span></div><input type="range" id="rc1Slider" min="1" max="50" value="47" step="1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_{C2}\) (第2级)</span><span id="rc2Value" class="font-mono font-bold text-blue-600">4.7 kΩ</span></div><input type="range" id="rc2Slider" min="1" max="50" value="47" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span id="rc1Label">\(R_{C1}\) (第1级)</span><span id="rc1Value" class="font-mono font-bold text-blue-600">4.7 kΩ</span></div><input type="range" id="rc1Slider" min="5" max="100" value="47" step="1" class="w-full"></div>
+                        <div id="rc2Row"><div class="flex justify-between text-sm text-slate-600 mb-1"><span id="rc2Label">\(R_{C2}\) (第2级)</span><span id="rc2Value" class="font-mono font-bold text-blue-600">4.7 kΩ</span></div><input type="range" id="rc2Slider" min="5" max="100" value="47" step="1" class="w-full"></div>
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(\beta\)</span><span id="betaValue" class="font-mono font-bold text-blue-600">150</span></div><input type="range" id="betaSlider" min="50" max="300" value="150" step="1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(V_{sig}\)</span><span id="vsigValue" class="font-mono font-bold text-blue-600">10 mV</span></div><input type="range" id="vsigSlider" min="1" max="100" value="10" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(V_{sig}\)</span><span id="vsigValue" class="font-mono font-bold text-blue-600">0.10 mV</span></div><input type="range" id="vsigSlider" min="0.01" max="10" value="0.10" step="0.01" class="w-full"></div>
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(f_{sig}\)</span><span id="fsigValue" class="font-mono font-bold text-blue-600">1.0 kHz</span></div><input type="range" id="fsigSlider" min="1" max="100" value="10" step="1" class="w-full"></div>
                     </div>
                 </div>
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
-                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>级联性能</h2>
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span><span id="performanceTitleText">级联性能</span></h2>
                     <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(A_{v1}\)</div><div id="av1Display" class="text-lg font-bold text-blue-600 font-mono">-98</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(A_{v2}\)</div><div id="av2Display" class="text-lg font-bold text-blue-600 font-mono">-98</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(A_{v,total}\)</div><div id="avtDisplay" class="text-lg font-bold text-blue-600 font-mono">9604</div></div>
-                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(A_{v,total}\) dB</div><div id="avdbDisplay" class="text-lg font-bold text-blue-600 font-mono">79.6 dB</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div id="av1Label" class="text-xs text-slate-500 mb-1">\(A_{v1}\)</div><div id="av1Display" class="text-lg font-bold text-blue-600 font-mono">-98</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div id="av2Label" class="text-xs text-slate-500 mb-1">\(A_{v2}\)</div><div id="av2Display" class="text-lg font-bold text-blue-600 font-mono">-98</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div id="avtLabel" class="text-xs text-slate-500 mb-1">\(A_{v,total}\)</div><div id="avtDisplay" class="text-lg font-bold text-blue-600 font-mono">9604</div></div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-center"><div id="avdbLabel" class="text-xs text-slate-500 mb-1">\(A_{v,total}\) dB</div><div id="avdbDisplay" class="text-lg font-bold text-blue-600 font-mono">79.6 dB</div></div>
                         <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(Z_{in}\)</div><div id="zinDisplay" class="text-lg font-bold text-blue-600 font-mono">2.5 kΩ</div></div>
                         <div class="bg-slate-50 rounded-xl p-3 text-center"><div class="text-xs text-slate-500 mb-1">\(Z_{out}\)</div><div id="zoutDisplay" class="text-lg font-bold text-blue-600 font-mono">4.7 kΩ</div></div>
                     </div>
@@ -63,9 +63,9 @@
             </div>
             <div class="lg:col-span-8 space-y-5">
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
-                    <h2 class="text-base font-bold text-slate-800 mb-2">逐级波形（输入 → 第1级输出 → 第2级输出）</h2>
+                    <h2 id="waveTitle" class="text-base font-bold text-slate-800 mb-2">逐级波形（输入 → 第1级输出 → 第2级输出）</h2>
                     <div class="relative" style="height: 300px;"><canvas id="waveChart"></canvas></div>
-                    <p class="text-xs text-slate-400 mt-1 text-center">蓝=输入(V_in), 红=第1级输出, 绿=第2级输出(总输出)</p>
+                    <p id="waveNote" class="text-xs text-slate-400 mt-1 text-center">蓝=输入，红=第1级输出，绿=第2级输出；各级均按电源余量限幅</p>
                 </div>
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
                     <h2 class="text-base font-bold text-slate-800 mb-2">各级增益（dB）</h2>
@@ -74,8 +74,10 @@
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                     <h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>关键公式</h2>
                     <div class="text-sm bg-slate-50 rounded-xl p-4 text-center space-y-2">
-                        \[A_{v,total} = A_{v1} \times A_{v2} \qquad A_{v,dB} = 20\log_{10}|A_v|\]
-                        \[Z_{in} = Z_{in1} \qquad Z_{out} = Z_{out2}\]
+                        \[A_{v,total}=A_{v1}A_{v2}\;(\text{级联})\qquad A_{v,dB}=20\log_{10}|A_v|\]
+                        \[A_{v1}=-\frac{R_{C1}\parallel Z_{in2}}{r_{e1}'}\quad(\text{级间负载计入第1级})\qquad Z_{in}=Z_{in1},\quad Z_{out}=Z_{out2}\]
+                        \[A_{vd,se}=\mp\frac{g_mR_C}{2},\qquad A_{vd,diff}=-\frac{g_m(R_{C1}+R_{C2})}{2}\quad(\text{差分对})\]
+                        <p class="text-xs text-slate-500">级联模式采用自动中点偏置；CE-CC 第二级固定采用 \(R_E=2.2\,\text{k}\Omega\)、\(R_L=10\,\text{k}\Omega\)。差分对尾电流上限为 1 mA，并随供电余量自动降低。频率滑块只改变显示周期。</p>
                     </div>
                 </div>
             </div>
@@ -106,52 +108,83 @@
             };
         }
 
+        function parallel(a, b) { return a * b / (a + b); }
+        function clamp(value, downSwing, upSwing) { return Math.min(upSwing, Math.max(-downSwing, value)); }
+
         function computeCE(V_CC, R_C, beta) {
-            const I_C = 1.5e-3; // simplified fixed bias
+            // 未显示偏置网络时，采用集电极静态电压 V_CQ=V_CC/2 的中点偏置。
+            const V_CQ = V_CC / 2;
+            const I_C = (V_CC - V_CQ) / R_C;
             const r_e = V_T / I_C;
             const A_v = -R_C / r_e;
             const Z_in = beta * r_e;
-            return { I_C, r_e, A_v, Z_in };
+            return {
+                I_C, r_e, A_v, Z_in, V_CQ,
+                upSwing: V_CC - V_CQ,
+                downSwing: Math.max(0, V_CQ - 0.2)
+            };
         }
 
         function compute(p) {
             if (p.topo === 'CECE') {
                 const s1 = computeCE(p.V_CC, p.R_C1, p.beta);
                 const s2 = computeCE(p.V_CC, p.R_C2, p.beta);
+                const A_v1 = -parallel(p.R_C1, s2.Z_in) / s1.r_e;
                 return {
-                    A_v1: s1.A_v, A_v2: s2.A_v * (s2.Z_in/(p.R_C1 + s2.Z_in)),
-                    Z_in: s1.Z_in, Z_out: p.R_C2
+                    A_v1, A_v2: s2.A_v, A_v_total: A_v1 * s2.A_v,
+                    Z_in: s1.Z_in, Z_out: p.R_C2, stage1: s1, stage2: s2,
+                    labels: ['第1级增益', '第2级增益', '总增益']
                 };
             } else if (p.topo === 'CECC') {
                 const s1 = computeCE(p.V_CC, p.R_C1, p.beta);
-                const R_E2 = 2200, R_EL = R_E2 * 10000 / (R_E2 + 10000);
-                const A_v2 = R_EL / (V_T/1.5e-3 + R_EL);
-                const Z_in2 = p.beta * (V_T/1.5e-3 + R_EL);
+                const R_E2 = 2200, R_L2 = 10000, R_EL = parallel(R_E2, R_L2);
+                const V_EQ2 = p.V_CC / 2;
+                const I_E2 = V_EQ2 / R_E2;
+                const I_C2 = I_E2 * p.beta / (p.beta + 1);
+                const r_e2 = V_T / I_C2;
+                const A_v2 = R_EL / (r_e2 + R_EL);
+                const Z_in2 = p.beta * r_e2 + (p.beta + 1) * R_EL;
+                const A_v1 = -parallel(p.R_C1, Z_in2) / s1.r_e;
+                const Z_emitter = r_e2 + p.R_C1 / (p.beta + 1);
+                const stage2 = {
+                    upSwing: Math.max(0, p.V_CC - 0.2 - V_EQ2),
+                    downSwing: Math.max(0, V_EQ2)
+                };
                 return {
-                    A_v1: s1.A_v, A_v2: A_v2 * (Z_in2/(p.R_C1 + Z_in2)),
-                    Z_in: s1.Z_in, Z_out: V_T/1.5e-3
+                    A_v1, A_v2, A_v_total: A_v1 * A_v2,
+                    Z_in: s1.Z_in, Z_out: parallel(R_E2, Z_emitter),
+                    stage1: s1, stage2,
+                    labels: ['共射级增益', '跟随器增益', '总增益']
                 };
             } else {
-                // Diff pair: A_dm = gm*R_C, where gm = I_EE/(2*V_T)
-                const I_EE = 1e-3, gm = I_EE / (2*V_T);
+                // 理想尾电流源差分对：单端增益为 ±gm*RC/2，差分输出取 vo1-vo2。
+                const I_EE = Math.min(1e-3, p.V_CC / Math.max(p.R_C1, p.R_C2));
+                const gm = I_EE / (2*V_T);
+                const I_CQ = I_EE / 2;
+                const V_CQ1 = p.V_CC - I_CQ * p.R_C1;
+                const V_CQ2 = p.V_CC - I_CQ * p.R_C2;
+                const A_v1 = -gm * p.R_C1 / 2;
+                const A_v2 = gm * p.R_C2 / 2;
                 return {
-                    A_v1: gm * p.R_C1, A_v2: 1, // single-ended output
-                    Z_in: 2 * p.beta * V_T / (I_EE/2), Z_out: p.R_C1,
-                    CMRR: gm * p.R_C1 * 100 // approximate
+                    A_v1, A_v2, A_v_total: A_v1 - A_v2,
+                    Z_in: 2 * p.beta * V_T / I_CQ, Z_out: p.R_C1 + p.R_C2,
+                    stage1: { upSwing: I_CQ*p.R_C1, downSwing: Math.max(0, V_CQ1-0.2) },
+                    stage2: { upSwing: I_CQ*p.R_C2, downSwing: Math.max(0, V_CQ2-0.2) },
+                    labels: ['左端单端增益', '右端单端增益', '差分输出增益']
                 };
             }
         }
 
         function updateAll() {
             const p = getParams(), r = compute(p);
-            const A_v_total = r.A_v1 * r.A_v2;
+            const A_v_total = r.A_v_total;
             const A_v_dB = 20 * Math.log10(Math.abs(A_v_total));
 
             document.getElementById('vccValue').textContent = p.V_CC + ' V';
             document.getElementById('rc1Value').textContent = (p.R_C1/1000).toFixed(1) + ' kΩ';
             document.getElementById('rc2Value').textContent = (p.R_C2/1000).toFixed(1) + ' kΩ';
             document.getElementById('betaValue').textContent = p.beta;
-            document.getElementById('vsigValue').textContent = (p.V_sig*1000).toFixed(0) + ' mV';
+            document.getElementById('vsigValue').textContent = (p.V_sig*1000).toFixed(2) + ' mV';
             document.getElementById('fsigValue').textContent = (p.f_sig/1000).toFixed(1) + ' kHz';
             document.getElementById('av1Display').textContent = r.A_v1.toFixed(0);
             document.getElementById('av2Display').textContent = r.A_v2.toFixed(0);
@@ -159,6 +192,17 @@
             document.getElementById('avdbDisplay').textContent = A_v_dB.toFixed(1) + ' dB';
             document.getElementById('zinDisplay').textContent = r.Z_in > 1000 ? (r.Z_in/1000).toFixed(1)+' kΩ' : r.Z_in.toFixed(0)+' Ω';
             document.getElementById('zoutDisplay').textContent = r.Z_out > 1000 ? (r.Z_out/1000).toFixed(1)+' kΩ' : r.Z_out.toFixed(0)+' Ω';
+            document.getElementById('av1Label').textContent = p.topo === 'Diff' ? 'A_v,o1' : 'A_v1';
+            document.getElementById('av2Label').textContent = p.topo === 'Diff' ? 'A_v,o2' : 'A_v2';
+            document.getElementById('avtLabel').textContent = p.topo === 'Diff' ? 'A_v,diff' : 'A_v,total';
+            document.getElementById('avdbLabel').textContent = p.topo === 'Diff' ? 'A_v,diff (dB)' : 'A_v,total (dB)';
+            document.getElementById('performanceTitleText').textContent = p.topo === 'Diff' ? '差分性能' : '级联性能';
+            document.getElementById('waveTitle').textContent = p.topo === 'Diff'
+                ? '差分波形（输入 → 左端单端输出 → 差分输出）'
+                : '逐级波形（输入 → 第1级输出 → 第2级输出）';
+            document.getElementById('waveNote').textContent = p.topo === 'Diff'
+                ? '蓝=差分输入，红=左端单端输出，绿=左端减右端的差分输出'
+                : '蓝=输入，红=第1级输出，绿=第2级输出；各级均按电源余量限幅';
 
             // Waveforms
             const T = 1/p.f_sig, dur = 2*T, N = 400;
@@ -166,13 +210,21 @@
             for (let i = 0; i <= N; i++) {
                 const t = dur * i/N, vs = p.V_sig * Math.sin(2*Math.PI*p.f_sig*t);
                 vin.push({ x: t*1000, y: vs*1000 });
-                v1.push({ x: t*1000, y: vs * r.A_v1 * 1000 });
-                v2.push({ x: t*1000, y: vs * A_v_total * 1000 });
+                const out1 = clamp(vs * r.A_v1, r.stage1.downSwing, r.stage1.upSwing);
+                let out2;
+                if (p.topo === 'Diff') {
+                    const rightOut = clamp(vs * r.A_v2, r.stage2.downSwing, r.stage2.upSwing);
+                    out2 = out1 - rightOut;
+                } else {
+                    out2 = clamp(out1 * r.A_v2, r.stage2.downSwing, r.stage2.upSwing);
+                }
+                v1.push({ x: t*1000, y: out1 * 1000 });
+                v2.push({ x: t*1000, y: out2 * 1000 });
             }
             let cfg = { type:'scatter', data:{ datasets:[
                 { label:'V_in (mV)', data:vin, borderColor:'#3b82f6', borderWidth:1.5, pointRadius:0, showLine:true, tension:0.3 },
-                { label:'Stage1 Out (mV)', data:v1, borderColor:'#ef4444', borderWidth:1.5, pointRadius:0, showLine:true, tension:0.3 },
-                { label:'Stage2 Out (mV)', data:v2, borderColor:'#10b981', borderWidth:2, pointRadius:0, showLine:true, tension:0.3 }
+                { label:p.topo === 'Diff' ? '左端输出 (mV)' : 'Stage1 Out (mV)', data:v1, borderColor:'#ef4444', borderWidth:1.5, pointRadius:0, showLine:true, tension:0.3 },
+                { label:p.topo === 'Diff' ? '差分输出 (mV)' : 'Stage2 Out (mV)', data:v2, borderColor:'#10b981', borderWidth:2, pointRadius:0, showLine:true, tension:0.3 }
             ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
                 plugins:{ legend:{position:'bottom',labels:{boxWidth:14,font:{size:10}}} },
                 scales:{ x:{title:{display:true,text:'时间 (ms)'}}, y:{title:{display:true,text:'mV'}, grid:{color:'rgba(0,0,0,0.05)'}} } } };
@@ -180,19 +232,22 @@
                 waveChartInst.data.datasets[0].data = vin;
                 waveChartInst.data.datasets[1].data = v1;
                 waveChartInst.data.datasets[2].data = v2;
+                waveChartInst.data.datasets[1].label = p.topo === 'Diff' ? '左端输出 (mV)' : 'Stage1 Out (mV)';
+                waveChartInst.data.datasets[2].label = p.topo === 'Diff' ? '差分输出 (mV)' : 'Stage2 Out (mV)';
                 waveChartInst.update('none');
             } else {
                 waveChartInst = new Chart(document.getElementById('waveChart').getContext('2d'), cfg);
             }
 
             // Gain bar chart
-            cfg = { type:'bar', data:{ labels:['第1级增益','第2级增益','总增益'], datasets:[
+            cfg = { type:'bar', data:{ labels:r.labels, datasets:[
                 { label:'dB', data:[20*Math.log10(Math.abs(r.A_v1)), 20*Math.log10(Math.abs(r.A_v2)), A_v_dB],
                     backgroundColor:['#10b981','#f59e0b','#6366f1'], borderRadius:8 }
             ]}, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:150},
                 plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx => ctx.raw.toFixed(1)+' dB' } } },
                 scales:{ y:{ title:{display:true,text:'增益 (dB)'}, grid:{color:'rgba(0,0,0,0.05)'} } } } };
             if (gainChartInst) {
+                gainChartInst.data.labels = r.labels;
                 gainChartInst.data.datasets[0].data = [20*Math.log10(Math.abs(r.A_v1)), 20*Math.log10(Math.abs(r.A_v2)), A_v_dB];
                 gainChartInst.update('none');
             } else {
@@ -205,6 +260,9 @@
             ['tabCECE','tabCECC','tabDiff'].forEach(id => { const el = document.getElementById(id); el.classList.remove('active','bg-emerald-600','text-white'); el.classList.add('bg-white','text-slate-600'); });
             document.getElementById(t === 'CECE' ? 'tabCECE' : t === 'CECC' ? 'tabCECC' : 'tabDiff').classList.add('active','bg-emerald-600','text-white');
             document.getElementById(t === 'CECE' ? 'tabCECE' : t === 'CECC' ? 'tabCECC' : 'tabDiff').classList.remove('bg-white','text-slate-600');
+            document.getElementById('rc2Row').classList.toggle('hidden', t === 'CECC');
+            document.getElementById('rc1Label').textContent = t === 'Diff' ? 'R_C1（差分左支路）' : 'R_C1（第1级）';
+            document.getElementById('rc2Label').textContent = t === 'Diff' ? 'R_C2（差分右支路）' : 'R_C2（第2级）';
             updateAll();
         }
         document.getElementById('tabCECE').addEventListener('click', () => setTopo('CECE'));

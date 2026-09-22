@@ -41,14 +41,15 @@
                     <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-emerald-500 rounded-full"></span>电路参数</h2>
                     <div class="space-y-4">
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(V_{DD}\)</span><span id="vddValue" class="font-mono font-bold text-blue-600">15 V</span></div><input type="range" id="vddSlider" min="5" max="30" value="15" step="1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_{G1}\)</span><span id="rg1Value" class="font-mono font-bold text-blue-600">1.0 MΩ</span></div><input type="range" id="rg1Slider" min="1" max="20" value="10" step="1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_{G2}\)</span><span id="rg2Value" class="font-mono font-bold text-blue-600">220 kΩ</span></div><input type="range" id="rg2Slider" min="1" max="10" value="2.2" step="0.1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_D\)</span><span id="rdValue" class="font-mono font-bold text-blue-600">4.7 kΩ</span></div><input type="range" id="rdSlider" min="1" max="50" value="47" step="1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_S\)</span><span id="rsValue" class="font-mono font-bold text-blue-600">1.0 kΩ</span></div><input type="range" id="rsSlider" min="1" max="50" value="10" step="1" class="w-full"></div>
+                        <div id="rg1Row"><div class="flex justify-between text-sm text-slate-600 mb-1"><span id="rg1Label">栅极电阻 \(R_G\)</span><span id="rg1Value" class="font-mono font-bold text-blue-600">1.0 MΩ</span></div><input type="range" id="rg1Slider" min="1" max="20" value="10" step="1" class="w-full"></div>
+                        <div id="rg2Row" class="hidden"><div class="flex justify-between text-sm text-slate-600 mb-1"><span>下偏电阻 \(R_{G2}\)</span><span id="rg2Value" class="font-mono font-bold text-blue-600">220 kΩ</span></div><input type="range" id="rg2Slider" min="1" max="10" value="2.2" step="0.1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_D\)</span><span id="rdValue" class="font-mono font-bold text-blue-600">4.7 kΩ</span></div><input type="range" id="rdSlider" min="5" max="50" value="47" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_S\)</span><span id="rsValue" class="font-mono font-bold text-blue-600">1.0 kΩ</span></div><input type="range" id="rsSlider" min="5" max="50" value="10" step="1" class="w-full"></div>
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span id="param1Label">\(I_{DSS}\)</span><span id="param1Value" class="font-mono font-bold text-blue-600">10 mA</span></div><input type="range" id="param1Slider" min="1" max="20" value="10" step="0.5" class="w-full"></div>
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span id="param2Label">\(V_P\)</span><span id="param2Value" class="font-mono font-bold text-blue-600">-4.0 V</span></div><input type="range" id="param2Slider" min="-6" max="-1" value="-4" step="0.5" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(V_{sig}\)</span><span id="vsigValue" class="font-mono font-bold text-blue-600">100 mV</span></div><input type="range" id="vsigSlider" min="1" max="500" value="100" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(V_{sig}\)</span><span id="vsigValue" class="font-mono font-bold text-blue-600">50 mV</span></div><input type="range" id="vsigSlider" min="1" max="200" value="50" step="1" class="w-full"></div>
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(f_{sig}\)</span><span id="fsigValue" class="font-mono font-bold text-blue-600">1.0 kHz</span></div><input type="range" id="fsigSlider" min="1" max="100" value="10" step="1" class="w-full"></div>
+                        <div class="flex items-center gap-3 pt-1"><span class="text-sm text-slate-600">源极旁路电容</span><input type="checkbox" id="sourceBypassToggle" checked class="w-4 h-4 text-blue-600"><span id="sourceBypassLabel" class="text-sm font-bold text-blue-600">已旁路</span></div>
                     </div>
                 </div>
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
@@ -77,8 +78,10 @@
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                     <h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>关键公式</h2>
                     <div class="text-sm bg-slate-50 rounded-xl p-4 text-center space-y-2">
-                        \[I_D = I_{DSS}\left(1 - \frac{V_{GS}}{V_P}\right)^2 \;\text{(JFET)} \qquad I_D = k_n(V_{GS} - V_{TH})^2 \;\text{(MOSFET)}\]
-                        \[g_m = \frac{2I_{DSS}}{|V_P|}\left(1 - \frac{V_{GS}}{V_P}\right) \qquad A_v = -g_m R_D \qquad Z_{in} = R_{G1}\parallel R_{G2}\]
+                        \[I_D=I_{DSS}\left(1-\frac{V_{GS}}{V_P}\right)^2\;(\text{JFET饱和区})\qquad I_D=k_n(V_{GS}-V_{TH})^2\;(\text{MOS饱和区})\]
+                        \[A_v\approx-g_mR_D\;(R_S\text{已旁路})\qquad A_v\approx-\frac{g_mR_D}{1+g_mR_S}\;(R_S\text{未旁路})\]
+                        \[Z_{in}\approx R_G\;(\text{JFET自偏置})\qquad Z_{in}\approx R_{G1}\parallel R_{G2}\;(\text{MOS分压偏置})\]
+                        <p class="text-xs text-slate-500">采用中频近似，忽略 \(r_o\)；频率滑块只改变显示周期。</p>
                     </div>
                 </div>
             </div>
@@ -107,43 +110,66 @@
                 V_DD: +vddSlider.value, R_G1: +rg1Slider.value*100000, R_G2: +rg2Slider.value*100000,
                 R_D: +rdSlider.value*100, R_S: +rsSlider.value*100,
                 param1: +param1Slider.value, param2: +param2Slider.value,
-                V_sig: +vsigSlider.value/1000, f_sig: +fsigSlider.value*100, devType
+                V_sig: +vsigSlider.value/1000, f_sig: +fsigSlider.value*100,
+                bypassed: sourceBypassToggle.checked, devType
             };
         }
 
         function computeDC(p) {
-            // An N-JFET gate must remain reverse biased.  Its gate is therefore tied to 0 V;
-            // the resistor divider is used only for the enhancement NMOS bias case.
+            // JFET采用栅极接地的自偏置；增强型NMOS采用分压偏置。
             const V_G = p.devType === 'JFET' ? 0 : p.V_DD * p.R_G2 / (p.R_G1 + p.R_G2);
-            const idFromVgs = (vgs) => p.devType === 'JFET'
-                ? (vgs <= p.param2 || vgs > 0 ? 0 : p.param1 * 1e-3 * Math.pow(1 - vgs / p.param2, 2))
-                : p.param1 * 1e-3 * Math.pow(Math.max(0, vgs - p.param2), 2);
-            // Bisection keeps the solution on the supply load line: 0 ≤ I_D ≤ V_DD/(R_D+R_S).
+
+            // 采用与饱和区平方律连续的欧姆区模型；k 的定义满足 I_D=k(V_OV)^2。
+            const deviceCurrent = (trialCurrent) => {
+                const vgs = V_G - trialCurrent * p.R_S;
+                const vds = Math.max(0, p.V_DD - trialCurrent * (p.R_D + p.R_S));
+                const threshold = p.param2;
+                const overdrive = vgs - threshold;
+                if (overdrive <= 0 || vds <= 0) return 0;
+                const k = p.devType === 'JFET'
+                    ? (p.param1 * 1e-3) / Math.pow(Math.abs(p.param2), 2)
+                    : p.param1 * 1e-3;
+                return vds >= overdrive
+                    ? k * overdrive * overdrive
+                    : k * (2 * overdrive * vds - vds * vds);
+            };
+
+            // 在器件方程与直流负载线之间求唯一交点。
             const I_max = p.V_DD / (p.R_D + p.R_S);
-            let lo = 0, hi = I_max;
-            for (let iter = 0; iter < 48; iter++) {
-                const mid = (lo + hi) / 2;
-                const residual = mid - idFromVgs(V_G - mid * p.R_S);
-                if (residual > 0) hi = mid; else lo = mid;
+            let I_D = 0;
+            if (deviceCurrent(0) > 0) {
+                let lo = 0, hi = I_max;
+                for (let iter = 0; iter < 60; iter++) {
+                    const mid = (lo + hi) / 2;
+                    if (mid - deviceCurrent(mid) > 0) hi = mid; else lo = mid;
+                }
+                I_D = (lo + hi) / 2;
             }
-            const I_D = (lo + hi) / 2, V_S = I_D * p.R_S, V_GS = V_G - V_S;
+            const V_S = I_D * p.R_S, V_GS = V_G - V_S;
             const V_D = p.V_DD - I_D * p.R_D, V_DS = Math.max(0, V_D - V_S);
-            const overdrive = p.devType === 'JFET' ? Math.max(0, V_GS - p.param2) : Math.max(0, V_GS - p.param2);
-            const g_m = p.devType === 'JFET'
-                ? (2 * p.param1 * 1e-3 / Math.abs(p.param2)) * Math.max(0, 1 - V_GS / p.param2)
-                : 2 * p.param1 * 1e-3 * overdrive;
-            const pinchOrSat = p.devType === 'JFET' ? Math.max(0, V_GS - p.param2) : overdrive;
-            const region = I_D < 1e-8 ? '截止区' : (V_DS < pinchOrSat ? '欧姆区(可变电阻区)' : '饱和区');
-            const A_v = region === '饱和区' ? -g_m * p.R_D : 0;
-            const Z_in = (p.R_G1 * p.R_G2) / (p.R_G1 + p.R_G2);
-            const posSwing = Math.max(0, p.V_DD - V_D), negSwing = Math.max(0, V_D - V_S - pinchOrSat);
+            const overdrive = Math.max(0, V_GS - p.param2);
+            const k = p.devType === 'JFET'
+                ? (p.param1 * 1e-3) / Math.pow(Math.abs(p.param2), 2)
+                : p.param1 * 1e-3;
+            let region;
+            if (I_D < 1e-8 || overdrive <= 0) region = '截止区';
+            else if (p.devType === 'JFET' && V_GS > 0.05) region = '栅结正偏(无效)';
+            else region = V_DS < overdrive ? '欧姆区(可变电阻区)' : '饱和区';
+            const g_m = region === '饱和区' ? 2 * k * overdrive : (region.startsWith('欧姆区') ? 2 * k * V_DS : 0);
+            let A_v = 0;
+            if (region === '饱和区') {
+                A_v = p.bypassed ? -g_m * p.R_D : -g_m * p.R_D / (1 + g_m * p.R_S);
+            }
+            const Z_in = p.devType === 'JFET' ? p.R_G1 : (p.R_G1 * p.R_G2) / (p.R_G1 + p.R_G2);
+            const posSwing = Math.max(0, p.V_DD - V_D);
+            const negSwing = Math.max(0, V_D - V_S - overdrive);
             return { I_D, V_GS, V_DS, g_m, A_v, Z_in, region, posSwing, negSwing };
         }
 
         function updateAll() {
             const p = getParams(), dc = computeDC(p);
             document.getElementById('vddValue').textContent = p.V_DD + ' V';
-            document.getElementById('rg1Value').textContent = (p.R_G1/100000).toFixed(1) + ' MΩ';
+            document.getElementById('rg1Value').textContent = (p.R_G1/1000000).toFixed(1) + ' MΩ';
             document.getElementById('rg2Value').textContent = (p.R_G2/1000).toFixed(0) + ' kΩ';
             document.getElementById('rdValue').textContent = (p.R_D/1000).toFixed(1) + ' kΩ';
             document.getElementById('rsValue').textContent = (p.R_S/1000).toFixed(1) + ' kΩ';
@@ -151,11 +177,12 @@
             document.getElementById('param2Value').textContent = p.devType==='JFET' ? p.param2.toFixed(1)+' V' : p.param2.toFixed(1)+' V';
             document.getElementById('vsigValue').textContent = (p.V_sig*1000).toFixed(0) + ' mV';
             document.getElementById('fsigValue').textContent = (p.f_sig/1000).toFixed(1) + ' kHz';
+            document.getElementById('sourceBypassLabel').textContent = p.bypassed ? '已旁路' : '未旁路';
             document.getElementById('idDisplay').textContent = (dc.I_D*1000).toFixed(2) + ' mA';
             document.getElementById('vgsDisplay').textContent = dc.V_GS.toFixed(2) + ' V';
             document.getElementById('gmDisplay').textContent = (dc.g_m*1000).toFixed(1) + ' mS';
             document.getElementById('avDisplay').textContent = dc.A_v.toFixed(1);
-            document.getElementById('zinDisplay').textContent = dc.Z_in > 1e6 ? (dc.Z_in/1e6).toFixed(1)+' MΩ' : (dc.Z_in/1000).toFixed(0)+' kΩ';
+            document.getElementById('zinDisplay').textContent = dc.Z_in >= 1e6 ? (dc.Z_in/1e6).toFixed(1)+' MΩ' : (dc.Z_in/1000).toFixed(0)+' kΩ';
             document.getElementById('regionDisplay').textContent = dc.region;
 
             // Transfer characteristic
@@ -203,17 +230,25 @@
             const tab = type === 'JFET' ? document.getElementById('tabJFET') : document.getElementById('tabMOS');
             tab.classList.add('active','bg-emerald-600','text-white');
             tab.classList.remove('bg-white','text-slate-600');
-            document.getElementById('param1Label').textContent = type === 'JFET' ? 'I_{DSS}' : 'k_n';
-            document.getElementById('param2Label').textContent = type === 'JFET' ? 'V_P' : 'V_{TH}';
-            if (type === 'JFET') { param1Slider.max = 20; param1Slider.value = 10; param2Slider.min = -6; param2Slider.max = -1; param2Slider.value = -4; }
-            else { param1Slider.max = 10; param1Slider.value = 1; param2Slider.min = 0.5; param2Slider.max = 4; param2Slider.value = 2; param2Slider.step = 0.5; }
+            document.getElementById('param1Label').textContent = type === 'JFET' ? 'I_DSS' : 'k_n';
+            document.getElementById('param2Label').textContent = type === 'JFET' ? 'V_P' : 'V_TH';
+            document.getElementById('rg1Label').textContent = type === 'JFET' ? '栅极电阻 R_G' : '上偏电阻 R_G1';
+            document.getElementById('rg2Row').classList.toggle('hidden', type === 'JFET');
+            if (type === 'JFET') {
+                param1Slider.max = 20; param1Slider.value = 10;
+                param2Slider.min = -6; param2Slider.max = -1; param2Slider.value = -4;
+            } else {
+                param1Slider.max = 10; param1Slider.value = 1;
+                param2Slider.min = 0.5; param2Slider.max = 4; param2Slider.value = 2;
+            }
             updateAll();
         }
         document.getElementById('tabJFET').addEventListener('click', () => setDevice('JFET'));
         document.getElementById('tabMOS').addEventListener('click', () => setDevice('MOS'));
 
         ['vddSlider','rg1Slider','rg2Slider','rdSlider','rsSlider','param1Slider','param2Slider','vsigSlider','fsigSlider'].forEach(id => document.getElementById(id).addEventListener('input', scheduleUpdate));
-        updateAll();
+        document.getElementById('sourceBypassToggle').addEventListener('change', scheduleUpdate);
+        setDevice('JFET');
         window.addEventListener('load', () => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); });
     </script>
 </body>

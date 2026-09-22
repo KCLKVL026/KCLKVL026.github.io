@@ -36,9 +36,9 @@
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(V_{CC}\)</span><span id="vccValue" class="font-mono font-bold text-blue-600">15 V</span></div><input type="range" id="vccSlider" min="5" max="30" value="15" step="1" class="w-full"></div>
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_{B1}\)</span><span id="rb1Value" class="font-mono font-bold text-blue-600">100 kΩ</span></div><input type="range" id="rb1Slider" min="10" max="500" value="100" step="1" class="w-full"></div>
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_{B2}\)</span><span id="rb2Value" class="font-mono font-bold text-blue-600">22 kΩ</span></div><input type="range" id="rb2Slider" min="1" max="50" value="22" step="1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_C\)</span><span id="rcValue" class="font-mono font-bold text-blue-600">4.7 kΩ</span></div><input type="range" id="rcSlider" min="1" max="50" value="47" step="1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_E\)</span><span id="reValue" class="font-mono font-bold text-blue-600">1.0 kΩ</span></div><input type="range" id="reSlider" min="1" max="50" value="10" step="1" class="w-full"></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(V_{sig}\)</span><span id="vsigValue" class="font-mono font-bold text-blue-600">50 mV</span></div><input type="range" id="vsigSlider" min="1" max="200" value="50" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_C\)</span><span id="rcValue" class="font-mono font-bold text-blue-600">4.7 kΩ</span></div><input type="range" id="rcSlider" min="5" max="50" value="47" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(R_E\)</span><span id="reValue" class="font-mono font-bold text-blue-600">1.0 kΩ</span></div><input type="range" id="reSlider" min="5" max="50" value="10" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(V_{sig}\)</span><span id="vsigValue" class="font-mono font-bold text-blue-600">10 mV</span></div><input type="range" id="vsigSlider" min="1" max="50" value="10" step="1" class="w-full"></div>
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(f_{sig}\)</span><span id="fsigValue" class="font-mono font-bold text-blue-600">1.0 kHz</span></div><input type="range" id="fsigSlider" min="1" max="100" value="10" step="1" class="w-full"></div>
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>\(\beta\)</span><span id="betaLabel" class="font-mono font-bold text-blue-600">150</span></div><input type="range" id="betaSlider" min="50" max="300" value="150" step="1" class="w-full"></div>
                     </div>
@@ -65,7 +65,8 @@
                     <h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>关键公式</h2>
                     <div class="text-sm bg-slate-50 rounded-xl p-4 text-center space-y-2">
                         \[A_v = \frac{R_C}{r_e'} > 0 \;\text{(同相)} \qquad Z_{in} = r_e' \parallel R_E \approx r_e' \;\text{(极低!)} \qquad Z_{out} \approx R_C\]
-                        \[r_e' = \frac{V_T}{I_C} \approx \frac{26\text{mV}}{I_C} \qquad V_{CB} = V_{CC} - I_C R_C - V_E\]
+                        \[r_e' = \frac{V_T}{I_C} \approx \frac{26\text{mV}}{I_C} \qquad V_{CB}=V_C-V_B=V_{CC}-I_CR_C-(V_E+V_{BE})\]
+                        <p class="text-xs text-slate-500">采用中频小信号近似，频率滑块只改变显示周期。</p>
                     </div>
                 </div>
             </div>
@@ -110,7 +111,7 @@
             const V_E = I_E * p.R_E, V_B = V_E + (I_C > 0 ? 0.7 : 0), V_C = p.V_CC - I_C * p.R_C;
             const V_CB = V_C - V_B;
             const r_e = I_C > 1e-9 ? V_T / I_C : 1e6;
-            const region = I_C < 1e-9 ? '截止区' : (I_C_active > I_C_max || V_CB < 0.2 ? '饱和区' : '放大区');
+            const region = I_C < 1e-9 ? '截止区' : (I_C_active > I_C_max || V_CB < 0 ? '饱和区' : '放大区');
             const A_v = region === '放大区' ? p.R_C / r_e : 0;
             const Z_in = (r_e * p.R_E) / (r_e + p.R_E);
             const posSwing = Math.max(0, p.V_CC - V_C), negSwing = Math.max(0, V_C - (V_E + 0.2));
