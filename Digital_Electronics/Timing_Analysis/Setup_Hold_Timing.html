@@ -2,13 +2,13 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>建立保持时间分析 | 建立窗口·保持窗口·亚稳态</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="../css/tailwind-local.css">
+    <script src="../css/lib/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="../css/lib/katex.min.css">
+    <script src="../css/lib/katex.min.js"></script>
+    <script src="../css/lib/auto-render.min.js"></script>
     <style>
         input[type=range]{height:5px;-webkit-appearance:none;background:#e2e8f0;border-radius:5px;outline:none}
         input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#3b82f6;border-radius:50%;cursor:pointer;transition:0.1s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
@@ -68,12 +68,16 @@
 </div>
 <script>
     let tdata=5,tsu=1,th=0.5,tclk=10,timingChart=null;
-    const CLK_EDGE=5; // clock edge at t=5
+    function clockEdge(){return tclk/2;}
     function checkTiming(){
-        const setupMargin=CLK_EDGE-tdata-tsu; // positive = ok
-        const holdMargin=tdata+th-CLK_EDGE; // positive = ok (D must stay th after edge)
-        const ok=setupMargin>=0&&holdMargin>=0;
-        return{setupMargin,holdMargin,ok};
+        // 单次 D 跳变：它落入边沿前 tsu 到边沿后 th 的禁区时才违反时序。
+        const edge=clockEdge();
+        const delta=tdata-edge;
+        const setupMargin=edge-tsu-tdata;
+        const holdMargin=tdata-(edge+th);
+        const violation=delta>-tsu&&delta<th;
+        const type=violation?(delta<=0?'setup':'hold'):null;
+        return{edge,delta,setupMargin,holdMargin,violation,type};
     }
     function initTiming(){
         if(timingChart)return;
@@ -85,10 +89,11 @@
     function updateTiming(){
         if(timingChart){timingChart.destroy();timingChart=null;}
         initTiming();
-        // CLK: square wave, rising edge at CLK_EDGE
+        const edge=clockEdge();
+        // CLK: square wave, rising edge at edge
         const clkPoints=[];
         for(let t=0;t<=tclk;t+=0.01){
-            const clk=t>=CLK_EDGE&&t<CLK_EDGE+tclk/2?1:0;
+            const clk=t>=edge&&t<edge+tclk/2?1:0;
             clkPoints.push({x:t,y:clk+2});
         }
         // D: changes at tdata
@@ -97,14 +102,17 @@
             const d=t>=tdata?1:0;
             dPoints.push({x:t,y:d});
         }
-        // Setup window (blue)
+        // 禁区：时钟边沿前为建立窗口，后为保持窗口。
         const setupRegion=[];
-        for(let t=CLK_EDGE-tsu;t<=CLK_EDGE;t+=0.01)setupRegion.push({x:t,y:0.5});
+        const holdRegion=[];
+        for(let t=edge-tsu;t<=edge;t+=0.01)setupRegion.push({x:t,y:0.5});
+        for(let t=edge;t<=edge+th;t+=0.01)holdRegion.push({x:t,y:0.5});
 
         timingChart.data.datasets=[
             {label:'CLK',data:clkPoints,borderColor:'#334155',borderWidth:2,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'},
             {label:'D',data:dPoints,borderColor:'#3b82f6',borderWidth:2.5,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'},
-            {label:'建立窗口',data:setupRegion,borderColor:'#3b82f6',borderWidth:0,pointRadius:0,tension:0,backgroundColor:'rgba(59,130,246,0.2)',fill:true}
+            {label:'建立窗口',data:setupRegion,borderColor:'#3b82f6',borderWidth:0,pointRadius:0,tension:0,backgroundColor:'rgba(59,130,246,0.2)',fill:'origin'},
+            {label:'保持窗口',data:holdRegion,borderColor:'#ef4444',borderWidth:0,pointRadius:0,tension:0,backgroundColor:'rgba(248,113,113,0.25)',fill:'origin'}
         ];
         timingChart.options.scales.x.max=tclk;
         timingChart.update('none');
@@ -118,21 +126,23 @@
         document.getElementById('tsuDisp').textContent=tsu.toFixed(1)+' ns';
         document.getElementById('thDisp').textContent=th.toFixed(1)+' ns';
         document.getElementById('tclkDisp').textContent=tclk+' ns';
-        const{setupMargin,holdMargin,ok}=checkTiming();
+        const{edge,delta,setupMargin,holdMargin,violation,type}=checkTiming();
         const status=document.getElementById('timingStatus');
-        if(ok){status.className='p-3 rounded-lg text-center font-bold text-sm bg-emerald-50 text-emerald-700 border border-emerald-200';status.textContent='✓ 满足时序要求 (setup margin: '+setupMargin.toFixed(1)+'ns, hold margin: '+holdMargin.toFixed(1)+'ns)';}
+        if(!violation){
+            const margin=delta<=-tsu?setupMargin:holdMargin;
+            const side=delta<=-tsu?'建立':'保持';
+            status.className='p-3 rounded-lg text-center font-bold text-sm bg-emerald-50 text-emerald-700 border border-emerald-200';
+            status.textContent='✓ 满足时序要求（'+side+'裕量: '+margin.toFixed(1)+' ns）';
+        }
         else{
             status.className='p-3 rounded-lg text-center font-bold text-sm bg-red-50 text-red-700 border border-red-200';
-            let reason=[];
-            if(setupMargin<0)reason.push('建立时间违反');
-            if(holdMargin<0)reason.push('保持时间违反');
-            status.textContent='⚠ '+reason.join(' + ')+' — 亚稳态风险!';
+            status.textContent='⚠ '+(type==='setup'?'建立时间':'保持时间')+'违反 — 亚稳态风险!';
         }
         updateTiming();
         const eq1=document.getElementById('eq1');eq1.innerHTML='';
-        try{katex.render('t_{su}: t_{data} \\leq t_{clk\\_edge} - t_{su}',eq1,{throwOnError:false});}catch(e){eq1.textContent='tsu: tdata <= tclk_edge - tsu';}
+        try{katex.render('t_{data} \\leq t_{edge}-t_{su}',eq1,{throwOnError:false});}catch(e){eq1.textContent='建立安全: tdata <= tedge - tsu';}
         const eq2=document.getElementById('eq2');eq2.innerHTML='';
-        try{katex.render('t_h: t_{data} \\geq t_{clk\\_edge} + t_h',eq2,{throwOnError:false});}catch(e){eq2.textContent='th: tdata >= tclk_edge + th';}
+        try{katex.render('t_{data} \\geq t_{edge}+t_h',eq2,{throwOnError:false});}catch(e){eq2.textContent='保持安全: tdata >= tedge + th';}
     }
     document.getElementById('tdataSlider').addEventListener('input',refreshAll);
     document.getElementById('tsuSlider').addEventListener('input',refreshAll);

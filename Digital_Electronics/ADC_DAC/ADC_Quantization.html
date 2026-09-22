@@ -2,13 +2,13 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ADC量化与误差 | Flash·SAR·量化噪声</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="../css/tailwind-local.css">
+    <script src="../css/lib/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="../css/lib/katex.min.css">
+    <script src="../css/lib/katex.min.js"></script>
+    <script src="../css/lib/auto-render.min.js"></script>
     <style>
         input[type=range]{height:5px;-webkit-appearance:none;background:#e2e8f0;border-radius:5px;outline:none}
         input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#3b82f6;border-radius:50%;cursor:pointer;transition:0.1s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
@@ -24,7 +24,7 @@
     </div>
     <div class="text-center mb-8">
         <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent mb-2">ADC 量化与误差</h1>
-        <p class="text-slate-600 max-w-2xl mx-auto">量化电平·量化误差·SNR | 分辨率可调 | 传输特性</p>
+        <p class="text-slate-600 max-w-2xl mx-auto">量化电平·量化误差·理想满幅正弦 SQNR | 分辨率可调 | 传输特性</p>
     </div>
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div class="lg:col-span-4 space-y-6">
@@ -42,7 +42,7 @@
                     <div class="flex justify-between p-2 bg-slate-50 rounded-lg"><span>量化电平</span><span class="font-mono font-bold" id="qlevelDisplay">—</span></div>
                     <div class="flex justify-between p-2 bg-slate-50 rounded-lg"><span>量化误差</span><span class="font-mono font-bold" id="qerrDisplay">—</span></div>
                     <div class="flex justify-between p-2 bg-slate-50 rounded-lg"><span>量化步长 Q</span><span class="font-mono font-bold" id="qstepDisplay">—</span></div>
-                    <div class="flex justify-between p-2 bg-slate-50 rounded-lg"><span>SNR</span><span class="font-mono font-bold" id="snrDisplay">—</span></div>
+                    <div class="flex justify-between p-2 bg-slate-50 rounded-lg"><span>理想满幅正弦 SQNR</span><span class="font-mono font-bold" id="snrDisplay">—</span></div>
                 </div>
             </div>
         </div>
@@ -79,7 +79,7 @@
         document.getElementById('qlevelDisplay').textContent=qLevel.toFixed(4)+' V';
         document.getElementById('qerrDisplay').textContent=error.toFixed(4)+' V';
         document.getElementById('qstepDisplay').textContent=Q.toFixed(4)+' V';
-        document.getElementById('snrDisplay').textContent=(6.02*N+1.76).toFixed(1)+' dB';
+        document.getElementById('snrDisplay').textContent=(6.02*N+1.76).toFixed(1)+' dB（假设）';
         updateTransfer();updateError();
     }
     function initTransfer(){
@@ -95,7 +95,7 @@
         const points=[];for(let i=0;i<=200;i++){const v=i/200*Vref;const{code}=quantize(v,N);points.push({x:v,y:code});}
         const{code,}=quantize(vin,N);
         transferChart.data.datasets=[
-            {label:'传输特性',data:points,showLine:true,borderColor:'#3b82f6',borderWidth:2,stepped:false,pointRadius:0},
+            {label:'传输特性',data:points,showLine:true,borderColor:'#3b82f6',borderWidth:2,stepped:true,pointRadius:0},
             {label:'当前点',data:[{x:vin,y:code}],pointRadius:8,pointBackgroundColor:'#ef4444',pointBorderColor:'#fff',pointBorderWidth:2}
         ];
         transferChart.options.scales.y.max=levels-1;

@@ -2,20 +2,20 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>T触发器与分频 | 2分频·级联分频链</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="../css/tailwind-local.css">
+    <script src="../css/lib/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="../css/lib/katex.min.css">
+    <script src="../css/lib/katex.min.js"></script>
+    <script src="../css/lib/auto-render.min.js"></script>
     <style>
         ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
         .card-hover{transition:all 0.2s ease}.card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 20px -12px rgba(0,0,0,0.15)}
         .bit-btn{display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:8px;font-weight:bold;font-size:1.2rem;cursor:pointer;transition:all 0.12s ease;border:2px solid #e2e8f0}
         .bit-btn.on{background:#3b82f6;color:white;border-color:#3b82f6}.bit-btn.off{background:white;color:#64748b;border-color:#e2e8f0}.bit-btn:active{transform:scale(0.92)}
         input[type=range]{height:5px;-webkit-appearance:none;background:#e2e8f0;border-radius:5px;outline:none}
-        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#3b82f6;border-radius:50%;cursor:pointer;transition:0.1s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#3b82f6;border-radius:50%;cursor:pointer;transition:0.1s;box-shadow:0 1px 3px rgba(0,0,0,0.2)} button:focus-visible,input:focus-visible{outline:3px solid #1d4ed8;outline-offset:3px}
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
@@ -32,11 +32,11 @@
         <div class="lg:col-span-4 space-y-6">
             <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
                 <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4"><span class="w-1 h-6 bg-blue-500 rounded-full"></span>控制</h3>
-                <div class="mb-4"><label class="text-sm font-medium text-slate-600 mb-2 block">T 输入</label><div class="flex justify-center"><div id="tBtn" class="bit-btn on">1</div></div></div>
+                <div class="mb-4"><label class="text-sm font-medium text-slate-600 mb-2 block">T 输入</label><div class="flex justify-center"><button type="button" id="tBtn" aria-label="切换 T 输入" aria-pressed="true" class="bit-btn on">1</button></div></div>
                 <div class="mb-4"><div class="flex justify-between text-sm font-medium mb-1"><label>时钟频率</label><span class="text-blue-600 font-mono" id="freqDisp">1 Hz</span></div>
-                    <input type="range" id="freqSlider" min="0.5" max="4" step="0.5" value="1" class="w-full"></div>
+                    <input type="range" id="freqSlider" aria-label="时钟频率" min="0.5" max="4" step="0.5" value="1" class="w-full"></div>
                 <div><div class="flex justify-between text-sm font-medium mb-1"><label>级联级数</label><span class="text-blue-600 font-mono" id="stageDisp">2</span></div>
-                    <input type="range" id="stageSlider" min="1" max="4" step="1" value="2" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-1"><span>1</span><span>4</span></div></div>
+                    <input type="range" id="stageSlider" aria-label="级联级数" min="1" max="4" step="1" value="2" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-1"><span>1</span><span>4</span></div></div>
             </div>
             <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                 <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-emerald-500 rounded-full"></span>分频比</h3>
@@ -154,17 +154,19 @@
     function updateSpectrum(){
         initSpectrum();
         const labels=['CLK'];const data=[1];const colors=['#334155'];
-        for(let s=0;s<stages;s++){labels.push('Q'+s);data.push(1/Math.pow(2,s+1));colors.push(['#10b981','#3b82f6','#f59e0b','#ef4444'][s%4]);}
+        if(t){for(let s=0;s<stages;s++){labels.push('Q'+s);data.push(1/Math.pow(2,s+1));colors.push(['#10b981','#3b82f6','#f59e0b','#ef4444'][s%4]);}}
         spectrumChart.data={labels,datasets:[{data,backgroundColor:colors.map(c=>c+'99'),borderColor:colors,borderWidth:1}]};
         spectrumChart.update('none');
     }
     function refreshAll(){
-        document.getElementById('tBtn').className='bit-btn '+(t?'on':'off');document.getElementById('tBtn').textContent=t;
+        const tBtn=document.getElementById('tBtn');
+        tBtn.className='bit-btn '+(t?'on':'off');tBtn.textContent=t;tBtn.setAttribute('aria-pressed',String(Boolean(t)));
         document.getElementById('freqDisp').textContent=freq+' Hz';
         document.getElementById('stageDisp').textContent=stages;
-        document.getElementById('outFreq').textContent='f/'+Math.pow(2,stages);
+        document.getElementById('outFreq').textContent=t?'f/'+Math.pow(2,stages):'保持（无分频）';
         const f=document.getElementById('formula');f.innerHTML='';
-        try{katex.render('f_{out} = \\frac{f_{clk}}{2^'+stages+'}',f,{throwOnError:false});}catch(e){f.textContent='f_out=f_clk/2^'+stages;}
+        const expression=t?'f_{out} = \\frac{f_{clk}}{2^'+stages+'}':'T=0 \\Rightarrow Q^+=Q';
+        try{katex.render(expression,f,{throwOnError:false});}catch(e){f.textContent=t?'f_out=f_clk/2^'+stages:'T=0 ⇒ Q+ = Q';}
         updateTiming();updateSpectrum();
     }
     document.getElementById('tBtn').addEventListener('click',()=>{t=t?0:1;refreshAll();});

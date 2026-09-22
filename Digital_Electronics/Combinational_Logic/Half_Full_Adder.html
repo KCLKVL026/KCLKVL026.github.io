@@ -2,13 +2,13 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>半加器与全加器 | 行波进位链</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="../css/tailwind-local.css">
+    <script src="../css/lib/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="../css/lib/katex.min.css">
+    <script src="../css/lib/katex.min.js"></script>
+    <script src="../css/lib/auto-render.min.js"></script>
     <style>
         ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
         .card-hover{transition:all 0.2s ease}.card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 20px -12px rgba(0,0,0,0.15)}
@@ -83,7 +83,7 @@
                         <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-amber-500 rounded-full"></div><span class="font-medium">Sum</span></div>
                         <div class="flex items-center gap-1.5"><div class="w-4 h-0.5 bg-red-500 rounded-full"></div><span class="font-medium">Cout</span></div>
                     </div>
-                    <div class="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded-full">逐位加法时序</div>
+                    <div class="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded-full">预设逐位加法时序示例</div>
                 </div>
                 <div class="relative"><canvas id="timingChart" width="800" height="380" style="width:100%;height:auto;max-height:420px;"></canvas></div>
             </div>

@@ -2,15 +2,12 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3变量卡诺图 | 2×4 K图·质蕴含项·SOP/POS化简</title>
-    <script src="https://cdn.tailwindcss.com">
-    </script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js">
-    </script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js">
-    </script>
+    <link rel="stylesheet" href="../css/tailwind-local.css">
+    <link rel="stylesheet" href="../css/lib/katex.min.css">
+    <script src="../css/lib/katex.min.js"></script>
+    <script src="../css/lib/auto-render.min.js"></script>
     <style>
         ::-webkit-scrollbar {
             width: 6px;
@@ -388,7 +385,7 @@
                     }
                 }
 
-                // 贪心覆盖剩余目标
+                // 先固定必要质蕴含项，再精确搜索剩余覆盖；贪心法不能保证最简式。
                 const coveredByEssential = new Set();
                 for (const epi of essentialList) {
                     for (const m of epi.minterms) {
@@ -398,28 +395,31 @@
 
                 const remainingTargets = targetOnes.filter(m => !coveredByEssential.has(m));
                 const selectedCover = [...essentialList];
-                const uncoveredSet = new Set(remainingTargets);
-
-                if (uncoveredSet.size > 0) {
-                    const availablePI = primeImplicants.filter(g => !essentialSet.has(mintermsKey(g.minterms)));
-                    while (uncoveredSet.size > 0) {
-                        let best = null;
-                        let bestCoverCount = 0;
-                        for (const pi of availablePI) {
-                            const coverCount = pi.minterms.filter(m => uncoveredSet.has(m)).length;
-                            if (coverCount > bestCoverCount) {
-                                bestCoverCount = coverCount;
-                                best = pi;
-                            }
-                        }
-                        if (!best || bestCoverCount === 0) break;
-                        selectedCover.push(best);
-                        for (const m of best.minterms) uncoveredSet.delete(m);
-                        const bestKey = mintermsKey(best.minterms);
-                        const idx = availablePI.findIndex(g => mintermsKey(g.minterms) === bestKey);
-                        if (idx >= 0) availablePI.splice(idx, 1);
+                const availablePI = primeImplicants.filter(g => !essentialSet.has(mintermsKey(g.minterms)));
+                let bestCover = null;
+                function literalCost(groups) { return groups.reduce((sum, g) => sum + 3 - Math.log2(g.size), 0); }
+                function search(chosen, uncovered) {
+                    if (uncovered.size === 0) {
+                        const candidate = { groups: chosen, terms: chosen.length, literals: literalCost(chosen) };
+                        if (!bestCover || candidate.terms < bestCover.terms || (candidate.terms === bestCover.terms && candidate.literals < bestCover.literals)) bestCover = candidate;
+                        return;
+                    }
+                    if (bestCover && chosen.length > bestCover.terms) return;
+                    let options = null;
+                    for (const m of uncovered) {
+                        const covering = availablePI.filter(pi => !chosen.includes(pi) && pi.minterms.includes(m));
+                        if (covering.length === 0) return;
+                        if (!options || covering.length < options.length) options = covering;
+                    }
+                    options.sort((a, b) => b.size - a.size);
+                    for (const pi of options) {
+                        const next = new Set(uncovered);
+                        pi.minterms.forEach(m => next.delete(m));
+                        search([...chosen, pi], next);
                     }
                 }
+                if (remainingTargets.length > 0) search([], new Set(remainingTargets));
+                if (bestCover) selectedCover.push(...bestCover.groups);
 
                 const finalUncovered = targetOnes.filter(m => {
                     const allCovered = new Set();

@@ -2,13 +2,13 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>二进制加减法器 | 补码减法·溢出检测</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="../css/tailwind-local.css">
+    <script src="../css/lib/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="../css/lib/katex.min.css">
+    <script src="../css/lib/katex.min.js"></script>
+    <script src="../css/lib/auto-render.min.js"></script>
     <style>
         input[type=range]{height:5px;-webkit-appearance:none;background:#e2e8f0;border-radius:5px;outline:none}
         input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#3b82f6;border-radius:50%;cursor:pointer;transition:0.1s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
@@ -49,7 +49,7 @@
                 <div class="text-center">
                     <div class="text-sm text-slate-500">运算结果</div>
                     <div id="resultVal" class="text-3xl font-bold text-blue-600">10</div>
-                    <div class="mt-2 text-sm">溢出: <span id="ovText" class="text-slate-400">无</span></div>
+                    <div class="mt-2 text-sm"><span id="statusLabel">进位</span>: <span id="ovText" class="text-slate-400">无</span></div>
                 </div>
             </div>
         </div>
@@ -76,7 +76,9 @@
         const b=parseInt(document.getElementById('bSlider').value);
         w=parseInt(document.getElementById('wSlider').value);
         document.getElementById('aDisp').textContent=a;document.getElementById('bDisp').textContent=b;document.getElementById('wDisp').textContent=w+' bit';
-        const bXor=op==='sub'?(~b+1)&((1<<w)-1):b;
+        const mask=(1<<w)-1;
+        // Add/Sub 全加器：B_i XOR M，且 Cin=M。减法时只在这里取反，+1 由 Cin 完成。
+        const bXor=op==='sub'?(b^mask):b;
         const cin=op==='sub'?1:0;
         const sumBits=[];let carry=cin;
         const bitsA=toBin(a,w).split('').map(Number).reverse();
@@ -84,11 +86,13 @@
         for(let i=0;i<w;i++){const s=bitsA[i]^bitsBx[i]^carry;sumBits.push(s);carry=(bitsA[i]&bitsBx[i])|((bitsA[i]^bitsBx[i])&carry);}
         const sumVal=sumBits.reduce((acc,v,i)=>acc+v*(1<<i),0);
         const displayResult=op==='add'?a+b:a-b;
-        const overflow=op==='sub'&&((a>>(w-1))===0&&(b>>(w-1))===1&&displayResult<0)||((a>>(w-1))===1&&(b>>(w-1))===0&&displayResult>0);
-        document.getElementById('resultVal').textContent=displayResult;
-        document.getElementById('resultVal').className='text-3xl font-bold '+(overflow?'text-red-500':'text-blue-600');
-        document.getElementById('ovText').textContent=overflow?'溢出!':'无';
-        document.getElementById('ovText').className=overflow?'text-red-500 font-bold':'text-slate-400';
+        const carryOut=carry===1;
+        const borrow=op==='sub'&&!carryOut;
+        document.getElementById('resultVal').textContent=displayResult+' ('+toBin(sumVal,w)+')';
+        document.getElementById('resultVal').className='text-3xl font-bold '+(borrow?'text-red-500':'text-blue-600');
+        document.getElementById('statusLabel').textContent=op==='sub'?'借位':'进位';
+        document.getElementById('ovText').textContent=op==='sub'?(borrow?'需要借位':'无借位'):(carryOut?'有':'无');
+        document.getElementById('ovText').className=(borrow||carryOut)?'text-red-500 font-bold':'text-slate-400';
         updateTiming(a,b,bXor,cin,sumBits,carry,w);
     }
     const T=4,PPS=50;

@@ -2,13 +2,13 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>二进制算术 | 加法·减法·进位链</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="../css/tailwind-local.css">
+    <script src="../css/lib/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="../css/lib/katex.min.css">
+    <script src="../css/lib/katex.min.js"></script>
+    <script src="../css/lib/auto-render.min.js"></script>
     <style>
         input[type=range]{height:5px;-webkit-appearance:none;background:#e2e8f0;border-radius:5px;outline:none}
         input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#3b82f6;border-radius:50%;cursor:pointer;transition:0.1s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
@@ -69,6 +69,10 @@
                     <button class="op-btn active flex-1 rounded-lg px-3 py-2 text-sm text-center" data-op="add">加法 (+)</button>
                     <button class="op-btn flex-1 rounded-lg px-3 py-2 text-sm text-center" data-op="sub">减法 (−)</button>
                 </div>
+                <div class="flex gap-2 mt-3">
+                    <button class="op-btn number-btn active flex-1 rounded-lg px-3 py-2 text-sm text-center" data-number-mode="unsigned">无符号</button>
+                    <button class="op-btn number-btn flex-1 rounded-lg px-3 py-2 text-sm text-center" data-number-mode="signed">二补码有符号</button>
+                </div>
             </div>
 
             <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
@@ -76,7 +80,7 @@
                 <div class="text-center">
                     <div class="text-sm text-slate-500 mb-1">十进制结果</div>
                     <div id="resultDec" class="text-3xl font-bold text-blue-600">8</div>
-                    <div class="mt-2 text-sm"><span class="text-slate-500">溢出:</span> <span id="overflowIndicator" class="overflow-indicator overflow-off"></span> <span id="overflowText" class="text-slate-400">无</span></div>
+                    <div class="mt-2 text-sm"><span id="statusLabel" class="text-slate-500">进位:</span> <span id="overflowIndicator" class="overflow-indicator overflow-off"></span> <span id="overflowText" class="text-slate-400">无</span></div>
                 </div>
             </div>
         </div>
@@ -104,7 +108,7 @@
 </div>
 
 <script>
-    let op='add', bitWidth=4, carryChart=null;
+    let op='add', numberMode='unsigned', bitWidth=4, carryChart=null;
 
     function toBin(n,w){
         if(n<0) n=(1<<w)+n; // two's complement
@@ -124,45 +128,54 @@
         }
         carries.push(carry);
         const sumVal=sumBits.reduce((acc,v,i)=>acc+v*(1<<i),0);
-        const overflow=carry!==0;
-        return {sumBits,carries,sumVal,overflow};
+        return {sumBits,carries,sumVal,carryOut:carry===1};
     }
 
     function computeSub(a,b,w){
         const bComp=(~b+1)&((1<<w)-1);
         const result=computeAdd(a,bComp,w);
-        // For subtraction, overflow detection is different
-        const negB=(~b+1)&((1<<w)-1);
-        const rawSum=a+negB;
-        const overflow=((a>>(w-1))===0 && (b>>(w-1))===1 && (rawSum>>(w-1))===1) ||
-                       ((a>>(w-1))===1 && (b>>(w-1))===0 && (rawSum>>(w-1))===0);
-        const displayVal=a-b;
-        return {...result, overflow: displayVal<0 || displayVal>=(1<<(w-1)), displayVal};
+        return result;
+    }
+
+    function signedValue(raw,w){const sign=1<<(w-1);return raw&sign?raw-(1<<w):raw;}
+    function formatOperand(raw,w){return numberMode==='signed'?signedValue(raw,w)+' ('+toBin(raw,w)+')':raw;}
+    function getArithmeticStatus(a,b,result,w){
+        const signA=(a>>(w-1))&1,signB=(b>>(w-1))&1,signR=(result.sumVal>>(w-1))&1;
+        if(numberMode==='unsigned'){
+            const event=op==='add'?result.carryOut:!result.carryOut;
+            return {event,label:op==='add'?'进位':'借位',text:event?(op==='add'?'有':'需要借位'):(op==='add'?'无':'无借位')};
+        }
+        const overflow=op==='add'?(signA===signB&&signR!==signA):(signA!==signB&&signR!==signA);
+        return {event:overflow,label:'有符号溢出',text:overflow?'溢出!':'无'};
     }
 
     function refreshAll(){
-        const a=parseInt(document.getElementById('aSlider').value);
-        const b=parseInt(document.getElementById('bSlider').value);
         bitWidth=parseInt(document.getElementById('widthSlider').value);
-        document.getElementById('aDisplay').textContent=a;
-        document.getElementById('bDisplay').textContent=b;
-        document.getElementById('widthDisplay').textContent=bitWidth+' bit';
-
         const maxVal=(1<<bitWidth)-1;
-        document.getElementById('aSlider').max=maxVal;
-        document.getElementById('bSlider').max=maxVal;
+        const aInput=document.getElementById('aSlider'),bInput=document.getElementById('bSlider');
+        aInput.max=maxVal;bInput.max=maxVal;
+        if(parseInt(aInput.value)>maxVal)aInput.value=maxVal;
+        if(parseInt(bInput.value)>maxVal)bInput.value=maxVal;
+        const a=parseInt(aInput.value),b=parseInt(bInput.value);
+        document.getElementById('aDisplay').textContent=formatOperand(a,bitWidth);
+        document.getElementById('bDisplay').textContent=formatOperand(b,bitWidth);
+        document.getElementById('widthDisplay').textContent=bitWidth+' bit';
 
         const isAdd=op==='add';
         const result=isAdd?computeAdd(a,b,bitWidth):computeSub(a,b,bitWidth);
-        const displayVal=isAdd?(a+b):(a-b);
+        const aValue=numberMode==='signed'?signedValue(a,bitWidth):a;
+        const bValue=numberMode==='signed'?signedValue(b,bitWidth):b;
+        const displayVal=isAdd?(aValue+bValue):(aValue-bValue);
+        const status=getArithmeticStatus(a,b,result,bitWidth);
 
-        document.getElementById('resultDec').textContent=displayVal>=0?displayVal:displayVal+' (负数)';
-        document.getElementById('resultDec').className='text-3xl font-bold '+(result.overflow?'text-red-500':'text-blue-600');
+        document.getElementById('resultDec').textContent=displayVal+' ('+toBin(result.sumVal,bitWidth)+')';
+        document.getElementById('resultDec').className='text-3xl font-bold '+(status.event?'text-red-500':'text-blue-600');
 
         const ovInd=document.getElementById('overflowIndicator');
         const ovTxt=document.getElementById('overflowText');
-        if(result.overflow){ovInd.className='overflow-indicator overflow-on';ovTxt.textContent='溢出!';ovTxt.className='text-red-500 font-bold';}
-        else{ovInd.className='overflow-indicator overflow-off';ovTxt.textContent='无';ovTxt.className='text-slate-400';}
+        document.getElementById('statusLabel').textContent=status.label+':';
+        if(status.event){ovInd.className='overflow-indicator overflow-on';ovTxt.textContent=status.text;ovTxt.className='text-red-500 font-bold';}
+        else{ovInd.className='overflow-indicator overflow-off';ovTxt.textContent=status.text;ovTxt.className='text-slate-400';}
 
         renderBitArithmetic(a,b,result,bitWidth);
         updateCarryChart(result,bitWidth);
@@ -240,9 +253,11 @@
     }
 
     document.querySelectorAll('.op-btn').forEach(btn=>btn.addEventListener('click',()=>{
-        document.querySelectorAll('.op-btn').forEach(b=>b.classList.remove('active'));
+        if(!btn.dataset.op)return;
+        document.querySelectorAll('[data-op]').forEach(b=>b.classList.remove('active'));
         btn.classList.add('active');op=btn.dataset.op;refreshAll();
     }));
+    document.querySelectorAll('.number-btn').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.number-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');numberMode=btn.dataset.numberMode;refreshAll();}));
     document.getElementById('aSlider').addEventListener('input',refreshAll);
     document.getElementById('bSlider').addEventListener('input',refreshAll);
     document.getElementById('widthSlider').addEventListener('input',refreshAll);

@@ -2,13 +2,13 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>多路复用器与分配器 | MUX·DEMUX</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="../css/tailwind-local.css">
+    <script src="../css/lib/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="../css/lib/katex.min.css">
+    <script src="../css/lib/katex.min.js"></script>
+    <script src="../css/lib/auto-render.min.js"></script>
     <style>
         ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
         .card-hover{transition:all 0.2s ease}.card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 20px -12px rgba(0,0,0,0.15)}
@@ -61,7 +61,7 @@
         </div>
         <div class="lg:col-span-8 space-y-5">
             <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-4">
-                <div class="text-sm font-medium text-slate-700 mb-3 px-2">MUX 选择路由时序</div>
+                <div id="timingTitle" class="text-sm font-medium text-slate-700 mb-3 px-2">MUX 选择路由时序</div>
                 <div class="relative"><canvas id="timingChart" width="800" height="350" style="width:100%;height:auto;max-height:380px;"></canvas></div>
             </div>
             <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-5">
@@ -73,37 +73,49 @@
 </div>
 <script>
     let mode='MUX',data=[1,0,1,0],s1=0,s0=0,timingChart=null;
+    function selectedIndex(){return (s1<<1)|s0;}
     function renderDataInputs(){
         const c=document.getElementById('dataInputs');c.innerHTML='';
-        data.forEach((d,i)=>{
+        const inputs=mode==='MUX'?data:[data[0]];
+        inputs.forEach((d,i)=>{
             const div=document.createElement('div');
             div.className='bit-btn '+(d?'on':'off');
-            div.textContent='D'+i+':'+d;
+            div.textContent=(mode==='MUX'?'D'+i:'D')+':'+d;
             div.addEventListener('click',()=>{data[i]=d?0:1;refreshAll();});
             c.appendChild(div);
         });
     }
     function mux(d,s1,s0){return d[(s1<<1)|s0];}
     function updateOutput(){
-        const y=mux(data,s1,s0);
-        document.getElementById('outputDisplay').textContent=y;
-        document.getElementById('outputDisplay').className='text-4xl font-bold '+(y?'text-emerald-600':'text-red-500');
-        document.getElementById('outputLabel').textContent='Y = D'+((s1<<1)|s0);
+        const selected=selectedIndex();
+        if(mode==='MUX'){
+            const y=mux(data,s1,s0);
+            document.getElementById('outputDisplay').textContent=y;
+            document.getElementById('outputDisplay').className='text-4xl font-bold '+(y?'text-emerald-600':'text-red-500');
+            document.getElementById('outputLabel').textContent='Y = D'+selected;
+        }else{
+            const outputs=Array(4).fill(0);outputs[selected]=data[0];
+            document.getElementById('outputDisplay').textContent='Y'+selected+' = '+data[0];
+            document.getElementById('outputDisplay').className='text-3xl font-bold '+(data[0]?'text-emerald-600':'text-red-500');
+            document.getElementById('outputLabel').textContent=outputs.map((v,i)=>'Y'+i+'='+v).join('  ');
+        }
     }
     const T=4,PPS=60;
     function generateTiming(){
-        const t=[],dS1=[],dS0=[],dY=[];
+        const t=[],dS1=[],dS0=[],dY=[],dOutputs=[[],[],[],[]];
         for(let seg=0;seg<4;seg++){
             const sel=seg;
-            const sy=data[sel];
+            const sy=mode==='MUX'?data[sel]:data[0];
             for(let i=0;i<PPS;i++){
                 const tt=seg+i/PPS;
                 t.push(tt);
                 dS1.push((sel>>1)&1);dS0.push(sel&1);dY.push(sy);
+                for(let output=0;output<4;output++)dOutputs[output].push(mode==='DEMUX'&&output===sel?data[0]:0);
             }
         }
         t.push(T);dS1.push(dS1.at(-1));dS0.push(dS0.at(-1));dY.push(dY.at(-1));
-        return {t,dS1,dS0,dY};
+        for(const output of dOutputs)output.push(output.at(-1));
+        return {t,dS1,dS0,dY,dOutputs};
     }
     function initTiming(){
         if(timingChart)return;
@@ -120,19 +132,28 @@
     }
     function updateTiming(){
         initTiming();
-        const{t,dS1,dS0,dY}=generateTiming();
-        timingChart.data.datasets[0].data=t.map((x,i)=>({x,y:dS1[i]+6}));
-        timingChart.data.datasets[1].data=t.map((x,i)=>({x,y:dS0[i]+4}));
-        timingChart.data.datasets[2].data=t.map((x,i)=>({x,y:dY[i]}));
+        const{t,dS1,dS0,dY,dOutputs}=generateTiming();
+        const makeLine=(label,values,offset,color,width=2)=>({label,data:t.map((x,i)=>({x,y:values[i]+offset})),borderColor:color,backgroundColor:'transparent',borderWidth:width,stepped:'before',pointRadius:0,tension:0});
+        if(mode==='MUX'){
+            timingChart.data.datasets=[makeLine('S1',dS1,6,'#8b5cf6'),makeLine('S0',dS0,4,'#6366f1'),makeLine('Y',dY,0,'#ef4444',3)];
+            timingChart.options.scales.y.max=8;
+            timingChart.options.scales.y.ticks.callback=v=>({0:'Y',4:'S0',6:'S1'})[v]||'';
+        }else{
+            timingChart.data.datasets=[makeLine('S1',dS1,12,'#8b5cf6'),makeLine('S0',dS0,10,'#6366f1'),makeLine('Y3',dOutputs[3],6,'#ef4444',2.5),makeLine('Y2',dOutputs[2],4,'#f59e0b',2.5),makeLine('Y1',dOutputs[1],2,'#10b981',2.5),makeLine('Y0',dOutputs[0],0,'#3b82f6',2.5)];
+            timingChart.options.scales.y.max=14;
+            timingChart.options.scales.y.ticks.callback=v=>({0:'Y0',2:'Y1',4:'Y2',6:'Y3',10:'S0',12:'S1'})[v]||'';
+        }
         timingChart.update('none');
     }
     function renderFormula(){
         const f=document.getElementById('formula');f.innerHTML='';
-        try{katex.render('Y = \\sum_{i=0}^{3} m_i \\cdot D_i \\quad (m_i = \\text{最小项})',f,{throwOnError:false});}catch(e){f.textContent='Y = Σ mi·Di';}
+        const formula=mode==='MUX'?'Y = \\sum_{i=0}^{3} m_i \\cdot D_i':'Y_i = D \\cdot m_i, \\quad i=0,1,2,3';
+        try{katex.render(formula,f,{throwOnError:false});}catch(e){f.textContent=mode==='MUX'?'Y = Σ mi·Di':'Yi = D·mi';}
     }
-    function refreshAll(){renderDataInputs();updateOutput();updateTiming();renderFormula();}
+    function refreshAll(){document.getElementById('timingTitle').textContent=mode==='MUX'?'MUX 选择路由时序':'DEMUX 分配时序';renderDataInputs();updateOutput();updateTiming();renderFormula();}
     document.getElementById('s1Btn').addEventListener('click',()=>{s1=s1?0:1;document.getElementById('s1Btn').className='bit-btn '+(s1?'on':'off');document.getElementById('s1Btn').textContent=s1;refreshAll();});
     document.getElementById('s0Btn').addEventListener('click',()=>{s0=s0?0:1;document.getElementById('s0Btn').className='bit-btn '+(s0?'on':'off');document.getElementById('s0Btn').textContent=s0;refreshAll();});
+    document.querySelectorAll('.mode-btn').forEach(btn=>btn.addEventListener('click',()=>{mode=btn.dataset.mode;document.querySelectorAll('.mode-btn').forEach(b=>b.classList.toggle('active',b===btn));refreshAll();}));
     initTiming();refreshAll();
     document.addEventListener('DOMContentLoaded',()=>{if(typeof renderMathInElement!=='undefined')renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false});});
     window.addEventListener('resize',()=>{if(timingChart){timingChart.resize();timingChart.update();}});

@@ -2,18 +2,18 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>异步行波计数器 | 4位二进制·延迟累积</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="../css/tailwind-local.css">
+    <script src="../css/lib/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="../css/lib/katex.min.css">
+    <script src="../css/lib/katex.min.js"></script>
+    <script src="../css/lib/auto-render.min.js"></script>
     <style>
         ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
         .card-hover{transition:all 0.2s ease}.card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 20px -12px rgba(0,0,0,0.15)}
         input[type=range]{height:5px;-webkit-appearance:none;background:#e2e8f0;border-radius:5px;outline:none}
-        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#3b82f6;border-radius:50%;cursor:pointer;transition:0.1s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#3b82f6;border-radius:50%;cursor:pointer;transition:0.1s;box-shadow:0 1px 3px rgba(0,0,0,0.2)} button:focus-visible,input:focus-visible{outline:3px solid #1d4ed8;outline-offset:3px}
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans">
@@ -31,19 +31,21 @@
             <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
                 <h3 class="text-lg font-bold text-slate-700 flex items-center gap-2 mb-4"><span class="w-1 h-6 bg-blue-500 rounded-full"></span>控制</h3>
                 <div class="mb-4"><div class="flex justify-between text-sm font-medium mb-1"><label>时钟频率</label><span class="text-blue-600 font-mono" id="freqDisp">1 Hz</span></div>
-                    <input type="range" id="freqSlider" min="0.5" max="4" step="0.5" value="1" class="w-full"></div>
+                    <input type="range" id="freqSlider" aria-label="时钟频率" min="0.5" max="4" step="0.5" value="1" class="w-full"></div>
                 <div class="mb-4"><div class="flex justify-between text-sm font-medium mb-1"><label>传播延迟 tpd</label><span class="text-blue-600 font-mono" id="tpdDisp">0.05s</span></div>
-                    <input type="range" id="tpdSlider" min="0.01" max="0.1" step="0.01" value="0.05" class="w-full"></div>
+                    <input type="range" id="tpdSlider" aria-label="传播延迟" min="0.01" max="0.1" step="0.01" value="0.05" class="w-full"></div>
                 <div class="flex gap-2">
                     <button id="clkBtn" class="flex-1 rounded-lg px-3 py-3 text-lg font-bold bg-blue-500 text-white hover:bg-blue-600 transition-colors active:bg-blue-700">⟳ 时钟</button>
                     <button id="resetBtn" class="flex-1 rounded-lg px-3 py-2 text-sm font-medium bg-slate-200 text-slate-600 hover:bg-slate-300 transition-colors">复位</button>
                 </div>
+                <button id="runBtn" aria-pressed="false" class="w-full mt-2 rounded-lg px-3 py-2 text-sm font-medium bg-emerald-500 text-white hover:bg-emerald-600 transition-colors">▶ 自动运行</button>
             </div>
             <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                 <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-emerald-500 rounded-full"></span>计数值</h3>
                 <div class="text-center">
                     <div id="countDisplay" class="text-4xl font-bold text-blue-600">0</div>
                     <div id="binDisplay" class="text-lg font-mono text-slate-500 mt-1">0000</div>
+                    <div id="timingStatus" class="text-xs text-slate-400 mt-2">等待时钟边沿</div>
                 </div>
             </div>
         </div>
@@ -72,15 +74,27 @@
     </div>
 </div>
 <script>
-    let freq=1,tpd=0.05,count=0,timingChart=null;
-    const history=[]; // [{q:[Q0,Q1,Q2,Q3]}]
+    let freq=1,tpd=0.05,count=0,timingChart=null,running=false,clockTimer=null;
+    const history=[]; // [{from:[Q0..Q3], to:[Q0..Q3]}]
     const MAX_HIST=20;
+    function bitsOf(value){return [value&1,(value>>1)&1,(value>>2)&1,(value>>3)&1];}
 
     function clockPulse(){
+        const from=bitsOf(count);
         count=(count+1)%16;
-        const q0=count&1, q1=(count>>1)&1, q2=(count>>2)&1, q3=(count>>3)&1;
-        history.push({q:[q0,q1,q2,q3]});
+        history.push({from,to:bitsOf(count)});
         if(history.length>MAX_HIST)history.shift();
+        refreshAll();
+    }
+
+    function restartClock(){
+        if(clockTimer)clearInterval(clockTimer);
+        clockTimer=running?setInterval(clockPulse,1000/freq):null;
+    }
+
+    function setRunning(next){
+        running=next;
+        restartClock();
         refreshAll();
     }
 
@@ -88,7 +102,7 @@
         if(timingChart)return;
         timingChart=new Chart(document.getElementById('timingChart').getContext('2d'),{
             type:'line',data:{datasets:[]},options:{responsive:true,maintainAspectRatio:true,animation:false,interaction:{mode:'index',intersect:false},
-                plugins:{legend:{display:false}},scales:{x:{type:'linear',min:0,title:{display:true,text:'时钟周期',font:{weight:'bold'}},grid:{color:'#eef2ff'}},y:{min:-1,max:10,ticks:{callback(v){const m={0:'Q3',2:'Q2',4:'Q1',6:'Q0',8:'CLK'};return m[v]||null;},stepSize:1},grid:{color:'#eef2ff'}}},elements:{point:{radius:0}}}
+                plugins:{legend:{display:false}},scales:{x:{type:'linear',min:0,title:{display:true,text:'时间 (s)',font:{weight:'bold'}},grid:{color:'#eef2ff'}},y:{min:-1,max:10,ticks:{callback(v){const m={0:'Q3',2:'Q2',4:'Q1',6:'Q0',8:'CLK'};return m[v]||null;},stepSize:1},grid:{color:'#eef2ff'}}},elements:{point:{radius:0}}}
         });
     }
 
@@ -96,10 +110,23 @@
         initTiming();
         if(history.length===0){timingChart.data.datasets=[];timingChart.update('none');return;}
         const colors=['#334155','#3b82f6','#10b981','#f59e0b','#ef4444'];
+        const period=1/freq;
         const clkData=[],qData=[[],[],[],[]];
-        for(let i=0;i<history.length;i++){
-            clkData.push({x:i,y:((i%2)===0?1:0)+8});
-            for(let s=0;s<4;s++)qData[s].push({x:i,y:history[i].q[s]+(3-s)*2});
+        for(let cycle=0;cycle<history.length;cycle++){
+            const {from,to}=history[cycle];
+            const start=cycle*period,end=start+period;
+            const visibleEnd=Math.min(end,start+5*tpd);
+            const current=[...from];
+            clkData.push({x:start,y:8},{x:start+period/2,y:9},{x:end,y:8});
+            for(let s=0;s<4;s++)qData[s].push({x:start,y:current[s]+(3-s)*2});
+            // 只有低位连续的 1 在加一时会触发下一极；每一级在前一级之后 tpd 翻转。
+            for(let stage=0;stage<4;stage++){
+                if(from[stage]===to[stage])continue;
+                current[stage]=to[stage];
+                const transitionTime=start+(stage+1)*tpd;
+                for(let s=0;s<4;s++)qData[s].push({x:transitionTime,y:current[s]+(3-s)*2});
+            }
+            for(let s=0;s<4;s++)qData[s].push({x:Math.max(visibleEnd,start),y:current[s]+(3-s)*2});
         }
         timingChart.data.datasets=[
             {label:'CLK',data:clkData,borderColor:colors[0],borderWidth:2,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'},
@@ -108,7 +135,7 @@
             {label:'Q2',data:qData[2],borderColor:colors[3],borderWidth:2,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'},
             {label:'Q3',data:qData[3],borderColor:colors[4],borderWidth:2,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'}
         ];
-        timingChart.options.scales.x.max=Math.max(history.length-1,5);
+        timingChart.options.scales.x.max=Math.max(history.length*period,period*2);
         timingChart.update('none');
     }
 
@@ -117,6 +144,13 @@
         document.getElementById('tpdDisp').textContent=tpd.toFixed(2)+'s';
         document.getElementById('countDisplay').textContent=count;
         document.getElementById('binDisplay').textContent=count.toString(2).padStart(4,'0');
+        const runBtn=document.getElementById('runBtn');
+        runBtn.textContent=running?'■ 停止自动运行':'▶ 自动运行';
+        runBtn.setAttribute('aria-pressed',String(running));
+        const fmax=1/(4*tpd);
+        const status=document.getElementById('timingStatus');
+        if(freq>fmax){status.className='text-xs text-red-600 mt-2 font-medium';status.textContent='⚠ 时钟过快：4级行波尚未稳定，下一个边沿可能提前到达';}
+        else{status.className='text-xs text-emerald-600 mt-2';status.textContent='✓ 行波将在约 '+(4*tpd).toFixed(2)+' s 内稳定（fmax≈'+fmax.toFixed(2)+' Hz）';}
         const eq1=document.getElementById('eq1');eq1.innerHTML='';
         try{katex.render('Q_{n+1} = Q_n + 1 \\pmod{2^4}',eq1,{throwOnError:false});}catch(e){eq1.textContent='Q(n+1)=Q(n)+1 mod 16';}
         const eq2=document.getElementById('eq2');eq2.innerHTML='';
@@ -126,11 +160,13 @@
 
     document.getElementById('clkBtn').addEventListener('click',clockPulse);
     document.getElementById('resetBtn').addEventListener('click',()=>{count=0;history.length=0;refreshAll();});
-    document.getElementById('freqSlider').addEventListener('input',e=>{freq=parseFloat(e.target.value);});
-    document.getElementById('tpdSlider').addEventListener('input',e=>{tpd=parseFloat(e.target.value);});
+    document.getElementById('runBtn').addEventListener('click',()=>setRunning(!running));
+    document.getElementById('freqSlider').addEventListener('input',e=>{freq=parseFloat(e.target.value);restartClock();refreshAll();});
+    document.getElementById('tpdSlider').addEventListener('input',e=>{tpd=parseFloat(e.target.value);refreshAll();});
     initTiming();refreshAll();
     document.addEventListener('DOMContentLoaded',()=>{if(typeof renderMathInElement!=='undefined')renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false});});
     window.addEventListener('resize',()=>{if(timingChart){timingChart.resize();timingChart.update();}});
+    window.addEventListener('beforeunload',()=>{if(clockTimer)clearInterval(clockTimer);});
     console.log('行波计数器已启动 | 逐拍计数 | 延迟累积可视化');
 </script>
 </body>

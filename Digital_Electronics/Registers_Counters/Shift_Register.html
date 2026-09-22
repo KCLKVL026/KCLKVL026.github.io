@@ -2,18 +2,18 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>移位寄存器 | SISO·SIPO·PISO·PIPO</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="../css/tailwind-local.css">
+    <script src="../css/lib/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="../css/lib/katex.min.css">
+    <script src="../css/lib/katex.min.js"></script>
+    <script src="../css/lib/auto-render.min.js"></script>
     <style>
         ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
         .card-hover{transition:all 0.2s ease}.card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 20px -12px rgba(0,0,0,0.15)}
         .bit-btn{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:6px;font-weight:bold;font-size:1rem;cursor:pointer;transition:all 0.12s ease;border:2px solid #e2e8f0}
-        .bit-btn.on{background:#3b82f6;color:white;border-color:#3b82f6}.bit-btn.off{background:white;color:#64748b;border-color:#e2e8f0}.bit-btn:active{transform:scale(0.92)}
+        .bit-btn.on{background:#3b82f6;color:white;border-color:#3b82f6}.bit-btn.off{background:white;color:#64748b;border-color:#e2e8f0}.bit-btn:active{transform:scale(0.92)} button:focus-visible{outline:3px solid #1d4ed8;outline-offset:3px}
         .mode-btn{transition:all 0.15s ease;border:2px solid transparent;cursor:pointer}
         .mode-btn.active{border-color:#3b82f6;background:#eff6ff;color:#1d4ed8;font-weight:600}
         .mode-btn:hover:not(.active){background:#f8fafc;border-color:#cbd5e1}
@@ -44,12 +44,16 @@
             </div>
             <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
                 <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-emerald-500 rounded-full"></span>串行输入</h3>
-                <div class="flex justify-center"><div id="serInBtn" class="bit-btn off">0</div></div>
+                <div class="flex justify-center"><button type="button" id="serInBtn" aria-label="切换串行输入" aria-pressed="false" class="bit-btn off">0</button></div>
                 <p class="text-xs text-slate-400 mt-2 text-center">每按"时钟"移入一位</p>
             </div>
             <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
                 <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1 h-5 bg-amber-500 rounded-full"></span>并行输入 (PISO/PIPO)</h3>
                 <div id="parInputs" class="flex gap-2 justify-center"></div>
+                <div id="pisoControl" class="hidden mt-3 text-center">
+                    <button type="button" id="loadBtn" aria-pressed="true" class="rounded-lg px-4 py-2 text-sm font-medium bg-amber-500 text-white hover:bg-amber-600 transition-colors">装载使能：开</button>
+                    <p class="text-xs text-slate-400 mt-2">开：下一个时钟并行装载；关：下一个时钟右移并从左端移入 0</p>
+                </div>
             </div>
             <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                 <button id="clkBtn" class="w-full rounded-lg px-4 py-3 text-lg font-bold bg-blue-500 text-white hover:bg-blue-600 transition-colors active:bg-blue-700">⟳ 时钟</button>
@@ -77,15 +81,14 @@
     </div>
 </div>
 <script>
-    let mode='SISO',reg=[0,0,0,0],serIn=0,parIn=[1,0,1,0],timingChart=null;
+    let mode='SISO',reg=[0,0,0,0],serIn=0,parIn=[1,0,1,0],load=1,timingChart=null;
     const history=[];
     function clockPulse(){
         if(mode==='SISO'||mode==='SIPO'){
             for(let i=3;i>0;i--)reg[i]=reg[i-1];
             reg[0]=serIn;
         }else if(mode==='PISO'){
-            // Load parallel first time, then shift
-            if(history.length===0){reg=[...parIn];}
+            if(load){reg=[...parIn];}
             else{for(let i=3;i>0;i--)reg[i]=reg[i-1];reg[0]=0;}
         }else{ // PIPO
             reg=[...parIn];
@@ -108,11 +111,12 @@
     function renderParInputs(){
         const c=document.getElementById('parInputs');c.innerHTML='';
         parIn.forEach((v,i)=>{
-            const div=document.createElement('div');
-            div.className='bit-btn '+(v?'on':'off');
-            div.textContent=v;
-            div.addEventListener('click',()=>{parIn[i]=v?0:1;refreshAll();});
-            c.appendChild(div);
+            const button=document.createElement('button');
+            button.type='button';button.className='bit-btn '+(v?'on':'off');
+            button.textContent=v;button.setAttribute('aria-label','切换并行输入 D'+i);
+            button.setAttribute('aria-pressed',String(Boolean(v)));
+            button.addEventListener('click',()=>{parIn[i]=v?0:1;refreshAll();});
+            c.appendChild(button);
         });
     }
     function initTiming(){
@@ -136,14 +140,23 @@
     }
     function renderFormula(){
         const f=document.getElementById('formula');f.innerHTML='';
-        const formulas={SISO:'Q_i^+ = Q_{i-1},\\; Q_0 = D_{in}',SIPO:'Q_i^+ = Q_{i-1},\\; Q_0 = D_{in} (并行输出)',PISO:'\\text{先加载 } D_0 D_1 D_2 D_3, \\text{再逐位右移}',PIPO:'Q_i^+ = D_i (并行加载)'};
+        const formulas={SISO:'Q_i^+ = Q_{i-1},\\; Q_0 = D_{in}',SIPO:'Q_i^+ = Q_{i-1},\\; Q_0 = D_{in} (并行输出)',PISO:'\\text{LOAD}=1:Q_i^+=D_i;\\quad \\text{LOAD}=0:Q_i^+=Q_{i-1},\\;Q_0^+=0',PIPO:'Q_i^+ = D_i (并行加载)'};
         try{katex.render(formulas[mode],f,{throwOnError:false});}catch(e){f.textContent=formulas[mode];}
     }
-    function refreshAll(){renderReg();renderParInputs();updateTiming();renderFormula();}
+    function refreshAll(){
+        renderReg();renderParInputs();updateTiming();renderFormula();
+        const pisoControl=document.getElementById('pisoControl');
+        pisoControl.classList.toggle('hidden',mode!=='PISO');
+        const loadBtn=document.getElementById('loadBtn');
+        loadBtn.textContent='装载使能：'+(load?'开':'关');
+        loadBtn.className='rounded-lg px-4 py-2 text-sm font-medium transition-colors '+(load?'bg-amber-500 text-white hover:bg-amber-600':'bg-slate-200 text-slate-700 hover:bg-slate-300');
+        loadBtn.setAttribute('aria-pressed',String(Boolean(load)));
+    }
     document.querySelectorAll('.mode-btn').forEach(btn=>btn.addEventListener('click',()=>{
-        document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');mode=btn.dataset.mode;reg=[0,0,0,0];history.length=0;refreshAll();
+        document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');mode=btn.dataset.mode;reg=[0,0,0,0];load=1;history.length=0;refreshAll();
     }));
-    document.getElementById('serInBtn').addEventListener('click',()=>{serIn=serIn?0:1;document.getElementById('serInBtn').className='bit-btn '+(serIn?'on':'off');document.getElementById('serInBtn').textContent=serIn;});
+    document.getElementById('serInBtn').addEventListener('click',()=>{serIn=serIn?0:1;const btn=document.getElementById('serInBtn');btn.className='bit-btn '+(serIn?'on':'off');btn.textContent=serIn;btn.setAttribute('aria-pressed',String(Boolean(serIn)));});
+    document.getElementById('loadBtn').addEventListener('click',()=>{load=load?0:1;refreshAll();});
     document.getElementById('clkBtn').addEventListener('click',clockPulse);
     document.getElementById('resetBtn').addEventListener('click',()=>{reg=[0,0,0,0];history.length=0;refreshAll();});
     initTiming();refreshAll();

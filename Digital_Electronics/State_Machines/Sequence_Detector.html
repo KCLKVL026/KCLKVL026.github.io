@@ -2,13 +2,13 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>序列检测器 | FSM检测特定位序列</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="../css/tailwind-local.css">
+    <script src="../css/lib/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="../css/lib/katex.min.css">
+    <script src="../css/lib/katex.min.js"></script>
+    <script src="../css/lib/auto-render.min.js"></script>
     <style>
         ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
         .card-hover{transition:all 0.2s ease}.card-hover:hover{transform:translateY(-2px);box-shadow:0 12px 20px -12px rgba(0,0,0,0.15)}
@@ -41,6 +41,7 @@
                     <button class="bit-btn text-sm" style="width:36px;height:36px" data-idx="2" id="t2">1</button>
                     <button class="bit-btn text-sm" style="width:36px;height:36px" data-idx="3" id="t3">1</button>
                 </div>
+                <div class="flex justify-center mt-3"><button id="overlapBtn" class="rounded-lg px-3 py-1.5 text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">允许重叠匹配</button></div>
                 <p class="text-xs text-slate-400 mt-2 text-center">点击切换每位</p>
             </div>
             <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5 card-hover">
@@ -70,22 +71,28 @@
     </div>
 </div>
 <script>
-    let target=[1,0,1,1],x=0,state=0,matchCount=0,timingChart=null;
+    let target=[1,0,1,1],x=0,state=0,matchCount=0,allowOverlap=true,timingChart=null;
     const history=[];
     const stream=[];
     function resetMachine(){state=0;matchCount=0;history.length=0;stream.length=0;}
+    function transition(prefixLength,input){
+        const candidate=target.slice(0,prefixLength).concat(input);
+        const detected=candidate.length===target.length&&candidate.every((bit,i)=>bit===target[i]);
+        const maxPrefix=detected&&!allowOverlap?0:Math.min(target.length-1,candidate.length);
+        for(let length=maxPrefix;length>=0;length--){
+            const suffix=candidate.slice(candidate.length-length);
+            if(target.slice(0,length).every((bit,i)=>bit===suffix[i]))return{stateAfter:length,detected:detected?1:0};
+        }
+        return{stateAfter:0,detected:detected?1:0};
+    }
     function clockPulse(){
         stream.push(x);
         if(stream.length>32)stream.shift();
-        // Check if current state matches target prefix
-        // Simple approach: track how many target bits matched so far
-        if(x===target[state]){state++;if(state===target.length){matchCount++;state=0;history.push({x,detected:1});}else{history.push({x,detected:0});}}
-        else{
-            // Reset and check if current bit starts a new match
-            state=0;
-            if(x===target[0])state=1;
-            history.push({x,detected:0});
-        }
+        const stateBefore=state;
+        const result=transition(state,x);
+        state=result.stateAfter;
+        if(result.detected)matchCount++;
+        history.push({x,stateBefore,stateAfter:state,detected:result.detected});
         if(history.length>20)history.shift();
         refreshAll();
     }
@@ -102,7 +109,7 @@
         const tt=history.map((_,i)=>i);
         timingChart.data.datasets=[
             {label:'X',data:history.map((h,i)=>({x:i,y:h.x+4})),borderColor:'#3b82f6',borderWidth:2,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'},
-            {label:'State',data:history.map((h,i)=>({x:i,y:(history[i].x===target[history[i].x]?1:0)+2})),borderColor:'#10b981',borderWidth:2,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'},
+            {label:'State',data:history.map((h,i)=>({x:i,y:h.stateAfter+2})),borderColor:'#10b981',borderWidth:2,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'},
             {label:'Detected',data:history.map((h,i)=>({x:i,y:h.detected})),borderColor:'#ef4444',borderWidth:3,stepped:'before',pointRadius:0,tension:0,backgroundColor:'transparent'}
         ];
         timingChart.update('none');
@@ -118,6 +125,8 @@
         document.getElementById('detectDisplay').textContent=matchCount>0?'检测到! ('+matchCount+'次)':'未检测到';
         document.getElementById('detectDisplay').className='text-2xl font-bold '+(matchCount>0?'text-emerald-600':'text-slate-400');
         document.getElementById('matchCount').textContent='匹配次数: '+matchCount;
+        document.getElementById('overlapBtn').textContent=allowOverlap?'允许重叠匹配':'禁止重叠匹配';
+        document.getElementById('overlapBtn').className='rounded-lg px-3 py-1.5 text-xs font-medium '+(allowOverlap?'bg-blue-50 text-blue-700 border border-blue-200':'bg-slate-100 text-slate-600 border border-slate-200');
         updateTiming();
         // Stream display
         const sd=document.getElementById('streamDisplay');sd.innerHTML='';
@@ -138,6 +147,7 @@
         document.getElementById(id).addEventListener('click',()=>{target[i]=target[i]?0:1;resetMachine();refreshAll();});
     });
     document.getElementById('xBtn').addEventListener('click',()=>{x=x?0:1;refreshAll();});
+    document.getElementById('overlapBtn').addEventListener('click',()=>{allowOverlap=!allowOverlap;resetMachine();refreshAll();});
     document.getElementById('clkBtn').addEventListener('click',clockPulse);
     initTiming();refreshAll();
     document.addEventListener('DOMContentLoaded',()=>{if(typeof renderMathInElement!=='undefined')renderMathInElement(document.body,{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false});});
