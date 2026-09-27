@@ -61,15 +61,15 @@
                         <div>
                             <div class="flex justify-between text-sm text-slate-600 mb-1">
                                 <span>集射极电压 \(V_{CE}\)（由负载线求得）</span>
-                                <span id="vceValue" class="font-mono font-bold text-indigo-600">6.0 V</span>
+                                <span id="vceValue" class="font-mono font-bold text-indigo-600">8.1 V</span>
                             </div>
-                            <input type="range" id="vceSlider" min="0" max="200" value="60" step="1" class="w-full opacity-40" disabled>
+                            <input type="range" id="vceSlider" min="0" max="200" value="81" step="1" class="w-full opacity-40" disabled>
                             <div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>0 V</span><span>20 V</span></div>
                         </div>
                         <div>
                             <div class="flex justify-between text-sm text-slate-600 mb-1">
                                 <span>电流增益 \(\beta\)</span>
-                                <span id="betaValue" class="font-mono font-bold text-indigo-600">100</span>
+                                <span id="betaValue" class="font-mono font-bold text-indigo-600">180</span>
                             </div>
                             <input type="range" id="betaSlider" min="20" max="300" value="180" step="1" class="w-full">
                             <div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>20</span><span>300</span></div>
@@ -95,8 +95,8 @@
                                 <span>集电极电阻 \(R_C\)</span>
                                 <span id="rcValue" class="font-mono font-bold text-indigo-600">1.0 kΩ</span>
                             </div>
-                            <input type="range" id="rcSlider" min="1" max="50" value="10" step="1" class="w-full">
-                            <div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>0.1 kΩ</span><span>5.0 kΩ</span></div>
+                            <input type="range" id="rcSlider" min="5" max="50" value="10" step="1" class="w-full">
+                            <div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>0.5 kΩ</span><span>5.0 kΩ</span></div>
                         </div>
                     </div>
                 </div>
@@ -110,27 +110,27 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div class="bg-slate-50 rounded-xl p-3 text-center">
                             <div class="text-xs text-slate-500 mb-1">\(I_{CQ}\)</div>
-                            <div id="icqDisplay" class="text-lg font-bold text-blue-600 font-mono">2.00 mA</div>
+                            <div id="icqDisplay" class="text-lg font-bold text-blue-600 font-mono">3.89 mA</div>
                         </div>
                         <div class="bg-slate-50 rounded-xl p-3 text-center">
                             <div class="text-xs text-slate-500 mb-1">\(V_{CEQ}\)</div>
-                            <div id="vceqDisplay" class="text-lg font-bold text-blue-600 font-mono">6.0 V</div>
+                            <div id="vceqDisplay" class="text-lg font-bold text-blue-600 font-mono">8.1 V</div>
                         </div>
                         <div class="bg-slate-50 rounded-xl p-3 text-center">
                             <div class="text-xs text-slate-500 mb-1">\(I_{EQ}\)</div>
-                            <div id="ieqDisplay" class="text-lg font-bold text-indigo-600 font-mono">2.02 mA</div>
+                            <div id="ieqDisplay" class="text-lg font-bold text-indigo-600 font-mono">3.91 mA</div>
                         </div>
                         <div class="bg-slate-50 rounded-xl p-3 text-center">
                             <div class="text-xs text-slate-500 mb-1">\(\beta\)</div>
-                            <div id="betaDisplay" class="text-lg font-bold text-indigo-600 font-mono">100</div>
+                            <div id="betaDisplay" class="text-lg font-bold text-indigo-600 font-mono">180</div>
                         </div>
                         <div class="bg-slate-50 rounded-xl p-3 text-center">
                             <div class="text-xs text-slate-500 mb-1">\(\alpha\)</div>
-                            <div id="alphaDisplay" class="text-lg font-bold text-amber-600 font-mono">0.990</div>
+                            <div id="alphaDisplay" class="text-lg font-bold text-amber-600 font-mono">0.994</div>
                         </div>
                         <div class="bg-slate-50 rounded-xl p-3 text-center">
                             <div class="text-xs text-slate-500 mb-1">\(g_m\)</div>
-                            <div id="gmDisplay" class="text-lg font-bold text-amber-600 font-mono">77 mS</div>
+                            <div id="gmDisplay" class="text-lg font-bold text-amber-600 font-mono">151 mS</div>
                         </div>
                     </div>
                     <div class="mt-3 bg-slate-50 rounded-xl p-3 text-center">
@@ -170,10 +170,10 @@
                     </h2>
                     <div class="space-y-3 text-sm bg-slate-50 rounded-xl p-4">
                         <div class="flex flex-wrap justify-center gap-x-6 gap-y-1">
-                            \[I_C = \beta I_B \qquad I_E = I_B + I_C = (1+\beta)I_B\]
+                            \[I_E=I_B+I_C,\qquad I_C\approx\beta I_B\left(1+\frac{V_{CE}}{V_A}\right)\quad\text{（正向放大区）}\]
                         </div>
                         <div class="flex flex-wrap justify-center gap-x-6 gap-y-1">
-                            \[\alpha = \frac{\beta}{1+\beta} \qquad I_C = I_S e^{V_{BE}/V_T} \left(1 + \frac{V_{CE}}{V_A}\right) \qquad g_m = \frac{I_C}{V_T},\ V_T \approx 26\,\text{mV}\]
+                            \[\alpha = \frac{\beta}{1+\beta} \qquad I_C = I_S e^{V_{BE}/V_T} \left(1 + \frac{V_{CE}}{V_A}\right) \qquad g_m = \frac{I_C}{V_T}\quad\text{（正向放大区）}\]
                         </div>
                     </div>
                 </div>
@@ -187,11 +187,11 @@
         // ==================== DEFAULTS ====================
         const DEFAULTS = {
             I_B: 20e-6,        // Base current (A)  [0-100uA]
-            V_CE: 6.0,         // V_CE voltage (V)  [0-20V]
-            beta: 100,         // Current gain      [20-300]
+            V_CE: 8.1,         // Calculated default V_CE (V)
+            beta: 180,         // Current gain      [20-300]
             V_A: 100,          // Early voltage (V) [50-300]
             V_CC: 12,          // Supply voltage (V) [5-20]
-            R_C: 1000          // Collector resistor (ohm) [100-5000]
+            R_C: 1000          // Collector resistor (ohm) [500-5000]
         };
         const V_T = 0.02585;   // Thermal voltage at room temp (V)
         const I_S = 1e-14;     // Saturation current (A)
@@ -274,6 +274,13 @@
             return points;
         }
 
+        function computeCollectorCurrent(I_B, V_CE, beta, V_A) {
+            if (I_B <= 0 || V_CE <= 0) return 0;
+            const activeAtKnee = beta * I_B * (1 + 0.2 / V_A);
+            if (V_CE < 0.2) return activeAtKnee * V_CE / 0.2;
+            return beta * I_B * (1 + V_CE / V_A);
+        }
+
         function computeOutputCharacteristicFamily(beta, V_A, qIb) {
             const ibValues = [10e-6, 20e-6, 30e-6, 40e-6, 50e-6, qIb]
                 .filter((value, index, values) => value >= 0 && values.findIndex(v => Math.abs(v - value) < 0.25e-6) === index)
@@ -286,13 +293,7 @@
                 const points = [];
                 for (let j = 0; j <= vceSteps; j++) {
                     const vce = vceMax * j / vceSteps;
-                    let ic;
-                    if (vce < 0.2) {
-                        const icActive = beta * ib * (1 + 0.2 / V_A);
-                        ic = icActive * (vce / 0.2);
-                    } else {
-                        ic = beta * ib * (1 + vce / V_A);
-                    }
+                    const ic = computeCollectorCurrent(ib, vce, beta, V_A);
                     points.push({ vce, ic });
                 }
                 curves.push({ ib, points, isQCurve: Math.abs(ib - qIb) < 0.25e-6, label: `I_B = ${(ib * 1e6).toFixed(0)} μA` });
@@ -307,27 +308,27 @@
             ];
         }
 
-        function computeQPoint(I_B, V_CE, beta, V_A, V_CC, R_C) {
-            const icActive = beta * I_B * (1 + V_CC / V_A) / (1 + beta * I_B * R_C / V_A);
-            const icSat = Math.max(0, (V_CC - 0.2) / R_C);
-            const ic = Math.min(icActive, icSat);
-            const vce = Math.max(0.2, V_CC - ic * R_C);
+        function computeQPoint(I_B, beta, V_A, V_CC, R_C) {
+            let lo = 0, hi = V_CC;
+            for (let i = 0; i < 48; i++) {
+                const testVce = (lo + hi) / 2;
+                const residual = testVce - (V_CC - computeCollectorCurrent(I_B, testVce, beta, V_A) * R_C);
+                if (residual > 0) hi = testVce; else lo = testVce;
+            }
+            const vce = (lo + hi) / 2;
+            const ic = computeCollectorCurrent(I_B, vce, beta, V_A);
             const ie = I_B + ic;
             const vbe = computeVbeFromIb(I_B, beta);
-            const gm = ic / V_T;
+            const gm = vce >= 0.2 ? ic / V_T : NaN;
             const alpha = beta / (beta + 1);
 
             let region;
             if (I_B <= 0 || ic <= 1e-9) {
                 region = '截止区 (Cutoff)';
-            } else if (icActive > icSat || vce < 0.3) {
+            } else if (vce < 0.2) {
                 region = '饱和区 (Saturation)';
             } else {
                 region = '放大区 (Active)';
-            }
-            const icMax = V_CC / R_C;
-            if (vce >= V_CC - 0.5 && ic < icMax * 0.1) {
-                region = '截止区 (Cutoff)';
             }
 
             return { ic, ie, vbe, gm, alpha, region, vce };
@@ -526,7 +527,7 @@
         // ==================== MAIN UPDATE ====================
         function updateAll() {
             const p = getParams();
-            const q = computeQPoint(p.I_B, p.V_CE, p.beta, p.V_A, p.V_CC, p.R_C);
+            const q = computeQPoint(p.I_B, p.beta, p.V_A, p.V_CC, p.R_C);
 
             // Update display labels
             iBValue.textContent = (p.I_B * 1e6).toFixed(0) + ' μA';
@@ -542,7 +543,7 @@
             ieqDisplay.textContent = (q.ie * 1e3).toFixed(2) + ' mA';
             betaDisplay.textContent = p.beta;
             alphaDisplay.textContent = q.alpha.toFixed(3);
-            gmDisplay.textContent = (q.gm * 1e3).toFixed(0) + ' mS';
+            gmDisplay.textContent = Number.isFinite(q.gm) ? (q.gm * 1e3).toFixed(0) + ' mS' : '—';
             regionDisplay.textContent = q.region;
 
             if (q.region.includes('放大')) {

@@ -35,8 +35,10 @@
                     <div class="space-y-4">
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>输入电压 \(V_{in}\)</span><span id="vinValue" class="font-mono font-bold text-indigo-600">12.0 V</span></div><input type="range" id="vinSlider" min="0" max="200" value="120" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>0 V</span><span>20 V</span></div></div>
                         <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>齐纳击穿电压 \(V_Z\)</span><span id="vzValue" class="font-mono font-bold text-indigo-600">5.6 V</span></div><input type="range" id="vzSlider" min="30" max="150" value="56" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>3 V</span><span>15 V</span></div></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>限流电阻 \(R_S\)</span><span id="rsValue" class="font-mono font-bold text-indigo-600">470 Ω</span></div><input type="range" id="rsSlider" min="10" max="100" value="47" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>100 Ω</span><span>10 kΩ</span></div></div>
-                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>负载电阻 \(R_L\)</span><span id="rlValue" class="font-mono font-bold text-indigo-600">1.0 kΩ</span></div><input type="range" id="rlSlider" min="10" max="100" value="100" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>100 Ω</span><span>10 kΩ</span></div></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>限流电阻 \(R_S\)</span><span id="rsValue" class="font-mono font-bold text-indigo-600">470 Ω</span></div><input type="range" id="rsSlider" min="100" max="10000" value="470" step="10" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>100 Ω</span><span>10 kΩ</span></div></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>负载电阻 \(R_L\)</span><span id="rlValue" class="font-mono font-bold text-indigo-600">1.0 kΩ</span></div><input type="range" id="rlSlider" min="100" max="10000" value="1000" step="100" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>100 Ω</span><span>10 kΩ</span></div></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>最小稳压电流 \(I_{Z,min}\)</span><span id="izMinValue" class="font-mono font-bold text-indigo-600">5 mA</span></div><input type="range" id="izMinSlider" min="1" max="10" value="5" step="1" class="w-full"></div>
+                        <div><div class="flex justify-between text-sm text-slate-600 mb-1"><span>额定功耗 \(P_{Z,max}\)</span><span id="pzMaxValue" class="font-mono font-bold text-indigo-600">0.5 W</span></div><input type="range" id="pzMaxSlider" min="1" max="10" value="5" step="1" class="w-full"><div class="flex justify-between text-xs text-slate-400 mt-0.5"><span>0.1 W</span><span>1.0 W</span></div></div>
                     </div>
                 </div>
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
@@ -54,12 +56,13 @@
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-4">
                     <h2 class="text-base font-bold text-slate-800 mb-2">输出电压特性（\(V_{out}\) vs \(V_{in}\)）</h2>
                     <div class="relative" style="height: 340px;"><canvas id="regChart"></canvas></div>
-                    <p class="text-xs text-slate-400 mt-1 text-center">红线=无稳压(分压)，蓝线=有齐纳稳压，绿色区域=稳压工作区</p>
+                    <p class="text-xs text-slate-400 mt-1 text-center">红线=齐纳管断开时的分压，蓝线=理想齐纳分段模型；红点为当前工作点</p>
                 </div>
                 <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 p-5">
                     <h2 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2"><span class="w-1 h-6 bg-amber-500 rounded-full"></span>关键公式</h2>
                     <div class="text-sm bg-slate-50 rounded-xl p-4 text-center space-y-2">
-                        \[V_{out} \approx V_Z \quad (\text{when } V_{in} > V_Z + I_{Z,min}R_S) \qquad I_Z = \frac{V_{in} - V_Z}{R_S} - \frac{V_Z}{R_L} \qquad P_Z = V_Z \cdot I_Z\]
+                        \[V_{in,on}=V_Z\left(1+\frac{R_S}{R_L}\right),\qquad I_Z = \frac{V_{in} - V_Z}{R_S} - \frac{V_Z}{R_L}\]
+                        \[I_Z\ge I_{Z,min}\;\text{时可靠稳压},\qquad P_Z=V_ZI_Z\le P_{Z,max}\]
                     </div>
                 </div>
             </div>
@@ -67,7 +70,6 @@
     </div>
 
     <script>
-        const I_Z_MIN = 0.005;
         let regChartInst = null;
         let rafId = null;
         let pendingUpdate = false;
@@ -76,30 +78,35 @@
             return {
                 V_in: parseFloat(vinSlider.value) / 10,
                 V_Z: parseFloat(vzSlider.value) / 10,
-                R_S: parseFloat(rsSlider.value) * 100,
-                R_L: parseFloat(rlSlider.value) * 100
+                R_S: parseFloat(rsSlider.value),
+                R_L: parseFloat(rlSlider.value),
+                I_Z_MIN: parseFloat(izMinSlider.value) * 1e-3,
+                P_Z_MAX: parseFloat(pzMaxSlider.value) * 0.1
             };
         }
 
         function compute(p) {
             // Without Zener: resistive divider
             const Vout_noZener = p.V_in * p.R_L / (p.R_S + p.R_L);
-            // With Zener: if V_in high enough, Vout clamped to V_Z
-            let V_out, I_Z, regulated;
-            const I_load_atVz = p.V_Z / p.R_L;
-            const V_threshold = p.V_Z + p.R_S * (I_Z_MIN + I_load_atVz);
-            if (p.V_in >= V_threshold) {
+            // The ideal Zener turns on when the unloaded divider reaches V_Z.
+            // I_Z_MIN determines regulation quality, not the turn-on boundary.
+            let V_out, I_Z, regulated, zenerOn;
+            const V_on = p.V_Z * (1 + p.R_S / p.R_L);
+            if (p.V_in >= V_on) {
                 V_out = p.V_Z;
-                I_Z = (p.V_in - p.V_Z) / p.R_S - p.V_Z / p.R_L;
-                regulated = I_Z >= I_Z_MIN;
+                I_Z = Math.max(0, (p.V_in - p.V_Z) / p.R_S - p.V_Z / p.R_L);
+                zenerOn = true;
+                regulated = I_Z >= p.I_Z_MIN;
             } else {
                 V_out = Vout_noZener;
                 I_Z = 0;
+                zenerOn = false;
                 regulated = false;
             }
             const I_L = V_out / p.R_L;
-            const P_Z = p.V_Z * I_Z;
-            return { Vout_noZener, V_out, I_Z, I_L, P_Z, regulated, V_threshold };
+            const P_Z = V_out * I_Z;
+            const overloaded = P_Z > p.P_Z_MAX;
+            return { Vout_noZener, V_out, I_Z, I_L, P_Z, regulated, zenerOn, overloaded, V_on };
         }
 
         function buildCurveData(p) {
@@ -108,8 +115,8 @@
                 const vin = 20 * i / 200;
                 noZener.push({ x: vin, y: vin * p.R_L / (p.R_S + p.R_L) });
                 let vout;
-                const threshold = p.V_Z + p.R_S * (I_Z_MIN + p.V_Z / p.R_L);
-                if (vin >= threshold) vout = p.V_Z;
+                const turnOn = p.V_Z * (1 + p.R_S / p.R_L);
+                if (vin >= turnOn) vout = p.V_Z;
                 else vout = vin * p.R_L / (p.R_S + p.R_L);
                 withZener.push({ x: vin, y: vout });
             }
@@ -121,15 +128,18 @@
             document.getElementById('vzValue').textContent = p.V_Z.toFixed(1) + ' V';
             document.getElementById('rsValue').textContent = p.R_S.toFixed(0) + ' Ω';
             document.getElementById('rlValue').textContent = (p.R_L/1000).toFixed(1) + ' kΩ';
+            document.getElementById('izMinValue').textContent = (p.I_Z_MIN*1000).toFixed(0) + ' mA';
+            document.getElementById('pzMaxValue').textContent = p.P_Z_MAX.toFixed(1) + ' W';
             document.getElementById('voutDisplay').textContent = r.V_out.toFixed(2) + ' V';
             document.getElementById('izDisplay').textContent = (r.I_Z*1000).toFixed(1) + ' mA';
             document.getElementById('ilDisplay').textContent = (r.I_L*1000).toFixed(1) + ' mA';
             document.getElementById('pzDisplay').textContent = (r.P_Z*1000).toFixed(0) + ' mW';
 
             const statusEl = document.getElementById('regStatus');
-            if (r.regulated) { statusEl.textContent = '稳压正常'; statusEl.className = 'text-lg font-bold text-blue-600'; }
-            else if (p.V_in < p.V_Z) { statusEl.textContent = '输入电压不足'; statusEl.className = 'text-lg font-bold text-slate-500'; }
-            else { statusEl.textContent = '未进入稳压区 (I_Z < 5mA)'; statusEl.className = 'text-lg font-bold text-amber-600'; }
+            if (r.overloaded) { statusEl.textContent = '齐纳管功耗超过额定值'; statusEl.className = 'text-lg font-bold text-rose-600'; }
+            else if (r.regulated) { statusEl.textContent = '稳压正常'; statusEl.className = 'text-lg font-bold text-blue-600'; }
+            else if (!r.zenerOn) { statusEl.textContent = '齐纳管尚未击穿导通'; statusEl.className = 'text-lg font-bold text-slate-500'; }
+            else { statusEl.textContent = `已击穿，但 I_Z < ${(p.I_Z_MIN*1000).toFixed(0)} mA`; statusEl.className = 'text-lg font-bold text-amber-600'; }
         }
 
         function updateChart(p, r) {
@@ -175,7 +185,7 @@
 
         initChart();
         updateDisplays(getParams(), compute(getParams()));
-        ['vinSlider','vzSlider','rsSlider','rlSlider'].forEach(id => document.getElementById(id).addEventListener('input', scheduleUpdate));
+        ['vinSlider','vzSlider','rsSlider','rlSlider','izMinSlider','pzMaxSlider'].forEach(id => document.getElementById(id).addEventListener('input', scheduleUpdate));
         window.addEventListener('load', () => { if (typeof renderMathInElement !== 'undefined') renderMathInElement(document.body, { delimiters: [{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}], throwOnError: false }); });
     </script>
 </body>
